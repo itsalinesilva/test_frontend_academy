@@ -128,6 +128,10 @@ export const CANONICAL_ROUTES = {
   ADMIN_AUDIT: '/admin/audit',
   ADMIN_CREDENTIALS: '/admin/credentials',
 
+  // Simulador de violino com acompanhamento de partitura.
+  VIOLIN_SIMULATOR: '/violin/simulator',
+  VIOLIN_SIMULATOR_SCORE: '/violin/simulator/:id',
+
   // Conta infantil: criacao e acompanhamento parental.
   KIDS_CREATE: '/kids/create',
   KIDS_MANAGE: '/kids/manage',
@@ -289,6 +293,13 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
     } else if (path !== '/rooms') {
       crumbs.push({ label: `Sala: ${params.id || 'Classe'}` });
     }
+    return crumbs;
+  }
+
+  // Violino
+  if (path.startsWith('/violin')) {
+    crumbs.push({ label: 'Violino', path: '/violin/simulator' });
+    if (params.id) crumbs.push({ label: 'Simulador' });
     return crumbs;
   }
 

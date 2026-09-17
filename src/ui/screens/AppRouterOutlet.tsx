@@ -74,6 +74,7 @@ import { NetworkDirectoryScreen } from './profile/NetworkDirectoryScreen';
 import { CredentialStudioScreen } from './admin/CredentialStudioScreen';
 import { CredentialVerifyScreen } from './credentials/CredentialVerifyScreen';
 import { KidsCreateScreen } from './kids/KidsCreateScreen';
+import { SimuladorViolinoScreen } from './violin/SimuladorViolinoScreen';
 import { KidsGuardianScreen } from './kids/KidsGuardianScreen';
 import { EditProfileScreen } from './profile/EditProfileScreen';
 
@@ -426,6 +427,11 @@ export const AppRouterOutlet: React.FC = () => {
   // para que elas tenham precedencia.
   if (currentPath.startsWith('/profile/')) {
     return <ProfileOverviewScreen />;
+  }
+
+  // VIOLINO
+  if (currentPath.startsWith('/violin/simulator')) {
+    return <SimuladorViolinoScreen />;
   }
 
   // CONTA INFANTIL
