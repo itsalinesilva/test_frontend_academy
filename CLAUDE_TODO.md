@@ -164,7 +164,7 @@
 ## BLOCO 11 — COMANDO 16 · Testes
 | # | Item | Ref. | Estado |
 | :--- | :--- | :--- | :---: |
-| 11.1 | Instalar `jsdom` + `@testing-library/react`; habilitar teste de componente | Q-02 | ⬜ |
+| 11.1 | Instalar `jsdom` + `@testing-library/react`; habilitar teste de componente | Q-02 | ✅ |
 | 11.2 | Testes unitários de `auth`, `academy`, `practice`, `profile` services | Q-01 | ⬜ |
 | 11.3 | Testes de integração dos cruzamentos (Academy→Practice→Evidence→Profile) | §6 | ⬜ |
 | 11.4 | E2E (Playwright): signup, login, matrícula, lição, quiz, exame, certificado, prática, portfólio, sala, admin | Q-01 | ⬜ |

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter } from '../../navigation/router';
+import { LockedState } from '../../components/feedback/LockedState';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
@@ -49,6 +50,7 @@ export const CourseDetailScreen: React.FC = () => {
   const [progress, setProgress] = useState<UserAcademyProgress | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     const loadCourse = async () => {
@@ -130,19 +132,19 @@ export const CourseDetailScreen: React.FC = () => {
 
   if (!course && !isLoading) {
     return (
-      <ScreenContainer
+      <PageLayout
         id="course-not-found"
-        title="Disciplina Acadêmica"
-        subtitle="Curso não localizado no currículo."
+        form="focus"
+        state="empty"
         emptyProps={{
           title: 'Disciplina não encontrada',
-          description: `O identificador [${courseId}] não corresponde a uma disciplina ativa.`,
+          description: `O identificador [${courseId}] não corresponde a uma disciplina ativa do currículo.`,
           actionLabel: 'Voltar ao Catálogo',
           onAction: () => navigate('/academy/catalog'),
         }}
       >
-        <div />
-      </ScreenContainer>
+        <PageLayout.Main>{null}</PageLayout.Main>
+      </PageLayout>
     );
   }
 
@@ -151,48 +153,15 @@ export const CourseDetailScreen: React.FC = () => {
   const totalLessons = Object.values(moduleLessons).reduce((acc, l) => acc + l.length, 0);
 
   return (
-    <ScreenContainer
+    <PageLayout
       id={`course-detail-${courseId}`}
-      title={course?.title || 'Carregando Disciplina...'}
-      subtitle={`Carga: ${course?.workloadHours}h • Nível: ${course?.level} • Cátedra: ${course?.authorName}`}
-      badgeLabel={isCompleted ? 'Concluído' : isEnrolled ? 'Matriculado' : 'Disponível'}
-      badgeVariant={isCompleted ? 'brand' : isEnrolled ? 'brand' : 'neutral'}
-      primaryAction={{
-        label: isEnrolling
-          ? 'Processando Matrícula...'
-          : isCompleted
-          ? 'Ver Certificado Oficial'
-          : isEnrolled
-          ? 'Continuar Aprendizado'
-          : 'Matricular-se no Curso Gratuito',
-        icon: isCompleted ? GraduationCap : isEnrolled ? Play : UserCheck,
-        onClick: () => {
-          if (isCompleted) {
-            navigate(`/academy/completion/${course?.id}`);
-          } else {
-            handleEnrollOrContinue();
-          }
-        },
-      }}
-      secondaryActions={[
-        {
-          label: 'Ementa Completa',
-          icon: Layers,
-          onClick: () => navigate(`/academy/course/${courseId}/curriculum`),
-        },
-        {
-          label: 'Meu Progresso',
-          icon: Clock,
-          onClick: () => navigate(`/academy/course/${courseId}/progress`),
-        },
-        {
-          label: 'Catálogo Geral',
-          onClick: () => navigate('/academy/catalog'),
-        },
-      ]}
+      form="detail"
+      density="catalog"
+      state={isLoading ? 'loading' : 'content'}
+      loadingMessage="Carregando a disciplina e sua grade curricular…"
     >
-      <div className="space-y-8">
-        {/* COURSERA-STYLE COURSE HEADER BANNER */}
+      <PageLayout.Hero>
+        {/* Identidade da disciplina — wireframes/01 §4 */}
         <Card variant="muted" padding="lg" className="border-stone-200 bg-gradient-to-r from-stone-50 via-white to-stone-50">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             <div className="lg:col-span-2 space-y-4">
@@ -270,10 +239,23 @@ export const CourseDetailScreen: React.FC = () => {
           </div>
         </Card>
 
-        {/* Course Layout Body: 2 Columns */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Column */}
-          <div className="lg:col-span-2 space-y-8">
+      </PageLayout.Hero>
+
+      <PageLayout.Tabs
+        id="course-detail-tabs"
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        tabs={[
+          { id: 'overview', label: 'Visão Geral' },
+          { id: 'curriculum', label: 'Grade Curricular', badge: modules.length || undefined },
+          { id: 'skills', label: 'Competências', badge: course?.skills?.length || undefined },
+          { id: 'materials', label: 'Materiais', badge: course?.materials?.length || undefined },
+          { id: 'references', label: 'Bibliografia' },
+        ]}
+      />
+
+      <PageLayout.Main>
+          <div className="space-y-8">
             {/* 1. Progress banner if enrolled */}
             {isEnrolled && (
               <Card variant="muted" padding="md" className="space-y-2 border-stone-200">
@@ -554,9 +536,102 @@ export const CourseDetailScreen: React.FC = () => {
               </div>
             </Card>
           </div>
+      </PageLayout.Main>
 
-          {/* Right Sidebar: Relations with Paths, Worlds, Practice, Certificate */}
-          <div className="space-y-6">
+      {/* Trilho fixo de matrícula e relações — wireframes/01 §4 */}
+      <PageLayout.Aside>
+          <div className="space-y-4">
+            {/*
+              CTA de matrícula no TRILHO FIXO.
+              Antes vivia em `ScreenContainer.primaryAction`, no topo da página,
+              e desaparecia assim que o usuário rolava para ler a grade — que é
+              justamente quando ele decide se matricular. No wireframe
+              (01_ACADEMY_COURSERA §4) o trilho acompanha a rolagem.
+            */}
+            <Card variant="default" padding="md" className="space-y-3 border-stone-300 shadow-sm">
+              {isEnrolled ? (
+                <>
+                  <div className="space-y-1.5">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xs font-semibold text-stone-700">Seu progresso</span>
+                      <span className="font-mono text-sm font-bold text-stone-900">
+                        {progress?.progressPercentage ?? 0}%
+                      </span>
+                    </div>
+                    <ProgressBar
+                      id="course-rail-progress"
+                      value={progress?.progressPercentage ?? 0}
+                      max={100}
+                      label={`Progresso na disciplina ${course?.title ?? ''}`}
+                    />
+                  </div>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    className="w-full"
+                    onClick={() =>
+                      isCompleted
+                        ? navigate(`/academy/completion/${course?.id}`)
+                        : handleEnrollOrContinue()
+                    }
+                  >
+                    {isCompleted ? (
+                      <><GraduationCap className="mr-1.5 h-4 w-4" /> Ver certificado</>
+                    ) : (
+                      <><Play className="mr-1.5 h-4 w-4" /> Continuar</>
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs leading-relaxed text-stone-600">
+                    Disciplina gratuita. A matrícula libera lições, atividades e a avaliação final.
+                  </p>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    className="w-full"
+                    disabled={isEnrolling}
+                    onClick={handleEnrollOrContinue}
+                  >
+                    <UserCheck className="mr-1.5 h-4 w-4" />
+                    {isEnrolling ? 'Processando matrícula…' : 'Matricular-se'}
+                  </Button>
+                </>
+              )}
+
+              <dl className="space-y-1.5 border-t border-stone-100 pt-3 text-xs text-stone-600">
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 shrink-0 text-stone-400" aria-hidden="true" />
+                  <dt className="sr-only">Carga horária</dt>
+                  <dd>{course?.workloadHours}h de carga horária</dd>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Layers className="h-3.5 w-3.5 shrink-0 text-stone-400" aria-hidden="true" />
+                  <dt className="sr-only">Estrutura</dt>
+                  <dd>{modules.length} módulos · {totalLessons} lições</dd>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <GraduationCap className="h-3.5 w-3.5 shrink-0 text-stone-400" aria-hidden="true" />
+                  <dt className="sr-only">Certificação</dt>
+                  <dd>Certificado ao concluir</dd>
+                </div>
+              </dl>
+            </Card>
+
+            {/*
+              Conteúdo bloqueado sem matrícula: a estrutura permanece visível
+              — é ela que sustenta a decisão de se matricular — mas o acesso
+              é explicitamente condicionado, com o caminho para desbloquear.
+            */}
+            {!isEnrolled && (
+              <LockedState
+                id="course-locked-notice"
+                title="Conteúdo bloqueado"
+                description="A grade curricular está visível, mas as lições exigem matrícula."
+                requirementText="Matricule-se para liberar lições, atividades e avaliação."
+              />
+            )}
             {/* Conexão com Trilha de Aprendizagem (Path Relation) */}
             {relatedPath && (
               <Card variant="default" padding="md" className="space-y-3 border-stone-200">
@@ -735,8 +810,7 @@ export const CourseDetailScreen: React.FC = () => {
               </p>
             </Card>
           </div>
-        </div>
-      </div>
-    </ScreenContainer>
+      </PageLayout.Aside>
+    </PageLayout>
   );
 };
