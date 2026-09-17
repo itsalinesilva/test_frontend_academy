@@ -460,6 +460,57 @@ Especificação completa em `docs/backend_specs/21.1 §10`.
 
 ---
 
+## 8-nonies. ADR-008 · Partituras de domínio público (2026-09-17)
+
+**A distinção que resolve a questão:** domínio público da **obra** ≠ permissão para baixar em massa o **servidor** de alguém. A música de Carlos Gomes é livre; o PDF digitalizado por uma instituição é trabalho e infraestrutura dela.
+
+A obra ser livre **garante** que podemos obtê-la de fonte que permite redistribuição, ou editorá-la nós mesmos. O objetivo — tudo nativo, sem redirecionar — é plenamente alcançável; só muda o caminho.
+
+### ⚠️ Correção de especificação minha
+
+O `21.1 §3.2` classificava o IMSLP como fonte primária de **arquivos**. Errado. Verificado:
+
+```
+Disallow: /images/     ← PDFs das partituras
+Disallow: /imglnks/    ← PDFs das partituras
+```
+
+**IMSLP está na mesma situação da Música Brasilis:** metadados acessíveis, arquivos proibidos ao rastreamento.
+
+### ✅ Mutopia Project — a fonte que resolve
+
+`robots.txt`: `Disallow:` **vazio** — rastreamento integralmente permitido. E o projeto declara: *2.124 peças livres para baixar, modificar, imprimir, copiar, distribuir, executar e gravar, em Domínio Público ou Creative Commons, em PDF, MIDI e LilyPond editável.*
+
+Decisivo: fornece **MIDI e código-fonte LilyPond**, não só PDF. Com a fonte simbólica, renderizamos a partitura **nativamente** — pauta própria, playhead próprio, ligação com Score Studio e prática. PDF embutido seria imagem morta.
+
+Contrapartida: atribuição de editor e licença **por peça**, alimentando o `FieldProvenance`.
+
+### Hierarquia de fontes
+
+| Nível | Fonte | Exibição |
+| ---: | :--- | :--- |
+| 1 | **Mutopia** | **nativa** (LilyPond/MIDI → nossa pauta) |
+| 2 | **Wikimedia Commons** | **nativa** (manuscritos, fac-símiles) |
+| 3 | **Nossa própria edição** (MusicXML) | **nativa** |
+| 4 | **Internet Archive** | **nativa** (áudio) |
+| 5 | IMSLP · Música Brasilis | **só metadados** — arquivos não são buscados |
+
+Níveis 1–4 cobrem "tudo dentro da plataforma, sem redirecionar". Nível 5 enriquece a ficha sem tocar nos arquivos.
+
+### Obra sem edição livre
+
+A ficha declara: *"Obra em domínio público · edição livre ainda não disponível no acervo"*, e oferece o que a plataforma gera sozinha (síntese, análise). **Nenhum link para fora.**
+
+### Repertório brasileiro — a oportunidade
+
+O Mutopia é forte em europeu e fraco em brasileiro. Para a Unidade Brasileira, o caminho é **editorar nós mesmos** obras brasileiras de domínio público — Nazareth, Chiquinha Gonzaga, Callado, Carlos Gomes, Anacleto de Medeiros. São obras livres; falta edição digital redistribuível.
+
+Isso move a plataforma de **extratora** para **contribuinte** do acervo comum, e torna a edição nativa por construção.
+
+Especificação completa em `docs/backend_specs/21.1 §11`.
+
+---
+
 ## 9. Regras de trabalho ativas (acordadas no COMANDO 0)
 
 1. Investigar → diagnosticar → só então implementar.

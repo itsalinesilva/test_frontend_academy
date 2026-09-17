@@ -138,6 +138,11 @@
 | 7.17 | Rotas `/academy/conservatory`, `/conservatory/composer/:id`, `/conservatory/work/:id` | ADR-007 | ⬜ |
 | 7.18 | **Contatar a Música Brasilis** pedindo autorização de uso de dados. Sem acordo, o adaptador fica desabilitado e a integração é apenas link de saída | ADR-007 | ⛔ |
 | 7.19 | Mais exercícios de teoria derivados do *Livro de Exercícios* do Med, com citação de página | ADR-002 | ⬜ |
+| 7.20 | **Adaptador Mutopia** — 2.124 pecas, PDF + MIDI + LilyPond, licenca de redistribuicao explicita | ADR-008 | ⬜ |
+| 7.21 | Renderizacao NATIVA de partitura a partir de MIDI/LilyPond — nunca PDF embutido | ADR-008 | ⬜ |
+| 7.22 | Atribuicao de editor e licenca por peca, alimentando `FieldProvenance` | ADR-008 | ⬜ |
+| 7.23 | Estado "obra em dominio publico, edicao livre indisponivel" — sem link de saida | ADR-008 | ⬜ |
+| 7.24 | **Editorar em MusicXML obras brasileiras de dominio publico** (Nazareth, Chiquinha Gonzaga, Callado, Carlos Gomes) — move a plataforma de extratora para contribuinte | ADR-008 | ⬜ |
 | 7.12 | **OCR das duas obras do Med (688 páginas) é caminho crítico**, não tarefa secundária — sem ele não há currículo oficial | ADR-002 | ⬜ |
 | 7.9 | Resolver as ilustrações: ou produzir/licenciar imagens reais, ou remover `illustrations[]` das lições | K-05 | ⬜ |
 
