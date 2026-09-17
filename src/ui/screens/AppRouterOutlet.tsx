@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from '../navigation/router';
 import { authService } from '../../services/application/auth.service';
+import { AppMode } from '../../domain/types';
+import { rotaBloqueadaParaKids } from '../../domain/kids-account';
 import { Card } from '../components/base/Card';
 import { Button } from '../components/base/Button';
 import { ShieldAlert, LogIn, ArrowLeft } from 'lucide-react';
@@ -71,6 +73,8 @@ import { PortfolioScreen } from './profile/PortfolioScreen';
 import { NetworkDirectoryScreen } from './profile/NetworkDirectoryScreen';
 import { CredentialStudioScreen } from './admin/CredentialStudioScreen';
 import { CredentialVerifyScreen } from './credentials/CredentialVerifyScreen';
+import { KidsCreateScreen } from './kids/KidsCreateScreen';
+import { KidsGuardianScreen } from './kids/KidsGuardianScreen';
 import { EditProfileScreen } from './profile/EditProfileScreen';
 
 // Core & Utilities
@@ -102,6 +106,7 @@ export const AppRouterOutlet: React.FC = () => {
     isChecking: boolean;
     authorized: boolean;
     reason?: string;
+    porSerCrianca?: boolean;
   }>({ isChecking: false, authorized: true });
 
   // Protected route authorization evaluation
@@ -109,13 +114,39 @@ export const AppRouterOutlet: React.FC = () => {
     let isMounted = true;
     async function evaluateSecurity() {
       const isProtected = currentPath.startsWith('/admin') || currentPath === '/rooms/create';
-      if (!isProtected) {
+
+      // A restrição de conta infantil é avaliada em TODA rota, não só nas
+      // protegidas por papel. Perfil de terceiro, comunidade e salas não são
+      // "áreas administrativas" — são exatamente onde uma criança não deve
+      // chegar, e a checagem tem de estar na navegação para que um link
+      // colado de fora encontre o mesmo bloqueio (domain/kids-account.ts).
+      const precisaAvaliar = isProtected || rotaBloqueadaParaKids(currentPath);
+      if (!precisaAvaliar) {
         if (isMounted) setAuthStatus({ isChecking: false, authorized: true });
         return;
       }
 
       setAuthStatus({ isChecking: true, authorized: true });
       const session = await authService.getActiveSession();
+
+      if (session?.mode === AppMode.KIDS && rotaBloqueadaParaKids(currentPath)) {
+        if (isMounted) {
+          setAuthStatus({
+            isChecking: false,
+            authorized: false,
+            porSerCrianca: true,
+            reason:
+              'Esta área não faz parte do perfil infantil. Perfis de outras pessoas, comunidade e salas ficam com quem é responsável pela conta.',
+          });
+        }
+        return;
+      }
+
+      if (!isProtected) {
+        if (isMounted) setAuthStatus({ isChecking: false, authorized: true });
+        return;
+      }
+
       const check = await authService.checkRouteAccess(currentPath, session?.user || null);
 
       if (isMounted) {
@@ -147,6 +178,30 @@ export const AppRouterOutlet: React.FC = () => {
 
   // Access denied screen for protected routes
   if (!authStatus.authorized) {
+    // Para a criança a mensagem não é de "acesso negado": ela não fez nada
+    // errado, e tratar a restricao como falta ensina a contorná-la.
+    if (authStatus.porSerCrianca) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-stone-100 p-4">
+          <Card variant="default" padding="lg" className="w-full max-w-md space-y-4 border-stone-300 text-center shadow-md">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-stone-900 text-amber-300">
+              <ShieldAlert className="h-6 w-6" />
+            </div>
+            <h2 className="font-serif text-lg font-bold text-stone-900">Esta parte fica com quem cuida de você</h2>
+            <p className="text-xs leading-relaxed text-stone-600">{authStatus.reason}</p>
+            <p className="text-xs leading-relaxed text-stone-500">
+              As aulas, os exercícios e a sua prática continuam todos disponíveis.
+            </p>
+            <div className="flex justify-center pt-2">
+              <Button variant="primary" size="sm" onClick={() => navigate('/academy')}>
+                <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Voltar para as aulas
+              </Button>
+            </div>
+          </Card>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-100 p-4">
         <Card variant="default" padding="lg" className="max-w-md w-full text-center space-y-4 border-red-300 shadow-md">
@@ -371,6 +426,14 @@ export const AppRouterOutlet: React.FC = () => {
   // para que elas tenham precedencia.
   if (currentPath.startsWith('/profile/')) {
     return <ProfileOverviewScreen />;
+  }
+
+  // CONTA INFANTIL
+  if (currentPath === '/kids/create') {
+    return <KidsCreateScreen />;
+  }
+  if (currentPath === '/kids/manage' || currentPath === '/kids') {
+    return <KidsGuardianScreen />;
   }
 
   // CREDENCIAIS — verificacao publica, sem sessao

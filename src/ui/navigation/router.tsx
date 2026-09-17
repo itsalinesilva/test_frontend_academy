@@ -128,6 +128,10 @@ export const CANONICAL_ROUTES = {
   ADMIN_AUDIT: '/admin/audit',
   ADMIN_CREDENTIALS: '/admin/credentials',
 
+  // Conta infantil: criacao e acompanhamento parental.
+  KIDS_CREATE: '/kids/create',
+  KIDS_MANAGE: '/kids/manage',
+
   // Verificacao publica de documento. NAO exige sessao: quem confere um
   // certificado e um empregador, uma banca, uma secretaria — gente que nao
   // tem conta e nao vai criar uma para conferir um documento.
@@ -285,6 +289,13 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
     } else if (path !== '/rooms') {
       crumbs.push({ label: `Sala: ${params.id || 'Classe'}` });
     }
+    return crumbs;
+  }
+
+  // Conta infantil
+  if (path.startsWith('/kids')) {
+    crumbs.push({ label: 'Conta infantil', path: '/kids/manage' });
+    if (path === '/kids/create') crumbs.push({ label: 'Criar perfil' });
     return crumbs;
   }
 
