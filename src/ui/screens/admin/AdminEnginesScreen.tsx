@@ -73,7 +73,7 @@ export const AdminEnginesScreen: React.FC = () => {
             <Card key={eng.id} variant="default" padding="lg" className="space-y-3">
               <div className="flex items-center justify-between border-b border-stone-100 pb-2">
                 <div className="flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-red-800" />
+                  <Cpu className="w-4 h-4 text-anil-800" />
                   <h3 className="font-serif font-bold text-sm text-stone-900">{eng.name}</h3>
                 </div>
                 <Badge variant="brand" size="sm">

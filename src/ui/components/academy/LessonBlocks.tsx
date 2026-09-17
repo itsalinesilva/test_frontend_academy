@@ -435,7 +435,7 @@ const ToneSemitone: React.FC = () => {
           <span
             className={clsx(
               'mb-1 rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold',
-              s.tone ? 'bg-stone-200 text-stone-700' : 'bg-red-800 text-white'
+              s.tone ? 'bg-stone-200 text-stone-700' : 'bg-anil-800 text-white'
             )}
           >
             {s.tone ? 'T' : '½'}
@@ -500,7 +500,7 @@ const Slides: React.FC<{ block: Extract<LessonBlock, { kind: 'SLIDES' }> }> = ({
               onClick={() => setI(idx)}
               className={clsx(
                 'h-1.5 rounded-full transition-all',
-                idx === i ? 'w-5 bg-red-800' : 'w-1.5 bg-stone-300 hover:bg-stone-400'
+                idx === i ? 'w-5 bg-anil-800' : 'w-1.5 bg-stone-300 hover:bg-stone-400'
               )}
             />
           ))}

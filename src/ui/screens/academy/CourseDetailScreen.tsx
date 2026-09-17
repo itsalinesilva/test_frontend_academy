@@ -310,7 +310,7 @@ export const CourseDetailScreen: React.FC = () => {
             {/* 2. Objetivos de Aprendizagem & Competências */}
             <Card variant="default" padding="lg" className="space-y-4">
               <h2 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-                <Award className="w-5 h-5 text-red-800" />
+                <Award className="w-5 h-5 text-anil-800" />
                 Objetivos Acadêmicos & Competências Canônicas
               </h2>
               <ul className="space-y-2.5 text-sm text-stone-700">
@@ -343,7 +343,7 @@ export const CourseDetailScreen: React.FC = () => {
             {course?.learningOutcomes && course.learningOutcomes.length > 0 && (
               <Card variant="default" padding="lg" className="space-y-3">
                 <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-red-800" />
+                  <Sparkles className="w-4 h-4 text-anil-800" />
                   Resultados Esperados de Aprendizagem (Outcomes)
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-stone-700">
@@ -632,7 +632,7 @@ export const CourseDetailScreen: React.FC = () => {
             {relatedPath && (
               <Card variant="default" padding="md" className="space-y-3 border-stone-200">
                 <div className="flex items-center gap-1.5 text-stone-500 font-mono uppercase font-semibold text-[10px]">
-                  <Layers className="w-3.5 h-3.5 text-red-800" />
+                  <Layers className="w-3.5 h-3.5 text-anil-800" />
                   <span>Trilha Formativa Integrada</span>
                 </div>
                 <h4 className="font-serif font-bold text-sm text-stone-900">
@@ -710,7 +710,7 @@ export const CourseDetailScreen: React.FC = () => {
             {course?.relatedScore && (
               <Card variant="default" padding="md" className="space-y-2 text-xs">
                 <div className="flex items-center gap-1.5 text-stone-500 font-mono uppercase font-semibold text-[10px]">
-                  <Music className="w-3.5 h-3.5 text-red-800" />
+                  <Music className="w-3.5 h-3.5 text-anil-800" />
                   <span>Partitura Urtext Conectada</span>
                 </div>
                 <h4 className="font-serif font-bold text-stone-900">
@@ -733,7 +733,7 @@ export const CourseDetailScreen: React.FC = () => {
             {/* Certificação Digital & Credenciais */}
             <Card variant="default" padding="md" className="space-y-3 border-stone-200">
               <div className="flex items-center gap-2">
-                <GraduationCap className="w-5 h-5 text-red-800" />
+                <GraduationCap className="w-5 h-5 text-anil-800" />
                 <h3 className="font-serif font-bold text-sm text-stone-900">
                   Certificação Digital Canônica
                 </h3>
@@ -769,7 +769,7 @@ export const CourseDetailScreen: React.FC = () => {
             {/* Materiais Complementares */}
             <Card variant="default" padding="md" className="space-y-3">
               <h3 className="font-serif font-bold text-sm text-stone-900 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-red-800" />
+                <FileText className="w-4 h-4 text-anil-800" />
                 Materiais de Apoio ({course?.materials.length || 0})
               </h3>
               <div className="space-y-2">

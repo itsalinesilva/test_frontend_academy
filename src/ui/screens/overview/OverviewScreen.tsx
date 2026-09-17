@@ -102,7 +102,7 @@ export const OverviewScreen: React.FC = () => {
   return (
     <ScreenContainer
       id="overview"
-      title="Academia Musical Digital"
+      title="Conservatório Muscicapa"
       subtitle="Instituição soberana de ensino e criação musical. Circulação contínua entre Teoria, Prática, Notação Urtext, DAW e Cátedras de Mestres."
       badgeLabel="Plataforma Soberana"
       badgeVariant="brand"
@@ -141,7 +141,7 @@ export const OverviewScreen: React.FC = () => {
         {/* Quick Streak & Performance Banner */}
         <div className="p-4 bg-gradient-to-r from-stone-900 to-stone-800 text-white rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
           <div className="flex items-center gap-3 text-center sm:text-left">
-            <div className="w-12 h-12 rounded-xl bg-red-800 flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-anil-800 flex items-center justify-center shrink-0">
               <Flame className="w-6 h-6 fill-white text-white" />
             </div>
             <div>
@@ -158,7 +158,7 @@ export const OverviewScreen: React.FC = () => {
             <button
               type="button"
               onClick={() => navigate('/practice')}
-              className="px-4 py-2 bg-red-800 hover:bg-red-700 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+              className="px-4 py-2 bg-anil-800 hover:bg-anil-700 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap"
             >
               Treinar Ouvido & Ritmo →
             </button>
@@ -192,11 +192,11 @@ export const OverviewScreen: React.FC = () => {
                   padding="md"
                   interactive
                   onClick={() => navigate(pillar.path)}
-                  className="space-y-3 flex flex-col justify-between cursor-pointer group hover:border-red-800/60 transition-all"
+                  className="space-y-3 flex flex-col justify-between cursor-pointer group hover:border-anil-800/60 transition-all"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <div className="p-2 rounded-lg bg-stone-100 text-stone-900 group-hover:bg-red-800 group-hover:text-white transition-colors">
+                      <div className="p-2 rounded-lg bg-stone-100 text-stone-900 group-hover:bg-anil-800 group-hover:text-white transition-colors">
                         <IconComp className="w-4 h-4" />
                       </div>
                       <Badge variant="neutral" size="sm">
@@ -219,10 +219,10 @@ export const OverviewScreen: React.FC = () => {
                   </div>
 
                   <div className="pt-2 border-t border-stone-100 flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-stone-500 group-hover:text-red-800 transition-colors">
+                    <span className="text-[11px] font-medium text-stone-500 group-hover:text-anil-800 transition-colors">
                       Acessar Modo
                     </span>
-                    <ArrowRight className="w-3.5 h-3.5 text-stone-400 group-hover:text-red-800 transition-colors" />
+                    <ArrowRight className="w-3.5 h-3.5 text-stone-400 group-hover:text-anil-800 transition-colors" />
                   </div>
                 </Card>
               );
@@ -234,7 +234,7 @@ export const OverviewScreen: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card variant="muted" padding="md" className="space-y-1.5 border-stone-200">
             <div className="flex items-center gap-1.5 text-xs font-bold text-stone-900">
-              <ShieldCheck className="w-4 h-4 text-red-800" />
+              <ShieldCheck className="w-4 h-4 text-anil-800" />
               <span>Conteúdo Autoral</span>
             </div>
             <p className="text-xs text-stone-600 leading-relaxed">

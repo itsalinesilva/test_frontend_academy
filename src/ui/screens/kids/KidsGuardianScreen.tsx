@@ -329,7 +329,7 @@ export const KidsGuardianScreen: React.FC = () => {
                             type="checkbox"
                             checked={regra.permitido}
                             onChange={(e) => alterarPermissao(chave, 'permitido', e.target.checked)}
-                            className="h-4 w-4 accent-red-800"
+                            className="h-4 w-4 accent-anil-800"
                           />
                           <span className="text-stone-700">Permitir</span>
                         </label>
@@ -347,7 +347,7 @@ export const KidsGuardianScreen: React.FC = () => {
                           onChange={(e) =>
                             alterarPermissao(chave, 'exigeConfirmacao', e.target.checked)
                           }
-                          className="h-4 w-4 accent-red-800"
+                          className="h-4 w-4 accent-anil-800"
                         />
                         Confirmar cada vez, antes de acontecer
                       </label>

@@ -38,7 +38,7 @@ export const NotFoundScreen: React.FC<NotFoundScreenProps> = ({ attemptedPath })
     >
       <div className="max-w-2xl mx-auto py-12 text-center space-y-6">
         <div className="w-16 h-16 rounded-2xl bg-stone-100 text-stone-700 flex items-center justify-center mx-auto border border-stone-200 shadow-xs">
-          <Compass className="w-8 h-8 text-red-800" />
+          <Compass className="w-8 h-8 text-anil-800" />
         </div>
 
         <div className="space-y-2">

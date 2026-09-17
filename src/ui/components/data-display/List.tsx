@@ -50,7 +50,7 @@ export const ListItem: React.FC<ListItemProps> = ({
         clsx(
           'w-full flex items-center justify-between gap-3 text-left transition-colors select-none',
           sizeClasses[sizeVariant],
-          isClickable && 'cursor-pointer hover:bg-stone-50 active:bg-stone-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-800',
+          isClickable && 'cursor-pointer hover:bg-stone-50 active:bg-stone-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-anil-800',
           isActive && 'bg-stone-100/80 font-medium',
           disabled && 'opacity-50 cursor-not-allowed',
           className

@@ -67,9 +67,9 @@ export const NotationToolbar: React.FC<NotationToolbarProps> = ({
             title={d.label}
             aria-pressed={selectedDuration === d.id}
             className={clsx(
-              'w-8 h-8 rounded flex items-center justify-center text-lg font-serif transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800',
+              'w-8 h-8 rounded flex items-center justify-center text-lg font-serif transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800',
               selectedDuration === d.id
-                ? 'bg-red-800 text-white font-bold'
+                ? 'bg-anil-800 text-white font-bold'
                 : 'text-stone-700 hover:bg-stone-100'
             )}
           >
@@ -91,9 +91,9 @@ export const NotationToolbar: React.FC<NotationToolbarProps> = ({
             title={a.label}
             aria-pressed={selectedAccidental === a.id}
             className={clsx(
-              'w-8 h-8 rounded flex items-center justify-center text-base font-serif transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800',
+              'w-8 h-8 rounded flex items-center justify-center text-base font-serif transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800',
               selectedAccidental === a.id
-                ? 'bg-red-800 text-white font-bold'
+                ? 'bg-anil-800 text-white font-bold'
                 : 'text-stone-700 hover:bg-stone-100'
             )}
           >
@@ -155,7 +155,7 @@ export const NotationToolbar: React.FC<NotationToolbarProps> = ({
             type="button"
             onClick={onPlay}
             aria-label="Reproduzir partitura"
-            className="ml-2 px-3 py-1 bg-red-800 hover:bg-red-900 text-white rounded text-xs font-semibold flex items-center gap-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800"
+            className="ml-2 px-3 py-1 bg-anil-800 hover:bg-anil-900 text-white rounded text-xs font-semibold flex items-center gap-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800"
           >
             <Play className="w-3.5 h-3.5 fill-white" />
             <span>Tocar</span>

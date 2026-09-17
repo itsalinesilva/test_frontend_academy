@@ -93,7 +93,7 @@ export const CredentialVerifyScreen: React.FC = () => {
                 type="text"
                 value={entrada}
                 onChange={(e) => setEntrada(e.target.value.toUpperCase())}
-                placeholder="AMD-XXXX-XXXX"
+                placeholder="CMU-XXXX-XXXX"
                 aria-label="Código de verificação"
                 className="w-full rounded-md border border-stone-300 py-2.5 pl-9 pr-3 font-mono text-sm tracking-wider text-stone-900 placeholder:text-stone-400 focus:border-stone-500 focus:outline-none"
               />

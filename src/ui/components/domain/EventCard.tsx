@@ -39,7 +39,7 @@ export const EventCard: React.FC<EventCardProps> = ({
       id={id}
       className={twMerge(
         'p-5 bg-white border border-stone-200 rounded-lg shadow-xs hover:border-stone-300 transition-colors select-none flex flex-col justify-between gap-4',
-        isLiveNow && 'border-red-300 ring-1 ring-red-800/30',
+        isLiveNow && 'border-red-300 ring-1 ring-anil-800/30',
         className
       )}
     >
@@ -50,7 +50,7 @@ export const EventCard: React.FC<EventCardProps> = ({
           </span>
 
           {isLiveNow ? (
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-red-800 text-white text-[11px] font-bold animate-pulse">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-anil-800 text-white text-[11px] font-bold animate-pulse">
               <span className="w-2 h-2 rounded-full bg-white" />
               AO VIVO AGORA
             </span>

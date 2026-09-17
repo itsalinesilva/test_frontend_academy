@@ -322,7 +322,7 @@ export const LessonReaderScreen: React.FC = () => {
           </header>
 
           {content?.introduction && (
-            <p className="text-[17px] leading-relaxed text-stone-800 first-letter:float-left first-letter:mr-2 first-letter:font-serif first-letter:text-5xl first-letter:leading-[0.85] first-letter:text-red-900">
+            <p className="text-[17px] leading-relaxed text-stone-800 first-letter:float-left first-letter:mr-2 first-letter:font-serif first-letter:text-5xl first-letter:leading-[0.85] first-letter:text-anil-900">
               {content.introduction}
             </p>
           )}
@@ -340,7 +340,7 @@ export const LessonReaderScreen: React.FC = () => {
           {lesson && lesson.skills.length > 0 && (
             <Card variant="accent" padding="lg" className="space-y-3">
               <div className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-red-800" aria-hidden="true" />
+                <Target className="h-5 w-5 text-anil-800" aria-hidden="true" />
                 <h2 className="font-serif text-base font-bold text-stone-900">
                   Pratique esta competência
                 </h2>

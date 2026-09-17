@@ -99,7 +99,7 @@ export const Player: React.FC<PlayerProps> = ({
           aria-label="Repetição em loop"
           className={clsx(
             'p-1.5 rounded cursor-pointer transition-colors',
-            isLooping ? 'bg-red-950 text-red-400 border border-red-800' : 'text-stone-500 hover:text-stone-300'
+            isLooping ? 'bg-anil-950 text-red-400 border border-anil-800' : 'text-stone-500 hover:text-stone-300'
           )}
         >
           <Repeat className="w-4 h-4" />
@@ -134,7 +134,7 @@ export const Player: React.FC<PlayerProps> = ({
             type="button"
             onClick={onTogglePlay}
             aria-label={isPlaying ? 'Pausar' : 'Reproduzir'}
-            className="w-10 h-10 rounded-full bg-red-800 hover:bg-red-900 text-white flex items-center justify-center cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-red-600 active:scale-95 transition-transform"
+            className="w-10 h-10 rounded-full bg-anil-800 hover:bg-anil-900 text-white flex items-center justify-center cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-anil-500 active:scale-95 transition-transform"
           >
             {isPlaying ? <Pause className="w-5 h-5 fill-white" /> : <Play className="w-5 h-5 fill-white ml-0.5" />}
           </button>

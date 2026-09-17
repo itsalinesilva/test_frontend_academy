@@ -168,7 +168,7 @@ export const ImmediateFeedbackScreen: React.FC = () => {
         <div className="p-4 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono uppercase text-stone-500 font-bold flex items-center gap-1.5">
-              <Award className="w-4 h-4 text-red-800" />
+              <Award className="w-4 h-4 text-anil-800" />
               Orientação do Mestre
             </span>
             <span className="text-[11px] font-mono text-stone-400">
@@ -179,7 +179,7 @@ export const ImmediateFeedbackScreen: React.FC = () => {
             {immediateFeedback.details}
           </p>
           <div className="pt-2 border-t border-stone-200 flex items-center gap-2 text-xs font-semibold text-stone-900">
-            <span className="text-red-800 font-mono uppercase text-[10px] bg-red-50 px-2 py-0.5 rounded border border-red-200">
+            <span className="text-anil-800 font-mono uppercase text-[10px] bg-red-50 px-2 py-0.5 rounded border border-red-200">
               Ação Imediata
             </span>
             <span>{immediateFeedback.correctiveAction}</span>
@@ -191,7 +191,7 @@ export const ImmediateFeedbackScreen: React.FC = () => {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="font-serif text-lg font-bold text-stone-900 flex items-center gap-2">
-            <Activity className="w-5 h-5 text-red-800" />
+            <Activity className="w-5 h-5 text-anil-800" />
             <span>Telemetria Acústica & As 10 Medições Canônicas</span>
           </h2>
           <span className="text-xs font-mono text-stone-500">
@@ -267,7 +267,7 @@ export const ImmediateFeedbackScreen: React.FC = () => {
 
           {/* 10. Score */}
           <div className="p-3 bg-red-50 rounded-xl border border-red-200 text-center space-y-0.5">
-            <span className="text-[10px] uppercase font-mono text-red-800 block font-bold">10. Score</span>
+            <span className="text-[10px] uppercase font-mono text-anil-800 block font-bold">10. Score</span>
             <span className="font-mono text-lg font-bold text-red-900">{measurement.score}</span>
             <span className="text-[10px] font-mono text-red-700 block">Escala 0..1000</span>
           </div>
@@ -314,7 +314,7 @@ export const ImmediateFeedbackScreen: React.FC = () => {
                 const result = await practiceService.finishSession(attempt.sessionId!, 'usr_founder_1');
                 router.navigate(`/practice/result/${result.id}`);
               }}
-              className="flex items-center gap-2 bg-red-800 hover:bg-red-700 text-white"
+              className="flex items-center gap-2 bg-anil-800 hover:bg-anil-700 text-white"
             >
               <span>Concluir Sessão & Salvar Evidência</span>
               <ArrowRight className="w-4 h-4" />
@@ -325,7 +325,7 @@ export const ImmediateFeedbackScreen: React.FC = () => {
               variant="primary"
               size="md"
               onClick={() => router.navigate('/practice/skill-tree')}
-              className="flex items-center gap-2 bg-red-800 hover:bg-red-700 text-white"
+              className="flex items-center gap-2 bg-anil-800 hover:bg-anil-700 text-white"
             >
               <span>Avançar na Skill Tree</span>
               <ArrowRight className="w-4 h-4" />

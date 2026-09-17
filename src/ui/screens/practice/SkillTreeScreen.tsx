@@ -72,7 +72,7 @@ export const SkillTreeScreen: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-200 pb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-mono tracking-wider uppercase text-red-800 font-semibold">
+            <span className="text-xs font-mono tracking-wider uppercase text-anil-800 font-semibold">
               Currículo Gamificado
             </span>
             <span className="text-stone-400">•</span>
@@ -107,7 +107,7 @@ export const SkillTreeScreen: React.FC = () => {
               onClick={() => setSelectedCategory(cat)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 selectedCategory === cat
-                  ? 'bg-red-800 text-white shadow-xs'
+                  ? 'bg-anil-800 text-white shadow-xs'
                   : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
               }`}
             >
@@ -124,7 +124,7 @@ export const SkillTreeScreen: React.FC = () => {
               onClick={() => setSelectedTreeId(t.id)}
               className={`px-4 py-2 rounded-xl text-xs font-medium transition-all border ${
                 selectedTreeId === t.id
-                  ? 'bg-white border-red-800 text-red-900 shadow-sm font-semibold'
+                  ? 'bg-white border-anil-800 text-red-900 shadow-sm font-semibold'
                   : 'bg-stone-50 border-stone-200 text-stone-600 hover:bg-white'
               }`}
             >
@@ -177,7 +177,7 @@ export const SkillTreeScreen: React.FC = () => {
                       padding="lg"
                       className={`relative flex flex-col justify-between space-y-4 transition-all ${
                         isUnlocked
-                          ? 'hover:border-red-800 cursor-pointer shadow-xs hover:shadow-md'
+                          ? 'hover:border-anil-800 cursor-pointer shadow-xs hover:shadow-md'
                           : 'opacity-75 bg-stone-50 border-dashed border-stone-300'
                       }`}
                       onClick={() => router.navigate(`/practice/skill/${node.skillId}`)}
@@ -226,7 +226,7 @@ export const SkillTreeScreen: React.FC = () => {
                           </span>
                         </div>
 
-                        <span className="text-xs font-medium text-red-800 flex items-center gap-1">
+                        <span className="text-xs font-medium text-anil-800 flex items-center gap-1">
                           Ver Detalhes <ArrowRight className="w-3 h-3" />
                         </span>
                       </div>

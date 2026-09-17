@@ -1,6 +1,6 @@
 {
-  "name": "- teste_virtual_academy",
-  "description": "Imported from GitHub: itsalinesilva/teste_virtual_academy",
+  "name": "Conservatório Muscicapa",
+  "description": "Conservatório de música: educação, pesquisa, prática, produção, contribuição e preservação do conhecimento musical.",
   "requestFramePermissions": [
     "microphone"
   ],

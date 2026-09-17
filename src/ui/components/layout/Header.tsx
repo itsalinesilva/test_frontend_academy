@@ -100,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={onToggleMobileMenu}
               aria-label="Abrir menu de navegação móvel"
-              className="lg:hidden p-1.5 text-stone-400 hover:text-white rounded hover:bg-stone-800 focus:outline-none focus:ring-1 focus:ring-red-800 shrink-0"
+              className="lg:hidden p-1.5 text-stone-400 hover:text-white rounded hover:bg-stone-800 focus:outline-none focus:ring-1 focus:ring-anil-800 shrink-0"
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -109,7 +109,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div id="header-institutional-tag" className="flex items-center gap-2 truncate">
             <span className="w-2 h-2 rounded-full bg-red-600 shrink-0" aria-hidden="true" />
             <span className="text-red-400 font-mono text-[11px] tracking-wider uppercase font-bold truncate">
-              Academia Musical Digital
+              Conservatório Muscicapa
             </span>
             <span className="hidden xl:inline text-stone-600">|</span>
             <span className="hidden xl:inline text-stone-400 text-[11px]">
@@ -133,9 +133,9 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={onTogglePlayer}
               title="Player Canônico Auditivo (J.S. Bach, Mozart, Beethoven, Lá 440)"
               className={clsx(
-                'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-colors focus:outline-none focus:ring-1 focus:ring-red-800',
+                'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-colors focus:outline-none focus:ring-1 focus:ring-anil-800',
                 isPlayerOpen
-                  ? 'bg-red-900/70 text-white border-red-700'
+                  ? 'bg-anil-900/70 text-white border-red-700'
                   : 'bg-stone-800 hover:bg-stone-700 text-stone-300 border-stone-700'
               )}
             >
@@ -153,7 +153,7 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             onClick={onOpenCommandPalette}
             title="Abrir busca e comandos rápidos (Ctrl + K)"
-            className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-700 rounded-md text-xs transition-colors focus:outline-none focus:ring-1 focus:ring-red-800"
+            className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-700 rounded-md text-xs transition-colors focus:outline-none focus:ring-1 focus:ring-anil-800"
           >
             <Search className="w-3.5 h-3.5 text-stone-400" />
             <span className="text-stone-400">Buscar...</span>
@@ -174,7 +174,7 @@ export const Header: React.FC<HeaderProps> = ({
               title="Central de Notificações"
               aria-expanded={isNotificationsOpen}
               className={clsx(
-                'p-1.5 sm:p-2 rounded-md transition-colors relative focus:outline-none focus:ring-1 focus:ring-red-800',
+                'p-1.5 sm:p-2 rounded-md transition-colors relative focus:outline-none focus:ring-1 focus:ring-anil-800',
                 isNotificationsOpen ? 'bg-stone-800 text-white' : 'text-stone-300 hover:bg-stone-800'
               )}
             >
@@ -203,7 +203,7 @@ export const Header: React.FC<HeaderProps> = ({
                   setIsNotificationsOpen(false);
                 }}
                 aria-expanded={isProfileMenuOpen}
-                className="flex items-center gap-2 p-1 pl-1.5 rounded-lg hover:bg-stone-800 transition-colors focus:outline-none focus:ring-1 focus:ring-red-800"
+                className="flex items-center gap-2 p-1 pl-1.5 rounded-lg hover:bg-stone-800 transition-colors focus:outline-none focus:ring-1 focus:ring-anil-800"
               >
                 <div className="w-6 h-6 rounded-full overflow-hidden bg-stone-700 text-stone-100 flex items-center justify-center font-bold text-xs shrink-0 border border-stone-600">
                   {currentUser.avatarUrl ? (
@@ -241,7 +241,7 @@ export const Header: React.FC<HeaderProps> = ({
               id="header-login-button"
               type="button"
               onClick={handleLogin}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-800 hover:bg-red-700 text-white rounded-md font-medium transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-anil-800 hover:bg-anil-700 text-white rounded-md font-medium transition-colors"
             >
               <LogIn className="w-3.5 h-3.5" />
               <span>Acessar Conta</span>

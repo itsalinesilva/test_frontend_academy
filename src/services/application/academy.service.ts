@@ -416,7 +416,7 @@ export class AcademyService {
           evaluator: {
             id: 'eval_auto_validator',
             name: 'Motor Canônico de Validação Teórica',
-            title: 'Sistema de Avaliação Automatizada da Academia Musical Digital',
+            title: 'Sistema de Avaliação Automatizada da Conservatório Muscicapa',
             decision: 'aprovado_com_louvor',
             feedbackNotes: feedback,
           },
@@ -586,7 +586,7 @@ export class AcademyService {
     }
 
     // O codigo de verificacao identifica o documento; o hash prova o conteudo.
-    const verificationCode = `AMD-${new Date().getFullYear()}-${course.slug.substring(0, 3).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const verificationCode = `CMU-${new Date().getFullYear()}-${course.slug.substring(0, 3).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const issuedAt = new Date().toISOString();
 
     // Hash real, sobre os campos do certificado. O comentario acima desta
@@ -620,7 +620,7 @@ export class AcademyService {
       instructorName: course.authorName,
       instructorTitle: course.authorTitle,
       competencies: course.competencies,
-      institution: 'Academia Musical Digital - Cátedra Livre de Teoria e Prática',
+      institution: 'Conservatório Muscicapa - Cátedra Livre de Teoria e Prática',
     };
 
     // Enrich with user name if available
@@ -655,7 +655,7 @@ export class AcademyService {
         source: 'academy',
         sourceEntityId: savedCert.id,
         title: `Certificado de Conclusão: ${course.title}`,
-        description: `Certificado oficial conferido pela Academia Musical Digital. Carga horária auditada de ${course.workloadHours} horas. Código: ${verificationCode}`,
+        description: `Certificado oficial conferido pela Conservatório Muscicapa. Carga horária auditada de ${course.workloadHours} horas. Código: ${verificationCode}`,
         artifactType: 'document',
         artifactUrl: `/academy/certificate/${savedCert.id}`,
         skills: course.competencies,

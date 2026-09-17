@@ -238,7 +238,7 @@ export const CourseProgressScreen: React.FC = () => {
               <span className="text-sm font-semibold text-stone-900">
                 {isCompleted ? 'Emitido com Louvor' : 'Aguardando Aprovação'}
               </span>
-              <GraduationCap className={`w-5 h-5 ${isCompleted ? 'text-red-800' : 'text-stone-400'}`} />
+              <GraduationCap className={`w-5 h-5 ${isCompleted ? 'text-anil-800' : 'text-stone-400'}`} />
             </div>
             <p className="text-xs text-stone-500 leading-relaxed">
               Emissão criptográfica com hash SHA-256 e proveniência auditável.

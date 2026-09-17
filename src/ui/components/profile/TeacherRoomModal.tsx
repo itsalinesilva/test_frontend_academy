@@ -71,7 +71,7 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
       <Card variant="default" padding="lg" className="max-w-2xl w-full space-y-4 shadow-xl border-stone-300">
         <div className="flex items-center justify-between border-b border-stone-200 pb-3">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-red-100 text-red-800 rounded-md">
+            <div className="p-2 bg-anil-100 text-anil-800 rounded-md">
               <School className="w-5 h-5" />
             </div>
             <div>
@@ -150,7 +150,7 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
                   type="checkbox"
                   checked={exposeStudentCount}
                   onChange={(e) => setExposeStudentCount(e.target.checked)}
-                  className="rounded border-stone-300 text-red-800"
+                  className="rounded border-stone-300 text-anil-800"
                 />
                 <span>Exibir Total de Alunos</span>
               </label>
@@ -159,7 +159,7 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
                   type="checkbox"
                   checked={exposeUpcomingLives}
                   onChange={(e) => setExposeUpcomingLives(e.target.checked)}
-                  className="rounded border-stone-300 text-red-800"
+                  className="rounded border-stone-300 text-anil-800"
                 />
                 <span>Exibir Próximas Lives</span>
               </label>
@@ -168,7 +168,7 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
                   type="checkbox"
                   checked={exposeGuidedProjects}
                   onChange={(e) => setExposeGuidedProjects(e.target.checked)}
-                  className="rounded border-stone-300 text-red-800"
+                  className="rounded border-stone-300 text-anil-800"
                 />
                 <span>Exibir Projetos Guiados</span>
               </label>

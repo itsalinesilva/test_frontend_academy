@@ -101,7 +101,7 @@ export const MasteryScreen: React.FC = () => {
       {/* Skills Mastery List */}
       <section className="space-y-4">
         <h2 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
-          <ShieldCheck className="w-5 h-5 text-red-800" />
+          <ShieldCheck className="w-5 h-5 text-anil-800" />
           <span>Habilidades Auditadas</span>
         </h2>
 

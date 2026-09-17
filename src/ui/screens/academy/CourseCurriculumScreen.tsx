@@ -270,7 +270,7 @@ export const CourseCurriculumScreen: React.FC = () => {
                                 Áudio Guiado
                               </span>
                               {les.variants.TRADITIONAL.scoreSnippet && (
-                                <span className="flex items-center gap-1 text-red-800">
+                                <span className="flex items-center gap-1 text-anil-800">
                                   <Music className="w-3.5 h-3.5" />
                                   Partitura
                                 </span>
@@ -339,7 +339,7 @@ export const CourseCurriculumScreen: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <span className="text-xs font-mono text-stone-500 block">Corte Mínimo</span>
-                  <span className="font-mono font-bold text-red-800 text-lg">
+                  <span className="font-mono font-bold text-anil-800 text-lg">
                     {finalAssessment.passingScorePercentage}%
                   </span>
                 </div>

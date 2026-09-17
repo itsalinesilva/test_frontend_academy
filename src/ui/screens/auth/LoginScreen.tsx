@@ -50,11 +50,11 @@ export const LoginScreen: React.FC = () => {
     <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
       <main className="w-full max-w-md space-y-6" aria-labelledby="login-title">
         <header className="text-center space-y-2">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-800 text-white">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-anil-800 text-white">
             <GraduationCap className="h-6 w-6" aria-hidden="true" />
           </div>
           <h1 id="login-title" className="font-serif text-2xl font-bold text-stone-900">
-            Academia Musical Digital
+            Conservatório Muscicapa
           </h1>
           <p className="text-sm text-stone-600">
             Entre com sua Conta Google para acessar seus estudos, práticas e portfólio.

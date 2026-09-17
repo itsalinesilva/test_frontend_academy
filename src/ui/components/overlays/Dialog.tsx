@@ -98,7 +98,7 @@ export const Dialog: React.FC<DialogProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Fechar diálogo"
-            className="text-stone-400 hover:text-stone-700 p-1 rounded hover:bg-stone-100 transition-colors focus:outline-none focus:ring-2 focus:ring-red-800"
+            className="text-stone-400 hover:text-stone-700 p-1 rounded hover:bg-stone-100 transition-colors focus:outline-none focus:ring-2 focus:ring-anil-800"
           >
             <X className="w-5 h-5" aria-hidden="true" />
           </button>

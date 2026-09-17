@@ -169,7 +169,7 @@ export const AppRouterOutlet: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-100 p-4">
         <div className="text-center space-y-2">
-          <div className="w-8 h-8 border-2 border-red-800 border-t-transparent rounded-full animate-spin mx-auto" />
+          <div className="w-8 h-8 border-2 border-anil-800 border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-xs text-stone-600 font-serif">Verificando autorização de segurança canônica...</p>
         </div>
       </div>
@@ -205,7 +205,7 @@ export const AppRouterOutlet: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-100 p-4">
         <Card variant="default" padding="lg" className="max-w-md w-full text-center space-y-4 border-red-300 shadow-md">
-          <div className="w-12 h-12 bg-red-100 text-red-800 rounded-full flex items-center justify-center mx-auto">
+          <div className="w-12 h-12 bg-red-100 text-anil-800 rounded-full flex items-center justify-center mx-auto">
             <ShieldAlert className="w-6 h-6" />
           </div>
           <h2 className="font-serif font-bold text-lg text-stone-900">Acesso Institucional Restrito</h2>

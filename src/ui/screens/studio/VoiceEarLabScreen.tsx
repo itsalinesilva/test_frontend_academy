@@ -115,7 +115,7 @@ export const VoiceEarLabScreen: React.FC = () => {
 
             <div className="p-4 bg-stone-50 border border-stone-200 rounded-md flex items-center justify-center">
               <Button variant="outline" size="sm" onClick={() => alert('Reproduzindo intervalo acústico...')}>
-                <Play className="w-3.5 h-3.5 mr-1.5 text-red-800" />
+                <Play className="w-3.5 h-3.5 mr-1.5 text-anil-800" />
                 Tocar Intervalo Misterioso
               </Button>
             </div>

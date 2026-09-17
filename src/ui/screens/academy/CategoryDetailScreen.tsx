@@ -203,7 +203,7 @@ export const CategoryDetailScreen: React.FC = () => {
                   onClick={() => setSelectedLevel(lvl)}
                   className={`px-2.5 py-1 text-xs rounded font-medium capitalize transition-colors ${
                     selectedLevel === lvl
-                      ? 'bg-red-800 text-white font-semibold'
+                      ? 'bg-anil-800 text-white font-semibold'
                       : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                   }`}
                 >
@@ -271,7 +271,7 @@ export const CategoryDetailScreen: React.FC = () => {
 
                     <h4
                       onClick={() => navigate(`/academy/course/${crs.id}`)}
-                      className="font-serif font-bold text-base text-stone-950 hover:text-red-800 cursor-pointer transition-colors"
+                      className="font-serif font-bold text-base text-stone-950 hover:text-anil-800 cursor-pointer transition-colors"
                     >
                       {crs.title}
                     </h4>

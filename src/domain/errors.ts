@@ -1,5 +1,5 @@
 /**
- * Domain Errors - Academia Musical Digital
+ * Domain Errors - Conservatório Muscicapa
  * Error hierarchy for domain, authorization, validation and engines
  */
 

@@ -115,7 +115,7 @@ export const ImmediateFeedbackModal: React.FC<ImmediateFeedbackProps> = ({
 
           <div className="p-2 bg-stone-50 rounded border border-stone-100">
             <span className="text-[10px] text-stone-500 uppercase block font-mono">Score Total</span>
-            <span className="font-bold font-mono text-red-800">
+            <span className="font-bold font-mono text-anil-800">
               {measurement.score}/1000
             </span>
             <span className="text-[9px] text-stone-400 block font-mono">
@@ -155,7 +155,7 @@ export const ImmediateFeedbackModal: React.FC<ImmediateFeedbackProps> = ({
               variant="primary"
               size="sm"
               onClick={onViewResult}
-              className="flex items-center gap-2 bg-red-800 hover:bg-red-700 text-white"
+              className="flex items-center gap-2 bg-anil-800 hover:bg-anil-700 text-white"
             >
               <Zap className="w-3.5 h-3.5 text-amber-300" />
               <span>Concluir & Evidência</span>
@@ -166,7 +166,7 @@ export const ImmediateFeedbackModal: React.FC<ImmediateFeedbackProps> = ({
               variant="primary"
               size="sm"
               onClick={onNext}
-              className="flex items-center gap-2 bg-red-800 hover:bg-red-700 text-white"
+              className="flex items-center gap-2 bg-anil-800 hover:bg-anil-700 text-white"
             >
               <span>Próximo Exercício</span>
               <ArrowRight className="w-3.5 h-3.5" />

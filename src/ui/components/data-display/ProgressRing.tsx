@@ -29,7 +29,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
   const strokeDashoffset = circumference - (normalizedValue / 100) * circumference;
 
   const colorClasses = {
-    brand: 'stroke-red-800 text-red-800',
+    brand: 'stroke-anil-800 text-anil-800',
     success: 'stroke-emerald-700 text-emerald-700',
     warning: 'stroke-amber-600 text-amber-600',
     neutral: 'stroke-stone-900 text-stone-900',

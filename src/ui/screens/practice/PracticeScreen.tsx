@@ -194,8 +194,8 @@ export const PracticeScreen: React.FC = () => {
         {/* Practice Stats Header */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card variant="default" padding="sm" className="flex items-center gap-3">
-            <div className="p-2 rounded bg-red-100 text-red-800">
-              <Flame className="w-4 h-4 fill-red-800" />
+            <div className="p-2 rounded bg-red-100 text-anil-800">
+              <Flame className="w-4 h-4 fill-anil-800" />
             </div>
             <div>
               <p className="text-[11px] text-stone-500 font-mono">Ofensiva Atual</p>
@@ -270,7 +270,7 @@ export const PracticeScreen: React.FC = () => {
           <Card variant="default" padding="lg" className="space-y-6 max-w-3xl mx-auto shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-100">
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-red-800 bg-red-50 px-2 py-0.5 rounded border border-red-200">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-anil-800 bg-red-50 px-2 py-0.5 rounded border border-red-200">
                   Exercício {currentQuestionIndex + 1} de {SAMPLE_INTERVALS.length}
                 </span>
                 <h3 className="text-lg font-serif font-bold text-stone-900 mt-1">
@@ -283,7 +283,7 @@ export const PracticeScreen: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={playIntervalAudio}
-                  leadingIcon={<Volume2 className="w-4 h-4 text-red-800" />}
+                  leadingIcon={<Volume2 className="w-4 h-4 text-anil-800" />}
                 >
                   Ouvir Melódico
                 </Button>
@@ -326,7 +326,7 @@ export const PracticeScreen: React.FC = () => {
                   if (isCorrect) {
                     btnStyle = 'border-emerald-500 bg-emerald-50 text-emerald-950 font-bold';
                   } else if (isSelected) {
-                    btnStyle = 'border-red-500 bg-red-50 text-red-950 font-bold';
+                    btnStyle = 'border-red-500 bg-red-50 text-anil-950 font-bold';
                   } else {
                     btnStyle = 'border-stone-200 bg-stone-50 text-stone-400';
                   }
@@ -339,7 +339,7 @@ export const PracticeScreen: React.FC = () => {
                     onClick={() => handleAnswer(opt)}
                     disabled={selectedAnswer !== null}
                     className={clsx(
-                      'p-4 rounded-xl border-2 text-left font-medium text-sm transition-all flex items-center justify-between cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800',
+                      'p-4 rounded-xl border-2 text-left font-medium text-sm transition-all flex items-center justify-between cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800',
                       btnStyle
                     )}
                   >
@@ -437,7 +437,7 @@ export const PracticeScreen: React.FC = () => {
         {/* Next step in circulation prompt */}
         <div className="p-4 bg-stone-100 border border-stone-200 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-red-100 text-red-800 shrink-0">
+            <div className="p-2 rounded-full bg-red-100 text-anil-800 shrink-0">
               <Target className="w-4 h-4" />
             </div>
             <div>

@@ -59,7 +59,7 @@ export const WorkDetailScreen: React.FC = () => {
             onClick={() => setActiveTab('contexto')}
             className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'contexto'
-                ? 'border-red-800 text-red-900 font-semibold'
+                ? 'border-anil-800 text-red-900 font-semibold'
                 : 'border-transparent text-stone-600 hover:text-stone-900'
             }`}
           >
@@ -70,7 +70,7 @@ export const WorkDetailScreen: React.FC = () => {
             onClick={() => setActiveTab('escuta')}
             className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'escuta'
-                ? 'border-red-800 text-red-900 font-semibold'
+                ? 'border-anil-800 text-red-900 font-semibold'
                 : 'border-transparent text-stone-600 hover:text-stone-900'
             }`}
           >
@@ -81,7 +81,7 @@ export const WorkDetailScreen: React.FC = () => {
             onClick={() => setActiveTab('partitura')}
             className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'partitura'
-                ? 'border-red-800 text-red-900 font-semibold'
+                ? 'border-anil-800 text-red-900 font-semibold'
                 : 'border-transparent text-stone-600 hover:text-stone-900'
             }`}
           >
@@ -92,7 +92,7 @@ export const WorkDetailScreen: React.FC = () => {
             onClick={() => setActiveTab('pratica')}
             className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'pratica'
-                ? 'border-red-800 text-red-900 font-semibold'
+                ? 'border-anil-800 text-red-900 font-semibold'
                 : 'border-transparent text-stone-600 hover:text-stone-900'
             }`}
           >
@@ -131,7 +131,7 @@ export const WorkDetailScreen: React.FC = () => {
             <div className="space-y-4">
               <Card variant="muted" padding="md" className="space-y-2">
                 <div className="flex items-center gap-1.5 font-semibold text-stone-900 text-xs">
-                  <ShieldCheck className="w-4 h-4 text-red-800" />
+                  <ShieldCheck className="w-4 h-4 text-anil-800" />
                   <span>Fonte Primária Auditada</span>
                 </div>
                 <p className="text-xs text-stone-600">
@@ -188,7 +188,7 @@ export const WorkDetailScreen: React.FC = () => {
         {activeTab === 'pratica' && (
           <Card variant="default" padding="lg" className="space-y-4 max-w-xl mx-auto">
             <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-red-800" />
+              <Sparkles className="w-5 h-5 text-anil-800" />
               Treino de Afinação e Condução Polifônica
             </h3>
             <p className="text-sm text-stone-700">

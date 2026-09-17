@@ -350,7 +350,7 @@ export const ProfileHomeTab: React.FC<ProfileHomeTabProps> = ({
                 </span>
               </div>
               <p className="text-[11px] text-stone-600 mt-1">
-                Academia Musical Digital • Conselho Docente
+                Conservatório Muscicapa • Conselho Docente
               </p>
               <div className="mt-2 pt-2 border-t border-stone-200 text-[10px] font-mono text-stone-500 truncate">
                 Hash: c4b3a2d1e0f9876543210fedcba9876543210abcdef0123456789abcdef01234

@@ -172,7 +172,7 @@ export const AcademySearchScreen: React.FC = () => {
             {courses.length > 0 && (
               <div className="space-y-3">
                 <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4 text-red-800" />
+                  <GraduationCap className="w-4 h-4 text-anil-800" />
                   Disciplinas Acadêmicas ({courses.length})
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -193,7 +193,7 @@ export const AcademySearchScreen: React.FC = () => {
                         <p className="text-xs text-stone-600 line-clamp-2">{course.subtitle}</p>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs text-red-800 font-medium pt-2 border-t border-stone-100">
+                      <div className="flex items-center justify-between text-xs text-anil-800 font-medium pt-2 border-t border-stone-100">
                         <span>Acessar Disciplina</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </div>
@@ -241,7 +241,7 @@ export const AcademySearchScreen: React.FC = () => {
             {programs.length > 0 && (
               <div className="space-y-3">
                 <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-red-800" />
+                  <Layers className="w-4 h-4 text-anil-800" />
                   Programas Integrados ({programs.length})
                 </h3>
                 <div className="space-y-3">

@@ -170,7 +170,7 @@ export const InteractiveLessonScreen: React.FC = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-stone-100">
                 <div>
                   <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-                    <Music className="w-5 h-5 text-red-800" />
+                    <Music className="w-5 h-5 text-anil-800" />
                     Teclado & Sintetizador Acústico Canônico
                   </h3>
                   <p className="text-xs text-stone-600">
@@ -202,7 +202,7 @@ export const InteractiveLessonScreen: React.FC = () => {
                           onClick={() => handlePlayKey(k)}
                           className={`w-7 h-24 -mx-3.5 z-10 rounded-b-sm border border-stone-950 transition-all ${
                             isActive
-                              ? 'bg-red-700 shadow-md transform translate-y-0.5'
+                              ? 'bg-anil-700 shadow-md transform translate-y-0.5'
                               : 'bg-stone-950 hover:bg-stone-800'
                           }`}
                           title={`${k.note} (${k.freq}Hz)`}
@@ -265,7 +265,7 @@ export const InteractiveLessonScreen: React.FC = () => {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-red-800" />
+                  <Activity className="w-5 h-5 text-anil-800" />
                   <h4 className="font-serif font-bold text-base text-stone-900">
                     Desafio Interativo: Construção da Tríade de Dó Maior
                   </h4>
@@ -327,7 +327,7 @@ export const InteractiveLessonScreen: React.FC = () => {
               </span>
               <div className="space-y-2 text-xs">
                 <div className="p-2 bg-white rounded border border-stone-200 flex items-center gap-2 font-medium text-stone-900">
-                  <span className="w-5 h-5 rounded-full bg-red-800 text-white flex items-center justify-center text-[10px] font-mono">1</span>
+                  <span className="w-5 h-5 rounded-full bg-anil-800 text-white flex items-center justify-center text-[10px] font-mono">1</span>
                   <span>Lição Multimodal Interativa</span>
                 </div>
                 <div className="p-2 bg-white rounded border border-stone-200 flex items-center gap-2 font-medium text-stone-900">

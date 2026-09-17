@@ -93,7 +93,7 @@ export const DesignSystemCatalog: React.FC = () => {
       >
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-800" aria-hidden="true" />
+            <span className="w-2.5 h-2.5 rounded-full bg-anil-800" aria-hidden="true" />
             <h1 className="text-base font-bold font-sans tracking-tight text-stone-900 uppercase">
               Design System Oficial • 17_DESIGN_SYSTEM.md
             </h1>
@@ -243,8 +243,8 @@ export const DesignSystemCatalog: React.FC = () => {
                 {/* Primary / Action (Red Signal) */}
                 <div id="token-color-primary" className="p-3 bg-red-50/50 border border-red-200 rounded">
                   <div className="h-10 rounded bg-[#991b1b] mb-2" />
-                  <span className="font-semibold text-red-950 block">primary / accent</span>
-                  <span className="text-[10px] font-mono text-red-800">#991b1b / red-800</span>
+                  <span className="font-semibold text-anil-950 block">primary / accent</span>
+                  <span className="text-[10px] font-mono text-anil-800">#991b1b / anil-800</span>
                   <p className="text-[10px] text-red-700 mt-1">Ação/sinal semântico estrito</p>
                 </div>
 
@@ -311,7 +311,7 @@ export const DesignSystemCatalog: React.FC = () => {
                   <div className="p-3 bg-stone-50 rounded border border-stone-200 space-y-1">
                     <span className="text-[11px] font-mono text-stone-400 uppercase">Serif Display (Institucional)</span>
                     <h2 className="text-xl font-serif font-bold text-stone-900">
-                      Academia Musical Digital
+                      Conservatório Muscicapa
                     </h2>
                     <p className="text-[11px] text-stone-500">Cinzel / Playfair Display / Georgia</p>
                   </div>
@@ -649,11 +649,11 @@ export const DesignSystemCatalog: React.FC = () => {
                 <div className="space-y-4 text-xs">
                   <div>
                     <label className="font-semibold text-stone-800 block mb-1">Volume da Trilha (Ganho)</label>
-                    <input type="range" min="0" max="100" defaultValue="80" className="w-full accent-red-800" />
+                    <input type="range" min="0" max="100" defaultValue="80" className="w-full accent-anil-800" />
                   </div>
                   <div>
                     <label className="font-semibold text-stone-800 block mb-1">Panorâmica Estéreo (Pan)</label>
-                    <input type="range" min="-50" max="50" defaultValue="0" className="w-full accent-red-800" />
+                    <input type="range" min="-50" max="50" defaultValue="0" className="w-full accent-anil-800" />
                   </div>
                 </div>
               </Drawer>
@@ -779,7 +779,7 @@ export const DesignSystemCatalog: React.FC = () => {
                     <CredentialChip
                       id="cred-chip-teoria"
                       title="Teoria Musical"
-                      institution="Academia Musical Digital"
+                      institution="Conservatório Muscicapa"
                       level="L1-5"
                       isVerified
                     />
@@ -862,7 +862,7 @@ export const DesignSystemCatalog: React.FC = () => {
                         <span>Filtro Cutoff (Low-pass)</span>
                         <span className="font-mono">2400 Hz</span>
                       </div>
-                      <input type="range" min="200" max="8000" defaultValue="2400" className="w-full accent-red-800" />
+                      <input type="range" min="200" max="8000" defaultValue="2400" className="w-full accent-anil-800" />
                     </div>
                   </div>
                 </ToolPanel>
@@ -959,7 +959,7 @@ export const DesignSystemCatalog: React.FC = () => {
                 <MediaCard
                   id="media-card-demo"
                   title="Palestra 1: A Natureza Física do Som & Alturas"
-                  performerOrLecturer="Academia Musical Digital"
+                  performerOrLecturer="Conservatório Muscicapa"
                   mediaType="palestra"
                   durationText="24:18"
                   isPlaying={isMediaPlaying}
@@ -978,7 +978,7 @@ export const DesignSystemCatalog: React.FC = () => {
                 name="Aline Silva"
                 email="maria.aparecida@exemplo.org"
                 role={UserRole.ADMIN}
-                bio="Administradora Fundadora da Academia Musical Digital. Pesquisadora em pedagogia musical contemporânea e interfaces digitais de partitura."
+                bio="Administradora Fundadora da Conservatório Muscicapa. Pesquisadora em pedagogia musical contemporânea e interfaces digitais de partitura."
                 isOwner={true}
                 onEditProfile={() => {}}
               />

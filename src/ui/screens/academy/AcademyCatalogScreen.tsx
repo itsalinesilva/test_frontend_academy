@@ -181,7 +181,7 @@ export const AcademyCatalogScreen: React.FC = () => {
         {filteredPrograms.length > 0 && (
           <div className="space-y-3">
             <h2 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-red-800" />
+              <Layers className="w-4 h-4 text-anil-800" />
               Programas Formativos Integrados ({filteredPrograms.length})
             </h2>
 

@@ -178,7 +178,7 @@ export class CredentialService {
     const origem =
       typeof window !== 'undefined' && window.location
         ? window.location.origin
-        : 'https://academia-musical-digital.pages.dev';
+        : 'https://conservatorio-muscicapa.pages.dev';
     return `${origem}/credential/${codigo}`;
   }
 

@@ -46,7 +46,7 @@ export const HelpScreen: React.FC = () => {
         {/* FAQs */}
         <div className="space-y-3">
           <h2 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-            <HelpCircle className="w-5 h-5 text-red-800" />
+            <HelpCircle className="w-5 h-5 text-anil-800" />
             Perguntas Frequentes
           </h2>
 
@@ -63,7 +63,7 @@ export const HelpScreen: React.FC = () => {
         {/* Keyboard Shortcuts */}
         <Card variant="default" padding="lg" className="space-y-3">
           <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-            <Terminal className="w-4 h-4 text-red-800" />
+            <Terminal className="w-4 h-4 text-anil-800" />
             Atalhos Universais do Teclado
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-mono">

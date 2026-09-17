@@ -33,7 +33,7 @@ export const XPIndicator: React.FC<XPIndicatorProps> = ({
           className
         )}
       >
-        <Zap className="w-3.5 h-3.5 text-red-800 fill-red-800 shrink-0" />
+        <Zap className="w-3.5 h-3.5 text-anil-800 fill-anil-800 shrink-0" />
         <span className="font-mono">{totalXp.toLocaleString()} XP</span>
         <span className="text-[10px] text-stone-500 font-mono">Nv. {level}</span>
       </div>
@@ -50,7 +50,7 @@ export const XPIndicator: React.FC<XPIndicatorProps> = ({
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-red-50 border border-red-200 flex items-center justify-center text-red-800">
+          <div className="w-8 h-8 rounded-full bg-red-50 border border-red-200 flex items-center justify-center text-anil-800">
             <Trophy className="w-4 h-4" />
           </div>
           <div>
@@ -59,14 +59,14 @@ export const XPIndicator: React.FC<XPIndicatorProps> = ({
           </div>
         </div>
 
-        <span className="text-xs font-mono font-bold text-red-800">{percentage}%</span>
+        <span className="text-xs font-mono font-bold text-anil-800">{percentage}%</span>
       </div>
 
       <div className="w-full bg-stone-100 rounded-full h-2 overflow-hidden border border-stone-200">
         <div
           id={`${id}-progress-fill`}
           style={{ width: `${percentage}%` }}
-          className="h-full bg-red-800 transition-all duration-300 rounded-full"
+          className="h-full bg-anil-800 transition-all duration-300 rounded-full"
         />
       </div>
 

@@ -79,7 +79,7 @@ export const PortfolioScreen: React.FC = () => {
    */
   const handleExportDossier = async () => {
     const dossie = {
-      formato: 'academia-musical-digital/dossie-evidencias@1',
+      formato: 'conservatorio-muscicapa/dossie-evidencias@1',
       exportadoEm: new Date().toISOString(),
       titular: { userId: profile?.userId, nome: profile?.displayName },
       evidencias: evidences,
@@ -240,7 +240,7 @@ export const PortfolioScreen: React.FC = () => {
 
               <div className="flex flex-col justify-between gap-3 border-t border-stone-50 pt-2 font-mono text-xs text-stone-500 sm:flex-row sm:items-center">
                 <div className="flex items-center gap-2 truncate">
-                  <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-red-800" />
+                  <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-anil-800" />
                   <span className="truncate">
                     SHA-256: <code>{item.sha256Hash}</code>
                   </span>
@@ -254,7 +254,7 @@ export const PortfolioScreen: React.FC = () => {
                       href={item.artifactUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 font-sans text-[11px] text-red-800 hover:underline"
+                      className="inline-flex items-center gap-1 font-sans text-[11px] text-anil-800 hover:underline"
                     >
                       <span>Acessar</span>
                       <ExternalLink className="h-3 w-3" />

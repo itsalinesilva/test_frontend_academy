@@ -138,7 +138,7 @@ export const MicroSkillScreen: React.FC = () => {
             <span className="text-[10px] uppercase font-mono text-stone-500 block mb-1">
               Métrica Alvo de Desempenho
             </span>
-            <p className="text-xs text-red-800 font-mono font-bold leading-relaxed flex items-center gap-1.5">
+            <p className="text-xs text-anil-800 font-mono font-bold leading-relaxed flex items-center gap-1.5">
               <Target className="w-4 h-4 text-red-700" />
               {microSkill.targetMetric}
             </p>
@@ -164,7 +164,7 @@ export const MicroSkillScreen: React.FC = () => {
       {/* Target Drills */}
       <section className="space-y-4">
         <h2 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-red-800" />
+          <Sparkles className="w-5 h-5 text-anil-800" />
           <span>Exercícios Recomendados para esta Microcompetência</span>
         </h2>
 
@@ -174,7 +174,7 @@ export const MicroSkillScreen: React.FC = () => {
               key={ex.id}
               variant="default"
               padding="md"
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-red-800 transition-all"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-anil-800 transition-all"
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2">

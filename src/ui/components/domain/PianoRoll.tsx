@@ -105,7 +105,7 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
                 height: '18px',
               }}
               title={`Nota: ${getPitchLabel(note.pitch)} | Velocidade: ${note.velocity}`}
-              className="absolute bg-red-700 hover:bg-red-600 border border-red-500 rounded-xs shadow-xs cursor-pointer z-10 flex items-center px-1 text-[9px] text-white font-bold truncate"
+              className="absolute bg-anil-700 hover:bg-red-600 border border-red-500 rounded-xs shadow-xs cursor-pointer z-10 flex items-center px-1 text-[9px] text-white font-bold truncate"
             >
               {getPitchLabel(note.pitch)}
             </div>

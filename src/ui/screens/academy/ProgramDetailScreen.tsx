@@ -124,7 +124,7 @@ export const ProgramDetailScreen: React.FC = () => {
           {/* Sequential Paths */}
           <div className="space-y-4">
             <h2 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-              <Layers className="w-5 h-5 text-red-800" />
+              <Layers className="w-5 h-5 text-anil-800" />
               Trilhas Curriculares do Programa
             </h2>
 
@@ -204,7 +204,7 @@ export const ProgramDetailScreen: React.FC = () => {
           {/* Competencies */}
           <Card variant="default" padding="md" className="space-y-3">
             <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-              <Award className="w-4 h-4 text-red-800" />
+              <Award className="w-4 h-4 text-anil-800" />
               Competências Certificadas
             </h3>
             <ul className="space-y-2 text-xs text-stone-700">
@@ -220,7 +220,7 @@ export const ProgramDetailScreen: React.FC = () => {
           {/* Certificate Info */}
           <Card variant="muted" padding="md" className="space-y-3 border-stone-200">
             <div className="flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-red-800" />
+              <GraduationCap className="w-5 h-5 text-anil-800" />
               <h3 className="font-serif font-bold text-sm text-stone-900">
                 Certificação Acadêmica
               </h3>

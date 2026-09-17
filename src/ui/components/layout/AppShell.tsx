@@ -144,7 +144,7 @@ export const AppShell: React.FC<AppShellProps> = ({
           <div className="w-4/5 max-w-xs bg-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-left duration-200">
             <div className="p-4 border-b border-stone-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded bg-red-800 text-white flex items-center justify-center font-serif text-xs font-bold">
+                <span className="w-6 h-6 rounded bg-anil-800 text-white flex items-center justify-center font-serif text-xs font-bold">
                   A
                 </span>
                 <span className="font-serif font-bold text-sm text-stone-900">
@@ -204,11 +204,11 @@ export const AppShell: React.FC<AppShellProps> = ({
                   className={clsx(
                     'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer text-left mt-2',
                     currentPath.startsWith('/rooms')
-                      ? 'bg-red-900 text-white font-bold'
+                      ? 'bg-anil-900 text-white font-bold'
                       : 'text-red-900 bg-red-50 hover:bg-red-100'
                   )}
                 >
-                  <BookOpen className="w-4 h-4 text-red-800" />
+                  <BookOpen className="w-4 h-4 text-anil-800" />
                   <span>Room (Salas do Professor)</span>
                 </button>
               )}
@@ -220,11 +220,11 @@ export const AppShell: React.FC<AppShellProps> = ({
                   className={clsx(
                     'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer text-left',
                     currentPath.startsWith('/admin')
-                      ? 'bg-red-800 text-white font-bold'
-                      : 'text-red-800 bg-red-50/70 hover:bg-red-100'
+                      ? 'bg-anil-800 text-white font-bold'
+                      : 'text-anil-800 bg-red-50/70 hover:bg-red-100'
                   )}
                 >
-                  <Shield className="w-4 h-4 text-red-800" />
+                  <Shield className="w-4 h-4 text-anil-800" />
                   <span>Admin (Governança Soberana)</span>
                 </button>
               )}
@@ -269,7 +269,7 @@ export const AppShell: React.FC<AppShellProps> = ({
       >
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div id="footer-provenance-statement" className="text-center sm:text-left">
-            <p className="font-semibold text-stone-300 font-serif">Academia Musical Digital</p>
+            <p className="font-semibold text-stone-300 font-serif">Conservatório Muscicapa</p>
             <p className="text-stone-500 mt-0.5 max-w-xl">
               Plataforma Soberana de Educação e Criação Musical • Circulação contínua entre Teoria, Prática, Notação Urtext, DAW e Governança Acadêmica.
             </p>
@@ -306,10 +306,10 @@ export const AppShell: React.FC<AppShellProps> = ({
               aria-label={item.label}
               className={clsx(
                 'flex flex-col items-center justify-center min-h-[44px] min-w-[50px] py-1 px-1.5 rounded transition-colors text-[10px] font-semibold cursor-pointer',
-                isActive ? 'text-red-800 font-bold' : 'text-stone-600 hover:text-stone-900'
+                isActive ? 'text-anil-800 font-bold' : 'text-stone-600 hover:text-stone-900'
               )}
             >
-              <IconComp className={clsx('w-4 h-4 mb-0.5', isActive ? 'text-red-800' : 'text-stone-500')} />
+              <IconComp className={clsx('w-4 h-4 mb-0.5', isActive ? 'text-anil-800' : 'text-stone-500')} />
               <span className="truncate max-w-[56px]">{item.label}</span>
             </button>
           );

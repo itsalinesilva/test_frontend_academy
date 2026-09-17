@@ -10,6 +10,7 @@ import {
   CANVAS,
 } from '../src/domain/credential-design';
 import { TEMPLATES_PADRAO } from '../src/data/seed-credential-templates';
+import { RESSALVA_CURSO_LIVRE } from '../src/domain/credential-design';
 
 function servico() {
   return new CredentialService(new PersistentCredentialRepository(new MemoryStorageAdapter()));
@@ -131,7 +132,7 @@ describe('Código de verificação', () => {
     // 0/O, 1/I/L, 5/S, 2/Z, 8/B são o motivo de metade dos códigos digitados
     // errado. Nenhum deles aparece.
     const amostra = Array.from({ length: 200 }, () => gerarCodigoVerificacao()).join('');
-    const corpo = amostra.replace(/AMD|-/g, '');
+    const corpo = amostra.replace(/CMU|-/g, '');
     for (const proibido of ['0', 'O', '1', 'I', 'L', '5', 'S', '2', 'Z', '8', 'B']) {
       expect(corpo, `caractere ambíguo "${proibido}"`).not.toContain(proibido);
     }
@@ -172,7 +173,7 @@ describe('Emissão e verificação', () => {
   });
 
   it('código inexistente devolve NAO_ENCONTRADA, e não um erro', async () => {
-    expect((await svc.verificar('AMD-XXXX-XXXX')).situacao).toBe('NAO_ENCONTRADA');
+    expect((await svc.verificar('CMU-XXXX-XXXX')).situacao).toBe('NAO_ENCONTRADA');
   });
 
   it('detecta adulteração do conteúdo registrado', async () => {
@@ -311,5 +312,43 @@ describe('Ciclo de vida das matrizes', () => {
     const tipos = (await svc.listarTemplates()).map((t) => t.tipo);
     expect(tipos.indexOf('CERTIFICADO')).toBeLessThan(tipos.indexOf('CREDENCIAL'));
     expect(tipos.indexOf('CREDENCIAL')).toBeLessThan(tipos.indexOf('BADGE'));
+  });
+});
+
+describe('Ressalva de curso livre', () => {
+  it('diz o que o documento é, sem eufemismo', () => {
+    // Quem recebe o certificado pode apresentá-lo a um empregador ou a uma
+    // secretaria. Essas pessoas precisam saber o que estão lendo sem ter de
+    // perguntar — e um certificado que se deixa confundir com diploma
+    // reconhecido prejudica primeiro quem o recebeu.
+    expect(RESSALVA_CURSO_LIVRE).toContain('Curso livre');
+    expect(RESSALVA_CURSO_LIVRE).toContain('MEC');
+    expect(RESSALVA_CURSO_LIVRE).toContain('Conservatório Muscicapa');
+  });
+
+  it('nenhuma matriz de fábrica a declara como elemento editável', () => {
+    // Ela é desenhada pelo componente, fora do template. Se estivesse no
+    // template, bastaria apagar o elemento — ou criar uma matriz nova — para
+    // o certificado sair sem a ressalva.
+    for (const t of TEMPLATES_PADRAO) {
+      const textos = t.elementos
+        .filter((e) => e.kind === 'TEXTO_FIXO')
+        .map((e) => (e.kind === 'TEXTO_FIXO' ? e.texto : ''));
+      expect(textos).not.toContain(RESSALVA_CURSO_LIVRE);
+    }
+  });
+
+  it('as matrizes deixam o rodapé livre para ela', () => {
+    for (const t of TEMPLATES_PADRAO) {
+      if (t.tipo === 'BADGE') continue;
+      const canvas = CANVAS[t.tipo];
+      for (const el of t.elementos) {
+        if (el.kind === 'MOLDURA' || el.kind === 'QRCODE') continue;
+        expect(
+          el.caixa.y + el.caixa.altura,
+          `${t.nome}/${el.id} invade a faixa da ressalva`
+        ).toBeLessThanOrEqual(canvas.altura - 22);
+      }
+    }
   });
 });

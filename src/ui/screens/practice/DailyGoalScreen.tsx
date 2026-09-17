@@ -122,7 +122,7 @@ export const DailyGoalScreen: React.FC = () => {
             </div>
             <div className="w-full bg-stone-100 h-2.5 rounded-full overflow-hidden">
               <div
-                className="bg-red-800 h-full rounded-full transition-all"
+                className="bg-anil-800 h-full rounded-full transition-all"
                 style={{ width: `${minutesPct}%` }}
               />
             </div>
@@ -183,7 +183,7 @@ export const DailyGoalScreen: React.FC = () => {
                 padding="md"
                 className={`cursor-pointer transition-all flex flex-col justify-between space-y-3 ${
                   isSelected
-                    ? 'border-2 border-red-800 bg-red-50/20 shadow-xs'
+                    ? 'border-2 border-anil-800 bg-red-50/20 shadow-xs'
                     : 'hover:border-stone-400 bg-white'
                 }`}
                 onClick={() => handleSelectTier(tier)}
@@ -196,7 +196,7 @@ export const DailyGoalScreen: React.FC = () => {
                     <p className="text-xs text-stone-500 mt-0.5">{tier.desc}</p>
                   </div>
                   {isSelected && (
-                    <CheckCircle2 className="w-5 h-5 text-red-800 shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-anil-800 shrink-0" />
                   )}
                 </div>
 
@@ -217,7 +217,7 @@ export const DailyGoalScreen: React.FC = () => {
           variant="primary"
           size="lg"
           onClick={() => router.navigate('/practice')}
-          className="flex items-center gap-2 bg-red-800 hover:bg-red-700 text-white"
+          className="flex items-center gap-2 bg-anil-800 hover:bg-anil-700 text-white"
         >
           <Sparkles className="w-4 h-4" />
           <span>Continuar Treinamento do Dia</span>

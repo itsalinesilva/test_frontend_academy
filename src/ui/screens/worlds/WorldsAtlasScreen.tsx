@@ -72,7 +72,7 @@ export const WorldsAtlasScreen: React.FC = () => {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-red-800" />
+              <Calendar className="w-4 h-4 text-anil-800" />
               Eras Cronológicas & Estilos
             </h2>
             <span className="text-xs text-stone-500 font-mono">5 Eras Catalogadas</span>
@@ -88,7 +88,7 @@ export const WorldsAtlasScreen: React.FC = () => {
                 interactive
                 onClick={() => setSelectedEra(era.id)}
                 className={`cursor-pointer transition-all ${
-                  selectedEra === era.id ? 'ring-1 ring-red-800 border-red-800 bg-white' : ''
+                  selectedEra === era.id ? 'ring-1 ring-anil-800 border-anil-800 bg-white' : ''
                 }`}
               >
                 <div className="space-y-1">
@@ -111,7 +111,7 @@ export const WorldsAtlasScreen: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-              <Music className="w-4 h-4 text-red-800" />
+              <Music className="w-4 h-4 text-anil-800" />
               Obras de Referência com Análise & Áudio
             </h2>
             <span className="text-xs text-stone-500 font-mono">Partituras + Proveniência</span>

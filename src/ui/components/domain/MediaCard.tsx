@@ -63,7 +63,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({
           aria-label={isPlaying ? 'Pausar reprodução' : 'Reproduzir áudio acadêmico'}
           className={clsx(
             'relative z-10 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-150 shadow-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-white',
-            isPlaying ? 'bg-red-800 text-white' : 'bg-white/90 text-stone-900 group-hover:bg-white group-hover:scale-105'
+            isPlaying ? 'bg-anil-800 text-white' : 'bg-white/90 text-stone-900 group-hover:bg-white group-hover:scale-105'
           )}
         >
           {isPlaying ? (
@@ -88,7 +88,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({
               {mediaType}
             </Badge>
             {isPlaying && (
-              <span className="text-[10px] font-mono text-red-800 font-semibold flex items-center gap-1">
+              <span className="text-[10px] font-mono text-anil-800 font-semibold flex items-center gap-1">
                 <Volume2 className="w-3 h-3 animate-pulse" /> REPRODUZINDO
               </span>
             )}

@@ -161,7 +161,7 @@ export const AcademyHomeScreen: React.FC = () => {
           {/* Cruzamento Curso → Prática (regra constitucional 1) */}
           <Card variant="accent" padding="md" className="space-y-2">
             <div className="flex items-center gap-1.5">
-              <Target className="h-3.5 w-3.5 text-red-800" aria-hidden="true" />
+              <Target className="h-3.5 w-3.5 text-anil-800" aria-hidden="true" />
               <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-600">
                 Prática vinculada
               </p>
@@ -193,14 +193,14 @@ export const AcademyHomeScreen: React.FC = () => {
       <PageLayout.Main>
       <div className="space-y-8">
         {/* Bridge Academy → Practice */}
-        <div className="p-4 sm:p-5 bg-gradient-to-r from-red-950 via-stone-900 to-red-950 text-white rounded-xl border border-red-900/60 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="p-4 sm:p-5 bg-gradient-to-r from-anil-950 via-stone-900 to-anil-950 text-white rounded-xl border border-anil-900/60 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-red-800/80 text-white flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-anil-800/80 text-white flex items-center justify-center shrink-0">
               <Target className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-red-900/80 text-red-200 border border-red-700/50">
+                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-anil-900/80 text-red-200 border border-red-700/50">
                   Loop de Treinamento Musical
                 </span>
                 <span className="text-xs text-amber-400 font-mono flex items-center gap-1">
@@ -229,7 +229,7 @@ export const AcademyHomeScreen: React.FC = () => {
               variant="primary"
               size="sm"
               onClick={() => navigate('/practice')}
-              className="bg-red-800 hover:bg-red-700 text-white text-xs flex items-center gap-1"
+              className="bg-anil-800 hover:bg-anil-700 text-white text-xs flex items-center gap-1"
             >
               <span>Abrir Practice</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -294,13 +294,13 @@ export const AcademyHomeScreen: React.FC = () => {
           <div id="continue-learning-section" className="space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-                <Play className="w-4 h-4 text-red-800" />
+                <Play className="w-4 h-4 text-anil-800" />
                 Continuar de Onde Parou
               </h2>
               <button
                 type="button"
                 onClick={() => navigate('/academy/my-learning')}
-                className="text-xs text-red-800 hover:text-red-950 font-medium flex items-center gap-1"
+                className="text-xs text-anil-800 hover:text-anil-950 font-medium flex items-center gap-1"
               >
                 Ver Todas as Matrículas ({userEnrollments.length})
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -388,7 +388,7 @@ export const AcademyHomeScreen: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="font-serif font-bold text-xl text-stone-900 flex items-center gap-2">
-                  <Layers className="w-5 h-5 text-red-800" />
+                  <Layers className="w-5 h-5 text-anil-800" />
                   Cátedras & Áreas de Conhecimento
                 </h2>
                 <p className="text-xs sm:text-sm text-stone-600">
@@ -415,7 +415,7 @@ export const AcademyHomeScreen: React.FC = () => {
                   </div>
 
                   <div>
-                    <h3 className="font-serif font-bold text-base text-stone-950 hover:text-red-800 transition-colors">
+                    <h3 className="font-serif font-bold text-base text-stone-950 hover:text-anil-800 transition-colors">
                       {cat.name}
                     </h3>
                     <p className="text-xs text-stone-600 line-clamp-2 mt-1 leading-relaxed">
@@ -427,7 +427,7 @@ export const AcademyHomeScreen: React.FC = () => {
                     <span className="text-[11px] font-mono text-stone-500">
                       {cat.skills.length} Competências
                     </span>
-                    <span className="text-xs text-red-800 font-semibold flex items-center gap-0.5">
+                    <span className="text-xs text-anil-800 font-semibold flex items-center gap-0.5">
                       Explorar <ArrowRight className="w-3 h-3" />
                     </span>
                   </div>
@@ -491,7 +491,7 @@ export const AcademyHomeScreen: React.FC = () => {
 
                   <div className="p-3 bg-stone-50 border border-stone-200 rounded-lg space-y-2">
                     <span className="text-xs font-semibold uppercase font-mono text-stone-700 tracking-wider flex items-center gap-1.5">
-                      <Award className="w-3.5 h-3.5 text-red-800" />
+                      <Award className="w-3.5 h-3.5 text-anil-800" />
                       Competências Centrais:
                     </span>
                     <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs text-stone-700">
@@ -603,7 +603,7 @@ export const AcademyHomeScreen: React.FC = () => {
             <button
               type="button"
               onClick={() => navigate('/academy/catalog')}
-              className="text-xs sm:text-sm font-semibold text-red-800 hover:text-red-950 flex items-center gap-1"
+              className="text-xs sm:text-sm font-semibold text-anil-800 hover:text-anil-950 flex items-center gap-1"
             >
               Ver Todas ({courses.length})
               <ArrowRight className="w-4 h-4" />

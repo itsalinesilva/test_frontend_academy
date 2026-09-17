@@ -52,7 +52,7 @@ export const Input: React.FC<InputProps> = ({
         ? 'border-rose-400 focus:ring-rose-500 focus:border-rose-500 bg-rose-50/20'
         : successText
         ? 'border-emerald-400 focus:ring-emerald-500 focus:border-emerald-500'
-        : 'border-stone-300 hover:border-stone-400 focus:ring-red-800 focus:border-red-800',
+        : 'border-stone-300 hover:border-stone-400 focus:ring-anil-800 focus:border-anil-800',
       disabled && 'bg-stone-100 text-stone-400 cursor-not-allowed border-stone-200 hover:border-stone-200',
       className
     )

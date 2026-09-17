@@ -54,7 +54,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
               strokeDasharray={201}
               strokeDashoffset={201 - (progressPercentage / 100) * 201}
               strokeLinecap="round"
-              className="stroke-red-800 fill-none transition-all duration-300"
+              className="stroke-anil-800 fill-none transition-all duration-300"
             />
           </svg>
         )}
@@ -66,12 +66,12 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
           onClick={!isLocked ? onClick : undefined}
           aria-label={`${title}, Nível ${level} de ${maxLevel}${isLocked ? ', Bloqueado' : ''}`}
           className={clsx(
-            'w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-150 focus:outline-none focus:ring-2 focus:ring-red-800',
+            'w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-150 focus:outline-none focus:ring-2 focus:ring-anil-800',
             !isLocked && 'cursor-pointer active:scale-95 shadow-md',
             isLocked && 'bg-stone-200 text-stone-400 cursor-not-allowed border-2 border-stone-300',
-            !isLocked && !isMastered && 'bg-red-800 text-white hover:bg-red-900 border-2 border-red-950',
+            !isLocked && !isMastered && 'bg-anil-800 text-white hover:bg-anil-900 border-2 border-anil-950',
             isMastered && 'bg-amber-500 text-stone-950 hover:bg-amber-600 border-2 border-amber-700',
-            isActive && 'ring-4 ring-red-800/30 ring-offset-2 animate-pulse',
+            isActive && 'ring-4 ring-anil-800/30 ring-offset-2 animate-pulse',
             !isLocked && 'absolute top-2 left-2'
           )}
         >

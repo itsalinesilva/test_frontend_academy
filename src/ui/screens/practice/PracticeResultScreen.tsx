@@ -69,7 +69,7 @@ export const PracticeResultScreen: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-red-950 text-red-300 border border-red-800">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-anil-950 text-red-300 border border-anil-800">
                 Sessão Concluída
               </span>
               <Badge variant="neutral">{result.modality}</Badge>
@@ -163,7 +163,7 @@ export const PracticeResultScreen: React.FC = () => {
       {/* 10 Measurements Grid */}
       <section className="space-y-4">
         <h2 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-red-800" />
+          <Activity className="w-5 h-5 text-anil-800" />
           <span>Medições Acústicas & Telemetria</span>
         </h2>
 
@@ -225,7 +225,7 @@ export const PracticeResultScreen: React.FC = () => {
           </div>
 
           <div className="p-3 bg-red-50 rounded-xl border border-red-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-red-800 block font-bold">Score</span>
+            <span className="text-[10px] uppercase font-mono text-anil-800 block font-bold">Score</span>
             <span className="font-mono text-lg font-bold text-red-900">{measurement.score}</span>
             <span className="text-[10px] font-mono text-red-700 block">/1000</span>
           </div>
@@ -255,7 +255,7 @@ export const PracticeResultScreen: React.FC = () => {
           <ul className="space-y-2">
             {result.recommendations.map((rec, idx) => (
               <li key={idx} className="flex items-start gap-2 text-xs text-stone-600">
-                <TrendingUp className="w-4 h-4 text-red-800 shrink-0 mt-0.5" />
+                <TrendingUp className="w-4 h-4 text-anil-800 shrink-0 mt-0.5" />
                 <span className="leading-relaxed">{rec}</span>
               </li>
             ))}
@@ -288,7 +288,7 @@ export const PracticeResultScreen: React.FC = () => {
             variant="primary"
             size="md"
             onClick={() => router.navigate('/practice')}
-            className="flex items-center gap-2 bg-red-800 hover:bg-red-700 text-white"
+            className="flex items-center gap-2 bg-anil-800 hover:bg-anil-700 text-white"
           >
             <RotateCcw className="w-4 h-4" />
             <span>Iniciar Próximo Ciclo</span>

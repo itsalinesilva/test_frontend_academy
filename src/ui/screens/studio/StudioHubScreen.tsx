@@ -72,7 +72,7 @@ export const StudioHubScreen: React.FC = () => {
             onClick={() => navigate('/studio/project/arranjo-satb-coral')}
           >
             <div className="p-2.5 bg-stone-100 rounded-md text-stone-900">
-              <Sliders className="w-5 h-5 text-red-800" />
+              <Sliders className="w-5 h-5 text-anil-800" />
             </div>
             <div>
               <p className="text-sm font-bold text-stone-900">DAW & Multitrack</p>
@@ -88,7 +88,7 @@ export const StudioHubScreen: React.FC = () => {
             onClick={() => navigate('/studio/score')}
           >
             <div className="p-2.5 bg-stone-100 rounded-md text-stone-900">
-              <FileMusic className="w-5 h-5 text-red-800" />
+              <FileMusic className="w-5 h-5 text-anil-800" />
             </div>
             <div>
               <p className="text-sm font-bold text-stone-900">Editor de Partituras</p>
@@ -104,7 +104,7 @@ export const StudioHubScreen: React.FC = () => {
             onClick={() => navigate('/studio/voice-ear')}
           >
             <div className="p-2.5 bg-stone-100 rounded-md text-stone-900">
-              <Mic className="w-5 h-5 text-red-800" />
+              <Mic className="w-5 h-5 text-anil-800" />
             </div>
             <div>
               <p className="text-sm font-bold text-stone-900">Voz, Afinador & Ouvido</p>

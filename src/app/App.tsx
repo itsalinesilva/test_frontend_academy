@@ -47,7 +47,7 @@ const DevRoleSwitcher: React.FC<{
           id="dev-role-selector"
           value={currentRole}
           onChange={(e) => void onSwitchRole(e.target.value as UserRole)}
-          className="rounded border border-stone-700 bg-stone-800 px-2.5 py-1.5 text-xs text-stone-100 focus:outline-none focus:ring-1 focus:ring-red-600"
+          className="rounded border border-stone-700 bg-stone-800 px-2.5 py-1.5 text-xs text-stone-100 focus:outline-none focus:ring-1 focus:ring-anil-500"
         >
           {assignedRoles.map((role) => (
             <option key={role} value={role}>

@@ -78,12 +78,12 @@ export const CommunityFeedScreen: React.FC = () => {
               placeholder="Título da discussão ou dúvida teórica..."
               value={newPostTitle}
               onChange={(e) => setNewPostTitle(e.target.value)}
-              className="w-full text-sm p-2.5 rounded border border-stone-300 focus:outline-none focus:ring-1 focus:ring-red-800 bg-white"
+              className="w-full text-sm p-2.5 rounded border border-stone-300 focus:outline-none focus:ring-1 focus:ring-anil-800 bg-white"
             />
             <textarea
               placeholder="Descreva o contexto, compassos da partitura ou fundamentos da sua questão..."
               rows={3}
-              className="w-full text-sm p-2.5 rounded border border-stone-300 focus:outline-none focus:ring-1 focus:ring-red-800 bg-white"
+              className="w-full text-sm p-2.5 rounded border border-stone-300 focus:outline-none focus:ring-1 focus:ring-anil-800 bg-white"
             />
             <div className="flex justify-end gap-2">
               <Button variant="ghost" size="sm" onClick={() => setIsCreatingPost(false)}>
@@ -177,7 +177,7 @@ export const CommunityFeedScreen: React.FC = () => {
                   </span>
                 </div>
 
-                <span className="text-red-800 font-medium inline-flex items-center gap-1 hover:underline">
+                <span className="text-anil-800 font-medium inline-flex items-center gap-1 hover:underline">
                   Ver Discussão <ArrowRight className="w-3 h-3" />
                 </span>
               </div>

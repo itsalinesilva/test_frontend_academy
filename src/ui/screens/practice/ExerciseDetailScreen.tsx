@@ -128,7 +128,7 @@ export const ExerciseDetailScreen: React.FC = () => {
 
           <div className="text-right">
             <span className="text-xs font-mono text-stone-400 block">Recompensa</span>
-            <span className="text-lg font-bold font-mono text-red-800">
+            <span className="text-lg font-bold font-mono text-anil-800">
               +{exercise.xpAwarded} XP
             </span>
           </div>
@@ -193,7 +193,7 @@ export const ExerciseDetailScreen: React.FC = () => {
             variant="primary"
             size="lg"
             onClick={handleStartSession}
-            className="flex items-center gap-2 bg-red-800 hover:bg-red-700 text-white"
+            className="flex items-center gap-2 bg-anil-800 hover:bg-anil-700 text-white"
           >
             <Play className="w-4 h-4 fill-white" />
             <span>Iniciar Prática</span>

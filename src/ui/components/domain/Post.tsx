@@ -69,7 +69,7 @@ export const Post: React.FC<PostProps> = ({
         <div className="flex items-center gap-1.5">
           {isPinned && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-stone-100 text-stone-700 text-[11px] font-semibold">
-              <Pin className="w-3 h-3 text-red-800" />
+              <Pin className="w-3 h-3 text-anil-800" />
               Fixado
             </span>
           )}
@@ -92,7 +92,7 @@ export const Post: React.FC<PostProps> = ({
       {/* Attachment */}
       {attachmentName && (
         <div className="flex items-center gap-2 p-2.5 bg-stone-50 border border-stone-200 rounded text-xs font-medium text-stone-800">
-          <Paperclip className="w-4 h-4 text-red-800 shrink-0" />
+          <Paperclip className="w-4 h-4 text-anil-800 shrink-0" />
           <span className="truncate">{attachmentName}</span>
         </div>
       )}
@@ -114,7 +114,7 @@ export const Post: React.FC<PostProps> = ({
             className={clsx(
               'flex items-center gap-1.5 py-1 px-2 rounded font-medium cursor-pointer transition-colors',
               isUpvoted
-                ? 'bg-red-50 text-red-800 border border-red-200'
+                ? 'bg-red-50 text-anil-800 border border-red-200'
                 : 'hover:bg-stone-100 text-stone-600'
             )}
           >

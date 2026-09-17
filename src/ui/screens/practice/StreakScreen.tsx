@@ -112,7 +112,7 @@ export const StreakScreen: React.FC = () => {
       {/* Calendar Consistency History */}
       <section className="space-y-4">
         <h2 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-red-800" />
+          <Calendar className="w-5 h-5 text-anil-800" />
           <span>Histórico dos Últimos Dias Praticados</span>
         </h2>
 
@@ -127,8 +127,8 @@ export const StreakScreen: React.FC = () => {
               <span className="text-[11px] font-mono text-stone-500 block">
                 {entry.date}
               </span>
-              <div className="w-8 h-8 rounded-full bg-red-100 text-red-800 mx-auto flex items-center justify-center font-bold text-xs">
-                <Flame className="w-4 h-4 fill-red-800" />
+              <div className="w-8 h-8 rounded-full bg-red-100 text-anil-800 mx-auto flex items-center justify-center font-bold text-xs">
+                <Flame className="w-4 h-4 fill-anil-800" />
               </div>
               <span className="text-xs font-bold text-stone-800 block">
                 {entry.completedMinutes} min

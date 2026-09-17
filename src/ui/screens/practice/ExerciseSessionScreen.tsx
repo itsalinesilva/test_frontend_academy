@@ -430,7 +430,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                 key={b}
                 className={`w-2 h-2 rounded-full transition-all ${
                   metronomeActive && currentBeat === b
-                    ? b === 1 ? 'bg-red-800 scale-125' : 'bg-stone-800 scale-110'
+                    ? b === 1 ? 'bg-anil-800 scale-125' : 'bg-stone-800 scale-110'
                     : 'bg-stone-300'
                 }`}
               />
@@ -441,7 +441,7 @@ export const ExerciseSessionScreen: React.FC = () => {
             id="btn-toggle-metronome"
             onClick={toggleMetronome}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-mono font-bold ${
-              metronomeActive ? 'bg-red-800 text-white' : 'bg-white text-stone-700 hover:bg-stone-200'
+              metronomeActive ? 'bg-anil-800 text-white' : 'bg-white text-stone-700 hover:bg-stone-200'
             }`}
           >
             {metronomeActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
@@ -454,7 +454,7 @@ export const ExerciseSessionScreen: React.FC = () => {
             max="200"
             value={bpm}
             onChange={(e) => setBpm(Number(e.target.value))}
-            className="w-20 accent-red-800 cursor-pointer"
+            className="w-20 accent-anil-800 cursor-pointer"
           />
 
           <Button
@@ -462,7 +462,7 @@ export const ExerciseSessionScreen: React.FC = () => {
             variant="primary"
             size="sm"
             onClick={handleFinishSession}
-            className="text-xs ml-1 bg-red-800 hover:bg-red-700 text-white"
+            className="text-xs ml-1 bg-anil-800 hover:bg-anil-700 text-white"
           >
             Concluir Sessão
           </Button>
@@ -525,7 +525,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               }}
               className="p-2 bg-white rounded-lg border border-stone-200 hover:bg-stone-100 text-stone-700 flex items-center gap-1.5 text-xs font-mono"
             >
-              <Volume2 className="w-4 h-4 text-red-800" />
+              <Volume2 className="w-4 h-4 text-anil-800" />
               <span>Ouvir Alvo</span>
             </button>
           </div>
@@ -580,7 +580,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                     key={key.note}
                     onClick={() => handleKeyPress(key.note, key.freq)}
                     className={`w-7 h-24 -mx-3.5 z-10 rounded-b transition-transform active:translate-y-1 shadow-md flex flex-col items-center justify-end pb-1 text-[9px] font-mono font-bold ${
-                      isPlayed ? 'bg-red-800 text-white' : 'bg-stone-900 text-stone-400 hover:bg-stone-800'
+                      isPlayed ? 'bg-anil-800 text-white' : 'bg-stone-900 text-stone-400 hover:bg-stone-800'
                     }`}
                   >
                     <span>{key.note}</span>
@@ -613,7 +613,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(playedNotes.join(' '))}
               disabled={playedNotes.length === 0}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Avaliar Execução no Teclado
             </Button>
@@ -689,7 +689,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(virtualNotes.join(' '))}
               disabled={virtualNotes.length === 0}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Avaliar Instrumento Virtual
             </Button>
@@ -774,7 +774,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(detectedVoicePitch)}
               disabled={!micActive}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Avaliar Afinação Vocal
             </Button>
@@ -823,7 +823,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt('TAP_SEQUENCE_80BPM')}
               disabled={timingOffsets.length === 0}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Medir Precisão Rítmica
             </Button>
@@ -853,7 +853,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               <div className="absolute left-4 top-1 text-2xl font-serif text-stone-800 select-none">
                 𝄞
               </div>
-              <div className="absolute left-28 top-5 w-4 h-3 bg-red-900 rounded-full shadow-xs flex items-center justify-center text-[8px] text-white font-mono font-bold">
+              <div className="absolute left-28 top-5 w-4 h-3 bg-anil-900 rounded-full shadow-xs flex items-center justify-center text-[8px] text-white font-mono font-bold">
                 •
               </div>
             </div>
@@ -884,7 +884,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(readingAnswers.join(' '))}
               disabled={readingAnswers.length === 0}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Validar Leitura Urtext
             </Button>
@@ -946,7 +946,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(selectedInterval)}
               disabled={!selectedInterval}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Submeter Percepção Auditiva
             </Button>
@@ -1008,7 +1008,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(selectedTheoryAnswer)}
               disabled={!selectedTheoryAnswer}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Verificar Resolução Teórica
             </Button>
@@ -1066,7 +1066,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(earSequence.join(' '))}
               disabled={earSequence.length === 0}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Validar Ditado Melódico
             </Button>
@@ -1088,7 +1088,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               onClick={handlePlayRepertoirePhrase}
               className="px-3 py-1.5 bg-stone-100 border border-stone-300 rounded-lg text-xs font-mono font-bold hover:bg-stone-200 flex items-center gap-1.5 text-stone-800"
             >
-              <Volume2 className="w-3.5 h-3.5 text-red-800" />
+              <Volume2 className="w-3.5 h-3.5 text-anil-800" />
               <span>Ouvir Frase Modelo</span>
             </button>
           </div>
@@ -1136,7 +1136,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(repertoirePlayed.join(' '))}
               disabled={repertoirePlayed.length === 0}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Avaliar Frase de Repertório
             </Button>
@@ -1193,7 +1193,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                     setFingerStep(f.finger);
                   }}
                   className={`p-3 bg-white hover:bg-red-50 border rounded-lg text-center active:scale-95 transition-transform ${
-                    fingerStep === f.finger ? 'border-red-800 ring-2 ring-red-200' : 'border-stone-200'
+                    fingerStep === f.finger ? 'border-anil-800 ring-2 ring-red-200' : 'border-stone-200'
                   }`}
                 >
                   <span className="text-[10px] font-mono text-stone-400 block">Dedo {f.finger}</span>
@@ -1213,7 +1213,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(techniquePlayedNotes.join(' '))}
               disabled={techniquePlayedNotes.length === 0}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Medir Articulação & Isocronia
             </Button>

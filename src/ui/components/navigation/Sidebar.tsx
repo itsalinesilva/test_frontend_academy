@@ -83,7 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       >
         {!isCollapsed && (
           <div className="flex items-center gap-2 overflow-hidden">
-            <span className="w-6 h-6 rounded bg-red-800 text-white flex items-center justify-center font-serif text-sm font-bold shrink-0">
+            <span className="w-6 h-6 rounded bg-anil-800 text-white flex items-center justify-center font-serif text-sm font-bold shrink-0">
               A
             </span>
             <span className="text-xs font-semibold tracking-wider text-stone-900 uppercase truncate">
@@ -98,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             type="button"
             onClick={onToggleCollapse}
             aria-label={isCollapsed ? 'Expandir barra lateral' : 'Recolher barra lateral'}
-            className="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded focus:outline-none focus:ring-2 focus:ring-red-800 cursor-pointer"
+            className="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded focus:outline-none focus:ring-2 focus:ring-anil-800 cursor-pointer"
           >
             {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
@@ -118,21 +118,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
               aria-current={isActive ? 'page' : undefined}
               title={isCollapsed ? item.label : undefined}
               className={clsx(
-                'w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800',
+                'w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800',
                 isActive
                   ? 'bg-red-50 text-red-900 font-semibold border border-red-200/60'
                   : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100 border border-transparent',
                 isCollapsed && 'justify-center px-2'
               )}
             >
-              <span className={clsx('shrink-0', isActive ? 'text-red-800' : 'text-stone-500')}>
+              <span className={clsx('shrink-0', isActive ? 'text-anil-800' : 'text-stone-500')}>
                 {item.icon}
               </span>
 
               {!isCollapsed && <span className="truncate text-left flex-1">{item.label}</span>}
 
               {!isCollapsed && item.badgeCount !== undefined && item.badgeCount > 0 && (
-                <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-red-800 text-white">
+                <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-anil-800 text-white">
                   {item.badgeCount}
                 </span>
               )}

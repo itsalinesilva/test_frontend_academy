@@ -53,7 +53,7 @@ export const AdminContentScreen: React.FC = () => {
           <Card key={c.id} variant="default" padding="lg" className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileCheck className="w-4 h-4 text-red-800" />
+                <FileCheck className="w-4 h-4 text-anil-800" />
                 <h3 className="font-serif font-bold text-base text-stone-900">{c.title}</h3>
               </div>
               <Badge variant={c.status === 'Homologado' ? 'brand' : 'neutral'}>

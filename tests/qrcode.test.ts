@@ -214,14 +214,14 @@ describe('QR Code — informação de formato', () => {
 
 describe('QR Code — ida e volta', () => {
   it('recupera o conteúdo de um bloco único (versão 1)', () => {
-    const texto = 'AMD-2026-XYZ';
+    const texto = 'CMU-2026-XYZ';
     const m = gerarQrCode(texto);
     expect(m.versao).toBe(1);
     expect(decodificar(m, 1, [16])).toBe(texto);
   });
 
   it('recupera uma URL de verificação completa', () => {
-    const texto = 'https://academia-musical.exemplo.org/c/AMD-2026-TEO-4817';
+    const texto = 'https://academia-musical.exemplo.org/c/CMU-2026-TEO-4817';
     const m = gerarQrCode(texto);
     expect(m.versao).toBe(4);
     expect(decodificar(m, 2, [32, 32])).toBe(texto);

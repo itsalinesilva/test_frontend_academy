@@ -91,7 +91,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
         />
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-2xl mx-auto shadow-sm">
           <div className="flex items-start gap-4">
-            <div className="p-2 bg-red-100 rounded-md text-red-800">
+            <div className="p-2 bg-red-100 rounded-md text-anil-800">
               <ShieldAlert className="w-6 h-6" />
             </div>
             <div className="flex-1">
@@ -183,7 +183,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
                 className={clsx(
                   'px-2.5 py-1 rounded text-xs font-mono transition-colors',
                   currentState === st
-                    ? 'bg-red-800 text-white font-medium'
+                    ? 'bg-anil-800 text-white font-medium'
                     : 'bg-white border border-stone-300 text-stone-700 hover:bg-stone-50'
                 )}
               >

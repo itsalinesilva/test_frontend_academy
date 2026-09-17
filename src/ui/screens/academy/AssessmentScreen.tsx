@@ -118,7 +118,7 @@ export const AssessmentScreen: React.FC = () => {
         {/* Exam Protocol Banner */}
         <div className="p-4 bg-white border border-stone-200 rounded-xl flex items-center justify-between text-xs font-mono text-stone-600">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-red-800" />
+            <ShieldCheck className="w-4 h-4 text-anil-800" />
             <span>Exame Somativo Auditado</span>
           </div>
           <div className="flex items-center gap-3">
@@ -167,7 +167,7 @@ export const AssessmentScreen: React.FC = () => {
                     onClick={() => handleSelectOption(currentQuestion.id, opt.id)}
                     className={`p-4 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                       isSelected
-                        ? 'border-red-800 bg-red-50/30 text-red-950 font-medium'
+                        ? 'border-anil-800 bg-red-50/30 text-anil-950 font-medium'
                         : 'border-stone-200 hover:border-stone-400 bg-white'
                     }`}
                   >
@@ -175,7 +175,7 @@ export const AssessmentScreen: React.FC = () => {
                       <span
                         className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-mono font-semibold shrink-0 ${
                           isSelected
-                            ? 'bg-red-800 text-white'
+                            ? 'bg-anil-800 text-white'
                             : 'bg-stone-100 text-stone-700'
                         }`}
                       >
@@ -187,7 +187,7 @@ export const AssessmentScreen: React.FC = () => {
                     </div>
 
                     {isSelected && (
-                      <CheckCircle2 className="w-5 h-5 text-red-800 shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-anil-800 shrink-0" />
                     )}
                   </div>
                 );

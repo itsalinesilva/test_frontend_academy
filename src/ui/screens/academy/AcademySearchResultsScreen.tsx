@@ -203,7 +203,7 @@ export const AcademySearchResultsScreen: React.FC = () => {
 
                     <h4
                       onClick={() => navigate(`/academy/course/${crs.id}`)}
-                      className="font-serif font-bold text-base text-stone-950 hover:text-red-800 cursor-pointer"
+                      className="font-serif font-bold text-base text-stone-950 hover:text-anil-800 cursor-pointer"
                     >
                       {crs.title}
                     </h4>

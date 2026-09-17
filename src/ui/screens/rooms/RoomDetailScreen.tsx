@@ -87,7 +87,7 @@ export const RoomDetailScreen: React.FC = () => {
             onClick={() => setActiveTab('tarefas')}
             className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'tarefas'
-                ? 'border-red-800 text-red-900 font-semibold'
+                ? 'border-anil-800 text-red-900 font-semibold'
                 : 'border-transparent text-stone-600 hover:text-stone-900'
             }`}
           >
@@ -98,7 +98,7 @@ export const RoomDetailScreen: React.FC = () => {
             onClick={() => setActiveTab('membros')}
             className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'membros'
-                ? 'border-red-800 text-red-900 font-semibold'
+                ? 'border-anil-800 text-red-900 font-semibold'
                 : 'border-transparent text-stone-600 hover:text-stone-900'
             }`}
           >
@@ -113,7 +113,7 @@ export const RoomDetailScreen: React.FC = () => {
               <Card key={asg.id} variant="default" padding="lg" className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-red-800" />
+                    <FileText className="w-4 h-4 text-anil-800" />
                     <h3 className="font-serif font-bold text-base text-stone-900">
                       {asg.title}
                     </h3>

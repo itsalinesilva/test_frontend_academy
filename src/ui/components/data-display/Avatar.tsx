@@ -52,7 +52,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   };
 
   const roleIndicatorColors: Record<UserRole, string> = {
-    [UserRole.ADMIN]: 'bg-red-800 text-white',
+    [UserRole.ADMIN]: 'bg-anil-800 text-white',
     [UserRole.PROFESSOR]: 'bg-stone-800 text-stone-100',
     [UserRole.MUSICO]: 'bg-stone-700 text-stone-100',
     [UserRole.ALUNO]: 'bg-stone-200 text-stone-800',

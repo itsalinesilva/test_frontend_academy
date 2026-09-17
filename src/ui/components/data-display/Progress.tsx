@@ -33,8 +33,8 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   };
 
   const fillColors = {
-    primary: 'bg-red-800',
-    accent: 'bg-red-700',
+    primary: 'bg-anil-800',
+    accent: 'bg-anil-700',
     success: 'bg-emerald-600',
     neutral: 'bg-stone-700',
   };
@@ -98,7 +98,7 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
   const strokeColors = {
-    primary: 'stroke-red-800',
+    primary: 'stroke-anil-800',
     success: 'stroke-emerald-600',
     warning: 'stroke-amber-600',
     danger: 'stroke-rose-600',

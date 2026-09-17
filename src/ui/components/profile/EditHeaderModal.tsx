@@ -257,7 +257,7 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
           <div className="space-y-2 pt-2 border-t border-stone-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800">
-                <Link2 className="w-4 h-4 text-red-800" />
+                <Link2 className="w-4 h-4 text-anil-800" />
                 <span>Links Oficiais (Lattes, YouTube, site pessoal)</span>
               </div>
               <Button variant="outline" size="sm" type="button" onClick={addLink}>

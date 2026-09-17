@@ -88,7 +88,7 @@ export const TopicDetailScreen: React.FC = () => {
           </div>
 
           <div className="pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
-            <button type="button" className="inline-flex items-center gap-1 text-stone-600 hover:text-red-800">
+            <button type="button" className="inline-flex items-center gap-1 text-stone-600 hover:text-anil-800">
               <ThumbsUp className="w-3.5 h-3.5" /> Apoiar reflexão (14)
             </button>
             <span>2 respostas registradas</span>
@@ -98,7 +98,7 @@ export const TopicDetailScreen: React.FC = () => {
         {/* Replies List */}
         <div className="space-y-4">
           <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-red-800" />
+            <MessageSquare className="w-4 h-4 text-anil-800" />
             Contribuições da Comunidade
           </h3>
 
@@ -129,7 +129,7 @@ export const TopicDetailScreen: React.FC = () => {
             rows={3}
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
-            className="w-full text-xs sm:text-sm p-3 rounded border border-stone-300 focus:outline-none focus:ring-1 focus:ring-red-800 bg-white"
+            className="w-full text-xs sm:text-sm p-3 rounded border border-stone-300 focus:outline-none focus:ring-1 focus:ring-anil-800 bg-white"
           />
           <div className="flex justify-end">
             <Button

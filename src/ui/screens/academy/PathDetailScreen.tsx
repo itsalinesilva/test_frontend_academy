@@ -121,7 +121,7 @@ export const PathDetailScreen: React.FC = () => {
           {/* Courses List */}
           <div className="space-y-4">
             <h2 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-red-800" />
+              <GraduationCap className="w-5 h-5 text-anil-800" />
               Disciplinas da Trilha
             </h2>
 
@@ -200,7 +200,7 @@ export const PathDetailScreen: React.FC = () => {
         <div className="space-y-6">
           <Card variant="default" padding="md" className="space-y-3">
             <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-              <Award className="w-4 h-4 text-red-800" />
+              <Award className="w-4 h-4 text-anil-800" />
               Competências Desenvolvidas
             </h3>
             <div className="space-y-2">

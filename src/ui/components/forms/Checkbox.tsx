@@ -71,11 +71,11 @@ export const Checkbox: React.FC<CheckboxProps> = ({
             'flex items-center justify-center border transition-all duration-150 cursor-pointer',
             boxSizeClasses[sizeVariant],
             isCheckedOrIndeterminate
-              ? 'bg-red-800 border-red-800 text-white'
+              ? 'bg-anil-800 border-anil-800 text-white'
               : 'bg-white border-stone-300 hover:border-stone-400',
             error && !isCheckedOrIndeterminate && 'border-rose-500 bg-rose-50/30',
             disabled && 'bg-stone-100 border-stone-200 text-stone-300 cursor-not-allowed',
-            'peer-focus-visible:ring-2 peer-focus-visible:ring-red-800 peer-focus-visible:ring-offset-2'
+            'peer-focus-visible:ring-2 peer-focus-visible:ring-anil-800 peer-focus-visible:ring-offset-2'
           )}
         >
           {indeterminate ? (

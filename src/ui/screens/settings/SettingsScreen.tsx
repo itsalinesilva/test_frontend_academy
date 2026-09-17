@@ -182,7 +182,7 @@ export const SettingsScreen: React.FC = () => {
               {/* Account Linking Section */}
               <Card variant="default" padding="lg" className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <Link className="w-5 h-5 text-red-800" />
+                  <Link className="w-5 h-5 text-anil-800" />
                   <h3 className="font-serif font-bold text-base text-stone-900">
                     Vinculação de Contas (Account Linking)
                   </h3>
@@ -260,13 +260,13 @@ export const SettingsScreen: React.FC = () => {
               {/* Teacher Capability & Academic Standing */}
               <Card variant="default" padding="lg" className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-red-800" />
+                  <GraduationCap className="w-5 h-5 text-anil-800" />
                   <h3 className="font-serif font-bold text-base text-stone-900">
                     Cátedra Docente (Teacher Capability)
                   </h3>
                 </div>
                 <p className="text-xs text-stone-600 leading-relaxed">
-                  Na Academia Musical Digital, <strong>Professor não é um mundo separado</strong>.
+                  Na Conservatório Muscicapa, <strong>Professor não é um mundo separado</strong>.
                   Professor é uma <strong>capability adquirida</strong> que concede ferramentas para abrir novas salas de aula virtuais (Rooms) e orientar discípulos.
                 </p>
 
@@ -327,7 +327,7 @@ export const SettingsScreen: React.FC = () => {
           {activeTab === 'privacidade' && (
             <Card variant="default" padding="lg" className="space-y-4">
               <div className="flex items-center gap-2">
-                <Eye className="w-5 h-5 text-red-800" />
+                <Eye className="w-5 h-5 text-anil-800" />
                 <h3 className="font-serif font-bold text-base text-stone-900">
                   Privacidade, Modos & Proteção Parental
                 </h3>
@@ -361,11 +361,11 @@ export const SettingsScreen: React.FC = () => {
                 </div>
 
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="accent-red-800" />
+                  <input type="checkbox" defaultChecked className="accent-anil-800" />
                   <span>Exibir histórico de estudos para colegas de turma</span>
                 </label>
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="accent-red-800" />
+                  <input type="checkbox" defaultChecked className="accent-anil-800" />
                   <span>Notificar por e-mail sobre correções e avaliações de professores</span>
                 </label>
               </div>
@@ -388,7 +388,7 @@ export const SettingsScreen: React.FC = () => {
                     type="checkbox"
                     checked={highContrast}
                     onChange={(e) => setHighContrast(e.target.checked)}
-                    className="accent-red-800"
+                    className="accent-anil-800"
                   />
                 </label>
 
@@ -401,7 +401,7 @@ export const SettingsScreen: React.FC = () => {
                     type="checkbox"
                     checked={reduceMotion}
                     onChange={(e) => setReduceMotion(e.target.checked)}
-                    className="accent-red-800"
+                    className="accent-anil-800"
                   />
                 </label>
 
@@ -414,7 +414,7 @@ export const SettingsScreen: React.FC = () => {
                     type="checkbox"
                     checked={dyslexicFont}
                     onChange={(e) => setDyslexicFont(e.target.checked)}
-                    className="accent-red-800"
+                    className="accent-anil-800"
                   />
                 </label>
               </div>

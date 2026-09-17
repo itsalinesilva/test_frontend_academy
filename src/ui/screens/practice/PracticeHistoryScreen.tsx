@@ -95,7 +95,7 @@ export const PracticeHistoryScreen: React.FC = () => {
               key={item.id}
               variant="default"
               padding="md"
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-red-800 transition-all cursor-pointer"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-anil-800 transition-all cursor-pointer"
               onClick={() => router.navigate(`/practice/result/${item.id}`)}
             >
               <div className="space-y-1.5 flex-1 min-w-0">

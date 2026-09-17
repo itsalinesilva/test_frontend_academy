@@ -71,7 +71,7 @@ export const PracticeProfileScreen: React.FC = () => {
           variant="primary"
           size="sm"
           onClick={() => router.navigate('/practice')}
-          className="bg-red-800 hover:bg-red-700 text-white"
+          className="bg-anil-800 hover:bg-anil-700 text-white"
         >
           Praticar Agora
         </Button>
@@ -121,14 +121,14 @@ export const PracticeProfileScreen: React.FC = () => {
         {/* Mastery Distribution */}
         <Card variant="default" padding="md" className="space-y-4 bg-white border border-stone-200">
           <h2 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-            <Award className="w-4 h-4 text-red-800" />
+            <Award className="w-4 h-4 text-anil-800" />
             <span>Distribuição de Níveis de Maestria</span>
           </h2>
 
           <div className="space-y-3">
             {[
               { label: 'Nível 5: Virtuoso', count: profile.masteryCount.virtuoso, color: 'bg-purple-600' },
-              { label: 'Nível 4: Mestre', count: profile.masteryCount.mestre, color: 'bg-red-800' },
+              { label: 'Nível 4: Mestre', count: profile.masteryCount.mestre, color: 'bg-anil-800' },
               { label: 'Nível 3: Competente', count: profile.masteryCount.competente, color: 'bg-amber-600' },
               { label: 'Nível 2: Aprendiz', count: profile.masteryCount.aprendiz, color: 'bg-blue-600' },
               { label: 'Nível 1: Novato', count: profile.masteryCount.novato, color: 'bg-stone-500' },
@@ -170,7 +170,7 @@ export const PracticeProfileScreen: React.FC = () => {
                 </div>
                 <div className="w-full bg-stone-100 h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-red-800 h-full rounded-full transition-all"
+                    className="bg-anil-800 h-full rounded-full transition-all"
                     style={{ width: `${item.percentage}%` }}
                   />
                 </div>
@@ -194,7 +194,7 @@ export const PracticeProfileScreen: React.FC = () => {
       {/* Recent Practice Results */}
       <section className="space-y-4">
         <h2 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-red-800" />
+          <TrendingUp className="w-5 h-5 text-anil-800" />
           <span>Sessões Recentes & Evidências Geradas</span>
         </h2>
 
@@ -204,7 +204,7 @@ export const PracticeProfileScreen: React.FC = () => {
               key={result.id}
               variant="default"
               padding="md"
-              className="flex items-center justify-between gap-4 hover:border-red-800 transition-all cursor-pointer"
+              className="flex items-center justify-between gap-4 hover:border-anil-800 transition-all cursor-pointer"
               onClick={() => router.navigate(`/practice/result/${result.id}`)}
             >
               <div className="space-y-1">

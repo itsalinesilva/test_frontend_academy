@@ -137,7 +137,7 @@ export function DataGrid<T extends { id: string }>({
                     checked={isAllSelected}
                     onChange={(e) => handleSelectAll(e.target.checked)}
                     aria-label="Selecionar todas as linhas"
-                    className="rounded border-stone-300 text-red-800 focus:ring-red-800"
+                    className="rounded border-stone-300 text-anil-800 focus:ring-anil-800"
                   />
                 </th>
               )}
@@ -154,9 +154,9 @@ export function DataGrid<T extends { id: string }>({
                       <span className="text-stone-400">
                         {sortKey === col.key ? (
                           sortDirection === 'asc' ? (
-                            <ChevronUp className="w-3.5 h-3.5 text-red-800" />
+                            <ChevronUp className="w-3.5 h-3.5 text-anil-800" />
                           ) : (
-                            <ChevronDown className="w-3.5 h-3.5 text-red-800" />
+                            <ChevronDown className="w-3.5 h-3.5 text-anil-800" />
                           )
                         ) : (
                           <ArrowUpDown className="w-3.5 h-3.5" />
@@ -202,7 +202,7 @@ export function DataGrid<T extends { id: string }>({
                           checked={isSelected}
                           onChange={(e) => handleSelectRow(row.id, e.target.checked)}
                           aria-label={`Selecionar linha ${row.id}`}
-                          className="rounded border-stone-300 text-red-800 focus:ring-red-800"
+                          className="rounded border-stone-300 text-anil-800 focus:ring-anil-800"
                         />
                       </td>
                     )}

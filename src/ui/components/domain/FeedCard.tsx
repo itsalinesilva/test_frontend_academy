@@ -133,8 +133,8 @@ export const FeedCard: React.FC<FeedCardProps> = ({
             type="button"
             onClick={onLike}
             className={clsx(
-              'inline-flex items-center gap-1.5 hover:text-stone-900 transition-colors focus:outline-none focus:ring-1 focus:ring-red-800 rounded px-1.5 py-1',
-              isLiked && 'text-red-800 font-semibold'
+              'inline-flex items-center gap-1.5 hover:text-stone-900 transition-colors focus:outline-none focus:ring-1 focus:ring-anil-800 rounded px-1.5 py-1',
+              isLiked && 'text-anil-800 font-semibold'
             )}
           >
             <ThumbsUp className="w-3.5 h-3.5" aria-hidden="true" />
@@ -146,7 +146,7 @@ export const FeedCard: React.FC<FeedCardProps> = ({
             id={`${id}-reply-btn`}
             type="button"
             onClick={onReply}
-            className="inline-flex items-center gap-1.5 hover:text-stone-900 transition-colors focus:outline-none focus:ring-1 focus:ring-red-800 rounded px-1.5 py-1"
+            className="inline-flex items-center gap-1.5 hover:text-stone-900 transition-colors focus:outline-none focus:ring-1 focus:ring-anil-800 rounded px-1.5 py-1"
           >
             <MessageSquare className="w-3.5 h-3.5" aria-hidden="true" />
             <span>{repliesCount}</span>

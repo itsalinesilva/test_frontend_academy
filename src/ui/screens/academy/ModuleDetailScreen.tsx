@@ -99,7 +99,7 @@ export const ModuleDetailScreen: React.FC = () => {
         {/* Lessons List */}
         <div className="space-y-4">
           <h2 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-red-800" />
+            <BookOpen className="w-5 h-5 text-anil-800" />
             Lições Deste Módulo ({lessons.length})
           </h2>
 

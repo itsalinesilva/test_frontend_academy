@@ -163,9 +163,9 @@ export const Navigation: React.FC<NavigationProps> = ({
           id="nav-brand-button"
           type="button"
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-left focus:outline-none focus:ring-1 focus:ring-red-800 rounded px-1 group shrink-0"
+          className="flex items-center gap-2 text-left focus:outline-none focus:ring-1 focus:ring-anil-800 rounded px-1 group shrink-0"
         >
-          <div className="w-7 h-7 rounded-lg bg-red-800 text-white flex items-center justify-center font-serif font-bold text-sm shadow-xs group-hover:bg-red-700 transition-colors">
+          <div className="w-7 h-7 rounded-lg bg-anil-800 text-white flex items-center justify-center font-serif font-bold text-sm shadow-xs group-hover:bg-anil-700 transition-colors">
             A
           </div>
           <div className="hidden sm:block">
@@ -194,13 +194,13 @@ export const Navigation: React.FC<NavigationProps> = ({
                 onClick={() => navigate(item.path)}
                 aria-current={active ? 'page' : undefined}
                 className={clsx(
-                  'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800',
+                  'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800',
                   active
                     ? 'bg-stone-900 text-white shadow-xs'
                     : isSpecialAdmin
                     ? 'text-red-900 bg-red-50 hover:bg-red-100 border border-red-200'
                     : isSpecialRoom
-                    ? 'text-red-950 bg-stone-100 hover:bg-stone-200 font-medium'
+                    ? 'text-anil-950 bg-stone-100 hover:bg-stone-200 font-medium'
                     : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
                 )}
               >
@@ -218,7 +218,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             onClick={() => navigate('/community/events')}
             className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-md transition-colors"
           >
-            <Calendar className="w-3.5 h-3.5 text-red-800" />
+            <Calendar className="w-3.5 h-3.5 text-anil-800" />
             <span className="hidden md:inline">Eventos & Recitais</span>
           </button>
         </div>

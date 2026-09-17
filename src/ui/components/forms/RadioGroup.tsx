@@ -99,16 +99,16 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
                     'rounded-full border flex items-center justify-center transition-all duration-150',
                     outerSizeClasses[sizeVariant],
                     isSelected
-                      ? 'border-red-800 bg-white ring-1 ring-red-800'
+                      ? 'border-anil-800 bg-white ring-1 ring-anil-800'
                       : 'border-stone-300 bg-white hover:border-stone-400',
                     isOptionDisabled && 'bg-stone-100 border-stone-200',
-                    'peer-focus-visible:ring-2 peer-focus-visible:ring-red-800 peer-focus-visible:ring-offset-2'
+                    'peer-focus-visible:ring-2 peer-focus-visible:ring-anil-800 peer-focus-visible:ring-offset-2'
                   )}
                 >
                   {isSelected && (
                     <span
                       id={`${optionId}-dot`}
-                      className={clsx('rounded-full bg-red-800', innerDotClasses[sizeVariant])}
+                      className={clsx('rounded-full bg-anil-800', innerDotClasses[sizeVariant])}
                     />
                   )}
                 </div>

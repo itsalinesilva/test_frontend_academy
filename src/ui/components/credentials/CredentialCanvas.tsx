@@ -6,6 +6,7 @@ import {
   valorDoCampo,
   CANVAS,
   TokensVisuais,
+  RESSALVA_CURSO_LIVRE,
 } from '../../../domain/credential-design';
 import { gerarQrCode, qrParaSvgPath } from '../../../domain/qrcode';
 
@@ -291,6 +292,26 @@ export const CredentialCanvas: React.FC<CredentialCanvasProps> = ({
       )}
 
       {template.elementos.map(renderizarElemento)}
+
+      {/*
+        Ressalva de curso livre. Desenhada aqui, no componente, e nao como um
+        elemento do template — assim ela nao pode ser removida editando a
+        matriz nem esquecida ao criar uma nova. Um certificado que se deixa
+        confundir com diploma reconhecido prejudica primeiro quem o recebeu.
+      */}
+      {template.tipo !== 'BADGE' && (
+        <text
+          x={canvas.largura / 2}
+          y={canvas.altura - 14}
+          textAnchor="middle"
+          fontFamily={fonteCorpo}
+          fontSize={canvas.largura > 1050 ? 10.5 : 9.5}
+          fill={t.corTextoSuave}
+          opacity={0.85}
+        >
+          {RESSALVA_CURSO_LIVRE}
+        </text>
+      )}
     </svg>
   );
 };

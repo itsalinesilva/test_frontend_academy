@@ -94,7 +94,7 @@ export const Modal: React.FC<ModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Fechar modal"
-            className="p-1.5 text-stone-400 hover:text-stone-700 rounded-md hover:bg-stone-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800"
+            className="p-1.5 text-stone-400 hover:text-stone-700 rounded-md hover:bg-stone-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800"
           >
             <X className="w-4 h-4" />
           </button>

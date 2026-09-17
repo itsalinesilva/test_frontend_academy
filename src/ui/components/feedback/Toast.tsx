@@ -26,14 +26,14 @@ export const Toast: React.FC<ToastProps> = ({
     info: <Info className="w-5 h-5 text-stone-700 shrink-0" />,
     success: <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0" />,
     warning: <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0" />,
-    error: <XCircle className="w-5 h-5 text-red-800 shrink-0" />,
+    error: <XCircle className="w-5 h-5 text-red-700 shrink-0" />,
   };
 
   const styleMap = {
     info: 'bg-white border-stone-200 text-stone-900',
     success: 'bg-emerald-50/90 border-emerald-300 text-emerald-950',
     warning: 'bg-amber-50/90 border-amber-300 text-amber-950',
-    error: 'bg-red-50/90 border-red-300 text-red-950',
+    error: 'bg-red-50/90 border-red-300 text-anil-950',
   };
 
   return (
@@ -61,7 +61,7 @@ export const Toast: React.FC<ToastProps> = ({
           type="button"
           onClick={onDismiss}
           aria-label="Fechar notificação"
-          className="p-1 -mr-1 -mt-1 text-stone-400 hover:text-stone-700 rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800"
+          className="p-1 -mr-1 -mt-1 text-stone-400 hover:text-stone-700 rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800"
         >
           <X className="w-3.5 h-3.5" />
         </button>

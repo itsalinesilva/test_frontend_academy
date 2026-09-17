@@ -135,7 +135,7 @@ export const AcademicProfileScreen: React.FC = () => {
                 <span className="text-[11px] font-mono text-stone-500 uppercase">Concluídos</span>
               </div>
               <div className="text-center">
-                <span className="font-serif font-bold text-2xl text-red-800 block">
+                <span className="font-serif font-bold text-2xl text-anil-800 block">
                   {certificates.length}
                 </span>
                 <span className="text-[11px] font-mono text-stone-500 uppercase">Diplomas</span>
@@ -154,7 +154,7 @@ export const AcademicProfileScreen: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-red-800" />
+              <GraduationCap className="w-5 h-5 text-anil-800" />
               Certificados e Títulos Digitais Concedidos ({certificates.length})
             </h3>
           </div>
@@ -197,7 +197,7 @@ export const AcademicProfileScreen: React.FC = () => {
                           Carga Horária: {cert.workloadHours} horas • Nível {crs?.level || 'Universitário'}
                         </span>
                       </div>
-                      <Award className="w-6 h-6 text-red-800 shrink-0" />
+                      <Award className="w-6 h-6 text-anil-800 shrink-0" />
                     </div>
 
                     <div className="p-2.5 bg-stone-50 rounded border border-stone-100 font-mono text-[10px] text-stone-600 break-all">
@@ -258,7 +258,7 @@ export const AcademicProfileScreen: React.FC = () => {
                       </div>
                       <h4
                         onClick={() => navigate(`/academy/course/${prog.courseId}`)}
-                        className="font-serif font-bold text-base text-stone-950 hover:text-red-800 cursor-pointer mt-1"
+                        className="font-serif font-bold text-base text-stone-950 hover:text-anil-800 cursor-pointer mt-1"
                       >
                         {crs?.title || prog.courseId}
                       </h4>
@@ -308,7 +308,7 @@ export const AcademicProfileScreen: React.FC = () => {
         {/* Competencies & Skills Portfolio */}
         <Card variant="default" padding="lg" className="space-y-4 border-stone-200">
           <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-red-800" />
+            <Sparkles className="w-5 h-5 text-anil-800" />
             Matriz de Competências & Habilidades Adquiridas
           </h3>
           <p className="text-xs text-stone-600">

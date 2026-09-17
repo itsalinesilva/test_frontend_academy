@@ -164,7 +164,7 @@ export const ActivityScreen: React.FC = () => {
               variant="outline"
               onClick={playPitchStimulus}
             >
-              <Volume2 className="w-3.5 h-3.5 mr-1 text-red-800" />
+              <Volume2 className="w-3.5 h-3.5 mr-1 text-anil-800" />
               Ouvir Tom de Referência (440Hz)
             </Button>
           </div>
@@ -186,12 +186,12 @@ export const ActivityScreen: React.FC = () => {
 
               let borderClass = 'border-stone-200 hover:border-stone-400 bg-white';
               if (isSelected && !isSubmitted) {
-                borderClass = 'border-red-800 bg-red-50/20 text-red-950 font-medium';
+                borderClass = 'border-anil-800 bg-red-50/20 text-anil-950 font-medium';
               } else if (isSubmitted) {
                 if (isCorrectOpt) {
                   borderClass = 'border-emerald-600 bg-emerald-50/40 text-emerald-950 font-medium';
                 } else if (isSelected && !isCorrectOpt) {
-                  borderClass = 'border-red-600 bg-red-50/40 text-red-950 font-medium';
+                  borderClass = 'border-red-600 bg-red-50/40 text-anil-950 font-medium';
                 } else {
                   borderClass = 'border-stone-200 opacity-60';
                 }
@@ -233,7 +233,7 @@ export const ActivityScreen: React.FC = () => {
               className={`p-5 rounded-xl border space-y-3 ${
                 attemptResult.passed
                   ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
-                  : 'bg-red-50 border-red-300 text-red-950'
+                  : 'bg-red-50 border-red-300 text-anil-950'
               }`}
             >
               <div className="flex items-center justify-between">

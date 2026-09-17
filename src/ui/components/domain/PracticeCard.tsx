@@ -32,7 +32,7 @@ export const PracticeCard: React.FC<PracticeCardProps> = ({
   const difficultyColors = {
     iniciante: 'bg-emerald-50 text-emerald-800 border-emerald-200',
     intermediario: 'bg-amber-50 text-amber-800 border-amber-200',
-    avancado: 'bg-red-50 text-red-800 border-red-200',
+    avancado: 'bg-red-50 text-anil-800 border-red-200',
     virtuoso: 'bg-purple-50 text-purple-800 border-purple-200',
   };
 
@@ -64,7 +64,7 @@ export const PracticeCard: React.FC<PracticeCardProps> = ({
         </h4>
 
         <div className="flex items-center gap-1.5 text-xs text-stone-600">
-          <Target className="w-3.5 h-3.5 text-red-800 shrink-0" />
+          <Target className="w-3.5 h-3.5 text-anil-800 shrink-0" />
           <span className="truncate">{skillName}</span>
         </div>
       </div>
@@ -72,7 +72,7 @@ export const PracticeCard: React.FC<PracticeCardProps> = ({
       <div className="pt-3 border-t border-stone-100 flex items-center justify-between text-xs">
         <div className="flex items-center gap-3 text-stone-500 font-mono">
           <span className="inline-flex items-center gap-1 font-semibold text-stone-800">
-            <Zap className="w-3.5 h-3.5 text-red-800 fill-red-800" />
+            <Zap className="w-3.5 h-3.5 text-anil-800 fill-anil-800" />
             +{xpReward} XP
           </span>
 

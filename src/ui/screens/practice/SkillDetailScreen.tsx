@@ -153,7 +153,7 @@ export const SkillDetailScreen: React.FC = () => {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
-            <Layers className="w-5 h-5 text-red-800" />
+            <Layers className="w-5 h-5 text-anil-800" />
             <span>Microcompetências Constitutivas</span>
           </h2>
           <span className="text-xs text-stone-500">
@@ -191,7 +191,7 @@ export const SkillDetailScreen: React.FC = () => {
                 <span className="text-stone-500 font-mono text-[11px]">
                   Alvo: {ms.targetMetric}
                 </span>
-                <span className="font-medium text-red-800 flex items-center gap-1">
+                <span className="font-medium text-anil-800 flex items-center gap-1">
                   Ver Rúbrica <ArrowRight className="w-3 h-3" />
                 </span>
               </div>
@@ -215,7 +215,7 @@ export const SkillDetailScreen: React.FC = () => {
               key={ex.id}
               variant="default"
               padding="md"
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-red-800 transition-all"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-anil-800 transition-all"
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2">

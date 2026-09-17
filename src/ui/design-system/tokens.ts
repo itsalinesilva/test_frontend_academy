@@ -1,5 +1,5 @@
 /**
- * Design System Tokens - Academia Musical Digital
+ * Design System Tokens - Conservatório Muscicapa
  * Compliant with:
  * - 00_MASTER_ONBOARDING.md
  * - 17_DESIGN_SYSTEM.md (Visual Contract)
@@ -70,7 +70,7 @@ export const TOKENS = {
 
     // Primary Action (Institutional Red Signal)
     primary: {
-      default: '#991b1b', // red-800
+      default: '#991b1b', // anil-800
       hover: '#7f1d1d',   // red-900
       active: '#581c1c',  // deep carmine
       fg: '#ffffff',
@@ -108,7 +108,7 @@ export const TOKENS = {
     danger: {
       default: '#b91c1c', // red-700
       bg: '#fef2f2',      // red-50
-      fg: '#991b1b',      // red-800
+      fg: '#991b1b',      // anil-800
       border: '#fecaca',  // red-200
     },
 

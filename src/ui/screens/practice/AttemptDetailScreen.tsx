@@ -127,7 +127,7 @@ export const AttemptDetailScreen: React.FC = () => {
       {/* 10 Measurements Grid */}
       <section className="space-y-4">
         <h2 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-red-800" />
+          <Activity className="w-5 h-5 text-anil-800" />
           <span>Telemetria Acústica & Medições Canônicas</span>
         </h2>
 
@@ -189,7 +189,7 @@ export const AttemptDetailScreen: React.FC = () => {
           </div>
 
           <div className="p-3 bg-red-50 rounded-xl border border-red-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-red-800 block font-bold">10. Score Final</span>
+            <span className="text-[10px] uppercase font-mono text-anil-800 block font-bold">10. Score Final</span>
             <span className="font-mono text-lg font-bold text-red-900">{measurement.score}</span>
             <span className="text-[10px] font-mono text-red-700 block">Escala 0..1000</span>
           </div>

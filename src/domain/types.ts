@@ -1,5 +1,5 @@
 /**
- * Domain Types - Academia Musical Digital
+ * Domain Types - Conservatório Muscicapa
  * Canonical Domain Model definitions based on docs 00, 04, 32, 63
  */
 

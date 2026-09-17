@@ -112,7 +112,7 @@ export const RankingScreen: React.FC = () => {
               <div
                 key={entry.id}
                 className={`p-4 flex items-center justify-between gap-4 transition-colors ${
-                  isCurrentUser ? 'bg-red-50/50 border-l-4 border-l-red-800' : 'hover:bg-stone-50/70'
+                  isCurrentUser ? 'bg-red-50/50 border-l-4 border-l-anil-800' : 'hover:bg-stone-50/70'
                 }`}
               >
                 <div className="flex items-center gap-3">

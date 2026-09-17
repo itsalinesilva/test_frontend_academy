@@ -228,7 +228,7 @@ export const OnboardingScreen: React.FC = () => {
         childControls,
         selectedRole: isKids ? UserRole.CRIANCA : UserRole.ALUNO,
         title: isKids ? 'Iniciação Musical Kids' : 'Estudante da Academia',
-        biography: `Perfil de ingresso no Modo ${mode === AppMode.KIDS ? 'Kids' : 'Tradicional'} da Academia Musical Digital.`,
+        biography: `Perfil de ingresso no Modo ${mode === AppMode.KIDS ? 'Kids' : 'Tradicional'} da Conservatório Muscicapa.`,
       });
 
       // Clear draft
@@ -267,7 +267,7 @@ export const OnboardingScreen: React.FC = () => {
         </div>
 
         {errorMsg && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-800 text-xs rounded-lg flex items-center gap-2">
+          <div className="p-3 bg-red-50 border border-red-200 text-anil-800 text-xs rounded-lg flex items-center gap-2">
             <span className="font-bold">Atenção:</span>
             <span>{errorMsg}</span>
           </div>
@@ -293,7 +293,7 @@ export const OnboardingScreen: React.FC = () => {
                 onClick={() => setMode(AppMode.TRADITIONAL)}
                 className={`p-5 rounded-xl border text-left transition-all relative flex flex-col justify-between ${
                   mode === AppMode.TRADITIONAL
-                    ? 'border-red-800 bg-red-50/40 ring-2 ring-red-800/20 shadow-md'
+                    ? 'border-anil-800 bg-red-50/40 ring-2 ring-anil-800/20 shadow-md'
                     : 'border-stone-200 bg-white hover:border-stone-400'
                 }`}
               >
@@ -329,7 +329,7 @@ export const OnboardingScreen: React.FC = () => {
                 onClick={() => setMode(AppMode.KIDS)}
                 className={`p-5 rounded-xl border text-left transition-all relative flex flex-col justify-between ${
                   mode === AppMode.KIDS
-                    ? 'border-red-800 bg-red-50/40 ring-2 ring-red-800/20 shadow-md'
+                    ? 'border-anil-800 bg-red-50/40 ring-2 ring-anil-800/20 shadow-md'
                     : 'border-stone-200 bg-white hover:border-stone-400'
                 }`}
               >
@@ -360,11 +360,11 @@ export const OnboardingScreen: React.FC = () => {
             {/* Architectural Clarification Callout */}
             <Card variant="muted" padding="md" className="border-stone-300 space-y-2">
               <div className="flex items-center gap-2 text-stone-800 font-semibold text-xs">
-                <Info className="w-4 h-4 text-red-800 shrink-0" />
+                <Info className="w-4 h-4 text-anil-800 shrink-0" />
                 <span>Sobre a Cátedra Docente (Professor):</span>
               </div>
               <p className="text-xs text-stone-600 leading-relaxed">
-                Na Academia Musical Digital, <strong>Professor não é escolhido como um mundo separado</strong>.
+                Na Conservatório Muscicapa, <strong>Professor não é escolhido como um mundo separado</strong>.
                 Professor é uma <strong>capability adquirida</strong> que pode ser ativada mediante habilitação acadêmica ou outorga institucional, permitindo criar salas de aula e orientar alunos sem isolar sua circulação.
               </p>
             </Card>
@@ -399,7 +399,7 @@ export const OnboardingScreen: React.FC = () => {
                   placeholder="Ex: Frédéric Chopin ou Clara Schumann"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-red-800"
+                  className="w-full text-xs p-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-anil-800"
                 />
               </div>
 
@@ -498,7 +498,7 @@ export const OnboardingScreen: React.FC = () => {
                         onClick={() => toggleItem(instruments, setInstruments, inst)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors flex items-center gap-1.5 ${
                           isSelected
-                            ? 'bg-red-800 text-white border-red-800 shadow-xs'
+                            ? 'bg-anil-800 text-white border-anil-800 shadow-xs'
                             : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200'
                         }`}
                       >
@@ -543,7 +543,7 @@ export const OnboardingScreen: React.FC = () => {
                       onClick={() => setExperienceLevel(lvl.id as any)}
                       className={`p-3 rounded-lg border text-left transition-colors ${
                         experienceLevel === lvl.id
-                          ? 'border-red-800 bg-red-50 text-red-950 font-medium'
+                          ? 'border-anil-800 bg-red-50 text-anil-950 font-medium'
                           : 'border-stone-200 bg-white hover:bg-stone-50 text-stone-800'
                       }`}
                     >
@@ -596,7 +596,7 @@ export const OnboardingScreen: React.FC = () => {
                         }`}
                       >
                         <span>{g}</span>
-                        {active && <Check className="w-3.5 h-3.5 text-red-800 shrink-0 ml-1" />}
+                        {active && <Check className="w-3.5 h-3.5 text-anil-800 shrink-0 ml-1" />}
                       </button>
                     );
                   })}
@@ -662,7 +662,7 @@ export const OnboardingScreen: React.FC = () => {
                     onClick={() => setTuningStandard('440hz')}
                     className={`p-3 rounded-lg border text-left transition-colors ${
                       tuningStandard === '440hz'
-                        ? 'border-red-800 bg-red-50 text-red-950 font-semibold'
+                        ? 'border-anil-800 bg-red-50 text-anil-950 font-semibold'
                         : 'border-stone-200 bg-white hover:bg-stone-50 text-stone-700'
                     }`}
                   >
@@ -675,7 +675,7 @@ export const OnboardingScreen: React.FC = () => {
                     onClick={() => setTuningStandard('432hz')}
                     className={`p-3 rounded-lg border text-left transition-colors ${
                       tuningStandard === '432hz'
-                        ? 'border-red-800 bg-red-50 text-red-950 font-semibold'
+                        ? 'border-anil-800 bg-red-50 text-anil-950 font-semibold'
                         : 'border-stone-200 bg-white hover:bg-stone-50 text-stone-700'
                     }`}
                   >
@@ -696,7 +696,7 @@ export const OnboardingScreen: React.FC = () => {
                     onClick={() => setNotationSystem('syllabic')}
                     className={`p-3 rounded-lg border text-left transition-colors ${
                       notationSystem === 'syllabic'
-                        ? 'border-red-800 bg-red-50 text-red-950 font-semibold'
+                        ? 'border-anil-800 bg-red-50 text-anil-950 font-semibold'
                         : 'border-stone-200 bg-white hover:bg-stone-50 text-stone-700'
                     }`}
                   >
@@ -709,7 +709,7 @@ export const OnboardingScreen: React.FC = () => {
                     onClick={() => setNotationSystem('alphabetical')}
                     className={`p-3 rounded-lg border text-left transition-colors ${
                       notationSystem === 'alphabetical'
-                        ? 'border-red-800 bg-red-50 text-red-950 font-semibold'
+                        ? 'border-anil-800 bg-red-50 text-anil-950 font-semibold'
                         : 'border-stone-200 bg-white hover:bg-stone-50 text-stone-700'
                     }`}
                   >
@@ -736,7 +736,7 @@ export const OnboardingScreen: React.FC = () => {
                       onClick={() => setPreferredClef(clef.id as any)}
                       className={`p-2.5 rounded-lg border text-left transition-colors ${
                         preferredClef === clef.id
-                          ? 'border-red-800 bg-red-50 text-red-950 font-semibold'
+                          ? 'border-anil-800 bg-red-50 text-anil-950 font-semibold'
                           : 'border-stone-200 bg-white hover:bg-stone-50 text-stone-700'
                       }`}
                     >
@@ -764,7 +764,7 @@ export const OnboardingScreen: React.FC = () => {
                       onClick={() => setPrivacyVisibility(vis.id as any)}
                       className={`p-2.5 rounded-lg border text-left transition-colors ${
                         privacyVisibility === vis.id
-                          ? 'border-red-800 bg-red-50 text-red-950 font-semibold'
+                          ? 'border-anil-800 bg-red-50 text-anil-950 font-semibold'
                           : 'border-stone-200 bg-white hover:bg-stone-50 text-stone-700'
                       }`}
                     >
@@ -789,7 +789,7 @@ export const OnboardingScreen: React.FC = () => {
                   type="checkbox"
                   checked={notificationsEnabled}
                   onChange={(e) => setNotificationsEnabled(e.target.checked)}
-                  className="w-4 h-4 text-red-800 rounded border-stone-300"
+                  className="w-4 h-4 text-anil-800 rounded border-stone-300"
                 />
               </div>
             </Card>
@@ -887,7 +887,7 @@ export const OnboardingScreen: React.FC = () => {
                       type="checkbox"
                       checked={parentConsent}
                       onChange={(e) => setParentConsent(e.target.checked)}
-                      className="w-4 h-4 text-red-800 rounded border-stone-300 mt-0.5"
+                      className="w-4 h-4 text-anil-800 rounded border-stone-300 mt-0.5"
                     />
                     <span className="text-xs text-stone-700">
                       Confirmo que sou o responsável legal e autorizo a criação da conta no Modo Kids sob tutela parental.
@@ -902,7 +902,7 @@ export const OnboardingScreen: React.FC = () => {
                     6. Confirmação do Passaporte Acadêmico
                   </h3>
                   <p className="text-xs text-stone-600 leading-relaxed">
-                    Revise seus dados de matrícula antes de ingressar no ecossistema da Academia Musical Digital.
+                    Revise seus dados de matrícula antes de ingressar no ecossistema da Conservatório Muscicapa.
                   </p>
                 </div>
 
@@ -991,7 +991,7 @@ export const OnboardingScreen: React.FC = () => {
               size="md"
               onClick={handleFinishOnboarding}
               disabled={isSubmitting}
-              className="bg-red-800 hover:bg-red-700 text-white font-semibold"
+              className="bg-anil-800 hover:bg-anil-700 text-white font-semibold"
             >
               {isSubmitting ? (
                 <span>Emitindo Passaporte...</span>

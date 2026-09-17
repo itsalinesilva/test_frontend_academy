@@ -75,7 +75,7 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
       <Card variant="default" padding="lg" className="max-w-2xl w-full space-y-4 shadow-xl border-stone-300">
         <div className="flex items-center justify-between border-b border-stone-200 pb-3">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-red-100 text-red-800 rounded-md">
+            <div className="p-2 bg-red-100 text-anil-800 rounded-md">
               <Upload className="w-5 h-5" />
             </div>
             <div>
@@ -104,7 +104,7 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
                 placeholder="Ex: J.S. Bach - Prelúdio e Fuga em Dó Menor BWV 847"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full text-sm p-2 rounded border border-stone-300 focus:ring-1 focus:ring-red-800"
+                className="w-full text-sm p-2 rounded border border-stone-300 focus:ring-1 focus:ring-anil-800"
               />
             </div>
 
@@ -268,7 +268,7 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
                       type="checkbox"
                       checked={selectedEvidenceIds.includes(evi.id)}
                       onChange={() => toggleEvidence(evi.id)}
-                      className="rounded border-stone-300 text-red-800"
+                      className="rounded border-stone-300 text-anil-800"
                     />
                     <span className="truncate">{evi.title}</span>
                     <span className="text-[10px] text-stone-500 font-mono shrink-0">
@@ -301,7 +301,7 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
                 id="featured-check"
                 checked={isFeatured}
                 onChange={(e) => setIsFeatured(e.target.checked)}
-                className="rounded border-stone-300 text-red-800"
+                className="rounded border-stone-300 text-anil-800"
               />
               <label htmlFor="featured-check" className="text-xs font-semibold text-stone-800 cursor-pointer">
                 Destacar no Topo do Portfólio

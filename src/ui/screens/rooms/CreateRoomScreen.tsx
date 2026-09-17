@@ -55,7 +55,7 @@ export const CreateRoomScreen: React.FC = () => {
                 placeholder="Ex: Cátedra Bach: Fuga e Contraponto no Cravo"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full text-sm p-2.5 rounded border border-stone-300 focus:outline-none focus:ring-1 focus:ring-red-800"
+                className="w-full text-sm p-2.5 rounded border border-stone-300 focus:outline-none focus:ring-1 focus:ring-anil-800"
               />
             </div>
 
@@ -100,7 +100,7 @@ export const CreateRoomScreen: React.FC = () => {
                 placeholder="Descreva os objetivos, repertório a ser trabalhado e frequência dos encontros..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full text-sm p-2.5 rounded border border-stone-300 focus:outline-none focus:ring-1 focus:ring-red-800"
+                className="w-full text-sm p-2.5 rounded border border-stone-300 focus:outline-none focus:ring-1 focus:ring-anil-800"
               />
             </div>
 

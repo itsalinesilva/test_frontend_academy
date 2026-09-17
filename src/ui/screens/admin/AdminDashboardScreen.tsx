@@ -72,7 +72,7 @@ export const AdminDashboardScreen: React.FC = () => {
     <ScreenContainer
       id="admin-dashboard"
       title="Governança Institucional & Administração"
-      subtitle="Console protegido de gestão da Academia Musical Digital. Todas as ações são auditadas e assinadas."
+      subtitle="Console protegido de gestão da Conservatório Muscicapa. Todas as ações são auditadas e assinadas."
       badgeLabel="Acesso Restrito • ADMIN"
       badgeVariant="brand"
     >
@@ -113,7 +113,7 @@ export const AdminDashboardScreen: React.FC = () => {
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="p-2 rounded bg-stone-100 text-red-800">
+                    <div className="p-2 rounded bg-stone-100 text-anil-800">
                       <IconComp className="w-5 h-5" />
                     </div>
                     <Badge variant="neutral" size="sm">{mod.badge}</Badge>

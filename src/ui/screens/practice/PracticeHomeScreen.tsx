@@ -141,7 +141,7 @@ export const PracticeHomeScreen: React.FC = () => {
       desc: 'Exercícios Hanon, agilidade e dinâmica.',
       icon: TrendingUp,
       badge: 'Velocidade',
-      color: 'bg-red-50 text-red-800 border-red-200',
+      color: 'bg-red-50 text-anil-800 border-red-200',
     },
   ];
 
@@ -179,7 +179,7 @@ export const PracticeHomeScreen: React.FC = () => {
       <div className="flex flex-col lg:flex-row items-stretch justify-between gap-6 bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900 text-stone-100 p-6 md:p-8 rounded-2xl shadow-xl border border-stone-800">
         <div className="space-y-3 max-w-2xl">
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono tracking-wide uppercase bg-red-950/80 text-red-300 border border-red-800">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono tracking-wide uppercase bg-anil-950/80 text-red-300 border border-anil-800">
               Laboratório de Alta Performance
             </span>
             <span className="text-xs text-stone-400 font-serif italic">
@@ -198,7 +198,7 @@ export const PracticeHomeScreen: React.FC = () => {
               variant="primary"
               size="lg"
               onClick={() => handleStartTraining(PracticeModality.KEYBOARD)}
-              className="flex items-center gap-2 bg-red-800 hover:bg-red-700 text-white"
+              className="flex items-center gap-2 bg-anil-800 hover:bg-anil-700 text-white"
             >
               <Play className="w-4 h-4 fill-white" />
               <span>Iniciar Sessão Recomendada</span>
@@ -339,7 +339,7 @@ export const PracticeHomeScreen: React.FC = () => {
                 variant="default"
                 padding="md"
                 onClick={() => handleStartTraining(m.id)}
-                className="cursor-pointer hover:border-red-800 transition-all hover:shadow-md flex flex-col justify-between space-y-3 group"
+                className="cursor-pointer hover:border-anil-800 transition-all hover:shadow-md flex flex-col justify-between space-y-3 group"
               >
                 <div className="flex items-start justify-between">
                   <div className={`p-2.5 rounded-lg border ${m.color}`}>
@@ -351,7 +351,7 @@ export const PracticeHomeScreen: React.FC = () => {
                 </div>
 
                 <div>
-                  <h3 className="font-serif font-bold text-stone-900 group-hover:text-red-900 transition-colors">
+                  <h3 className="font-serif font-bold text-stone-900 group-hover:text-anil-900 transition-colors">
                     {m.title}
                   </h3>
                   <p className="text-xs text-stone-500 mt-1 line-clamp-2 leading-relaxed font-sans">
@@ -359,7 +359,7 @@ export const PracticeHomeScreen: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs font-medium text-stone-700 group-hover:text-red-800">
+                <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs font-medium text-stone-700 group-hover:text-anil-800">
                   <span>Praticar</span>
                   <Play className="w-3.5 h-3.5 fill-current" />
                 </div>
@@ -428,7 +428,7 @@ export const PracticeHomeScreen: React.FC = () => {
                   </div>
                   <div className="w-full bg-stone-100 h-2 rounded-full overflow-hidden">
                     <div
-                      className="bg-red-800 h-full rounded-full transition-all"
+                      className="bg-anil-800 h-full rounded-full transition-all"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -436,7 +436,7 @@ export const PracticeHomeScreen: React.FC = () => {
 
                 <div className="flex items-center justify-between text-xs text-stone-600 pt-1">
                   <span>{tree.nodes.length} nós pedagógicos</span>
-                  <span className="font-medium text-red-800 flex items-center gap-1">
+                  <span className="font-medium text-anil-800 flex items-center gap-1">
                     Abrir Árvore <ArrowRight className="w-3.5 h-3.5" />
                   </span>
                 </div>
@@ -484,7 +484,7 @@ export const PracticeHomeScreen: React.FC = () => {
                 size="sm"
                 variant="primary"
                 onClick={() => handleStartTraining(PracticeModality.THEORY)}
-                className="text-xs bg-red-800 hover:bg-red-700 text-white"
+                className="text-xs bg-anil-800 hover:bg-anil-700 text-white"
               >
                 Praticar Agora
               </Button>
@@ -508,7 +508,7 @@ export const PracticeHomeScreen: React.FC = () => {
                 size="sm"
                 variant="primary"
                 onClick={() => handleStartTraining(PracticeModality.EAR_TRAINING)}
-                className="text-xs bg-red-800 hover:bg-red-700 text-white"
+                className="text-xs bg-anil-800 hover:bg-anil-700 text-white"
               >
                 Praticar Agora
               </Button>

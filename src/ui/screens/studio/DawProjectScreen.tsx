@@ -72,7 +72,7 @@ export const DawProjectScreen: React.FC = () => {
               type="button"
               onClick={() => setIsPlaying(!isPlaying)}
               className={`p-2 rounded-full transition-colors ${
-                isPlaying ? 'bg-amber-600 text-white' : 'bg-red-800 text-white hover:bg-red-700'
+                isPlaying ? 'bg-amber-600 text-white' : 'bg-anil-800 text-white hover:bg-anil-700'
               }`}
               title={isPlaying ? 'Pausar' : 'Reproduzir'}
             >
@@ -145,7 +145,7 @@ export const DawProjectScreen: React.FC = () => {
                       type="button"
                       onClick={() => toggleMute(track.id)}
                       className={`px-1.5 py-0.5 text-[10px] font-mono rounded font-bold ${
-                        track.muted ? 'bg-red-800 text-white' : 'bg-stone-200 text-stone-600 hover:bg-stone-300'
+                        track.muted ? 'bg-anil-800 text-white' : 'bg-stone-200 text-stone-600 hover:bg-stone-300'
                       }`}
                     >
                       M
@@ -171,7 +171,7 @@ export const DawProjectScreen: React.FC = () => {
                     max={100}
                     value={track.vol}
                     onChange={() => {}}
-                    className="w-full accent-red-800 h-1 bg-stone-200 rounded"
+                    className="w-full accent-anil-800 h-1 bg-stone-200 rounded"
                   />
                   <span className="w-6 text-right">{track.vol}</span>
                 </div>

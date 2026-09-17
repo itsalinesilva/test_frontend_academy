@@ -301,7 +301,7 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
           <button
             type="button"
             onClick={togglePlayPause}
-            className="w-8 h-8 rounded-full bg-red-700 hover:bg-red-600 text-white flex items-center justify-center shrink-0 transition-colors shadow-sm"
+            className="w-8 h-8 rounded-full bg-anil-700 hover:bg-red-600 text-white flex items-center justify-center shrink-0 transition-colors shadow-sm"
           >
             {isPlaying ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 fill-white ml-0.5" />}
           </button>
@@ -336,7 +336,7 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
           {/* Header Row */}
           <div className="flex items-center justify-between pb-2 border-b border-stone-800 text-xs">
             <div className="flex items-center gap-2">
-              <span className="p-1 bg-red-950/80 border border-red-800 text-red-400 rounded">
+              <span className="p-1 bg-anil-950/80 border border-anil-800 text-red-400 rounded">
                 <Music2 className="w-3.5 h-3.5" />
               </span>
               <div>
@@ -439,7 +439,7 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
               <button
                 type="button"
                 onClick={togglePlayPause}
-                className="w-10 h-10 rounded-full bg-red-700 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-md focus:ring-2 focus:ring-red-400"
+                className="w-10 h-10 rounded-full bg-anil-700 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-md focus:ring-2 focus:ring-red-400"
                 title={isPlaying ? 'Pausar' : 'Reproduzir'}
               >
                 {isPlaying ? <Pause className="w-5 h-5 fill-white" /> : <Play className="w-5 h-5 fill-white ml-0.5" />}
@@ -466,7 +466,7 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                   className={clsx(
                     'text-[10px] font-mono px-1.5 py-0.5 rounded transition-colors',
                     playbackSpeed === spd
-                      ? 'bg-red-800 text-white font-bold'
+                      ? 'bg-anil-800 text-white font-bold'
                       : 'text-stone-400 hover:text-white hover:bg-stone-800'
                   )}
                 >

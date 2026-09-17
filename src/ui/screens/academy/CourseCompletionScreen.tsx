@@ -96,8 +96,8 @@ export const CourseCompletionScreen: React.FC = () => {
     >
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Celebration Banner */}
-        <Card variant="default" padding="xl" className="text-center space-y-6 border-red-800/30 bg-red-50/10">
-          <div className="mx-auto w-16 h-16 rounded-full bg-red-900 text-white flex items-center justify-center shadow-md">
+        <Card variant="default" padding="xl" className="text-center space-y-6 border-anil-800/30 bg-red-50/10">
+          <div className="mx-auto w-16 h-16 rounded-full bg-anil-900 text-white flex items-center justify-center shadow-md">
             <Award className="w-8 h-8" />
           </div>
 
@@ -154,7 +154,7 @@ export const CourseCompletionScreen: React.FC = () => {
           <Card variant="muted" padding="lg" className="space-y-3 border-stone-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <GraduationCap className="w-5 h-5 text-red-800" />
+                <GraduationCap className="w-5 h-5 text-anil-800" />
                 <h4 className="font-serif font-bold text-base text-stone-900">
                   Certificado Canônico Registrado
                 </h4>

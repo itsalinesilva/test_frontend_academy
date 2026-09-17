@@ -168,23 +168,49 @@ export interface TokensVisuais {
 }
 
 /**
- * Identidade provisória.
+ * Identidade do Conservatório Muscicapa.
  *
- * Vermelho como primária e bordô como secundária, que é a decisão de marca já
- * tomada. Tudo aqui é editável — é ponto de partida, não definição.
+ * As cores vêm do brasão, medidas no arquivo original — não escolhidas:
+ * o anil é o campo do escudo (#1B3357), o ouro é a moldura e a abelha
+ * (#947D53). Ver `src/index.css` para as rampas completas e as conferências
+ * de contraste.
+ *
+ * O ouro entra como moldura e acento cerimonial, nunca em texto corrido:
+ * sobre papel branco ele só fecha contraste a partir do passo 600, e um
+ * certificado precisa ser legível também fotocopiado em preto e branco.
+ *
+ * Tudo aqui é editável no Estúdio de Credenciais.
  */
 export const TOKENS_PADRAO: TokensVisuais = {
-  corPrimaria: '#9f1239',
-  corSecundaria: '#5b1421',
+  corPrimaria: '#1d2f49',
+  corSecundaria: '#233a5c',
   corFundo: '#fffdf9',
   corTexto: '#1c1917',
   corTextoSuave: '#57534e',
-  corMoldura: '#9f1239',
+  corMoldura: '#7b6947',
   fonteTitulo: 'Georgia, "Times New Roman", serif',
   fonteCorpo: 'system-ui, -apple-system, "Segoe UI", sans-serif',
   espessuraMoldura: 3,
   raioCanto: 8,
 };
+
+/**
+ * Ressalva obrigatória de natureza do curso.
+ *
+ * A Academia opera com CURSOS LIVRES e certificação própria. Isso não é
+ * demérito — é uma categoria legítima e regulada — mas precisa estar dito no
+ * documento, e não só nos termos de uso.
+ *
+ * A razão é direta: quem recebe o certificado pode apresentá-lo a um
+ * empregador ou a uma secretaria, e essas pessoas precisam saber o que estão
+ * lendo sem ter de perguntar. Um certificado que se deixa confundir com
+ * diploma reconhecido pelo MEC prejudica primeiro quem o recebeu.
+ *
+ * Fica no rodapé, em corpo pequeno, mas presente em todo certificado e
+ * credencial — e não é editável no Estúdio, diferente do resto.
+ */
+export const RESSALVA_CURSO_LIVRE =
+  'Curso livre de qualificação profissional. Certificação própria do Conservatório Muscicapa, sem vínculo com o MEC.';
 
 // ---------------------------------------------------------------------------
 // Elementos do documento
@@ -420,7 +446,7 @@ export function templateValido(template: TemplateCredencial): boolean {
  */
 const ALFABETO = 'ACDEFGHJKMNPQRTUVWXY34679';
 
-export function gerarCodigoVerificacao(prefixo = 'AMD'): string {
+export function gerarCodigoVerificacao(prefixo = 'CMU'): string {
   const bloco = () => {
     const bytes = new Uint8Array(4);
     crypto.getRandomValues(bytes);

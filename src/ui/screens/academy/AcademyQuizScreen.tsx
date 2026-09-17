@@ -268,7 +268,7 @@ export const AcademyQuizScreen: React.FC = () => {
                       if (isCorrectAnswer) {
                         optionStyle = 'bg-emerald-50 border-emerald-400 text-emerald-950 font-semibold';
                       } else if (isWrongAnswer) {
-                        optionStyle = 'bg-red-50 border-red-300 text-red-950';
+                        optionStyle = 'bg-red-50 border-red-300 text-anil-950';
                       } else {
                         optionStyle = 'bg-stone-50 border-stone-200 text-stone-400 opacity-60';
                       }
