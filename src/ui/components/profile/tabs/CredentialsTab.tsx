@@ -1,6 +1,7 @@
 import React from 'react';
 import { UnifiedProfileRecord } from '../../../../domain/profile';
 import { Card } from '../../base/Card';
+import { Credential } from '../../data-display/Credential';
 import { ShieldCheck, Copy } from 'lucide-react';
 
 interface CredentialsTabProps {
@@ -9,6 +10,10 @@ interface CredentialsTabProps {
 
 export const CredentialsTab: React.FC<CredentialsTabProps> = ({ profile }) => {
   const evidences = profile.evidences || [];
+  // Os certificados academicos existiam no dominio (`academic.certificates`)
+  // e NENHUMA tela os exibia — dado real, invisivel. Passam a ser renderizados
+  // pelo componente `Credential`, que ate aqui estava orfao.
+  const certificados = profile.academic?.certificates || [];
 
   const copyHash = (hash: string) => {
     navigator.clipboard?.writeText(hash);
@@ -25,7 +30,34 @@ export const CredentialsTab: React.FC<CredentialsTabProps> = ({ profile }) => {
         </p>
       </div>
 
+      {certificados.length > 0 && (
+        <section id="profile-academic-certificates" className="space-y-3">
+          <h3 className="font-serif text-sm font-bold text-stone-900">
+            Certificados e Diplomas Acadêmicos ({certificados.length})
+          </h3>
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+            {certificados.map((cert) => (
+              <Credential
+                key={cert.id}
+                id={`credential-${cert.id}`}
+                title={cert.courseTitle}
+                issuer={cert.institution}
+                // Carga horaria de graduacao no Brasil gira em torno de 2.400h;
+                // abaixo disso o documento e certificado, nao diploma.
+                type={cert.workloadHours >= 2000 ? 'DIPLOMA' : 'CERTIFICATE'}
+                issuedDate={cert.issueDate}
+                verificationCode={cert.digitalSignatureHash}
+                isVerified={cert.status === 'valido'}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
       <div className="space-y-4">
+        <h3 className="font-serif text-sm font-bold text-stone-900">
+          Evidências Auditadas ({evidences.length})
+        </h3>
         {evidences.map((ev) => (
           <Card key={ev.id} variant="default" padding="lg">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-3 border-b border-stone-100">

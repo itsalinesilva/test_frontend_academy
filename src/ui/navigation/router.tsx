@@ -111,6 +111,13 @@ export const CANONICAL_ROUTES = {
   PROFILE: '/profile',
   PROFILE_PORTFOLIO: '/profile/portfolio',
   PROFILE_EDIT: '/profile/edit',
+  PROFILE_NETWORK: '/profile/network',
+  // Perfil de OUTRA pessoa. Sem esta rota a premissa "LinkedIn de musicos"
+  // era estruturalmente vazia: existia tela de perfil, e ela so conseguia
+  // exibir o proprio. As rotas estaticas acima tem precedencia sobre este
+  // padrao (resolveRouteParams), entao /profile/edit continua sendo a edicao
+  // e nao um usuario chamado "edit".
+  PROFILE_MEMBER: '/profile/:userId',
 
   // Admin Governance (Protected)
   ADMIN: '/admin',
@@ -276,9 +283,18 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
 
   // Profile
   if (path.startsWith('/profile')) {
+    // O perfil de outra pessoa nao pende de "Meu Perfil" — pende da Rede,
+    // que e por onde se chega ate ele.
+    if (params.userId) {
+      crumbs.push({ label: 'Rede', path: '/profile/network' });
+      crumbs.push({ label: 'Perfil' });
+      return crumbs;
+    }
     crumbs.push({ label: 'Meu Perfil', path: '/profile' });
     if (path === '/profile/portfolio') {
       crumbs.push({ label: 'Portfólio de Evidências' });
+    } else if (path === '/profile/network') {
+      crumbs.push({ label: 'Rede' });
     } else if (path === '/profile/edit') {
       crumbs.push({ label: 'Editar Perfil' });
     }

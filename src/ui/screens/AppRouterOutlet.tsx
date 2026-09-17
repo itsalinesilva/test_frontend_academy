@@ -68,6 +68,7 @@ import { CreateRoomScreen } from './rooms/CreateRoomScreen';
 
 import { ProfileOverviewScreen } from './profile/ProfileOverviewScreen';
 import { PortfolioScreen } from './profile/PortfolioScreen';
+import { NetworkDirectoryScreen } from './profile/NetworkDirectoryScreen';
 import { EditProfileScreen } from './profile/EditProfileScreen';
 
 // Core & Utilities
@@ -360,6 +361,14 @@ export const AppRouterOutlet: React.FC = () => {
   }
   if (currentPath === '/profile/edit') {
     return <EditProfileScreen />;
+  }
+  if (currentPath === '/profile/network') {
+    return <NetworkDirectoryScreen />;
+  }
+  // Perfil de outra pessoa. Vem DEPOIS das rotas estaticas de /profile/*
+  // para que elas tenham precedencia.
+  if (currentPath.startsWith('/profile/')) {
+    return <ProfileOverviewScreen />;
   }
 
   // AUTHENTICATION

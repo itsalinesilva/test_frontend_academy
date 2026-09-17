@@ -25,6 +25,7 @@ import { auditService } from '../../infrastructure/telemetry/audit-service';
 import { AuditAction, AuditSeverity } from '../../domain/audit';
 import { authService } from './auth.service';
 import { NotFoundError, UnauthorizedError } from '../../domain/errors';
+import { computeEvidenceHash } from '../../domain/integrity';
 
 export class ProfileService {
   private profileRepo: ProfileRepository;
@@ -201,7 +202,31 @@ export class ProfileService {
       record.assignedRoles = session.user.assignedRoles;
     }
 
+    // Quem NAO e o dono recebe a projecao filtrada, nunca o registro cru.
+    // Antes, `getUnifiedProfile('id_de_outra_pessoa')` devolvia o registro
+    // completo — biografia privada, evidencias privadas, portfolio nao
+    // publicado — a qualquer visitante. Nao dava para alcancar isso pela UI
+    // porque /profile/:userId nao existia; com a rota criada seria um
+    // vazamento por URL (CLAUDE_AUDIT.md P-02).
+    if (!session || session.user.id !== userId) {
+      const projecao = await this.unifiedRepo.getPublicProjection(userId);
+      if (!projecao) {
+        throw new NotFoundError('Perfil', userId);
+      }
+      return projecao;
+    }
+
     return record;
+  }
+
+  /**
+   * Diretorio de pessoas visiveis publicamente.
+   *
+   * Sem isto a premissa "LinkedIn de musicos" nao fecha: havia rota de perfil
+   * proprio, mas nenhum caminho para encontrar outra pessoa.
+   */
+  public async listDirectory(): Promise<UnifiedProfileRecord[]> {
+    return this.unifiedRepo.listPublicDirectory();
   }
 
   /**
@@ -459,7 +484,25 @@ export class ProfileService {
   // Prepared for Academy, Practice, Studio, Rooms, Community
   // ---------------------------------------------------------
   public async ingestEvidence(request: IngestEvidenceRequest): Promise<IngestEvidenceResponse> {
-    const integrityHash = `sha256:${Math.random().toString(16).substring(2, 10)}${Math.random().toString(16).substring(2, 10)}${Date.now().toString(16)}`;
+    const createdAt = new Date().toISOString();
+
+    // O hash e calculado SOBRE O CONTEUDO, com Web Crypto. O valor anterior
+    // era `Math.random()` com "sha256:" na frente: nao derivava do registro,
+    // nao detectava adulteracao e ainda assim a UI o anunciava como "prova
+    // matematica de integridade" (CLAUDE_AUDIT.md P-07).
+    const integrityHash = await computeEvidenceHash({
+      userId: request.userId,
+      source: request.source,
+      sourceEntityId: request.sourceEntityId,
+      title: request.title,
+      description: request.description,
+      artifactType: request.artifactType,
+      artifactUrl: request.artifactUrl,
+      skills: request.skills || [],
+      instruments: request.instruments || [],
+      evaluator: request.evaluator,
+      createdAt,
+    });
 
     const evidence: Evidence = {
       id: `evi_${request.source}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -476,7 +519,7 @@ export class ProfileService {
       instruments: request.instruments || [],
       metadata: request.metadata || {},
       visibility: request.visibility || 'public',
-      createdAt: new Date().toISOString(),
+      createdAt,
     };
 
     await this.unifiedRepo.addEvidence(evidence);
@@ -521,13 +564,22 @@ export class ProfileService {
       profile.connectionsList.splice(existingIdx, 1);
       connected = false;
     } else {
+      // A identidade vem do perfil de destino. A versao anterior gravava
+      // 'Musico Academico Conectado' / 'Interprete & Pesquisador' / 'Violino /
+      // Teclado' para QUALQUER pessoa conectada: a lista de conexoes parecia
+      // povoada e nenhum nome ali era real (CLAUDE_AUDIT.md P-03).
+      const alvo = await this.unifiedRepo.getPublicProjection(targetUserId);
+      if (!alvo) {
+        throw new NotFoundError('Perfil', targetUserId);
+      }
       profile.connectionsList.push({
         id: `conn_${Date.now()}`,
         targetUserId,
-        name: 'Músico Acadêmico Conectado',
-        headline: 'Intérprete & Pesquisador',
-        primaryInstrument: 'Violino / Teclado',
-        role: 'Colega de Concerto',
+        name: alvo.displayName,
+        headline: alvo.headline,
+        avatarUrl: alvo.avatarUrl,
+        primaryInstrument: alvo.instruments[0] ?? 'Nao informado',
+        role: alvo.title,
         connectedAt: new Date().toISOString(),
         status: 'connected',
       });

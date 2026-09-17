@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { ProfileHeader } from '../../components/data-display/ProfileHeader';
+import { SegmentedControl } from '../../components/navigation/SegmentedControl';
+import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import {
@@ -42,11 +45,8 @@ import {
   Users,
   Award,
   Layers,
-  Edit3,
   SlidersHorizontal,
-  Eye,
   ExternalLink,
-  Plus,
   FileText,
   ShieldCheck,
   CheckCircle2,
@@ -57,11 +57,8 @@ import {
   Disc,
   Clock,
   Sparkles,
-  MapPin,
   Calendar,
   Compass,
-  UserCheck,
-  UserPlus,
 } from 'lucide-react';
 
 export type ModernProfileTabKey =
@@ -116,12 +113,25 @@ const TAB_DEFINITIONS: TabItemDef[] = [
 ];
 
 export const ProfileOverviewScreen: React.FC = () => {
+  const { params, navigate } = useRouter();
+  // Sem :userId a tela e o proprio perfil; com :userId e o de outra pessoa.
+  // Esta unica linha e o que faltava para a premissa "LinkedIn de musicos"
+  // deixar de ser estruturalmente vazia (CLAUDE_AUDIT.md P-05).
+  const viewedUserId = params.userId;
+
   const [profile, setProfile] = useState<UnifiedProfileRecord | null>(null);
+  const [sessionUserId, setSessionUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ModernProfileTabKey>('home');
   const [selectedCluster, setSelectedCluster] = useState<string>('all');
   const [isPreviewPublic, setIsPreviewPublic] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [isConnected, setIsConnected] = useState<boolean>(true);
+  // Nao se nasce conectado. O valor inicial `true` afirmava um vinculo que
+  // ninguem tinha criado; agora sai da lista real de conexoes do visitante.
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+
+  const isOwnProfile = !viewedUserId || viewedUserId === sessionUserId;
 
   // Modals state
   const [showSectionsModal, setShowSectionsModal] = useState(false);
@@ -132,32 +142,55 @@ export const ProfileOverviewScreen: React.FC = () => {
   // Load profile data
   const loadProfile = async (asPublicPreview = false) => {
     try {
+      setErro(null);
       const session = await authService.getActiveSession();
-      // Sem sessao nao ha progresso a carregar nem a gravar: o fallback
-      // anterior misturava dados de visitantes anonimos com os da
-      // fundadora (CLAUDE_AUDIT.md T-05).
-      if (!session) return;
-      const currentUserId = session.user.id;
+      setSessionUserId(session?.user.id ?? null);
 
-      if (asPublicPreview) {
-        const publicData = await profileService.getPublicProfileProjection(currentUserId);
+      // O alvo e o usuario da URL; sem URL, o da sessao. Um visitante anonimo
+      // em /profile nao tem alvo — e isso e um estado, nao um erro.
+      const targetUserId = viewedUserId ?? session?.user.id;
+      if (!targetUserId) {
+        setProfile(null);
+        return;
+      }
+
+      const ehProprio = targetUserId === session?.user.id;
+
+      if (asPublicPreview && ehProprio) {
+        const publicData = await profileService.getPublicProfileProjection(targetUserId);
         if (publicData) {
           setProfile(publicData);
         } else {
           setFeedback('Este perfil está totalmente configurado como Privado no servidor.');
         }
       } else {
-        const fullData = await profileService.getUnifiedProfile(currentUserId);
-        setProfile(fullData);
+        // Para quem nao e o dono o proprio servico ja devolve a projecao
+        // publica — a tela nao precisa (nem consegue) pedir o registro cru.
+        const dados = await profileService.getUnifiedProfile(targetUserId);
+        setProfile(dados);
       }
-    } catch (err: any) {
+
+      // Estado de conexao real: vem da MINHA lista, procurando o perfil visto.
+      if (!ehProprio && session) {
+        const meu = await profileService.getUnifiedProfile(session.user.id);
+        setIsConnected(
+          (meu.connectionsList ?? []).some((c) => c.targetUserId === targetUserId)
+        );
+      }
+    } catch (err) {
       console.error('Erro ao carregar perfil:', err);
+      setErro(err instanceof Error ? err.message : 'Não foi possível carregar este perfil.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
+    setIsLoading(true);
+    // Recarrega ao trocar de modo (proprio/preview) e ao trocar de usuario na
+    // URL — /profile/a -> /profile/b remonta o conteudo, nao so a rota.
     loadProfile(isPreviewPublic);
-  }, [isPreviewPublic]);
+  }, [isPreviewPublic, viewedUserId]);
 
   const togglePublicPreview = () => {
     const nextState = !isPreviewPublic;
@@ -173,7 +206,10 @@ export const ProfileOverviewScreen: React.FC = () => {
   const handleToggleConnection = async () => {
     if (!profile) return;
     try {
-      const res = await profileService.toggleConnection('usr_founder_1');
+      // Conecta com QUEM ESTA SENDO VISTO. O id fixo 'usr_founder_1' fazia
+      // toda e qualquer conexao apontar para a fundadora (CLAUDE_AUDIT.md P-06).
+      if (!viewedUserId) return;
+      const res = await profileService.toggleConnection(viewedUserId);
       setIsConnected(res.connected);
       setFeedback(
         res.connected
@@ -225,63 +261,152 @@ export const ProfileOverviewScreen: React.FC = () => {
     }
   };
 
-  if (!profile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-stone-100 p-4">
-        <div className="text-center space-y-2">
-          <div className="w-8 h-8 border-2 border-stone-800 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs text-stone-600 font-serif">Carregando perfil profissional unificado...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Filter tabs by cluster if needed
-  const visibleTabs = selectedCluster === 'all'
-    ? TAB_DEFINITIONS
-    : TAB_DEFINITIONS.filter((t) => t.cluster === selectedCluster);
+  // Filtra as secoes pelo agrupador selecionado.
+  const visibleTabs =
+    selectedCluster === 'all'
+      ? TAB_DEFINITIONS
+      : TAB_DEFINITIONS.filter((t) => t.cluster === selectedCluster);
 
   const currentTabDef = TAB_DEFINITIONS.find((t) => t.key === activeTab) || TAB_DEFINITIONS[0];
   const currentSectionVisibility = getSectionVisibility(currentTabDef.sectionKey);
 
+  // Estados de pagina. Ficam num retorno proprio para preservar o
+  // estreitamento de tipo de `profile` nas ~400 linhas de JSX abaixo.
+  if (isLoading || erro || !profile) {
+    return (
+      <PageLayout
+        id="profile-overview"
+        form="detail"
+        density="operational"
+        asideLabel="Secoes"
+        state={isLoading ? 'loading' : erro ? 'error' : 'empty'}
+        loadingMessage="Carregando perfil profissional..."
+        errorProps={{
+          message: erro ?? 'Nao foi possivel carregar este perfil.',
+          onRetry: () => {
+            setIsLoading(true);
+            loadProfile(isPreviewPublic);
+          },
+        }}
+        emptyProps={{
+          title: viewedUserId ? 'Perfil indisponivel' : 'Entre para ver seu perfil',
+          description: viewedUserId
+            ? 'Este perfil nao existe ou seu autor o mantem privado.'
+            : 'Seu perfil profissional reune formacao, pratica, producoes e credenciais.',
+          actionLabel: viewedUserId ? 'Ver a rede' : 'Entrar',
+          onAction: () => navigate(viewedUserId ? '/profile/network' : '/auth/login'),
+        }}
+      >
+        {null}
+      </PageLayout>
+    );
+  }
+
   return (
-    <ScreenContainer
+    <PageLayout
       id="profile-overview"
-      title="Perfil Profissional & Dossiê Artístico"
-      subtitle="Estrutura completa e unificada: Dimensões Acadêmica, Prática, Músico, Professor, Comunidade e Evidências."
-      badgeLabel={profile.primaryRole}
-      badgeVariant="brand"
-      primaryAction={
-        !isPreviewPublic
-          ? {
-              label: 'Publicar no Portfólio',
-              icon: Plus,
-              onClick: () => setShowPublishModal(true),
-            }
-          : undefined
-      }
-      secondaryActions={[
-        {
-          label: isPreviewPublic ? 'Retornar ao Modo Edição' : 'Visualizar Preview Público',
-          icon: isPreviewPublic ? Edit3 : Eye,
-          onClick: togglePublicPreview,
-        },
-        ...(!isPreviewPublic
-          ? [
-              {
-                label: 'Privacidade das Seções',
-                icon: SlidersHorizontal,
-                onClick: () => setShowSectionsModal(true),
-              },
-              {
-                label: 'Editar Apresentação',
-                icon: Edit3,
-                onClick: () => setShowHeaderModal(true),
-              },
-            ]
-          : []),
-      ]}
+      form="detail"
+      density="operational"
+      asideLabel="Secoes"
+      state="content"
     >
+      <PageLayout.Hero>
+        {/* O cabecalho agora e o componente do design system. Antes eram ~180
+            linhas escritas a mao aqui, sem capa e sem distinguir perfil
+            proprio de perfil de terceiro. */}
+        <ProfileHeader
+          id="profile-header"
+          name={profile.displayName}
+          title={profile.title}
+          headline={profile.headline}
+          location={profile.location}
+          affiliation={profile.currentStatus}
+          avatarUrl={profile.avatarUrl}
+          totalStudyHours={profile.academic?.totalStudyHours ?? 0}
+          coursesCompleted={profile.academic?.certificates?.length ?? 0}
+          credentialsCount={profile.evidences?.length ?? 0}
+          isOwnProfile={isOwnProfile}
+          isConnected={isConnected}
+          onConnect={handleToggleConnection}
+          onMessage={() => navigate('/community/feed')}
+          onEditProfile={() => setShowHeaderModal(true)}
+        />
+      </PageLayout.Hero>
+
+      <PageLayout.Tabs
+        id="profile-tabs"
+        tabs={visibleTabs.map((t) => ({
+          id: t.key,
+          label: t.label,
+          icon: <t.icon className="w-3.5 h-3.5" />,
+        }))}
+        activeTab={activeTab}
+        onChange={(id) => setActiveTab(id as ModernProfileTabKey)}
+      />
+
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-3">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Secoes do perfil
+          </p>
+          <dl className="space-y-1.5 text-xs text-stone-700">
+            <div className="flex items-center justify-between">
+              <dt>Visiveis</dt>
+              <dd className="font-mono font-bold">{visibleTabs.length}</dd>
+            </div>
+            <div className="flex items-center justify-between">
+              <dt>Instrumentos</dt>
+              <dd className="font-mono font-bold">{profile.instruments.length}</dd>
+            </div>
+          </dl>
+          {isOwnProfile ? (
+            <div className="space-y-2 border-t border-stone-100 pt-2.5">
+              <Button variant="outline" size="sm" className="w-full" onClick={togglePublicPreview}>
+                {isPreviewPublic ? 'Voltar a edicao' : 'Ver como o publico ve'}
+              </Button>
+              {!isPreviewPublic && (
+                <>
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => setShowSectionsModal(true)}>
+                    Privacidade das secoes
+                  </Button>
+                  <Button variant="primary" size="sm" className="w-full" onClick={() => setShowPublishModal(true)}>
+                    Publicar no portfolio
+                  </Button>
+                </>
+              )}
+            </div>
+          ) : (
+            <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/profile/network')}>
+              Voltar a rede
+            </Button>
+          )}
+        </Card>
+
+        {profile.officialLinks && profile.officialLinks.length > 0 && (
+          <Card variant="default" padding="md" className="space-y-2">
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+              Links oficiais
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {profile.officialLinks.map((link) => (
+                <a
+                  key={link.id}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded border border-stone-200 bg-stone-50 px-2 py-0.5 text-[11px] font-medium text-stone-700 transition-colors hover:bg-stone-100"
+                >
+                  <span>{link.label}</span>
+                  <ExternalLink className="h-2.5 w-2.5 text-stone-400" />
+                </a>
+              ))}
+            </div>
+          </Card>
+        )}
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
+
       <div className="space-y-6">
         {/* Live Feedback Toast */}
         {feedback && (
@@ -300,243 +425,24 @@ export const ProfileOverviewScreen: React.FC = () => {
           </div>
         )}
 
-        {/* FULL PROFESSIONAL HEADER */}
-        <Card id="profile-main-header" variant="default" padding="lg" className="border-stone-300 bg-white">
-          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
-            {/* Avatar & Core Profile Data */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-              <div className="relative shrink-0">
-                {profile.avatarUrl ? (
-                  <img
-                    src={profile.avatarUrl}
-                    alt={profile.displayName}
-                    className="w-24 h-24 rounded-full object-cover border-2 border-stone-800 shadow-xs"
-                  />
-                ) : (
-                  <div className="w-24 h-24 rounded-full bg-stone-900 text-stone-100 flex items-center justify-center font-serif text-3xl font-bold border-2 border-stone-200 shadow-xs">
-                    {profile.displayName
-                      .split(' ')
-                      .map((n) => n[0])
-                      .slice(0, 2)
-                      .join('')}
-                  </div>
-                )}
-                <div
-                  className="absolute -bottom-1 -right-1 p-1 bg-stone-900 text-white rounded-full"
-                  title="Identidade Verificada & Autenticada"
-                >
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                </div>
-              </div>
+        {/* Agrupador das 19 secoes: SegmentedControl do design system no
+            lugar de seis <button> com classes condicionais a mao. */}
+        <SegmentedControl
+          id="profile-clusters"
+          ariaLabel="Agrupar secoes do perfil"
+          sizeVariant="sm"
+          value={selectedCluster}
+          onChange={setSelectedCluster}
+          options={[
+            { id: 'all', label: 'Todas' },
+            { id: 'geral', label: 'Visao geral' },
+            { id: 'carreira', label: 'Carreira' },
+            { id: 'producoes', label: 'Producoes' },
+            { id: 'pratica', label: 'Pratica' },
+            { id: 'comunidade', label: 'Comunidade' },
+          ]}
+        />
 
-              <div className="space-y-2 text-center sm:text-left">
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                  <h1 className="font-serif font-bold text-xl sm:text-2xl text-stone-900">
-                    {profile.displayName}
-                  </h1>
-                  <span className="text-[10px] font-mono uppercase bg-amber-100 text-amber-900 border border-amber-200 px-2 py-0.5 rounded font-bold">
-                    {profile.primaryRole}
-                  </span>
-                  <span className="text-[10px] font-mono capitalize bg-stone-100 text-stone-700 px-2 py-0.5 rounded">
-                    Nível {profile.experienceLevel}
-                  </span>
-                </div>
-
-                {/* Title & Headline */}
-                <p className="text-sm font-semibold text-stone-800">{profile.title}</p>
-                <p className="text-xs text-stone-600 max-w-2xl leading-relaxed">{profile.headline}</p>
-
-                {/* Location and Status */}
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1 text-xs">
-                  {profile.location && (
-                    <span className="flex items-center gap-1 text-stone-600">
-                      <MapPin className="w-3.5 h-3.5 text-stone-400" />
-                      {profile.location}
-                    </span>
-                  )}
-                  {profile.currentStatus && (
-                    <span className="font-medium text-stone-800 bg-stone-50 px-2.5 py-1 rounded border border-stone-200 text-[11px]">
-                      {profile.currentStatus}
-                    </span>
-                  )}
-                </div>
-
-                {/* Instruments Chips */}
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 pt-1">
-                  <span className="text-[11px] font-semibold text-stone-500 mr-1">Instrumentos:</span>
-                  {profile.instruments.map((inst, i) => (
-                    <span
-                      key={inst}
-                      className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
-                        i === 0
-                          ? 'bg-stone-900 text-white'
-                          : 'bg-stone-100 border border-stone-300 text-stone-800'
-                      }`}
-                    >
-                      {inst}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Specialties Chips */}
-                {profile.specialties && profile.specialties.length > 0 && (
-                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 pt-1">
-                    <span className="text-[11px] font-semibold text-stone-500 mr-1">Especialidades:</span>
-                    {profile.specialties.map((spec, i) => (
-                      <span
-                        key={i}
-                        className="text-[11px] px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200"
-                      >
-                        {spec}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Actions & Official Links */}
-            <div className="flex flex-col items-center sm:items-end gap-3 shrink-0 pt-2 lg:pt-0">
-              {/* Connection & Edit Buttons */}
-              <div className="flex items-center gap-2">
-                <button
-                  id="header-btn-toggle-connection"
-                  onClick={handleToggleConnection}
-                  className={`text-xs px-3.5 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1.5 shadow-2xs ${
-                    isConnected
-                      ? 'bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-300'
-                      : 'bg-stone-900 hover:bg-stone-800 text-white'
-                  }`}
-                >
-                  {isConnected ? (
-                    <>
-                      <UserCheck className="w-3.5 h-3.5 text-emerald-700" />
-                      Conectado ({profile.community?.connectionsCount || 4})
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-3.5 h-3.5" />
-                      Conectar
-                    </>
-                  )}
-                </button>
-
-                {!isPreviewPublic && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowHeaderModal(true)}
-                    className="text-xs"
-                  >
-                    <Edit3 className="w-3.5 h-3.5 mr-1" /> Editar
-                  </Button>
-                )}
-              </div>
-
-              {/* Official Links */}
-              <div className="text-right">
-                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
-                  Links & Publicações Oficiais
-                </span>
-                <div className="flex flex-wrap gap-1.5 justify-center sm:justify-end max-w-xs">
-                  {profile.officialLinks && profile.officialLinks.length > 0 ? (
-                    profile.officialLinks.map((link) => (
-                      <a
-                        key={link.id}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-stone-50 border border-stone-200 text-[11px] font-medium text-stone-700 hover:bg-stone-100 transition-colors"
-                      >
-                        <span>{link.label}</span>
-                        <ExternalLink className="w-2.5 h-2.5 text-stone-400" />
-                      </a>
-                    ))
-                  ) : (
-                    <span className="text-[11px] text-stone-400 italic">Nenhum link cadastrado</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Capabilities Badges */}
-              {profile.capabilities && profile.capabilities.length > 0 && (
-                <div className="pt-2 text-right">
-                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
-                    Capabilities Adquiridas
-                  </span>
-                  <div className="flex flex-wrap gap-1 justify-center sm:justify-end max-w-xs">
-                    {profile.capabilities.map((cap, idx) => (
-                      <span
-                        key={idx}
-                        className="text-[10px] px-2 py-0.5 rounded bg-sky-50 text-sky-900 border border-sky-200 font-mono"
-                      >
-                        {cap}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-
-        {/* 19 SCREENS NAVIGATION BAR */}
-        <div id="profile-screens-nav" className="space-y-3">
-          {/* Quick Clusters Filter */}
-          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 text-xs">
-            <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-lg">
-              {[
-                { id: 'all', label: 'Todas as 19 Seções' },
-                { id: 'geral', label: 'Visão Geral & Bio' },
-                { id: 'carreira', label: 'Carreira & Titulações' },
-                { id: 'producoes', label: 'Músico & Produções' },
-                { id: 'pratica', label: 'Prática & Maestria' },
-                { id: 'comunidade', label: 'Comunidade & Cátedras' },
-              ].map((cl) => (
-                <button
-                  key={cl.id}
-                  onClick={() => setSelectedCluster(cl.id)}
-                  className={`px-2.5 py-1 rounded-md transition-colors whitespace-nowrap ${
-                    selectedCluster === cl.id
-                      ? 'bg-white text-stone-900 font-semibold shadow-2xs'
-                      : 'text-stone-600 hover:text-stone-900'
-                  }`}
-                >
-                  {cl.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[11px] text-stone-500 font-mono">
-                {visibleTabs.length} seções disponíveis
-              </span>
-            </div>
-          </div>
-
-          {/* Horizontal Scroller for the 19 Tabs */}
-          <div className="flex border-b border-stone-200 gap-1 overflow-x-auto pb-0.5 text-xs">
-            {visibleTabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  id={`profile-nav-tab-${tab.key}`}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`px-3 py-2.5 font-medium border-b-2 whitespace-nowrap transition-colors flex items-center gap-1.5 ${
-                    isActive
-                      ? 'border-stone-900 text-stone-900 font-bold bg-stone-50/50'
-                      : 'border-transparent text-stone-600 hover:text-stone-900 hover:border-stone-300'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
 
         {/* SECTION PRIVACY HEADER */}
         <div className="flex items-center justify-between px-1 py-1 text-xs">
@@ -670,6 +576,7 @@ export const ProfileOverviewScreen: React.FC = () => {
           onClose={() => setShowTeacherRoomModal(false)}
         />
       )}
-    </ScreenContainer>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

@@ -15,6 +15,7 @@ export interface UnifiedProfileRepository {
   savePortfolioItem(item: PortfolioItem): Promise<PortfolioItem>;
   deletePortfolioItem(userId: string, itemId: string): Promise<boolean>;
   getPublicProjection(userId: string): Promise<UnifiedProfileRecord | null>;
+  listPublicDirectory(): Promise<UnifiedProfileRecord[]>;
 }
 
 export class PersistentUnifiedProfileRepository implements UnifiedProfileRepository {
@@ -320,48 +321,14 @@ export class PersistentUnifiedProfileRepository implements UnifiedProfileReposit
         },
       ],
 
-      connectionsList: [
-        {
-          id: 'conn-1',
-          targetUserId: 'usr_gabriel_1',
-          name: 'Gabriel Carvalho',
-          headline: 'Cravista, Musicólogo & Teórico da Polifonia',
-          primaryInstrument: 'Cravo / Baixo Contínuo',
-          role: 'Pesquisador Associado',
-          connectedAt: '2023-08-12',
-          status: 'connected',
-        },
-        {
-          id: 'conn-2',
-          targetUserId: 'usr_clara_1',
-          name: 'Clara Schumann da Silva',
-          headline: 'Pianista Concertista & Especialista em Romantismo',
-          primaryInstrument: 'Piano Erudito',
-          role: 'Colega de Recital',
-          connectedAt: '2023-09-01',
-          status: 'connected',
-        },
-        {
-          id: 'conn-3',
-          targetUserId: 'usr_arthur_1',
-          name: 'Arthur Moreira',
-          headline: 'Violoncelista Barroco & Engenheiro de Gravação Acústica',
-          primaryInstrument: 'Violoncelo Histórico',
-          role: 'Músico de Câmara',
-          connectedAt: '2023-11-20',
-          status: 'connected',
-        },
-        {
-          id: 'conn-4',
-          targetUserId: 'usr_helena_1',
-          name: 'Helena Vasconcellos',
-          headline: 'Violinista Spalla da Orquestra Filarmônica',
-          primaryInstrument: 'Violino',
-          role: 'Duo Violino e Teclado',
-          connectedAt: '2024-01-14',
-          status: 'connected',
-        },
-      ],
+      // As quatro conexoes semeadas aqui (usr_gabriel_1, usr_clara_1,
+      // usr_arthur_1, usr_helena_1) referenciavam perfis que NAO EXISTEM no
+      // repositorio. Enquanto nao havia rota por usuario ninguem percebia;
+      // com /profile/:userId cada uma vira um link morto. Foram removidas por
+      // isso — o recurso de conexoes continua inteiro, o que saiu foi dado
+      // fabricado (CLAUDE_AUDIT.md P-04). A rede real se forma com os
+      // usuarios que entrarem.
+      connectionsList: [],
 
       // Academic Lens
       academic: {
@@ -848,7 +815,10 @@ export class PersistentUnifiedProfileRepository implements UnifiedProfileReposit
 
       // Community Lens
       community: {
-        connectionsCount: 342,
+        // Tem que bater com connectionsList. O valor anterior (342) contradizia
+        // uma lista de 4 itens e agora contradiria uma lista vazia — o cabecalho
+        // exibiria "Conectado (342)" sem nenhuma conexao.
+        connectionsCount: 0,
         posts: [
           {
             id: 'post-1',
@@ -1013,15 +983,31 @@ export class PersistentUnifiedProfileRepository implements UnifiedProfileReposit
 
   public async findByUserId(userId: string): Promise<UnifiedProfileRecord | null> {
     const map = await this.getAllProfilesMap();
-    if (map[userId]) return map[userId];
+    // Um id desconhecido devolve null. A versao anterior tratava qualquer id
+    // que CONTIVESSE a palavra "founder" como fundador e, pior, caia em
+    // `initialized.usr_founder_1` quando nao achava — de modo que
+    // `usr_founder_qualquer-coisa` devolvia o registro completo da fundadora.
+    // Inofensivo enquanto nao havia rota por usuario; vazamento acessivel por
+    // URL a partir de /profile/:userId (CLAUDE_AUDIT.md P-01).
+    return map[userId] ?? null;
+  }
 
-    // Check if founder
-    if (userId.includes('founder') || userId === 'usr_founder_1' || userId === 'usr_founder_2') {
-      const initialized = await this.initializeSeedData();
-      return initialized[userId] || initialized.usr_founder_1;
-    }
-
-    return null;
+  /**
+   * Diretorio de pessoas: so quem esta publicamente visivel.
+   *
+   * O filtro roda aqui, na fonte, e nao na tela — uma lista de pessoas
+   * montada no cliente a partir do mapa completo entregaria perfis privados
+   * ao bundle mesmo que a UI os escondesse.
+   */
+  public async listPublicDirectory(): Promise<UnifiedProfileRecord[]> {
+    const map = await this.getAllProfilesMap();
+    const visiveis = Object.values(map).filter((p) => p.overallVisibility !== 'private');
+    const projetados = await Promise.all(
+      visiveis.map((p) => this.getPublicProjection(p.userId))
+    );
+    return projetados
+      .filter((p): p is UnifiedProfileRecord => p !== null)
+      .sort((a, b) => a.displayName.localeCompare(b.displayName, 'pt-BR'));
   }
 
   public async save(profile: UnifiedProfileRecord): Promise<UnifiedProfileRecord> {

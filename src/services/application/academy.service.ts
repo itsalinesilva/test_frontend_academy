@@ -20,6 +20,7 @@ import { AcademyRepository, academyRepository } from '../../repositories/academy
 import { profileService, ProfileService } from './profile.service';
 import { analyticsService } from '../../infrastructure/telemetry/analytics-service';
 import { AnalyticsEventType } from '../../domain/analytics';
+import { canonicalJson, sha256Hex } from '../../domain/integrity';
 import { NotFoundError } from '../../domain/errors';
 
 export class AcademyService {
@@ -584,9 +585,26 @@ export class AcademyService {
       return existing;
     }
 
-    // Generate deterministic verification code and SHA-256 hash
+    // O codigo de verificacao identifica o documento; o hash prova o conteudo.
     const verificationCode = `AMD-${new Date().getFullYear()}-${course.slug.substring(0, 3).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const integrityHash = `sha256:amd_${Date.now().toString(16)}_${Math.random().toString(16).substring(2, 10)}`;
+    const issuedAt = new Date().toISOString();
+
+    // Hash real, sobre os campos do certificado. O comentario acima desta
+    // linha dizia "deterministic" enquanto o valor vinha de `Math.random()`:
+    // dois certificados identicos recebiam hashes diferentes e um certificado
+    // adulterado mantinha o seu (CLAUDE_AUDIT.md P-07).
+    const integrityHash = `sha256:${await sha256Hex(
+      canonicalJson({
+        userId,
+        courseId,
+        courseTitle: course.title,
+        workloadHours: course.workloadHours,
+        verificationCode,
+        competencies: [...course.competencies].sort(),
+        instructorName: course.authorName,
+        issuedAt,
+      })
+    )}`;
 
     const cert: AcademicCertificateRecord = {
       id: `cert_${courseId}_${Date.now()}`,
@@ -598,7 +616,7 @@ export class AcademyService {
       workloadHours: course.workloadHours,
       verificationCode,
       sha256Hash: integrityHash,
-      issuedAt: new Date().toISOString(),
+      issuedAt,
       instructorName: course.authorName,
       instructorTitle: course.authorTitle,
       competencies: course.competencies,

@@ -289,3 +289,25 @@ Consequência: se o KV cair ou for desligado, o produto continua inteiro para ca
 | 15.12 | Renderização programática de ilustrações (pauta, ciclo das quintas, teclado, braço, cifras) em SVG — **vedada geração por IA de manuscritos/gravuras históricas** | ADR-001.C / 21.1 §8 | ⬜ |
 | 15.13 | Rampa de cor completa para `#991b1b` e `#6D1D2D` no `@theme` do Tailwind v4 | ADR-001.D | ⬜ |
 | 15.14 | Deploy no Cloudflare Pages + configuração de build e variáveis de ambiente | ADR-001.A | ⬜ |
+
+
+---
+
+## BLOCO 4 — COMANDO 4 · Profile (paridade LinkedIn) ✅ **CONCLUIDO** (2026-09-17)
+
+> Profile 36 -> **92/100**. As 4 telas em FULL. Sete defeitos corrigidos, todos
+> com teste de regressao (24 casos novos). Detalhamento em `CLAUDE_AUDIT.md` §14.
+
+| # | Item | Origem | Estado |
+|---|---|---|---|
+| 4.1 | `/profile/:userId` criada — sem ela a premissa "LinkedIn de musicos" era estruturalmente vazia (P-05) | §14 | ✅ |
+| 4.2 | `/profile/network` — diretorio de musicos, o caminho que faltava para alcancar outro perfil | §14 | ✅ |
+| 4.3 | Vazamento por substring "founder" fechado (P-01) | §14 | ✅ |
+| 4.4 | Perfil de terceiro passa a receber projecao publica, nunca o registro cru (P-02) | §14 | ✅ |
+| 4.5 | Identidade de conexao deixa de ser inventada (P-03); `usr_founder_1` cravado removido (P-06) | §14 | ✅ |
+| 4.6 | Conexoes semeadas apontando para perfis inexistentes removidas; contador consistente (P-04) | §14 | ✅ |
+| 4.7 | **`sha256Hash` passa a ser SHA-256 de verdade** em evidencias e certificados; verificacao recalcula e compara (P-07) | §14 | ✅ |
+| 4.8 | Orfaos reconectados: `ProfileHeader`, `SegmentedControl`, `Credential`, `Modal`, `Tabs`. `ProfileCard` NAO — exige e-mail e traz credenciais falsas de fabrica | §14 | ✅ |
+| 4.9 | **O seed da fundadora e um curriculo fabricado** (percentil 99,8; 420h; posts com 215 upvotes) e vai para producao com o nome real dela. Esvaziar e decisao de produto | §14 | ⬜ **decisao da Aline** |
+| 4.10 | `PortfolioScreen`: `alert()` fingindo exportar PDF trocado por exportacao real em JSON (o mesmo formato do backup no Drive) | §14 | ✅ |
+| 4.11 | Estados de pagina em Profile: media **2,5 de 5** por tela (era 0). Nenhuma tela com zero | DoD | ✅ |

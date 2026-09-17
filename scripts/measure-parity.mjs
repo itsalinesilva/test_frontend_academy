@@ -46,6 +46,7 @@ const EXPECTED = {
   PracticeProfileScreen: ['C', 'CATALOG'], PracticeScreen: ['D', 'INSTRUMENT'],
   // PROFILE
   ProfileOverviewScreen: ['C', 'CATALOG'], PortfolioScreen: ['B', 'CATALOG'],
+  NetworkDirectoryScreen: ['B', 'CATALOG'],
   EditProfileScreen: ['A', 'CATALOG'],
   // ROOMS / COMMUNITY
   RoomsDirectoryScreen: ['B', 'CATALOG'], RoomDetailScreen: ['C', 'CATALOG'],
@@ -84,6 +85,7 @@ const REQUIRED = {
   MasteryScreen: ['DataGrid'], StreakScreen: ['ProgressRing'], DailyGoalScreen: ['ProgressRing'],
   ProfileOverviewScreen: ['ProfileHeader', 'Tabs', 'SegmentedControl', 'Credential'],
   PortfolioScreen: ['Tabs', 'Modal'],
+  NetworkDirectoryScreen: ['EmptyState'],
   RoomDetailScreen: ['Tabs', 'ForumCard'], CommunityFeedScreen: ['ForumCard'],
   TopicDetailScreen: ['ForumCard'], EventsDirectoryScreen: ['EventCard'],
   DawProjectScreen: ['MixerChannel', 'PianoRoll', 'Track', 'Timeline', 'Recorder'],
@@ -139,6 +141,9 @@ for (const f of screens) {
   // instrumento mentir a favor de quem o escreve.
   const PROVIDERS = {
     LessonBlockRenderer: ['Staff', 'InstrumentKeyboard'],
+    // CredentialsTab renderiza <Credential/> de verdade (certificados
+    // academicos). So entra aqui o que o provedor de fato desenha.
+    CredentialsTab: ['Credential'],
   };
   const provided = Object.entries(PROVIDERS)
     .filter(([prov]) => src.includes('<' + prov))
@@ -147,6 +152,10 @@ for (const f of screens) {
     TAG(c).test(src) ||
     (c === 'Tabs' && src.includes('<PageLayout.Tabs')) ||
     (c === 'LockedState' && src.includes('lockedProps')) ||
+    // O PageLayout renderiza EmptyState/ErrorState a partir destas props —
+    // a tela entrega o componente por composicao, nao por ausencia.
+    (c === 'EmptyState' && src.includes('emptyProps')) ||
+    (c === 'ErrorState' && src.includes('errorProps')) ||
     provided.includes(c);
   const missingComponents = required.filter((c) => !satisfies(c));
 

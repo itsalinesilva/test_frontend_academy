@@ -322,3 +322,77 @@ O que impede de chamá-lo de produto:
 6. **A rede de segurança é ilusória.** CI verde, typecheck limpo, 19 testes passando — sobre um produto com bypass de admin.
 
 Nada disso é irreparável, e nada precisa ser jogado fora. A ordem de ataque está em `CLAUDE_TODO.md`.
+
+---
+
+## 14. PERFIL — DEFEITOS ENCONTRADOS NO COMANDO 4 (2026-09-17)
+
+Os sete defeitos abaixo vieram de **usar** o Profile, não de lê-lo. Seis deles
+eram inalcançáveis pela interface porque `/profile/:userId` não existia: não
+havia como pedir o perfil de outra pessoa. Criar a rota é justamente o que os
+tornaria exploráveis. Por isso todos foram corrigidos **antes** de a rota
+entrar em uso, e cada um tem teste de regressão.
+
+| # | Defeito | Onde estava | Estado |
+|---|---|---|---|
+| **P-01** | `findByUserId` devolvia o registro **completo** da fundadora para qualquer id desconhecido que contivesse a substring `"founder"` (`usr_founder_999`, `atacante-founder-x`) | `unified-profile.repository.ts` | ✅ |
+| **P-02** | `getUnifiedProfile(alvo)` devolvia o registro **cru** — biografia privada, evidências privadas, portfólio não publicado — a qualquer visitante | `profile.service.ts` | ✅ |
+| **P-03** | `toggleConnection` gravava identidade **inventada** para qualquer pessoa conectada: nome "Músico Acadêmico Conectado", headline "Intérprete & Pesquisador", instrumento "Violino / Teclado" | `profile.service.ts` | ✅ |
+| **P-04** | As 4 conexões semeadas apontavam para `usr_gabriel_1`, `usr_clara_1`, `usr_arthur_1`, `usr_helena_1` — **perfis inexistentes**. Cada card viraria link morto | `unified-profile.repository.ts` | ✅ |
+| **P-05** | **`/profile/:userId` não existia.** Havia tela de perfil, e ela só conseguia exibir o próprio. A premissa "LinkedIn de músicos" era estruturalmente vazia | `router.tsx` | ✅ |
+| **P-06** | `handleToggleConnection` cravava `'usr_founder_1'`: toda conexão apontava para a fundadora, fosse qual fosse o perfil aberto | `ProfileOverviewScreen.tsx` | ✅ |
+| **P-07** | **O `sha256Hash` não era um hash.** Era `Math.random()` com o texto `sha256:` colado na frente — em evidências *e* em certificados | `profile.service.ts`, `academy.service.ts` | ✅ |
+
+### P-07 em detalhe — a afirmação falsa de segurança
+
+```ts
+// evidências (profile.service.ts)
+const integrityHash = `sha256:${Math.random().toString(16)...}${Date.now().toString(16)}`;
+
+// certificados (academy.service.ts) — o comentário acima dizia "deterministic"
+const integrityHash = `sha256:amd_${Date.now().toString(16)}_${Math.random()...}`;
+```
+
+O valor não derivava do conteúdo. Dois registros idênticos recebiam hashes
+diferentes; um registro adulterado mantinha o seu. Nenhuma das três
+propriedades de um hash de integridade existia.
+
+Por cima disso, a interface afirmava **"prova matemática de integridade"**,
+**"Protegido por chaves invioláveis"** e, ao clicar em verificar,
+**"Integridade confirmada!"** — sobre um número aleatório. A função de
+verificação não verificava nada: guardava o valor num estado e exibia a
+mensagem de sucesso.
+
+Numa plataforma cujo diferencial declarado é a credencial verificável, isso é
+pior do que não ter o recurso. Foi corrigido em `src/domain/integrity.ts`:
+SHA-256 real via Web Crypto sobre JSON canônico (chaves ordenadas em
+profundidade), e verificação que **recalcula e compara**, com três respostas
+possíveis — `valida`, `adulterada` e `nao_verificavel` (esta última para
+registros gravados antes da correção: chamá-los de adulterados acusaria o dado
+errado, chamá-los de válidos repetiria a mentira).
+
+### Decisões tomadas, com justificativa
+
+- **Conexões fabricadas removidas (P-04).** O recurso de conexões continua
+  inteiro; o que saiu foi dado que apontava para o nada. Justificativa técnica:
+  com `/profile/:userId` ativo, cada card era um link morto.
+- **`connectionsCount` 342 → 0.** Contradizia a lista de 4 itens e
+  contradiria a lista vazia; o cabeçalho exibiria "Conectado (342)" sem
+  nenhuma conexão.
+- **`ProfileCard` NÃO foi reconectado.** Exige `email` — num diretório público
+  isso vazaria endereço — e traz credenciais fixas de fábrica (Edinburgh) como
+  valor padrão. Reconectá-lo satisfaria a métrica e pioraria o produto.
+- **`Credential` foi reconectado onde ele de fato cabe.**
+  `academic.certificates` existia no domínio e **nenhuma tela o renderizava** —
+  dado real, invisível. Não substituiu o bloco de evidências, que tem
+  avaliador, decisão e hash; substituir teria removido função.
+
+### ⚠️ PENDÊNCIA QUE É DECISÃO DE PRODUTO, NÃO TÉCNICA
+
+O seed da fundadora é um **currículo fabricado**: 342 conexões (corrigido),
+`peerGroupPercentile: 99.8`, 420 horas de estudo, posts com 148 e 215 upvotes,
+bacharelado de 2.400h. Isso hoje é dado de demonstração — e vai para produção
+como se fosse real, num perfil que leva o nome verdadeiro da fundadora.
+
+Esvaziar tudo isso deixaria o Profile honesto e praticamente vazio. **Essa
+escolha é do produto, não minha**, então não a tomei. Registrada como TODO 4.9.

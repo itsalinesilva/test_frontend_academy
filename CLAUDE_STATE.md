@@ -6,9 +6,9 @@
 | Campo | Valor |
 | :--- | :--- |
 | **Última atualização** | 2026-09-16 |
-| **Missão concluída** | **COMANDO 3 — Academy 90/100 · 22 de 22 telas FULL** |
+| **Missão concluída** | **COMANDO 4 — Profile 36→92/100 · 4 de 4 telas FULL · 7 defeitos corrigidos** |
 | **Branch** | `main` (commit `cad89d0`) |
-| **Próxima missão** | **COMANDO 4 — Profile (paridade LinkedIn)** |
+| **Próxima missão** | **COMANDO 5 — Practice (paridade Duolingo + Astra Trainer)** · começa pela TODO 3.10 |
 | **Status global** | 🟠 **PROTÓTIPO COM AUTENTICAÇÃO REAL** — os bloqueadores de segurança estão fechados; a paridade funcional não |
 
 ---
