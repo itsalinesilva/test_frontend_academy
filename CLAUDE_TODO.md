@@ -81,7 +81,11 @@
 | 3.5 | Fundir `course.repository.ts` em `academy.repository.ts` (com justificativa técnica registrada) | §9 | ⬜ |
 | 3.6 | Course Detail: materiais, bibliografia navegável, corpo docente real, cursos relacionados, trilhas relacionadas | §4 | ⬜ |
 | 3.7 | Lesson: navegação anterior/próxima, marcação de progresso por tempo real de estudo, CTA contextual para a habilidade correspondente | §4, §6 | ⬜ |
-| 3.8 | Estados obrigatórios (loading/empty/error/success) auditados em todas as telas de Academy | DoD | ⬜ |
+| 3.8 | Estados obrigatórios (loading/empty/error/success) auditados em todas as telas de Academy | DoD | 🔄 |
+| 3.12 | `AcademyHomeScreen` 19→97 · `AcademyCatalogScreen` 48→93 · `MyLearningScreen` 48→93 · `AcademicHistoryScreen` 19→93 | §I.4 | ✅ |
+| 3.13 | Órfãos reconectados: `CourseCard` (4 telas) · `LessonCard` · `DataGrid` · `Tabs` (2) | 1.A | ✅ |
+| 3.14 | Mais um id fixo encontrado e removido: `MyLearningScreen` levava toda matrícula sem registro à lição `les_fomt_101_1` | R-02 | ✅ |
+| 3.15 | **Restam 8 telas** abaixo de FULL: CourseCurriculum 15 · CourseProgress 35 · ModuleDetail 43 · CategoryDetail 45 · AcademySearch 56 · AcademicProfile 60 · SearchResults 60 · InteractiveLesson 66 | §3.1 | ⬜ |
 
 ## BLOCO 4 — COMANDO 4 · Profile (paridade LinkedIn)
 | # | Item | Ref. | Estado |

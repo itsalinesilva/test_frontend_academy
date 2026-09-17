@@ -6,9 +6,9 @@
 | Campo | Valor |
 | :--- | :--- |
 | **Última atualização** | 2026-09-16 |
-| **Missão concluída** | **COMANDO 3 · etapa 5 — roteamento corrigido; 33 fallbacks eliminados** |
+| **Missão concluída** | **COMANDO 3 · etapa 6 — Academy 64→75; 14 telas FULL** |
 | **Branch** | `main` (commit `cad89d0`) |
-| **Próxima missão** | COMANDO 3 · etapa 6 — Academy Home, Catálogo e Meu Aprendizado sobre `PageLayout` |
+| **Próxima missão** | COMANDO 3 · etapa 7 — as 8 telas restantes de Academy (Curriculum, Progress, Module, Category, Search, InteractiveLesson) |
 | **Status global** | 🟠 **PROTÓTIPO COM AUTENTICAÇÃO REAL** — os bloqueadores de segurança estão fechados; a paridade funcional não |
 
 ---

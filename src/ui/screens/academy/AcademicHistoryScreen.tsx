@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { DataGrid } from '../../components/data-display/DataGrid';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
-import { Badge } from '../../components/base/Badge';
 import { academyService } from '../../../services/application/academy.service';
 import { authService } from '../../../services/application/auth.service';
 import { AcademicHistoryEntry } from '../../../domain/academy';
-import { History, Download, ArrowLeft, CheckCircle2, Award, FileText } from 'lucide-react';
+
+/** Rotulos legiveis dos atos academicos registrados. */
+const ACT_LABEL: Record<string, string> = {
+  course_enrolled: 'Matricula',
+  lesson_completed: 'Licao concluida',
+  activity_attempt: 'Atividade',
+  assessment_submitted: 'Avaliacao',
+  course_completed: 'Curso concluido',
+  certificate_issued: 'Certificado emitido',
+};
 
 export const AcademicHistoryScreen: React.FC = () => {
   const { navigate } = useRouter();
@@ -42,115 +51,127 @@ export const AcademicHistoryScreen: React.FC = () => {
   };
 
   return (
-    <ScreenContainer
-      id="academic-history-screen"
-      title="Histórico Acadêmico Imutável"
-      subtitle="Registro auditável de todas as lições integralizadas, avaliações realizadas e evidências emitidas."
-      badgeLabel="Livro de Registro Oficial"
-      badgeVariant="neutral"
-      primaryAction={{
-        label: 'Exportar Histórico / Imprimir',
-        icon: Download,
-        onClick: handlePrint,
+    <PageLayout
+      id="academic-history"
+      form="catalog"
+      density="operational"
+      asideLabel="Resumo do registro"
+      state={isLoading ? 'loading' : historyEntries.length === 0 ? 'empty' : 'content'}
+      loadingMessage="Carregando o livro de registro academico..."
+      emptyProps={{
+        title: 'Seu historico ainda esta vazio',
+        description:
+          'Cada licao integralizada, avaliacao realizada e certificado emitido e registrado aqui de forma auditavel.',
+        actionLabel: 'Ir ao catalogo',
+        onAction: () => navigate('/academy/catalog'),
       }}
-      secondaryActions={[
-        {
-          label: 'Meu Aprendizado',
-          icon: ArrowLeft,
-          onClick: () => navigate('/academy/my-learning'),
-        },
-      ]}
     >
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header Summary Banner */}
-        <div className="p-4 bg-white border border-stone-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <span className="text-xs font-mono uppercase text-stone-500 font-semibold flex items-center gap-1.5">
-              <History className="w-3.5 h-3.5 text-red-800" />
-              Auditoria de Conquistas & Integralizações
-            </span>
-            <h3 className="font-serif font-bold text-base text-stone-900">
-              Total de Atos Acadêmicos Registrados: {historyEntries.length}
-            </h3>
-          </div>
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-3">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Livro de registro
+          </p>
+          <dl className="space-y-1.5 text-xs text-stone-700">
+            <div className="flex items-center justify-between">
+              <dt>Atos registrados</dt>
+              <dd className="font-mono font-bold">{historyEntries.length}</dd>
+            </div>
+            <div className="flex items-center justify-between">
+              <dt>Licoes</dt>
+              <dd className="font-mono font-bold">
+                {historyEntries.filter((e) => e.type === 'lesson_completed').length}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between">
+              <dt>Avaliacoes</dt>
+              <dd className="font-mono font-bold">
+                {historyEntries.filter((e) => e.type === 'assessment_submitted').length}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between border-t border-stone-100 pt-1.5">
+              <dt>Certificados</dt>
+              <dd className="font-mono font-bold">
+                {historyEntries.filter((e) => e.type === 'certificate_issued').length}
+              </dd>
+            </div>
+          </dl>
+          <Button variant="outline" size="sm" className="w-full" onClick={handlePrint}>
+            Exportar / imprimir
+          </Button>
+          <p className="text-[11px] leading-relaxed text-stone-500">
+            Registro append-only: atos nao sao editados nem removidos.
+          </p>
+        </Card>
+      </PageLayout.Aside>
 
-          <div className="text-xs font-mono text-stone-500">
-            Hash Ledger: SHA-256 Verificado
-          </div>
-        </div>
-
-        {/* Timeline List of Events */}
-        {isLoading ? (
-          <div className="py-12 text-center text-xs text-stone-500 font-mono">
-            Carregando histórico acadêmico auditável...
-          </div>
-        ) : historyEntries.length === 0 ? (
-          <Card variant="muted" padding="xl" className="text-center space-y-3">
-            <History className="w-8 h-8 text-stone-400 mx-auto" />
-            <h4 className="font-serif font-bold text-base text-stone-900">
-              Nenhum ato acadêmico registrado ainda
-            </h4>
-            <p className="text-xs text-stone-600 max-w-sm mx-auto">
-              Ao concluir lições, resolver atividades e prestar exames, seus registros imutáveis constarão aqui.
-            </p>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => navigate('/academy/catalog')}
-            >
-              Ir ao Catálogo de Cursos
-            </Button>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {historyEntries.map((entry, idx) => (
-              <Card
-                key={entry.id || idx}
-                variant="default"
-                padding="md"
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-stone-200"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-stone-700 shrink-0 mt-0.5">
-                    {entry.type.includes('certificate') ? (
-                      <Award className="w-4 h-4 text-amber-700" />
-                    ) : entry.type.includes('assessment') ? (
-                      <FileText className="w-4 h-4 text-red-800" />
-                    ) : (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-                    )}
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="neutral" size="sm">
-                        {entry.type.toUpperCase().replace(/_/g, ' ')}
-                      </Badge>
-                      <span className="text-xs font-mono text-stone-400">
-                        {new Date(entry.timestamp).toLocaleString('pt-BR')}
-                      </span>
-                    </div>
-
-                    <div className="text-xs text-stone-800 font-serif font-medium">
-                      {entry.contentTitle} ({entry.contentId})
-                    </div>
-
-                    {entry.details && (
-                      <div className="text-[11px] text-stone-600 font-mono bg-stone-50 p-2 rounded border border-stone-100">
-                        {entry.details}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <span className="text-[10px] font-mono text-stone-400 shrink-0">
-                  ID: {entry.id.slice(0, 12)}...
+      <PageLayout.Main>
+        {/* Densidade operacional com DataGrid — o livro-razao e uma tabela
+            ordenavel e pesquisavel, nao uma lista de cards. O componente
+            existia com 237 linhas e zero usos (01_REPOSITORY_AUDIT I.4). */}
+        <DataGrid
+          id="academic-history-grid"
+          data={historyEntries}
+          searchable
+          pageSize={25}
+          emptyMessage="Nenhum ato academico registrado."
+          columns={[
+            {
+              key: 'timestamp',
+              header: 'Data',
+              sortable: true,
+              width: '150px',
+              render: (row) => (
+                <span className="font-mono text-[11px] text-stone-600">
+                  {new Date(row.timestamp).toLocaleString('pt-BR', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit',
+                  })}
                 </span>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
-    </ScreenContainer>
+              ),
+            },
+            {
+              key: 'type',
+              header: 'Ato',
+              sortable: true,
+              width: '170px',
+              render: (row) => <span className="text-xs">{ACT_LABEL[row.type] ?? row.type}</span>,
+            },
+            {
+              key: 'contentTitle',
+              header: 'Conteudo',
+              sortable: true,
+              render: (row) => (
+                <div className="space-y-0.5">
+                  <p className="text-xs font-medium text-stone-900">{row.contentTitle}</p>
+                  {row.skills.length > 0 && (
+                    <p className="text-[11px] text-stone-500">{row.skills.join(' | ')}</p>
+                  )}
+                </div>
+              ),
+            },
+            {
+              key: 'score',
+              header: 'Nota',
+              sortable: true,
+              width: '80px',
+              render: (row) =>
+                row.score === undefined ? (
+                  <span className="text-stone-300" aria-label="sem nota">--</span>
+                ) : (
+                  <span className="font-mono text-xs font-bold text-stone-900">{row.score}</span>
+                ),
+            },
+            {
+              key: 'contentVersion',
+              header: 'Versao',
+              width: '90px',
+              render: (row) => (
+                <span className="font-mono text-[11px] text-stone-500">{row.contentVersion}</span>
+              ),
+            },
+          ]}
+        />
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

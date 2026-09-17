@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { CourseCard } from '../../components/domain/CourseCard';
+import { LessonCard } from '../../components/domain/LessonCard';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
@@ -8,20 +10,16 @@ import { ProgressBar } from '../../components/data-display/Progress';
 import { AudienceToggle } from '../../components/domain/AudienceToggle';
 import { academyService } from '../../../services/application/academy.service';
 import { authService } from '../../../services/application/auth.service';
-import { Program, LearningPath, AcademyCourse, UserAcademyProgress, AudienceVariant, AcademyCategory } from '../../../domain/academy';
+import { Program, LearningPath, AcademyCourse, UserAcademyProgress, AudienceVariant, AcademyCategory, AcademyLesson } from '../../../domain/academy';
 import {
-  BookOpen,
   Search,
   Award,
-  GraduationCap,
   ArrowRight,
   Clock,
   CheckCircle2,
   Play,
-  History,
   Layers,
   Sparkles,
-  User,
   Target,
   Flame,
 } from 'lucide-react';
@@ -35,6 +33,9 @@ export const AcademyHomeScreen: React.FC = () => {
   const [categories, setCategories] = useState<AcademyCategory[]>([]);
   const [userEnrollments, setUserEnrollments] = useState<UserAcademyProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [nextLessons, setNextLessons] = useState<AcademyLesson[]>([]);
 
   useEffect(() => {
     const loadAcademyHomeData = async () => {
@@ -59,8 +60,22 @@ export const AcademyHomeScreen: React.FC = () => {
         setCourses(crss);
         setUserEnrollments(enrolls);
         setCategories(cats);
-      } catch (err) {
-        console.error('Error loading academy data:', err);
+
+        // "Próximo passo recomendado" (wireframes/01 §2): as lições ainda não
+        // concluídas da disciplina em andamento. Sem matrícula, a seção não
+        // aparece — nada de sugestão fabricada.
+        const active = enrolls.find((e) => e.progressPercentage < 100);
+        if (active) {
+          const mods = await academyService.getModules(active.courseId);
+          const lessonsByModule = await Promise.all(mods.map((m) => academyService.getLessons(m.id)));
+          const pending = lessonsByModule
+            .flat()
+            .filter((l) => !active.completedLessonIds.includes(l.id))
+            .slice(0, 3);
+          setNextLessons(pending);
+        }
+      } catch {
+        setLoadFailed(true);
       } finally {
         setIsLoading(false);
       }
@@ -72,40 +87,110 @@ export const AcademyHomeScreen: React.FC = () => {
   const enrolledCourseMap = new Map(userEnrollments.map((e) => [e.courseId, e]));
 
   return (
-    <ScreenContainer
-      id="academy-home-screen"
-      title="Academia Musical Digital"
-      subtitle="Ensino musical superior livre fundamentado no rigor acústico, solfejo formativo e análise contrapontística."
-      badgeLabel="Cátedra Livre"
-      badgeVariant="brand"
-      primaryAction={{
-        label: 'Explorar Catálogo',
-        icon: BookOpen,
-        onClick: () => navigate('/academy/catalog'),
+    <PageLayout
+      id="academy-home"
+      form="detail"
+      density="catalog"
+      state={isLoading ? 'loading' : loadFailed ? 'error' : courses.length === 0 ? 'empty' : 'content'}
+      loadingMessage="Carregando programas, trilhas e disciplinas…"
+      errorProps={{
+        title: 'Não foi possível carregar a Academia',
+        message: 'Houve uma falha ao buscar o catálogo acadêmico.',
+        onRetry: () => window.location.reload(),
       }}
-      secondaryActions={[
-        {
-          label: 'Laboratório de Prática',
-          icon: Target,
-          onClick: () => navigate('/practice'),
-        },
-        {
-          label: 'Perfil Acadêmico',
-          icon: User,
-          onClick: () => navigate('/academy/academic-profile'),
-        },
-        {
-          label: 'Meu Aprendizado',
-          icon: GraduationCap,
-          onClick: () => navigate('/academy/my-learning'),
-        },
-        {
-          label: 'Histórico Acadêmico',
-          icon: History,
-          onClick: () => navigate('/academy/history'),
-        },
-      ]}
+      emptyProps={{
+        title: 'Catálogo em construção',
+        description:
+          'Ainda não há disciplinas publicadas. O currículo nasce da ingestão das fontes acadêmicas.',
+        actionLabel: 'Conhecer a plataforma',
+        onAction: () => navigate('/help'),
+      }}
     >
+      <PageLayout.Tabs
+        id="academy-home-tabs"
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        tabs={[
+          { id: 'overview', label: 'Visão Geral' },
+          { id: 'courses', label: 'Disciplinas', badge: courses.length || undefined },
+          { id: 'paths', label: 'Trilhas', badge: paths.length || undefined },
+          { id: 'programs', label: 'Programas', badge: programs.length || undefined },
+        ]}
+      />
+
+      {/* Trilho fixo: continuidade, cruzamento com Prática e certificação */}
+      <PageLayout.Aside>
+        <div className="space-y-3">
+          <Card variant="default" padding="md" className="space-y-3">
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+              Seu progresso
+            </p>
+            {userEnrollments.length === 0 ? (
+              <>
+                <p className="text-xs leading-relaxed text-stone-600">
+                  Você ainda não tem matrícula ativa. A matrícula é gratuita e libera lições,
+                  atividades e avaliação.
+                </p>
+                <Button variant="primary" size="sm" className="w-full" onClick={() => navigate('/academy/catalog')}>
+                  Explorar catálogo
+                </Button>
+              </>
+            ) : (
+              <>
+                <dl className="space-y-1.5 text-xs text-stone-700">
+                  <div className="flex items-center justify-between">
+                    <dt>Em andamento</dt>
+                    <dd className="font-mono font-bold">
+                      {userEnrollments.filter((e) => e.progressPercentage < 100).length}
+                    </dd>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <dt>Concluídas</dt>
+                    <dd className="font-mono font-bold">
+                      {userEnrollments.filter((e) => e.progressPercentage === 100).length}
+                    </dd>
+                  </div>
+                </dl>
+                <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academy/my-learning')}>
+                  Meu aprendizado
+                </Button>
+              </>
+            )}
+          </Card>
+
+          {/* Cruzamento Curso → Prática (regra constitucional 1) */}
+          <Card variant="accent" padding="md" className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              <Target className="h-3.5 w-3.5 text-red-800" aria-hidden="true" />
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-600">
+                Prática vinculada
+              </p>
+            </div>
+            <p className="text-xs leading-relaxed text-stone-700">
+              Cada lição concluída libera o treino da competência correspondente, com medição real.
+            </p>
+            <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/practice/skill-tree')}>
+              Abrir treinador
+            </Button>
+          </Card>
+
+          <Card variant="default" padding="md" className="space-y-2">
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+              Registro acadêmico
+            </p>
+            <div className="flex flex-col gap-1.5">
+              <button type="button" onClick={() => navigate('/academy/history')} className="text-left text-xs text-stone-700 hover:underline">
+                Histórico de atos acadêmicos
+              </button>
+              <button type="button" onClick={() => navigate('/academy/academic-profile')} className="text-left text-xs text-stone-700 hover:underline">
+                Perfil acadêmico
+              </button>
+            </div>
+          </Card>
+        </div>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       <div className="space-y-8">
         {/* Bridge Academy → Practice */}
         <div className="p-4 sm:p-5 bg-gradient-to-r from-red-950 via-stone-900 to-red-950 text-white rounded-xl border border-red-900/60 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -151,6 +236,28 @@ export const AcademyHomeScreen: React.FC = () => {
             </Button>
           </div>
         </div>
+        {nextLessons.length > 0 && (
+          <PageLayout.Section
+            title="Próximo passo recomendado"
+            description="As lições pendentes da disciplina que você está cursando."
+          >
+            <div className="space-y-2">
+              {nextLessons.map((lesson, i) => (
+                <LessonCard
+                  key={lesson.id}
+                  id={`next-lesson-${lesson.id}`}
+                  orderIndex={i + 1}
+                  title={lesson.variants[variant]?.title || lesson.variants.TRADITIONAL.title}
+                  durationMinutes={lesson.durationMinutes}
+                  type="INTERACTIVE"
+                  status={i === 0 ? 'IN_PROGRESS' : 'NOT_STARTED'}
+                  onSelect={() => navigate(`/academy/lesson/${lesson.id}`)}
+                />
+              ))}
+            </div>
+          </PageLayout.Section>
+        )}
+
         {/* Top Header Controls: Search bar & Audience Mode Switch */}
         <div
           id="academy-home-controls"
@@ -503,82 +610,30 @@ export const AcademyHomeScreen: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {courses.map((course) => {
               const enrollment = enrolledCourseMap.get(course.id);
-
               return (
-                <Card
+                <CourseCard
                   key={course.id}
                   id={`course-card-${course.id}`}
-                  variant="default"
-                  padding="lg"
-                  className="flex flex-col justify-between space-y-5 hover:border-stone-400 transition-colors"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <Badge variant={enrollment ? 'brand' : 'neutral'} size="sm">
-                        {enrollment ? 'Matriculado' : course.level}
-                      </Badge>
-                      <span className="text-xs font-mono text-stone-500">
-                        {course.workloadHours} horas
-                      </span>
-                    </div>
-
-                    <h3 className="font-serif font-bold text-base text-stone-900 leading-snug">
-                      {course.title}
-                    </h3>
-                    <p className="text-xs text-stone-600 line-clamp-2 leading-relaxed">
-                      {course.subtitle}
-                    </p>
-
-                    <div className="text-xs text-stone-500 space-y-1">
-                      <div className="flex items-center gap-1.5 font-sans">
-                        <GraduationCap className="w-3.5 h-3.5 text-stone-400 shrink-0" />
-                        <span className="line-clamp-1">{course.authorName}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 pt-3 border-t border-stone-200">
-                    {enrollment ? (
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between text-xs text-stone-600 font-sans">
-                          <span>Conclusão</span>
-                          <span className="font-mono font-semibold">{enrollment.progressPercentage}%</span>
-                        </div>
-                        <ProgressBar
-                          id={`progress-${course.id}`}
-                          value={enrollment.progressPercentage}
-                          max={100}
-                          sizeVariant="sm"
-                          variant="primary"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1 text-[11px] text-stone-500 font-mono">
-                        <span>{course.moduleIds.length} Módulos</span>
-                        <span>•</span>
-                        <span>Exame Final c/ Certificado</span>
-                      </div>
-                    )}
-
-                    <Button
-                      id={`btn-course-action-${course.id}`}
-                      variant={enrollment ? 'primary' : 'outline'}
-                      size="sm"
-                      className="w-full"
-                      onClick={() => navigate(`/academy/course/${course.id}`)}
-                    >
-                      {enrollment ? 'Continuar Disciplina' : 'Ver Ementa & Matrícula'}
-                    </Button>
-                  </div>
-                </Card>
+                  title={course.title}
+                  description={course.subtitle}
+                  instructorName={course.authorName}
+                  level={course.level}
+                  durationHours={course.workloadHours}
+                  modulesCount={course.moduleIds.length}
+                  provenanceCitation={course.provenance?.source}
+                  progressPercent={enrollment?.progressPercentage}
+                  isEnrolled={Boolean(enrollment)}
+                  onActionClick={() => navigate(`/academy/course/${course.id}`)}
+                />
               );
             })}
           </div>
         </div>
       </div>
-    </ScreenContainer>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };
