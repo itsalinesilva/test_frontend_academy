@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teoria da Música — Fundamentos — Conservatório Muscicapa</title>
+<meta name="author" content="Aline Alves Silva">
+<style>
+  @page { size: A5; margin: 18mm 16mm; }
+  :root { --anil: #1d2f49; --ouro: #7b6947; --texto: #1c1917; --suave: #57534e; }
+  body { font-family: Georgia, 'Times New Roman', serif; color: var(--texto);
+         line-height: 1.65; max-width: 34rem; margin: 0 auto; padding: 2rem 1.25rem; }
+  h1 { font-size: 1.7rem; color: var(--anil); border-bottom: 2px solid var(--ouro);
+       padding-bottom: .4rem; margin-top: 2.4rem; }
+  h2 { font-size: 1.25rem; color: var(--anil); margin-top: 2rem; }
+  h3 { font-size: 1.05rem; color: var(--suave); }
+  blockquote { border-left: 3px solid var(--ouro); background: #f9f8f6;
+               margin: 1.2rem 0; padding: .7rem 1rem; }
+  code { background: #f0eeea; padding: .1rem .3rem; border-radius: 3px;
+         font-family: ui-monospace, monospace; font-size: .9em; }
+  table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+  td { border: 1px solid #e1dbd1; padding: .4rem .6rem; }
+  hr { border: 0; border-top: 1px solid #e1dbd1; margin: 2rem 0; }
+  .secao { page-break-before: always; }
+  .secao:first-child { page-break-before: auto; }
+  .capa { text-align: center; padding-top: 22vh; }
+  .capa img { width: 190px; margin: 0 auto 2rem; display: block; }
+  .rodape { margin-top: 4rem; font-size: .8rem; color: var(--suave);
+            border-top: 1px solid #e1dbd1; padding-top: 1rem; }
+  .editavel { border-left: 3px dashed var(--ouro); padding-left: .9rem; }
+  @media print { body { max-width: none; } .editavel { border: 0; padding: 0; } }
+</style>
+</head>
+<body>
+<section class="secao capa editavel" id="capa" data-origem="EDITAVEL" data-papel="CAPA">
+<img src="../public/brasao-muscicapa-512.png" alt="">
+<h1>Teoria da Música — Fundamentos</h1>
+<h2>Do som à cifra: os doze degraus da gramática musical.</h2>
+<p><strong>Aline Alves Silva</strong></p>
+<p>Conservatório Muscicapa</p>
+</section>
+
+<section class="secao editavel" id="folha-de-rosto" data-origem="EDITAVEL" data-papel="FOLHA_DE_ROSTO">
+
+<h1>Teoria da Música — Fundamentos</h1>
+<p>Do som à cifra: os doze degraus da gramática musical.</p>
+<hr>
+<p><strong>Aline Alves Silva</strong></p>
+<p>Fundadora do Conservatório Muscicapa</p>
+<hr>
+<p>Primeira edição · 2026</p>
+</section>
+
+<section class="secao editavel" id="ficha" data-origem="EDITAVEL" data-papel="FICHA_CATALOGRAFICA">
+
+<p>Conservatório Muscicapa</p>
+<p><strong>Teoria da Música — Fundamentos</strong> / Aline Alves Silva. — Primeira edição — 2026.</p>
+<p>12 capítulos. Carga horária: 60 horas.</p>
+<p>Competências: notacao; duracao; alturas; intervalos; escalas; armaduras; metrica; andamento; subdivisao; acordes; cifragem.</p>
+<hr>
+<p>Material didático de curso livre de qualificação profissional. Publicação própria do Conservatório Muscicapa, sem vínculo com o MEC.</p>
+</section>
+
+<section class="secao editavel" id="prefacio" data-origem="EDITAVEL" data-papel="PREFACIO">
+
+<p>Este livro acompanha o curso de mesmo nome. Os capítulos seguem a ordem em que os conceitos se sustentam uns nos outros — não a ordem em que são mais fáceis, mas aquela em que cada um prepara o seguinte.</p>
+<p>Ao fim de cada capítulo há exercícios. Eles não são decoração: quem os pula lê o livro inteiro e descobre, no capítulo nove, que o quatro não ficou.</p>
+<p>As passagens marcadas <strong>ao instrumento</strong> pedem que você pare de ler e toque. São o ponto do livro em que a teoria vira som, e nenhuma delas leva mais de dois minutos.</p>
+</section>
+
+<section class="secao" id="sumario" data-origem="GERADA" data-papel="SUMARIO">
+
+<p>1. <strong>O som e suas quatro propriedades</strong> — Antes de qualquer símbolo: o que é um som, e quais das suas propriedades a música organiza.</p>
+<p>2. <strong>A pauta, as claves e os nomes das notas</strong> — O sistema de escrita: onde a nota mora no papel e o que a clave decide.</p>
+<p>3. <strong>Figuras, pausas e a divisão do tempo</strong> — A duração escrita: a proporção entre as figuras e o que o ponto de aumento faz.</p>
+<p>4. <strong>Tom, semitom e os acidentes</strong> — A menor distância do sistema, e os cinco sinais que alteram a altura de uma nota escrita.</p>
+<p>5. <strong>Intervalos: número e qualidade</strong> — A distância entre duas notas — contada de um jeito e qualificada de outro, e por que são dois passos.</p>
+<p>6. <strong>Escalas maiores e menores</strong> — A sequência de tons e semitons que define um modo, e as três formas da menor.</p>
+<p>7. <strong>Armaduras de clave e tonalidades</strong> — Por que os acidentes migram para o começo da pauta, e como o ciclo das quintas os organiza.</p>
+<p>8. <strong>Compasso, métrica e acentuação</strong> — Como o tempo se agrupa, e o que a fórmula de compasso realmente informa.</p>
+<p>9. <strong>Andamento, dinâmica e agógica</strong> — As indicações que não estão nas notas: velocidade, intensidade e flexão do tempo.</p>
+<p>10. <strong>Quiálteras, síncope e contratempo</strong> — Quando a subdivisão contraria o compasso — e o efeito rítmico que disso resulta.</p>
+<p>11. <strong>Acordes: tríades e inversões</strong> — Três notas empilhadas em terças, e o que muda quando o baixo troca.</p>
+<p>12. <strong>Cifragem e leitura harmônica</strong> — O sistema de símbolos que descreve um acorde sem escrevê-lo nota a nota.</p>
+</section>
+
+<section class="secao" id="cap-1" data-origem="GERADA" data-papel="CAPITULO">
+
+<h1>Capítulo 1 — O som e suas quatro propriedades</h1>
+<p><em>Antes de qualquer símbolo: o que é um som, e quais das suas propriedades a música organiza.</em></p>
+<p><strong>Ao final deste capítulo, você deve ser capaz de:</strong></p>
+<ul>
+<li>Distinguir altura, duração, intensidade e timbre num mesmo som.</li>
+<li>Explicar por que a altura depende da frequência e não do volume.</li>
+<li>Reconhecer a série harmônica como origem do timbre.</li>
+</ul>
+<hr>
+<p>Um som é uma perturbação do ar que chega ao ouvido. A música não organiza qualquer perturbação: organiza <strong>quatro propriedades</strong> que todo som tem ao mesmo tempo.</p>
+<p><strong>Altura</strong> é o quão grave ou agudo o som é. Depende da <strong>frequência</strong> — quantas vezes por segundo a fonte vibra. Mais vibrações, som mais agudo.</p>
+<p><strong>Duração</strong> é quanto tempo o som permanece.</p>
+<p><strong>Intensidade</strong> é o quão forte ou fraco ele soa. Depende da <strong>amplitude</strong> da vibração, não da frequência: um som pode ser grave e altíssimo, ou agudo e quase inaudível.</p>
+<p><strong>Timbre</strong> é o que distingue um violino de uma flauta tocando a mesma nota, com a mesma força, pelo mesmo tempo.</p>
+<blockquote>
+<p><strong>A confusão mais comum</strong></p>
+</blockquote>
+<p>&gt;</p>
+<blockquote>
+<p>Altura e intensidade são propriedades independentes. Dizer que uma nota é "alta" é ambíguo em português — pode significar aguda ou forte. Em música, "alta" quer dizer aguda. Para intensidade, diz-se forte e fraco.</p>
+</blockquote>
+<p><strong>Exemplo sonoro — A mesma duração, alturas diferentes.</strong> Três sons de duração idêntica. O que muda é só a frequência. Notas: C3 · C4 · C5 (60 bpm).</p>
+<h2>De onde vem o timbre</h2>
+<p>Quando uma corda vibra, ela não produz uma frequência só. Produz a <strong>fundamental</strong> — a que se ouve como a nota — e, junto, uma série de frequências mais agudas em proporções simples: o dobro, o triplo, o quádruplo. São os <strong>harmônicos</strong>.</p>
+<p>A intensidade relativa de cada harmônico é o que produz o timbre. Um violino e uma flauta tocando lá 440 emitem a mesma fundamental; o que difere é a receita de harmônicos que acompanha.</p>
+<p><strong>Exemplo sonoro — Os primeiros harmônicos de dó.</strong> Fundamental, oitava, quinta e oitava seguinte — as proporções 1:2:3:4, ouvidas em sequência e depois juntas. Notas: C3 · C4 · G4 · C5 (50 bpm).</p>
+<p><strong>Verificação.</strong> Dois sons têm a mesma frequência, mas um é muito mais forte. O que difere entre eles?</p>
+<p>a) A altura</p>
+<p>b) A intensidade</p>
+<p>c) O timbre</p>
+<p>d) A duração</p>
+<p><em>Resposta: b. A frequência determina a altura — se ela é a mesma, a altura é a mesma. A diferença de força é intensidade, que depende da amplitude da vibração.</em></p>
+<hr>
+<h2>Exercícios</h2>
+<p><strong>1.</strong> Qual propriedade do som depende diretamente da frequência de vibração?</p>
+<p>a) Intensidade</p>
+<p>b) Altura</p>
+<p>c) Timbre</p>
+<p>d) Duração</p>
+<p><strong>2.</strong> Dois sons têm a mesma frequência e a mesma duração, mas um foi tocado ao violino e outro à flauta. O que os distingue?</p>
+<p>a) A altura</p>
+<p>b) A intensidade</p>
+<p>c) O timbre</p>
+<p>d) Nada os distingue</p>
+<p><strong>3.</strong> Em música, dizer que uma nota é "alta" significa que ela é:</p>
+<p>a) Forte</p>
+<p>b) Aguda</p>
+<p>c) Longa</p>
+<p>d) Brilhante</p>
+<p><strong>4.</strong> A série harmônica explica principalmente:</p>
+<p>a) A duração das notas</p>
+<p>b) A origem do timbre</p>
+<p>c) A divisão do compasso</p>
+<p>d) A ordem dos acidentes</p>
+<p><strong>5.</strong> Um som grave e muito forte comparado a um som agudo e muito fraco. É correto dizer que:</p>
+<p>a) O grave tem altura maior</p>
+<p>b) O agudo tem intensidade maior</p>
+<p>c) Altura e intensidade são independentes</p>
+<p>d) O grave dura mais</p>
+<p><strong>6.</strong> Das quatro propriedades do som, qual a música NÃO organiza em um sistema de escrita próprio?</p>
+<p>a) Altura</p>
+<p>b) Duração</p>
+<p>c) Timbre</p>
+<p>d) Intensidade</p>
+<p><em>Respostas comentadas no gabarito, ao fim do livro.</em></p>
+</section>
+
+<section class="secao" id="cap-2" data-origem="GERADA" data-papel="CAPITULO">
+
+<h1>Capítulo 2 — A pauta, as claves e os nomes das notas</h1>
+<p><em>O sistema de escrita: onde a nota mora no papel e o que a clave decide.</em></p>
+<p><strong>Ao final deste capítulo, você deve ser capaz de:</strong></p>
+<ul>
+<li>Ler notas em clave de sol e em clave de fá.</li>
+<li>Explicar por que existem claves diferentes.</li>
+<li>Usar linhas suplementares sem perder a referência.</li>
+</ul>
+<hr>
+<p>A <strong>pauta</strong> — ou pentagrama — são cinco linhas e quatro espaços. Cada linha e cada espaço é uma posição de altura: quanto mais acima, mais agudo.</p>
+<p>Só que cinco linhas não dizem nada sozinhas. É a <strong>clave</strong>, no início da pauta, que fixa uma nota de referência — e todas as outras se posicionam a partir dela.</p>
+<p><strong>Na pauta</strong> (clave de sol): E4 · G4 · B4 · D5 · F5.</p>
+<h2>Por que mais de uma clave</h2>
+<p>Se houvesse uma clave só, instrumentos graves viveriam abaixo da pauta e agudos acima dela — escritos em linhas suplementares intermináveis, ilegíveis.</p>
+<p>A <strong>clave de sol</strong> fixa o sol4 na segunda linha e serve a vozes e instrumentos agudos. A <strong>clave de fá</strong> fixa o fá3 na quarta linha e serve aos graves. A mesma posição na pauta significa notas diferentes conforme a clave — é isso que a clave decide.</p>
+<p><strong>Ao teclado.</strong> Localize: C4.</p>
+<p><strong>Verificação.</strong> Uma nota escrita na segunda linha da pauta. Que nota é?</p>
+<p>a) Sol, sempre</p>
+<p>b) Depende da clave</p>
+<p>c) Mi, sempre</p>
+<p>d) Depende da armadura</p>
+<p><em>Resposta: b. A posição na pauta só ganha nome depois que a clave fixa a referência. Na clave de sol, a segunda linha é sol4; na clave de fá, é si2.</em></p>
+<hr>
+<h2>Exercícios</h2>
+<p><strong>1.</strong> Quantas linhas e espaços tem a pauta?</p>
+<p>a) Quatro linhas e cinco espaços</p>
+<p>b) Cinco linhas e quatro espaços</p>
+<p>c) Cinco linhas e cinco espaços</p>
+<p>d) Seis linhas e cinco espaços</p>
+<p><strong>2.</strong> Para que serve a clave no início da pauta?</p>
+<p>a) Indicar o andamento</p>
+<p>b) Fixar uma nota de referência</p>
+<p>c) Indicar a tonalidade</p>
+<p>d) Marcar o compasso</p>
+<p><strong>3.</strong> Na clave de sol, que nota ocupa a segunda linha?</p>
+<p>a) Mi</p>
+<p>b) Sol</p>
+<p>c) Si</p>
+<p>d) Ré</p>
+<p><strong>4.</strong> Por que existe mais de uma clave?</p>
+<p>a) Por tradição regional</p>
+<p>b) Para evitar excesso de linhas suplementares</p>
+<p>c) Para indicar dinâmica</p>
+<p>d) Para separar melodia de harmonia</p>
+<p><strong>5.</strong> A mesma posição na pauta, lida em clave de sol e em clave de fá, produz:</p>
+<p>a) A mesma nota</p>
+<p>b) Notas diferentes</p>
+<p>c) A mesma nota uma oitava acima</p>
+<p>d) Depende da armadura</p>
+<p><strong>6.</strong> Linhas suplementares servem para:</p>
+<p>a) Indicar repetição</p>
+<p>b) Escrever notas fora da extensão da pauta</p>
+<p>c) Separar compassos</p>
+<p>d) Marcar o tempo forte</p>
+<p><em>Respostas comentadas no gabarito, ao fim do livro.</em></p>
+</section>
+
+<section class="secao" id="cap-3" data-origem="GERADA" data-papel="CAPITULO">
+
+<h1>Capítulo 3 — Figuras, pausas e a divisão do tempo</h1>
+<p><em>A duração escrita: a proporção entre as figuras e o que o ponto de aumento faz.</em></p>
+<p><strong>Ao final deste capítulo, você deve ser capaz de:</strong></p>
+<ul>
+<li>Relacionar as figuras entre si pela proporção de dois para um.</li>
+<li>Aplicar ponto de aumento e ligadura de valor.</li>
+<li>Ler pausas com a mesma precisão com que se leem notas.</li>
+</ul>
+<hr>
+<p>As figuras não têm duração fixa em segundos. Têm duração <strong>relativa</strong>: cada figura vale o dobro da seguinte.</p>
+<table><tr><td>Figura</td><td>Vale</td></tr><tr><td>semibreve</td><td>2 mínimas</td></tr><tr><td>mínima</td><td>2 semínimas</td></tr><tr><td>semínima</td><td>2 colcheias</td></tr><tr><td>colcheia</td><td>2 semicolcheias</td></tr></table>
+<p>Quanto tempo dura uma semínima em segundos? Depende do andamento — e é só isso que o andamento decide.</p>
+<blockquote>
+<p><strong>O ponto de aumento</strong></p>
+</blockquote>
+<p>&gt;</p>
+<blockquote>
+<p>Um ponto à direita da figura acrescenta METADE do valor dela. Semínima pontuada = semínima + colcheia. Não é uma regra arbitrária: é a única forma de escrever uma duração de três subdivisões sem inventar uma figura nova.</p>
+</blockquote>
+<p><strong>Exemplo sonoro — Semínimas e colcheias sobre o mesmo pulso.</strong> Quatro semínimas, depois oito colcheias. O pulso não muda; a subdivisão dobra. Notas: C4 · C4 · C4 · C4 · C4 · C4 · C4 · C4 (100 bpm).</p>
+<p><strong>Verificação.</strong> Quantas semicolcheias cabem numa mínima?</p>
+<p>a) 4</p>
+<p>b) 8</p>
+<p>c) 16</p>
+<p>d) 2</p>
+<p><em>Resposta: b. Mínima = 2 semínimas = 4 colcheias = 8 semicolcheias. Cada degrau da tabela dobra a quantidade.</em></p>
+<hr>
+<h2>Exercícios</h2>
+<p><strong>1.</strong> Quantas colcheias valem uma semibreve?</p>
+<p>a) Quatro</p>
+<p>b) Oito</p>
+<p>c) Dezesseis</p>
+<p>d) Duas</p>
+<p><strong>2.</strong> O ponto de aumento acrescenta à figura:</p>
+<p>a) O dobro do valor</p>
+<p>b) Metade do valor</p>
+<p>c) Um quarto do valor</p>
+<p>d) Um tempo inteiro</p>
+<p><strong>3.</strong> A duração de uma semínima em segundos é:</p>
+<p>a) Sempre um segundo</p>
+<p>b) Definida pelo andamento</p>
+<p>c) Definida pela clave</p>
+<p>d) Definida pela armadura</p>
+<p><strong>4.</strong> Quantas semicolcheias cabem numa mínima?</p>
+<p>a) Quatro</p>
+<p>b) Oito</p>
+<p>c) Dezesseis</p>
+<p>d) Duas</p>
+<p><strong>5.</strong> A pausa corresponde a:</p>
+<p>a) Um erro de escrita</p>
+<p>b) Silêncio com duração medida</p>
+<p>c) Fim do compasso</p>
+<p>d) Repetição do trecho</p>
+<p><strong>6.</strong> Uma mínima pontuada equivale a quantas semínimas?</p>
+<p>a) Duas</p>
+<p>b) Três</p>
+<p>c) Quatro</p>
+<p>d) Seis</p>
+<p><em>Respostas comentadas no gabarito, ao fim do livro.</em></p>
+</section>
+
+<section class="secao" id="cap-4" data-origem="GERADA" data-papel="CAPITULO">
+
+<h1>Capítulo 4 — Tom, semitom e os acidentes</h1>
+<p><em>A menor distância do sistema, e os cinco sinais que alteram a altura de uma nota escrita.</em></p>
+<p><strong>Ao final deste capítulo, você deve ser capaz de:</strong></p>
+<ul>
+<li>Medir distâncias em tons e semitons sobre o teclado.</li>
+<li>Aplicar sustenido, bemol, bequadro, dobrado sustenido e dobrado bemol.</li>
+<li>Reconhecer enarmonia e explicar por que duas grafias soam igual.</li>
+</ul>
+<hr>
+<p>O <strong>semitom</strong> é a menor distância do sistema temperado: de uma tecla à tecla imediatamente vizinha, branca ou preta. Dois semitons formam um <strong>tom</strong>.</p>
+<p>Entre as sete notas naturais, a distância é de um tom — exceto entre <strong>mi e fá</strong> e entre <strong>si e dó</strong>, onde é de um semitom. É por isso que o teclado não tem tecla preta nesses dois pontos.</p>
+<p><strong>Ao teclado.</strong> Localize: E4, F4, B4, C5.</p>
+<h2>Os cinco acidentes</h2>
+<p><strong>Sustenido (♯)</strong> sobe um semitom. <strong>Bemol (♭)</strong> desce um semitom. <strong>Bequadro (♮)</strong> cancela o acidente anterior. <strong>Dobrado sustenido (𝄪)</strong> sobe um tom; <strong>dobrado bemol (𝄫)</strong> desce um tom.</p>
+<p>Duas grafias podem soar idêntico: fá♯ e sol♭ são a mesma tecla. Chama-se <strong>enarmonia</strong>. A escolha entre as duas não é indiferente — ela informa a função da nota dentro da tonalidade.</p>
+<p><strong>Ao instrumento.</strong> Toque E4 e F4, primeiro em sequência e depois juntas. Ouça e peça a análise. Esta é a menor distância do sistema.</p>
+<p><strong>Ao instrumento.</strong> Toque C4 e D4, primeiro em sequência e depois juntas. O dobro da distância anterior. Compare o quanto soa mais aberto.</p>
+<p><strong>Verificação.</strong> Quantos semitons há entre mi e fá?</p>
+<p>a) Dois</p>
+<p>b) Um</p>
+<p>c) Três</p>
+<p>d) Nenhum</p>
+<p><em>Resposta: b. Mi e fá são vizinhos imediatos: um semitom. O mesmo vale para si e dó. Nos demais pares de notas naturais vizinhas, a distância é de um tom.</em></p>
+<hr>
+<h2>Exercícios</h2>
+<p><strong>1.</strong> Entre quais pares de notas naturais a distância é de um semitom?</p>
+<p>a) Dó–ré e sol–lá</p>
+<p>b) Mi–fá e si–dó</p>
+<p>c) Ré–mi e lá–si</p>
+<p>d) Fá–sol e dó–ré</p>
+<p><strong>2.</strong> O bequadro serve para:</p>
+<p>a) Subir um semitom</p>
+<p>b) Descer um semitom</p>
+<p>c) Cancelar um acidente anterior</p>
+<p>d) Dobrar a duração</p>
+<p><strong>3.</strong> Fá sustenido e sol bemol produzem o mesmo som. Esse fenômeno chama-se:</p>
+<p>a) Transposição</p>
+<p>b) Enarmonia</p>
+<p>c) Modulação</p>
+<p>d) Inversão</p>
+<p><strong>4.</strong> Quantos semitons formam um tom?</p>
+<p>a) Um</p>
+<p>b) Dois</p>
+<p>c) Três</p>
+<p>d) Quatro</p>
+<p><strong>5.</strong> O dobrado sustenido altera a nota em:</p>
+<p>a) Meio tom acima</p>
+<p>b) Um tom acima</p>
+<p>c) Um tom abaixo</p>
+<p>d) Uma oitava acima</p>
+<p><strong>6.</strong> De dó a ré, no teclado, há:</p>
+<p>a) Um semitom</p>
+<p>b) Um tom</p>
+<p>c) Um tom e meio</p>
+<p>d) Dois tons</p>
+<p><em>Respostas comentadas no gabarito, ao fim do livro.</em></p>
+</section>
+
+<section class="secao" id="cap-5" data-origem="GERADA" data-papel="CAPITULO">
+
+<h1>Capítulo 5 — Intervalos: número e qualidade</h1>
+<p><em>A distância entre duas notas — contada de um jeito e qualificada de outro, e por que são dois passos.</em></p>
+<p><strong>Ao final deste capítulo, você deve ser capaz de:</strong></p>
+<ul>
+<li>Classificar um intervalo pelo número e pela qualidade.</li>
+<li>Inverter um intervalo e prever o resultado.</li>
+<li>Distinguir consonância de dissonância de ouvido.</li>
+</ul>
+<hr>
+<p>Um <strong>intervalo</strong> é a distância entre duas notas. Classificá-lo exige <strong>dois passos</strong>, e confundi-los é a origem de quase todo erro.</p>
+<p><strong>Primeiro, o número.</strong> Conta-se quantos nomes de nota há entre as duas, incluindo as duas pontas. De dó a mi: dó, ré, mi — três nomes, é uma <strong>terça</strong>. O número ignora acidentes.</p>
+<p><strong>Depois, a qualidade.</strong> Aí sim os acidentes contam. Dó–mi tem 4 semitons: terça <strong>maior</strong>. Dó–mi♭ tem 3: terça <strong>menor</strong>. As duas são terças; a qualidade é que difere.</p>
+<blockquote>
+<p><strong>Por que dois sistemas</strong></p>
+</blockquote>
+<p>&gt;</p>
+<blockquote>
+<p>O número diz o lugar na escala; a qualidade diz o tamanho exato. Uma terça sempre ocupa três graus, seja maior ou menor — e é isso que a mantém reconhecível como terça, na melodia e no acorde.</p>
+</blockquote>
+<p><strong>Ao instrumento.</strong> Toque C4 e E4, primeiro em sequência e depois juntas. Ouça ANTES de pedir a análise. Nomear sem ouvir treina o olho, não o ouvido.</p>
+<p><strong>Ao instrumento.</strong> Toque C4 e Eb4, primeiro em sequência e depois juntas. Três graus, como a anterior. Um semitom a menos muda o caráter inteiro.</p>
+<p><strong>Ao instrumento.</strong> Toque C4 e G4, primeiro em sequência e depois juntas. A consonância mais estável depois da oitava — a base do acorde.</p>
+<p><strong>Ao instrumento.</strong> Toque C4 e B4, primeiro em sequência e depois juntas. Compare com a oitava: falta um semitom, e o efeito é de tensão.</p>
+<h2>Inversão</h2>
+<p>Inverter um intervalo é subir a nota grave uma oitava — ou baixar a aguda. O resultado obedece a duas regras fixas:</p>
+<ul>
+<li><strong>os números somam nove</strong>: terça inverte em sexta, quinta em quarta, segunda em sétima;</li>
+<li><strong>a qualidade troca</strong>: maior vira menor, aumentado vira diminuto. Justo continua justo.</li>
+</ul>
+<p><strong>Verificação.</strong> Qual é a inversão de uma terça maior?</p>
+<p>a) Sexta maior</p>
+<p>b) Sexta menor</p>
+<p>c) Terça menor</p>
+<p>d) Quinta justa</p>
+<p><em>Resposta: b. Os números somam nove: 9 − 3 = 6, é uma sexta. E a qualidade troca: maior vira menor. Portanto, sexta menor.</em></p>
+<hr>
+<h2>Exercícios</h2>
+<p><strong>1.</strong> Ao contar o número de um intervalo, as notas das pontas:</p>
+<p>a) São excluídas</p>
+<p>b) São incluídas</p>
+<p>c) Conta-se só a mais grave</p>
+<p>d) Depende da qualidade</p>
+<p><strong>2.</strong> Dó a mi bemol. Que intervalo é?</p>
+<p>a) Terça maior</p>
+<p>b) Terça menor</p>
+<p>c) Segunda aumentada</p>
+<p>d) Quarta diminuta</p>
+<p><strong>3.</strong> Qual é a inversão de uma quinta justa?</p>
+<p>a) Quarta justa</p>
+<p>b) Quarta aumentada</p>
+<p>c) Quinta diminuta</p>
+<p>d) Sexta menor</p>
+<p><strong>4.</strong> O número de um intervalo é afetado por acidentes?</p>
+<p>a) Sim, sempre</p>
+<p>b) Não, apenas a qualidade é</p>
+<p>c) Só com bemóis</p>
+<p>d) Só em intervalos maiores que a oitava</p>
+<p><strong>5.</strong> Quais intervalos admitem a qualidade "justo"?</p>
+<p>a) Todos</p>
+<p>b) Segundas, terças, sextas e sétimas</p>
+<p>c) Uníssonos, quartas, quintas e oitavas</p>
+<p>d) Apenas quintas</p>
+<p><strong>6.</strong> Uma sexta maior, ao ser invertida, resulta em:</p>
+<p>a) Terça maior</p>
+<p>b) Terça menor</p>
+<p>c) Sexta menor</p>
+<p>d) Quarta justa</p>
+<p><strong>7.</strong> Um intervalo maior, ao ser diminuído em um semitom sem mudar o número, torna-se:</p>
+<p>a) Aumentado</p>
+<p>b) Menor</p>
+<p>c) Justo</p>
+<p>d) Diminuto</p>
+<p><em>Respostas comentadas no gabarito, ao fim do livro.</em></p>
+</section>
+
+<section class="secao" id="cap-6" data-origem="GERADA" data-papel="CAPITULO">
+
+<h1>Capítulo 6 — Escalas maiores e menores</h1>
+<p><em>A sequência de tons e semitons que define um modo, e as três formas da menor.</em></p>
+<p><strong>Ao final deste capítulo, você deve ser capaz de:</strong></p>
+<ul>
+<li>Construir a escala maior em qualquer tonalidade pelo padrão de tons e semitons.</li>
+<li>Distinguir menor natural, harmônica e melódica.</li>
+<li>Identificar o grau de uma nota dentro da escala.</li>
+</ul>
+<hr>
+<p>Uma <strong>escala</strong> é uma sequência ordenada de notas dentro de uma oitava. O que define o caráter dela não são as notas: é o <strong>padrão de tons e semitons</strong> entre elas.</p>
+<p>A escala maior tem sempre o mesmo padrão, comece onde começar:</p>
+<p><strong>T · T · st · T · T · T · st</strong></p>
+<p>Os semitons caem entre o 3º e o 4º grau, e entre o 7º e o 8º. É daí que vem o som de escala maior — e é por isso que, ao transpor, os acidentes aparecem: eles existem para preservar o padrão.</p>
+<p><strong>Ao instrumento.</strong> Toque a escala de C4, modo major, subindo e descendo.</p>
+<p><strong>Ao instrumento.</strong> Toque a escala de G4, modo major, subindo e descendo.</p>
+<h2>As três menores</h2>
+<p>A <strong>menor natural</strong> tem semitons entre 2–3 e 5–6. Soa modal, sem tração para a tônica.</p>
+<p>A <strong>menor harmônica</strong> sobe o 7º grau um semitom, criando a sensível — a nota que puxa para a tônica. O preço é um intervalo de segunda aumentada entre o 6º e o 7º, que é difícil de cantar.</p>
+<p>A <strong>menor melódica</strong> resolve isso subindo também o 6º grau na subida, e desfazendo as duas alterações na descida. É a única escala que muda conforme a direção.</p>
+<p><strong>Ao instrumento.</strong> Toque a escala de A4, modo natural minor, subindo e descendo.</p>
+<p><strong>Ao instrumento.</strong> Toque a escala de A4, modo harmonic minor, subindo e descendo.</p>
+<p><strong>Verificação.</strong> Onde ficam os semitons na escala maior?</p>
+<p>a) Entre 2–3 e 5–6</p>
+<p>b) Entre 3–4 e 7–8</p>
+<p>c) Entre 1–2 e 4–5</p>
+<p>d) Não há semitons na escala maior</p>
+<p><em>Resposta: b. O padrão é T–T–st–T–T–T–st: os semitons caem entre o 3º e o 4º grau e entre o 7º e o 8º. É esse desenho que faz a escala soar maior.</em></p>
+<hr>
+<h2>Exercícios</h2>
+<p><strong>1.</strong> Qual é o padrão de tons e semitons da escala maior?</p>
+<p>a) T T T st T T st</p>
+<p>b) T T st T T T st</p>
+<p>c) T st T T st T T</p>
+<p>d) st T T T st T T</p>
+<p><strong>2.</strong> A escala menor harmônica difere da natural por:</p>
+<p>a) Abaixar o 3º grau</p>
+<p>b) Subir o 7º grau</p>
+<p>c) Subir o 6º grau</p>
+<p>d) Abaixar o 2º grau</p>
+<p><strong>3.</strong> A escala menor melódica é a única que:</p>
+<p>a) Tem sete notas</p>
+<p>b) Muda conforme a direção</p>
+<p>c) Não tem tônica</p>
+<p>d) Usa só bemóis</p>
+<p><strong>4.</strong> Por que a escala de sol maior precisa de fá sustenido?</p>
+<p>a) Por convenção histórica</p>
+<p>b) Para preservar o padrão de tons e semitons</p>
+<p>c) Para diferenciar de dó maior</p>
+<p>d) Por causa da clave</p>
+<p><strong>5.</strong> O que define o caráter de uma escala?</p>
+<p>a) A tônica escolhida</p>
+<p>b) O padrão de tons e semitons</p>
+<p>c) O número de notas</p>
+<p>d) A clave usada</p>
+<p><strong>6.</strong> Se a escala de fá maior não tivesse si bemol, o que aconteceria?</p>
+<p>a) Ficaria mais fácil de tocar</p>
+<p>b) O padrão de tons e semitons se quebraria</p>
+<p>c) Mudaria de clave</p>
+<p>d) Viraria uma escala menor</p>
+<p><strong>7.</strong> Na menor harmônica, o intervalo entre o 6º e o 7º graus é:</p>
+<p>a) Um tom</p>
+<p>b) Um semitom</p>
+<p>c) Uma segunda aumentada</p>
+<p>d) Uma terça menor</p>
+<p><em>Respostas comentadas no gabarito, ao fim do livro.</em></p>
+</section>
+
+<section class="secao" id="cap-7" data-origem="GERADA" data-papel="CAPITULO">
+
+<h1>Capítulo 7 — Armaduras de clave e tonalidades</h1>
+<p><em>Por que os acidentes migram para o começo da pauta, e como o ciclo das quintas os organiza.</em></p>
+<p><strong>Ao final deste capítulo, você deve ser capaz de:</strong></p>
+<ul>
+<li>Determinar a tonalidade a partir da armadura.</li>
+<li>Escrever a armadura de qualquer tonalidade maior ou menor.</li>
+<li>Relacionar cada tonalidade maior à sua relativa menor.</li>
+</ul>
+<hr>
+<p>Se a escala de sol maior precisa de fá♯ para manter o padrão, escrever o sustenido em cada fá da peça seria repetitivo e sujeito a erro. A solução é a <strong>armadura</strong>: os acidentes migram para o início da pauta e valem para a peça inteira.</p>
+<p>A ordem em que eles aparecem não é livre. Os sustenidos entram sempre nesta sequência: <strong>fá, dó, sol, ré, lá, mi, si</strong>. Os bemóis, exatamente na ordem inversa: <strong>si, mi, lá, ré, sol, dó, fá</strong>.</p>
+<blockquote>
+<p><strong>Como ler a armadura de cabeça</strong></p>
+</blockquote>
+<p>&gt;</p>
+<blockquote>
+<p>Com sustenidos: o ÚLTIMO sustenido é a sensível — a tônica está um semitom acima dele. Com bemóis: o PENÚLTIMO bemol é a própria tônica. Com um bemol só, é fá maior; não há penúltimo, e vale decorar.</p>
+</blockquote>
+<h2>Relativas</h2>
+<p>Cada armadura serve a <strong>duas</strong> tonalidades: uma maior e uma menor. A menor relativa começa no 6º grau da maior — uma terça menor abaixo.</p>
+<p>Dó maior e lá menor dividem a armadura vazia. Sol maior e mi menor dividem o fá♯. As notas são as mesmas; o que muda é qual delas funciona como centro de repouso.</p>
+<p><strong>Verificação.</strong> Uma armadura com dois sustenidos, fá♯ e dó♯. Que tonalidade maior é?</p>
+<p>a) Sol maior</p>
+<p>b) Ré maior</p>
+<p>c) Lá maior</p>
+<p>d) Si maior</p>
+<p><em>Resposta: b. O último sustenido é dó♯, que funciona como sensível. Um semitom acima de dó♯ é ré: a tonalidade é ré maior. A relativa menor é si menor.</em></p>
+<hr>
+<h2>Exercícios</h2>
+<p><strong>1.</strong> Qual é a ordem dos sustenidos na armadura?</p>
+<p>a) Dó, ré, mi, fá, sol, lá, si</p>
+<p>b) Fá, dó, sol, ré, lá, mi, si</p>
+<p>c) Si, mi, lá, ré, sol, dó, fá</p>
+<p>d) Sol, ré, lá, mi, si, fá, dó</p>
+<p><strong>2.</strong> Uma armadura com um sustenido (fá♯) corresponde a que tonalidade maior?</p>
+<p>a) Fá maior</p>
+<p>b) Sol maior</p>
+<p>c) Ré maior</p>
+<p>d) Si menor</p>
+<p><strong>3.</strong> A relativa menor de uma tonalidade maior começa em que grau dela?</p>
+<p>a) No 4º</p>
+<p>b) No 5º</p>
+<p>c) No 6º</p>
+<p>d) No 3º</p>
+<p><strong>4.</strong> Por que os acidentes migram para o início da pauta?</p>
+<p>a) Para economizar papel</p>
+<p>b) Para valerem por toda a peça sem repetição</p>
+<p>c) Para indicar o andamento</p>
+<p>d) Por exigência da clave</p>
+<p><strong>5.</strong> Com bemóis na armadura, a tonalidade maior é identificada pelo:</p>
+<p>a) Último bemol</p>
+<p>b) Penúltimo bemol</p>
+<p>c) Primeiro bemol</p>
+<p>d) Número de bemóis</p>
+<p><strong>6.</strong> Qual é a ordem dos bemóis na armadura?</p>
+<p>a) Fá, dó, sol, ré, lá, mi, si</p>
+<p>b) Si, mi, lá, ré, sol, dó, fá</p>
+<p>c) Dó, ré, mi, fá, sol, lá, si</p>
+<p>d) Lá, ré, sol, dó, fá, si, mi</p>
+<p><strong>7.</strong> Duas tonalidades que compartilham a mesma armadura são chamadas:</p>
+<p>a) Homônimas</p>
+<p>b) Relativas</p>
+<p>c) Vizinhas</p>
+<p>d) Enarmônicas</p>
+<p><em>Respostas comentadas no gabarito, ao fim do livro.</em></p>
+</section>
+
+<section class="secao" id="cap-8" data-origem="GERADA" data-papel="CAPITULO">
+
+<h1>Capítulo 8 — Compasso, métrica e acentuação</h1>
+<p><em>Como o tempo se agrupa, e o que a fórmula de compasso realmente informa.</em></p>
+<p><strong>Ao final deste capítulo, você deve ser capaz de:</strong></p>
+<ul>
+<li>Ler a fórmula de compasso e deduzir a unidade de tempo.</li>
+<li>Distinguir compasso simples de composto.</li>
+<li>Identificar o tempo forte e a acentuação natural.</li>
+</ul>
+<hr>
+<p>O pulso da música se agrupa em unidades regulares chamadas <strong>compassos</strong>, separados por barras verticais. A <strong>fórmula de compasso</strong>, no início da peça, informa esse agrupamento com dois números.</p>
+<p>Em compasso <strong>simples</strong>, o número de cima diz quantos tempos há no compasso, e o de baixo diz que figura vale um tempo — 4 para semínima, 8 para colcheia, 2 para mínima.</p>
+<p>Em 4/4: quatro tempos, cada um valendo uma semínima.</p>
+<blockquote>
+<p><strong>Compasso composto engana</strong></p>
+</blockquote>
+<p>&gt;</p>
+<blockquote>
+<p>Em 6/8, o número de cima NÃO significa seis tempos. Compassos compostos subdividem cada tempo em três, e 6/8 tem DOIS tempos, cada um valendo uma semínima pontuada. Ler 6/8 como seis tempos é o erro mais comum de iniciante.</p>
+</blockquote>
+<p><strong>Exemplo sonoro — O mesmo número de colcheias, agrupado de dois jeitos.</strong> Primeiro em 3/4 — três tempos de duas colcheias. Depois em 6/8 — dois tempos de três. A acentuação muda tudo. Notas: C4 · G4 · C4 · G4 · C4 · G4 (120 bpm).</p>
+<p><strong>Verificação.</strong> Quantos tempos tem um compasso 6/8?</p>
+<p>a) Seis</p>
+<p>b) Três</p>
+<p>c) Dois</p>
+<p>d) Oito</p>
+<p><em>Resposta: c. 6/8 é composto: os seis colcheias agrupam-se em dois tempos de três. A unidade de tempo é a semínima pontuada, não a colcheia.</em></p>
+<hr>
+<h2>Exercícios</h2>
+<p><strong>1.</strong> Em um compasso simples, o número inferior da fórmula indica:</p>
+<p>a) Quantos tempos há</p>
+<p>b) Que figura vale um tempo</p>
+<p>c) O andamento</p>
+<p>d) A tonalidade</p>
+<p><strong>2.</strong> Quantos tempos tem um compasso 6/8?</p>
+<p>a) Seis</p>
+<p>b) Três</p>
+<p>c) Dois</p>
+<p>d) Oito</p>
+<p><strong>3.</strong> O que distingue um compasso composto de um simples?</p>
+<p>a) O andamento</p>
+<p>b) A subdivisão do tempo em três</p>
+<p>c) O número de compassos</p>
+<p>d) A clave</p>
+<p><strong>4.</strong> Em 3/4, qual tempo recebe o acento natural?</p>
+<p>a) O primeiro</p>
+<p>b) O segundo</p>
+<p>c) O terceiro</p>
+<p>d) Nenhum</p>
+<p><strong>5.</strong> A barra de compasso serve para:</p>
+<p>a) Indicar respiração</p>
+<p>b) Delimitar o agrupamento métrico</p>
+<p>c) Marcar mudança de andamento</p>
+<p>d) Separar as vozes</p>
+<p><strong>6.</strong> Em 2/2, qual figura vale um tempo?</p>
+<p>a) Semínima</p>
+<p>b) Mínima</p>
+<p>c) Colcheia</p>
+<p>d) Semibreve</p>
+<p><em>Respostas comentadas no gabarito, ao fim do livro.</em></p>
+</section>
+
+<section class="secao" id="cap-9" data-origem="GERADA" data-papel="CAPITULO">
+
+<h1>Capítulo 9 — Andamento, dinâmica e agógica</h1>
+<p><em>As indicações que não estão nas notas: velocidade, intensidade e flexão do tempo.</em></p>
+<p><strong>Ao final deste capítulo, você deve ser capaz de:</strong></p>
+<ul>
+<li>Interpretar indicações de andamento e relacioná-las ao metrônomo.</li>
+<li>Aplicar a escala de dinâmica, do pianíssimo ao fortíssimo.</li>
+<li>Reconhecer as indicações de mudança gradual de tempo.</li>
+</ul>
+<hr>
+<p>As figuras dizem a duração relativa; o <strong>andamento</strong> converte isso em tempo real. A indicação pode ser um termo — <em>largo</em>, <em>adagio</em>, <em>andante</em>, <em>allegro</em>, <em>presto</em> — ou um número de batidas por minuto.</p>
+<p>Os termos são faixas, não pontos: <em>andante</em> é uma região de velocidade, e dois intérpretes razoáveis discordam dentro dela. O metrônomo é preciso; o termo é expressivo. Partituras modernas costumam trazer os dois.</p>
+<h2>Dinâmica</h2>
+<p>A intensidade também se escreve, numa escala relativa: <strong>pp</strong> (pianíssimo), <strong>p</strong> (piano), <strong>mp</strong>, <strong>mf</strong>, <strong>f</strong> (forte), <strong>ff</strong> (fortíssimo).</p>
+<p>Relativa é a palavra que importa: um <em>forte</em> de quarteto de cordas e um <em>forte</em> de orquestra sinfônica não têm o mesmo volume. A indicação diz a posição dentro da obra, não um número de decibéis.</p>
+<p><strong>Crescendo</strong> e <strong>diminuendo</strong> indicam mudança gradual — e, como toda mudança gradual, precisam de um ponto de partida e um de chegada para significarem algo.</p>
+<p><strong>Verificação.</strong> Uma peça indica ♩ = 60. O que isso significa?</p>
+<p>a) Sessenta compassos por minuto</p>
+<p>b) Sessenta semínimas por minuto, uma por segundo</p>
+<p>c) Sessenta notas no total</p>
+<p>d) Sessenta segundos de duração</p>
+<p><em>Resposta: b. A indicação metronômica diz quantas vezes por minuto a figura indicada ocorre. ♩ = 60 são sessenta semínimas por minuto — exatamente uma por segundo.</em></p>
+<hr>
+<h2>Exercícios</h2>
+<p><strong>1.</strong> A indicação ♩ = 60 significa:</p>
+<p>a) Sessenta compassos por minuto</p>
+<p>b) Sessenta semínimas por minuto</p>
+<p>c) Sessenta notas ao todo</p>
+<p>d) Sessenta segundos de duração</p>
+<p><strong>2.</strong> Qual sequência está em ordem crescente de intensidade?</p>
+<p>a) f, mf, p, pp</p>
+<p>b) pp, p, mf, f</p>
+<p>c) p, pp, f, mf</p>
+<p>d) mf, f, p, pp</p>
+<p><strong>3.</strong> As indicações de dinâmica são:</p>
+<p>a) Valores absolutos em decibéis</p>
+<p>b) Relativas ao contexto da obra</p>
+<p>c) Fixadas por norma internacional</p>
+<p>d) Definidas pelo andamento</p>
+<p><strong>4.</strong> Crescendo indica:</p>
+<p>a) Aumento gradual da intensidade</p>
+<p>b) Aceleração do andamento</p>
+<p>c) Subida de altura</p>
+<p>d) Aumento da duração</p>
+<p><strong>5.</strong> A diferença entre um termo de andamento e uma indicação metronômica é que o termo:</p>
+<p>a) É mais preciso</p>
+<p>b) Indica uma faixa de velocidade</p>
+<p>c) Vale só para cordas</p>
+<p>d) Indica intensidade</p>
+<p><strong>6.</strong> Uma peça marcada ♩ = 120 tem semínimas que duram:</p>
+<p>a) Dois segundos cada</p>
+<p>b) Meio segundo cada</p>
+<p>c) Um segundo cada</p>
+<p>d) Depende do compasso</p>
+<p><strong>7.</strong> Ritardando indica:</p>
+<p>a) Diminuir gradualmente o andamento</p>
+<p>b) Diminuir a intensidade</p>
+<p>c) Repetir o trecho</p>
+<p>d) Prolongar a última nota</p>
+<p><em>Respostas comentadas no gabarito, ao fim do livro.</em></p>
+</section>
+
+<section class="secao" id="cap-10" data-origem="GERADA" data-papel="CAPITULO">
+
+<h1>Capítulo 10 — Quiálteras, síncope e contratempo</h1>
+<p><em>Quando a subdivisão contraria o compasso — e o efeito rítmico que disso resulta.</em></p>
+<p><strong>Ao final deste capítulo, você deve ser capaz de:</strong></p>
+<ul>
+<li>Executar quiálteras contra a subdivisão natural.</li>
+<li>Distinguir síncope de contratempo pela posição do ataque.</li>
+<li>Explicar por que a síncope desloca o acento.</li>
+</ul>
+<hr>
+<p>A subdivisão natural de um compasso simples é binária: cada tempo se divide em dois. A <strong>quiáltera</strong> contraria isso — encaixa um número diferente de notas no mesmo espaço.</p>
+<p>A mais comum é a <strong>tercina</strong>: três notas no tempo de duas. Escreve-se com um 3 sobre o grupo. Existem também quintinas, seitinas, e assim por diante.</p>
+<p><strong>Exemplo sonoro — Colcheias e depois tercinas.</strong> O mesmo tempo, dividido em dois e depois em três. Notas: C4 · C4 · C4 · C4 · E4 · E4 · E4 · E4 · E4 · E4 (90 bpm).</p>
+<h2>Síncope e contratempo</h2>
+<p>Os dois deslocam o acento para fora do tempo forte, e a diferença está no que acontece <strong>no</strong> tempo forte.</p>
+<p>Na <strong>síncope</strong>, o som começa num tempo fraco e <strong>prolonga-se</strong> sobre o forte. O acento cai onde não se esperava porque a nota já estava soando.</p>
+<p>No <strong>contratempo</strong>, o tempo forte é <strong>silêncio</strong> — há uma pausa — e o som entra no fraco. O acento se desloca porque o forte foi deixado vazio.</p>
+<p><strong>Verificação.</strong> O tempo forte está em silêncio e a nota entra no tempo fraco. Isso é:</p>
+<p>a) Síncope</p>
+<p>b) Contratempo</p>
+<p>c) Quiáltera</p>
+<p>d) Ligadura</p>
+<p><em>Resposta: b. Contratempo: o tempo forte é ocupado por pausa. Na síncope, ao contrário, o som já está soando quando o tempo forte chega — ele se prolonga sobre o forte.</em></p>
+<hr>
+<h2>Exercícios</h2>
+<p><strong>1.</strong> Uma tercina em compasso simples corresponde a:</p>
+<p>a) Três notas no tempo de quatro</p>
+<p>b) Três notas no tempo de duas</p>
+<p>c) Duas notas no tempo de três</p>
+<p>d) Três compassos seguidos</p>
+<p><strong>2.</strong> Na síncope, o som:</p>
+<p>a) Começa no tempo forte</p>
+<p>b) Começa no fraco e se prolonga sobre o forte</p>
+<p>c) Ocorre só em pausas</p>
+<p>d) Dura menos que a subdivisão</p>
+<p><strong>3.</strong> No contratempo, o tempo forte é ocupado por:</p>
+<p>a) Uma nota longa</p>
+<p>b) Silêncio</p>
+<p>c) Uma quiáltera</p>
+<p>d) Um acorde</p>
+<p><strong>4.</strong> A quiáltera contraria:</p>
+<p>a) A tonalidade</p>
+<p>b) A subdivisão natural do compasso</p>
+<p>c) A armadura</p>
+<p>d) A clave</p>
+<p><strong>5.</strong> Síncope e contratempo têm em comum:</p>
+<p>a) Exigirem compasso composto</p>
+<p>b) Deslocarem o acento para fora do tempo forte</p>
+<p>c) Usarem quiálteras</p>
+<p>d) Alterarem o andamento</p>
+<p><strong>6.</strong> Uma quintina indica:</p>
+<p>a) Cinco compassos</p>
+<p>b) Cinco notas no lugar de quatro</p>
+<p>c) Cinco tempos</p>
+<p>d) Cinco vozes</p>
+<p><em>Respostas comentadas no gabarito, ao fim do livro.</em></p>
+</section>
+
+<section class="secao" id="cap-11" data-origem="GERADA" data-papel="CAPITULO">
+
+<h1>Capítulo 11 — Acordes: tríades e inversões</h1>
+<p><em>Três notas empilhadas em terças, e o que muda quando o baixo troca.</em></p>
+<p><strong>Ao final deste capítulo, você deve ser capaz de:</strong></p>
+<ul>
+<li>Construir as quatro qualidades de tríade.</li>
+<li>Identificar a inversão pelo baixo.</li>
+<li>Reconhecer as tríades sobre os graus da escala maior.</li>
+</ul>
+<hr>
+<p>Uma <strong>tríade</strong> são três notas empilhadas em terças: <strong>fundamental</strong>, <strong>terça</strong> e <strong>quinta</strong>. As combinações possíveis de terça maior e menor produzem quatro qualidades:</p>
+<table><tr><td>Tríade</td><td>Terça</td><td>Quinta</td></tr><tr><td>maior</td><td>maior</td><td>justa</td></tr><tr><td>menor</td><td>menor</td><td>justa</td></tr><tr><td>diminuta</td><td>menor</td><td>diminuta</td></tr><tr><td>aumentada</td><td>maior</td><td>aumentada</td></tr></table>
+<p><strong>Ao instrumento.</strong> Monte C4 – E4 – G4. Terça maior embaixo, menor em cima. Quinta justa entre os extremos.</p>
+<p><strong>Ao instrumento.</strong> Monte C4 – Eb4 – G4. Só a terça desceu um semitom. Compare o efeito com o anterior.</p>
+<p><strong>Ao instrumento.</strong> Monte C4 – Eb4 – Gb4. Duas terças menores empilhadas. A quinta encolheu, e o acorde pede resolução.</p>
+<p><strong>Ao instrumento.</strong> Monte C4 – E4 – G#4. Duas terças maiores. Simétrico, e por isso sem repouso.</p>
+<h2>Inversões</h2>
+<p>A inversão é decidida por uma coisa só: <strong>qual nota está no baixo</strong>.</p>
+<ul>
+<li>fundamental no baixo → <strong>estado fundamental</strong></li>
+<li>terça no baixo → <strong>primeira inversão</strong></li>
+<li>quinta no baixo → <strong>segunda inversão</strong></li>
+</ul>
+<p>O acorde continua sendo o mesmo — as três notas não mudaram. O que muda é a sonoridade e a função no encadeamento: uma segunda inversão soa instável e raramente serve de repouso.</p>
+<p><strong>Verificação.</strong> Um acorde com as notas dó, mi e sol, tendo mi no baixo. Que acorde é, e em que posição?</p>
+<p>a) Mi menor, estado fundamental</p>
+<p>b) Dó maior, primeira inversão</p>
+<p>c) Dó maior, segunda inversão</p>
+<p>d) Mi diminuto, primeira inversão</p>
+<p><em>Resposta: b. As notas dó, mi e sol formam a tríade de dó maior, independentemente da ordem. Com a terça (mi) no baixo, está em primeira inversão.</em></p>
+<hr>
+<h2>Exercícios</h2>
+<p><strong>1.</strong> Uma tríade é formada por:</p>
+<p>a) Três notas quaisquer</p>
+<p>b) Fundamental, terça e quinta</p>
+<p>c) Fundamental, quarta e sétima</p>
+<p>d) Três notas vizinhas</p>
+<p><strong>2.</strong> A tríade diminuta é formada por:</p>
+<p>a) Terça maior e quinta justa</p>
+<p>b) Terça menor e quinta justa</p>
+<p>c) Terça menor e quinta diminuta</p>
+<p>d) Terça maior e quinta aumentada</p>
+<p><strong>3.</strong> O que determina a inversão de um acorde?</p>
+<p>a) A nota mais aguda</p>
+<p>b) A nota no baixo</p>
+<p>c) O número de notas</p>
+<p>d) A tonalidade</p>
+<p><strong>4.</strong> Um acorde dó–mi–sol com sol no baixo está em:</p>
+<p>a) Estado fundamental</p>
+<p>b) Primeira inversão</p>
+<p>c) Segunda inversão</p>
+<p>d) Terceira inversão</p>
+<p><strong>5.</strong> Sobre o quinto grau da escala maior forma-se qual tríade?</p>
+<p>a) Menor</p>
+<p>b) Maior</p>
+<p>c) Diminuta</p>
+<p>d) Aumentada</p>
+<p><strong>6.</strong> A tríade aumentada é simétrica porque:</p>
+<p>a) Tem três notas iguais</p>
+<p>b) É formada por duas terças maiores</p>
+<p>c) Não tem fundamental</p>
+<p>d) Usa apenas notas naturais</p>
+<p><em>Respostas comentadas no gabarito, ao fim do livro.</em></p>
+</section>
+
+<section class="secao" id="cap-12" data-origem="GERADA" data-papel="CAPITULO">
+
+<h1>Capítulo 12 — Cifragem e leitura harmônica</h1>
+<p><em>O sistema de símbolos que descreve um acorde sem escrevê-lo nota a nota.</em></p>
+<p><strong>Ao final deste capítulo, você deve ser capaz de:</strong></p>
+<ul>
+<li>Ler e escrever cifras de tríades e tétrades.</li>
+<li>Interpretar a indicação de baixo invertido.</li>
+<li>Converter uma cifra em notas concretas ao teclado.</li>
+</ul>
+<hr>
+<p>A <strong>cifra</strong> descreve um acorde por um símbolo, em vez de escrevê-lo nota a nota. Nasceu da prática — quem acompanha precisa saber a harmonia, não a disposição exata das vozes.</p>
+<p>A letra indica a fundamental: <strong>C</strong> é dó, <strong>D</strong> é ré, e assim por diante, seguindo a nomenclatura de letras.</p>
+<p>O que vem depois qualifica:</p>
+<ul>
+<li><strong>C</strong> — tríade maior</li>
+<li><strong>Cm</strong> — tríade menor</li>
+<li><strong>C°</strong> — diminuta</li>
+<li><strong>C+</strong> — aumentada</li>
+<li><strong>C7</strong> — com sétima menor</li>
+<li><strong>CM7</strong> — com sétima maior</li>
+</ul>
+<blockquote>
+<p><strong>A barra indica o baixo</strong></p>
+</blockquote>
+<p>&gt;</p>
+<blockquote>
+<p>C/E significa acorde de dó maior com mi no baixo — a primeira inversão. O que vem depois da barra é sempre a nota do baixo, não outro acorde.</p>
+</blockquote>
+<p><strong>Ao instrumento.</strong> Monte C4 – E4 – G4 – Bb4. O acorde que pede resolução. É ele que conduz a harmonia tonal.</p>
+<p><strong>Ao instrumento.</strong> Monte C4 – E4 – G4 – B4. Um semitom acima da anterior, e o caráter muda de tensão para repouso.</p>
+<p><strong>Ao instrumento.</strong> Monte D4 – F4 – A4 – C5. Tríade menor com sétima menor. O acorde que costuma preceder o C7.</p>
+<p><strong>Verificação.</strong> A cifra G/B pede quais notas, e com o quê no baixo?</p>
+<p>a) Sol maior com si no baixo</p>
+<p>b) Sol e si, dois acordes seguidos</p>
+<p>c) Si menor com sol no baixo</p>
+<p>d) Sol com sétima em si</p>
+<p><em>Resposta: a. A letra antes da barra é o acorde: sol maior, ou seja, sol–si–ré. O que vem depois da barra é a nota do baixo: si. É a primeira inversão de sol maior.</em></p>
+<hr>
+<h2>Exercícios</h2>
+<p><strong>1.</strong> A cifra Cm indica:</p>
+<p>a) Dó maior</p>
+<p>b) Dó menor</p>
+<p>c) Dó com sétima</p>
+<p>d) Dó diminuto</p>
+<p><strong>2.</strong> A cifra C/E significa:</p>
+<p>a) Dó e mi, dois acordes</p>
+<p>b) Dó maior com mi no baixo</p>
+<p>c) Mi menor com dó no baixo</p>
+<p>d) Dó com sétima em mi</p>
+<p><strong>3.</strong> A diferença entre C7 e CM7 é:</p>
+<p>a) A fundamental</p>
+<p>b) A qualidade da sétima</p>
+<p>c) A inversão</p>
+<p>d) A quinta</p>
+<p><strong>4.</strong> Para que serve a cifragem?</p>
+<p>a) Indicar o andamento</p>
+<p>b) Descrever a harmonia sem escrever cada nota</p>
+<p>c) Marcar a dinâmica</p>
+<p>d) Numerar os compassos</p>
+<p><strong>5.</strong> A cifra C° indica tríade:</p>
+<p>a) Maior</p>
+<p>b) Menor</p>
+<p>c) Diminuta</p>
+<p>d) Aumentada</p>
+<p><strong>6.</strong> A cifra G/B pede quais notas e com o quê no baixo?</p>
+<p>a) Sol–si–ré, com si no baixo</p>
+<p>b) Sol e si em sequência</p>
+<p>c) Si–ré–fá, com sol no baixo</p>
+<p>d) Sol com sétima em si</p>
+<p><em>Respostas comentadas no gabarito, ao fim do livro.</em></p>
+</section>
+
+<section class="secao" id="caderno" data-origem="GERADA" data-papel="CADERNO_DE_EXERCICIOS">
+
+<h1>Caderno de exercícios</h1>
+<p>As mesmas questões dos capítulos, reunidas na ordem em que foram estudadas. Serve de revisão geral antes da avaliação.</p>
+<h2>1. O som e suas quatro propriedades</h2>
+<p><strong>1.</strong> Qual propriedade do som depende diretamente da frequência de vibração?</p>
+<p>a) Intensidade</p>
+<p>b) Altura</p>
+<p>c) Timbre</p>
+<p>d) Duração</p>
+<p><strong>2.</strong> Dois sons têm a mesma frequência e a mesma duração, mas um foi tocado ao violino e outro à flauta. O que os distingue?</p>
+<p>a) A altura</p>
+<p>b) A intensidade</p>
+<p>c) O timbre</p>
+<p>d) Nada os distingue</p>
+<p><strong>3.</strong> Em música, dizer que uma nota é "alta" significa que ela é:</p>
+<p>a) Forte</p>
+<p>b) Aguda</p>
+<p>c) Longa</p>
+<p>d) Brilhante</p>
+<p><strong>4.</strong> A série harmônica explica principalmente:</p>
+<p>a) A duração das notas</p>
+<p>b) A origem do timbre</p>
+<p>c) A divisão do compasso</p>
+<p>d) A ordem dos acidentes</p>
+<p><strong>5.</strong> Um som grave e muito forte comparado a um som agudo e muito fraco. É correto dizer que:</p>
+<p>a) O grave tem altura maior</p>
+<p>b) O agudo tem intensidade maior</p>
+<p>c) Altura e intensidade são independentes</p>
+<p>d) O grave dura mais</p>
+<p><strong>6.</strong> Das quatro propriedades do som, qual a música NÃO organiza em um sistema de escrita próprio?</p>
+<p>a) Altura</p>
+<p>b) Duração</p>
+<p>c) Timbre</p>
+<p>d) Intensidade</p>
+<h2>2. A pauta, as claves e os nomes das notas</h2>
+<p><strong>1.</strong> Quantas linhas e espaços tem a pauta?</p>
+<p>a) Quatro linhas e cinco espaços</p>
+<p>b) Cinco linhas e quatro espaços</p>
+<p>c) Cinco linhas e cinco espaços</p>
+<p>d) Seis linhas e cinco espaços</p>
+<p><strong>2.</strong> Para que serve a clave no início da pauta?</p>
+<p>a) Indicar o andamento</p>
+<p>b) Fixar uma nota de referência</p>
+<p>c) Indicar a tonalidade</p>
+<p>d) Marcar o compasso</p>
+<p><strong>3.</strong> Na clave de sol, que nota ocupa a segunda linha?</p>
+<p>a) Mi</p>
+<p>b) Sol</p>
+<p>c) Si</p>
+<p>d) Ré</p>
+<p><strong>4.</strong> Por que existe mais de uma clave?</p>
+<p>a) Por tradição regional</p>
+<p>b) Para evitar excesso de linhas suplementares</p>
+<p>c) Para indicar dinâmica</p>
+<p>d) Para separar melodia de harmonia</p>
+<p><strong>5.</strong> A mesma posição na pauta, lida em clave de sol e em clave de fá, produz:</p>
+<p>a) A mesma nota</p>
+<p>b) Notas diferentes</p>
+<p>c) A mesma nota uma oitava acima</p>
+<p>d) Depende da armadura</p>
+<p><strong>6.</strong> Linhas suplementares servem para:</p>
+<p>a) Indicar repetição</p>
+<p>b) Escrever notas fora da extensão da pauta</p>
+<p>c) Separar compassos</p>
+<p>d) Marcar o tempo forte</p>
+<h2>3. Figuras, pausas e a divisão do tempo</h2>
+<p><strong>1.</strong> Quantas colcheias valem uma semibreve?</p>
+<p>a) Quatro</p>
+<p>b) Oito</p>
+<p>c) Dezesseis</p>
+<p>d) Duas</p>
+<p><strong>2.</strong> O ponto de aumento acrescenta à figura:</p>
+<p>a) O dobro do valor</p>
+<p>b) Metade do valor</p>
+<p>c) Um quarto do valor</p>
+<p>d) Um tempo inteiro</p>
+<p><strong>3.</strong> A duração de uma semínima em segundos é:</p>
+<p>a) Sempre um segundo</p>
+<p>b) Definida pelo andamento</p>
+<p>c) Definida pela clave</p>
+<p>d) Definida pela armadura</p>
+<p><strong>4.</strong> Quantas semicolcheias cabem numa mínima?</p>
+<p>a) Quatro</p>
+<p>b) Oito</p>
+<p>c) Dezesseis</p>
+<p>d) Duas</p>
+<p><strong>5.</strong> A pausa corresponde a:</p>
+<p>a) Um erro de escrita</p>
+<p>b) Silêncio com duração medida</p>
+<p>c) Fim do compasso</p>
+<p>d) Repetição do trecho</p>
+<p><strong>6.</strong> Uma mínima pontuada equivale a quantas semínimas?</p>
+<p>a) Duas</p>
+<p>b) Três</p>
+<p>c) Quatro</p>
+<p>d) Seis</p>
+<h2>4. Tom, semitom e os acidentes</h2>
+<p><strong>1.</strong> Entre quais pares de notas naturais a distância é de um semitom?</p>
+<p>a) Dó–ré e sol–lá</p>
+<p>b) Mi–fá e si–dó</p>
+<p>c) Ré–mi e lá–si</p>
+<p>d) Fá–sol e dó–ré</p>
+<p><strong>2.</strong> O bequadro serve para:</p>
+<p>a) Subir um semitom</p>
+<p>b) Descer um semitom</p>
+<p>c) Cancelar um acidente anterior</p>
+<p>d) Dobrar a duração</p>
+<p><strong>3.</strong> Fá sustenido e sol bemol produzem o mesmo som. Esse fenômeno chama-se:</p>
+<p>a) Transposição</p>
+<p>b) Enarmonia</p>
+<p>c) Modulação</p>
+<p>d) Inversão</p>
+<p><strong>4.</strong> Quantos semitons formam um tom?</p>
+<p>a) Um</p>
+<p>b) Dois</p>
+<p>c) Três</p>
+<p>d) Quatro</p>
+<p><strong>5.</strong> O dobrado sustenido altera a nota em:</p>
+<p>a) Meio tom acima</p>
+<p>b) Um tom acima</p>
+<p>c) Um tom abaixo</p>
+<p>d) Uma oitava acima</p>
+<p><strong>6.</strong> De dó a ré, no teclado, há:</p>
+<p>a) Um semitom</p>
+<p>b) Um tom</p>
+<p>c) Um tom e meio</p>
+<p>d) Dois tons</p>
+<h2>5. Intervalos: número e qualidade</h2>
+<p><strong>1.</strong> Ao contar o número de um intervalo, as notas das pontas:</p>
+<p>a) São excluídas</p>
+<p>b) São incluídas</p>
+<p>c) Conta-se só a mais grave</p>
+<p>d) Depende da qualidade</p>
+<p><strong>2.</strong> Dó a mi bemol. Que intervalo é?</p>
+<p>a) Terça maior</p>
+<p>b) Terça menor</p>
+<p>c) Segunda aumentada</p>
+<p>d) Quarta diminuta</p>
+<p><strong>3.</strong> Qual é a inversão de uma quinta justa?</p>
+<p>a) Quarta justa</p>
+<p>b) Quarta aumentada</p>
+<p>c) Quinta diminuta</p>
+<p>d) Sexta menor</p>
+<p><strong>4.</strong> O número de um intervalo é afetado por acidentes?</p>
+<p>a) Sim, sempre</p>
+<p>b) Não, apenas a qualidade é</p>
+<p>c) Só com bemóis</p>
+<p>d) Só em intervalos maiores que a oitava</p>
+<p><strong>5.</strong> Quais intervalos admitem a qualidade "justo"?</p>
+<p>a) Todos</p>
+<p>b) Segundas, terças, sextas e sétimas</p>
+<p>c) Uníssonos, quartas, quintas e oitavas</p>
+<p>d) Apenas quintas</p>
+<p><strong>6.</strong> Uma sexta maior, ao ser invertida, resulta em:</p>
+<p>a) Terça maior</p>
+<p>b) Terça menor</p>
+<p>c) Sexta menor</p>
+<p>d) Quarta justa</p>
+<p><strong>7.</strong> Um intervalo maior, ao ser diminuído em um semitom sem mudar o número, torna-se:</p>
+<p>a) Aumentado</p>
+<p>b) Menor</p>
+<p>c) Justo</p>
+<p>d) Diminuto</p>
+<h2>6. Escalas maiores e menores</h2>
+<p><strong>1.</strong> Qual é o padrão de tons e semitons da escala maior?</p>
+<p>a) T T T st T T st</p>
+<p>b) T T st T T T st</p>
+<p>c) T st T T st T T</p>
+<p>d) st T T T st T T</p>
+<p><strong>2.</strong> A escala menor harmônica difere da natural por:</p>
+<p>a) Abaixar o 3º grau</p>
+<p>b) Subir o 7º grau</p>
+<p>c) Subir o 6º grau</p>
+<p>d) Abaixar o 2º grau</p>
+<p><strong>3.</strong> A escala menor melódica é a única que:</p>
+<p>a) Tem sete notas</p>
+<p>b) Muda conforme a direção</p>
+<p>c) Não tem tônica</p>
+<p>d) Usa só bemóis</p>
+<p><strong>4.</strong> Por que a escala de sol maior precisa de fá sustenido?</p>
+<p>a) Por convenção histórica</p>
+<p>b) Para preservar o padrão de tons e semitons</p>
+<p>c) Para diferenciar de dó maior</p>
+<p>d) Por causa da clave</p>
+<p><strong>5.</strong> O que define o caráter de uma escala?</p>
+<p>a) A tônica escolhida</p>
+<p>b) O padrão de tons e semitons</p>
+<p>c) O número de notas</p>
+<p>d) A clave usada</p>
+<p><strong>6.</strong> Se a escala de fá maior não tivesse si bemol, o que aconteceria?</p>
+<p>a) Ficaria mais fácil de tocar</p>
+<p>b) O padrão de tons e semitons se quebraria</p>
+<p>c) Mudaria de clave</p>
+<p>d) Viraria uma escala menor</p>
+<p><strong>7.</strong> Na menor harmônica, o intervalo entre o 6º e o 7º graus é:</p>
+<p>a) Um tom</p>
+<p>b) Um semitom</p>
+<p>c) Uma segunda aumentada</p>
+<p>d) Uma terça menor</p>
+<h2>7. Armaduras de clave e tonalidades</h2>
+<p><strong>1.</strong> Qual é a ordem dos sustenidos na armadura?</p>
+<p>a) Dó, ré, mi, fá, sol, lá, si</p>
+<p>b) Fá, dó, sol, ré, lá, mi, si</p>
+<p>c) Si, mi, lá, ré, sol, dó, fá</p>
+<p>d) Sol, ré, lá, mi, si, fá, dó</p>
+<p><strong>2.</strong> Uma armadura com um sustenido (fá♯) corresponde a que tonalidade maior?</p>
+<p>a) Fá maior</p>
+<p>b) Sol maior</p>
+<p>c) Ré maior</p>
+<p>d) Si menor</p>
+<p><strong>3.</strong> A relativa menor de uma tonalidade maior começa em que grau dela?</p>
+<p>a) No 4º</p>
+<p>b) No 5º</p>
+<p>c) No 6º</p>
+<p>d) No 3º</p>
+<p><strong>4.</strong> Por que os acidentes migram para o início da pauta?</p>
+<p>a) Para economizar papel</p>
+<p>b) Para valerem por toda a peça sem repetição</p>
+<p>c) Para indicar o andamento</p>
+<p>d) Por exigência da clave</p>
+<p><strong>5.</strong> Com bemóis na armadura, a tonalidade maior é identificada pelo:</p>
+<p>a) Último bemol</p>
+<p>b) Penúltimo bemol</p>
+<p>c) Primeiro bemol</p>
+<p>d) Número de bemóis</p>
+<p><strong>6.</strong> Qual é a ordem dos bemóis na armadura?</p>
+<p>a) Fá, dó, sol, ré, lá, mi, si</p>
+<p>b) Si, mi, lá, ré, sol, dó, fá</p>
+<p>c) Dó, ré, mi, fá, sol, lá, si</p>
+<p>d) Lá, ré, sol, dó, fá, si, mi</p>
+<p><strong>7.</strong> Duas tonalidades que compartilham a mesma armadura são chamadas:</p>
+<p>a) Homônimas</p>
+<p>b) Relativas</p>
+<p>c) Vizinhas</p>
+<p>d) Enarmônicas</p>
+<h2>8. Compasso, métrica e acentuação</h2>
+<p><strong>1.</strong> Em um compasso simples, o número inferior da fórmula indica:</p>
+<p>a) Quantos tempos há</p>
+<p>b) Que figura vale um tempo</p>
+<p>c) O andamento</p>
+<p>d) A tonalidade</p>
+<p><strong>2.</strong> Quantos tempos tem um compasso 6/8?</p>
+<p>a) Seis</p>
+<p>b) Três</p>
+<p>c) Dois</p>
+<p>d) Oito</p>
+<p><strong>3.</strong> O que distingue um compasso composto de um simples?</p>
+<p>a) O andamento</p>
+<p>b) A subdivisão do tempo em três</p>
+<p>c) O número de compassos</p>
+<p>d) A clave</p>
+<p><strong>4.</strong> Em 3/4, qual tempo recebe o acento natural?</p>
+<p>a) O primeiro</p>
+<p>b) O segundo</p>
+<p>c) O terceiro</p>
+<p>d) Nenhum</p>
+<p><strong>5.</strong> A barra de compasso serve para:</p>
+<p>a) Indicar respiração</p>
+<p>b) Delimitar o agrupamento métrico</p>
+<p>c) Marcar mudança de andamento</p>
+<p>d) Separar as vozes</p>
+<p><strong>6.</strong> Em 2/2, qual figura vale um tempo?</p>
+<p>a) Semínima</p>
+<p>b) Mínima</p>
+<p>c) Colcheia</p>
+<p>d) Semibreve</p>
+<h2>9. Andamento, dinâmica e agógica</h2>
+<p><strong>1.</strong> A indicação ♩ = 60 significa:</p>
+<p>a) Sessenta compassos por minuto</p>
+<p>b) Sessenta semínimas por minuto</p>
+<p>c) Sessenta notas ao todo</p>
+<p>d) Sessenta segundos de duração</p>
+<p><strong>2.</strong> Qual sequência está em ordem crescente de intensidade?</p>
+<p>a) f, mf, p, pp</p>
+<p>b) pp, p, mf, f</p>
+<p>c) p, pp, f, mf</p>
+<p>d) mf, f, p, pp</p>
+<p><strong>3.</strong> As indicações de dinâmica são:</p>
+<p>a) Valores absolutos em decibéis</p>
+<p>b) Relativas ao contexto da obra</p>
+<p>c) Fixadas por norma internacional</p>
+<p>d) Definidas pelo andamento</p>
+<p><strong>4.</strong> Crescendo indica:</p>
+<p>a) Aumento gradual da intensidade</p>
+<p>b) Aceleração do andamento</p>
+<p>c) Subida de altura</p>
+<p>d) Aumento da duração</p>
+<p><strong>5.</strong> A diferença entre um termo de andamento e uma indicação metronômica é que o termo:</p>
+<p>a) É mais preciso</p>
+<p>b) Indica uma faixa de velocidade</p>
+<p>c) Vale só para cordas</p>
+<p>d) Indica intensidade</p>
+<p><strong>6.</strong> Uma peça marcada ♩ = 120 tem semínimas que duram:</p>
+<p>a) Dois segundos cada</p>
+<p>b) Meio segundo cada</p>
+<p>c) Um segundo cada</p>
+<p>d) Depende do compasso</p>
+<p><strong>7.</strong> Ritardando indica:</p>
+<p>a) Diminuir gradualmente o andamento</p>
+<p>b) Diminuir a intensidade</p>
+<p>c) Repetir o trecho</p>
+<p>d) Prolongar a última nota</p>
+<h2>10. Quiálteras, síncope e contratempo</h2>
+<p><strong>1.</strong> Uma tercina em compasso simples corresponde a:</p>
+<p>a) Três notas no tempo de quatro</p>
+<p>b) Três notas no tempo de duas</p>
+<p>c) Duas notas no tempo de três</p>
+<p>d) Três compassos seguidos</p>
+<p><strong>2.</strong> Na síncope, o som:</p>
+<p>a) Começa no tempo forte</p>
+<p>b) Começa no fraco e se prolonga sobre o forte</p>
+<p>c) Ocorre só em pausas</p>
+<p>d) Dura menos que a subdivisão</p>
+<p><strong>3.</strong> No contratempo, o tempo forte é ocupado por:</p>
+<p>a) Uma nota longa</p>
+<p>b) Silêncio</p>
+<p>c) Uma quiáltera</p>
+<p>d) Um acorde</p>
+<p><strong>4.</strong> A quiáltera contraria:</p>
+<p>a) A tonalidade</p>
+<p>b) A subdivisão natural do compasso</p>
+<p>c) A armadura</p>
+<p>d) A clave</p>
+<p><strong>5.</strong> Síncope e contratempo têm em comum:</p>
+<p>a) Exigirem compasso composto</p>
+<p>b) Deslocarem o acento para fora do tempo forte</p>
+<p>c) Usarem quiálteras</p>
+<p>d) Alterarem o andamento</p>
+<p><strong>6.</strong> Uma quintina indica:</p>
+<p>a) Cinco compassos</p>
+<p>b) Cinco notas no lugar de quatro</p>
+<p>c) Cinco tempos</p>
+<p>d) Cinco vozes</p>
+<h2>11. Acordes: tríades e inversões</h2>
+<p><strong>1.</strong> Uma tríade é formada por:</p>
+<p>a) Três notas quaisquer</p>
+<p>b) Fundamental, terça e quinta</p>
+<p>c) Fundamental, quarta e sétima</p>
+<p>d) Três notas vizinhas</p>
+<p><strong>2.</strong> A tríade diminuta é formada por:</p>
+<p>a) Terça maior e quinta justa</p>
+<p>b) Terça menor e quinta justa</p>
+<p>c) Terça menor e quinta diminuta</p>
+<p>d) Terça maior e quinta aumentada</p>
+<p><strong>3.</strong> O que determina a inversão de um acorde?</p>
+<p>a) A nota mais aguda</p>
+<p>b) A nota no baixo</p>
+<p>c) O número de notas</p>
+<p>d) A tonalidade</p>
+<p><strong>4.</strong> Um acorde dó–mi–sol com sol no baixo está em:</p>
+<p>a) Estado fundamental</p>
+<p>b) Primeira inversão</p>
+<p>c) Segunda inversão</p>
+<p>d) Terceira inversão</p>
+<p><strong>5.</strong> Sobre o quinto grau da escala maior forma-se qual tríade?</p>
+<p>a) Menor</p>
+<p>b) Maior</p>
+<p>c) Diminuta</p>
+<p>d) Aumentada</p>
+<p><strong>6.</strong> A tríade aumentada é simétrica porque:</p>
+<p>a) Tem três notas iguais</p>
+<p>b) É formada por duas terças maiores</p>
+<p>c) Não tem fundamental</p>
+<p>d) Usa apenas notas naturais</p>
+<h2>12. Cifragem e leitura harmônica</h2>
+<p><strong>1.</strong> A cifra Cm indica:</p>
+<p>a) Dó maior</p>
+<p>b) Dó menor</p>
+<p>c) Dó com sétima</p>
+<p>d) Dó diminuto</p>
+<p><strong>2.</strong> A cifra C/E significa:</p>
+<p>a) Dó e mi, dois acordes</p>
+<p>b) Dó maior com mi no baixo</p>
+<p>c) Mi menor com dó no baixo</p>
+<p>d) Dó com sétima em mi</p>
+<p><strong>3.</strong> A diferença entre C7 e CM7 é:</p>
+<p>a) A fundamental</p>
+<p>b) A qualidade da sétima</p>
+<p>c) A inversão</p>
+<p>d) A quinta</p>
+<p><strong>4.</strong> Para que serve a cifragem?</p>
+<p>a) Indicar o andamento</p>
+<p>b) Descrever a harmonia sem escrever cada nota</p>
+<p>c) Marcar a dinâmica</p>
+<p>d) Numerar os compassos</p>
+<p><strong>5.</strong> A cifra C° indica tríade:</p>
+<p>a) Maior</p>
+<p>b) Menor</p>
+<p>c) Diminuta</p>
+<p>d) Aumentada</p>
+<p><strong>6.</strong> A cifra G/B pede quais notas e com o quê no baixo?</p>
+<p>a) Sol–si–ré, com si no baixo</p>
+<p>b) Sol e si em sequência</p>
+<p>c) Si–ré–fá, com sol no baixo</p>
+<p>d) Sol com sétima em si</p>
+</section>
+
+<section class="secao" id="gabarito" data-origem="GERADA" data-papel="GABARITO">
+
+<h1>Gabarito comentado</h1>
+<p>Cada resposta vem com a explicação. Ler o comentário de uma questão que você acertou custa dez segundos e às vezes revela que o acerto foi por outro motivo.</p>
+<h2>1. O som e suas quatro propriedades</h2>
+<p><strong>1.</strong> b) — A frequência — número de vibrações por segundo — determina se o som é grave ou agudo, isto é, a altura. Mais vibrações, som mais agudo.</p>
+<p><strong>2.</strong> c) — Mesma frequência significa mesma altura; mesma duração, mesma duração. O que resta é o timbre, produzido pela receita de harmônicos de cada instrumento.</p>
+<p><strong>3.</strong> b) — Altura é a propriedade ligada à frequência. Para intensidade, usa-se forte e fraco — e confundir os dois é o equívoco mais comum de quem começa.</p>
+<p><strong>4.</strong> b) — Uma corda vibrando produz a fundamental mais uma série de frequências superiores. A intensidade relativa de cada uma dessas é o que produz o timbre.</p>
+<p><strong>5.</strong> c) — Altura depende da frequência; intensidade, da amplitude. São propriedades independentes — um som pode ser grave e altíssimo, ou agudo e quase inaudível.</p>
+<p><strong>6.</strong> c) — Altura tem a pauta, duração tem as figuras, intensidade tem a dinâmica. O timbre é indicado indiretamente — pela escolha do instrumento — e não por um sistema de símbolos próprio.</p>
+<h2>2. A pauta, as claves e os nomes das notas</h2>
+<p><strong>1.</strong> b) — A pauta, ou pentagrama, tem cinco linhas e os quatro espaços entre elas — nove posições de altura ao todo, antes das linhas suplementares.</p>
+<p><strong>2.</strong> b) — Sem clave, as cinco linhas não nomeiam nada. A clave fixa uma nota numa linha específica, e todas as outras posições se definem a partir dela.</p>
+<p><strong>3.</strong> b) — A clave de sol tem esse nome precisamente porque fixa o sol4 na segunda linha — o desenho da clave enrola-se em torno dela.</p>
+<p><strong>4.</strong> b) — Com uma clave só, instrumentos graves e agudos viveriam em linhas suplementares intermináveis. Cada clave aproxima a pauta da região do instrumento.</p>
+<p><strong>5.</strong> b) — A clave é justamente o que decide o nome da posição. A segunda linha é sol4 em clave de sol e si2 em clave de fá.</p>
+<p><strong>6.</strong> b) — São extensões momentâneas da pauta, acima ou abaixo dela, para notas que ultrapassam as cinco linhas.</p>
+<h2>3. Figuras, pausas e a divisão do tempo</h2>
+<p><strong>1.</strong> b) — Semibreve = 2 mínimas = 4 semínimas = 8 colcheias. Cada degrau da tabela dobra a quantidade.</p>
+<p><strong>2.</strong> b) — O ponto vale metade da figura que o precede. Semínima pontuada equivale a semínima mais colcheia — é a forma de escrever três subdivisões sem inventar figura nova.</p>
+<p><strong>3.</strong> b) — As figuras têm duração relativa entre si, não absoluta. É o andamento que converte essa proporção em tempo real.</p>
+<p><strong>4.</strong> b) — Mínima = 2 semínimas = 4 colcheias = 8 semicolcheias.</p>
+<p><strong>5.</strong> b) — A pausa é silêncio escrito, com duração tão precisa quanto a de uma nota. Cada figura tem a pausa equivalente.</p>
+<p><strong>6.</strong> b) — Mínima vale 2 semínimas; o ponto acrescenta metade, ou seja, mais uma semínima. Total: três.</p>
+<h2>4. Tom, semitom e os acidentes</h2>
+<p><strong>1.</strong> b) — Mi–fá e si–dó são os únicos pares de notas naturais vizinhas separados por semitom. É por isso que não há tecla preta entre eles.</p>
+<p><strong>2.</strong> c) — O bequadro devolve a nota ao estado natural, cancelando sustenido ou bemol vigente — seja da armadura, seja do próprio compasso.</p>
+<p><strong>3.</strong> b) — Enarmonia é ter duas grafias diferentes para a mesma altura. A escolha entre elas não é indiferente: informa a função da nota na tonalidade.</p>
+<p><strong>4.</strong> b) — O tom é a distância de dois semitons. O semitom é a menor distância do sistema temperado.</p>
+<p><strong>5.</strong> b) — Se o sustenido sobe um semitom, o dobrado sustenido sobe dois — isto é, um tom inteiro.</p>
+<p><strong>6.</strong> b) — Entre dó e ré existe a tecla preta do dó sustenido. São dois semitons, ou seja, um tom.</p>
+<h2>5. Intervalos: número e qualidade</h2>
+<p><strong>1.</strong> b) — Conta-se do nome da nota grave ao da aguda, incluindo as duas. De dó a mi: dó, ré, mi — três nomes, é uma terça.</p>
+<p><strong>2.</strong> b) — O número continua sendo três — dó, ré, mi —, portanto terça. São três semitons, e não quatro: terça menor.</p>
+<p><strong>3.</strong> a) — Os números somam nove: 9 − 5 = 4, é uma quarta. E "justo" permanece justo na inversão — maior e menor é que trocam entre si.</p>
+<p><strong>4.</strong> b) — O número conta nomes de nota e ignora acidentes. Os acidentes entram no segundo passo, que é a qualidade.</p>
+<p><strong>5.</strong> c) — Uníssono, quarta, quinta e oitava são justos ou alterados. Segundas, terças, sextas e sétimas são maiores ou menores.</p>
+<p><strong>6.</strong> b) — Os números somam nove: 9 − 6 = 3, é uma terça. E a qualidade troca: maior vira menor. Portanto, terça menor.</p>
+<p><strong>7.</strong> b) — A escala de qualidades é: diminuto — menor — maior — aumentado. Reduzir um maior em um semitom produz um menor.</p>
+<h2>6. Escalas maiores e menores</h2>
+<p><strong>1.</strong> b) — Tom, tom, semitom, tom, tom, tom, semitom. Os semitons caem entre o 3º–4º e o 7º–8º graus.</p>
+<p><strong>2.</strong> b) — A menor harmônica eleva o 7º grau em um semitom, criando a sensível — a nota que puxa para a tônica.</p>
+<p><strong>3.</strong> b) — Na subida ela eleva o 6º e o 7º graus; na descida desfaz as duas alterações, voltando à forma natural.</p>
+<p><strong>4.</strong> b) — Sem o fá sustenido, o semitom cairia entre o 6º e o 7º graus em vez de entre o 7º e o 8º — e o padrão da escala maior se quebraria.</p>
+<p><strong>5.</strong> b) — A mesma sequência de intervalos produz o mesmo caráter, comece onde começar. A tônica define a tonalidade, não o modo.</p>
+<p><strong>6.</strong> b) — Sem o si bemol, o semitom cairia entre o 4º e o 5º graus em vez de entre o 3º e o 4º. O acidente existe exatamente para preservar o padrão da escala maior.</p>
+<p><strong>7.</strong> c) — Subir o 7º grau sem subir o 6º cria uma segunda aumentada — um tom e meio —, que é o som característico dessa escala e difícil de cantar.</p>
+<h2>7. Armaduras de clave e tonalidades</h2>
+<p><strong>1.</strong> b) — Fá, dó, sol, ré, lá, mi, si — cada um uma quinta acima do anterior. A ordem dos bemóis é exatamente a inversa.</p>
+<p><strong>2.</strong> b) — O último sustenido é a sensível; um semitom acima de fá♯ é sol. A relativa menor é mi menor.</p>
+<p><strong>3.</strong> c) — A relativa menor começa no 6º grau da maior — uma terça menor abaixo da tônica. As duas compartilham a mesma armadura.</p>
+<p><strong>4.</strong> b) — Escrever o mesmo acidente em cada ocorrência seria repetitivo e sujeito a erro. Na armadura, ele vale para todas as ocorrências da nota.</p>
+<p><strong>5.</strong> b) — O penúltimo bemol é a própria tônica. Com um bemol só não há penúltimo: é fá maior, e vale decorar.</p>
+<p><strong>6.</strong> b) — Si, mi, lá, ré, sol, dó, fá — exatamente a ordem inversa dos sustenidos. Cada bemol entra uma quarta acima do anterior.</p>
+<p><strong>7.</strong> b) — Relativas: uma maior e uma menor, com as mesmas notas. O que muda é qual delas funciona como centro de repouso.</p>
+<h2>8. Compasso, métrica e acentuação</h2>
+<p><strong>1.</strong> b) — O número de baixo indica a figura que vale um tempo: 4 para semínima, 8 para colcheia, 2 para mínima.</p>
+<p><strong>2.</strong> c) — 6/8 é composto: as seis colcheias agrupam-se em dois tempos de três. A unidade de tempo é a semínima pontuada.</p>
+<p><strong>3.</strong> b) — Em compasso simples cada tempo divide-se em dois; em composto, em três. É a subdivisão que define a categoria.</p>
+<p><strong>4.</strong> a) — O primeiro tempo de cada compasso é o tempo forte. É essa acentuação regular que faz o compasso ser percebido como agrupamento.</p>
+<p><strong>5.</strong> b) — A barra vertical separa um compasso do seguinte, tornando visível o agrupamento do pulso.</p>
+<p><strong>6.</strong> b) — O número 2 embaixo indica a mínima como unidade de tempo. São, portanto, dois tempos de mínima por compasso.</p>
+<h2>9. Andamento, dinâmica e agógica</h2>
+<p><strong>1.</strong> b) — A indicação metronômica diz quantas vezes por minuto a figura ocorre. ♩ = 60 são sessenta semínimas por minuto, uma por segundo.</p>
+<p><strong>2.</strong> b) — Pianíssimo, piano, mezzo-forte, forte. A escala vai do mais fraco ao mais forte.</p>
+<p><strong>3.</strong> b) — Um forte de quarteto e um forte de orquestra não têm o mesmo volume. A indicação diz a posição dentro da obra, não um número.</p>
+<p><strong>4.</strong> a) — Crescendo é aumento gradual de intensidade. Aceleração de andamento é indicada por accelerando.</p>
+<p><strong>5.</strong> b) — Termos como andante designam regiões de velocidade, dentro das quais dois intérpretes razoáveis discordam. O metrônomo é o que dá precisão.</p>
+<p><strong>6.</strong> b) — Cento e vinte semínimas por minuto significam duas por segundo — logo, meio segundo cada. Dobrar o número metronômico reduz a duração pela metade.</p>
+<p><strong>7.</strong> a) — Ritardando é desaceleração gradual. Prolongar uma nota além do valor é indicado pela fermata.</p>
+<h2>10. Quiálteras, síncope e contratempo</h2>
+<p><strong>1.</strong> b) — A tercina encaixa três notas no espaço que a subdivisão natural daria a duas.</p>
+<p><strong>2.</strong> b) — A síncope desloca o acento porque a nota, iniciada no tempo fraco, ainda está soando quando o tempo forte chega.</p>
+<p><strong>3.</strong> b) — No contratempo há pausa no tempo forte, e o som entra no fraco. É isso que o distingue da síncope.</p>
+<p><strong>4.</strong> b) — Ela encaixa um número de notas diferente do que a subdivisão natural do compasso prevê.</p>
+<p><strong>5.</strong> b) — Ambos tiram o acento do lugar esperado. A diferença está em como: prolongando um som sobre o forte, ou deixando o forte vazio.</p>
+<p><strong>6.</strong> b) — A quintina encaixa cinco notas no espaço da subdivisão natural, que em compasso simples seriam quatro.</p>
+<h2>11. Acordes: tríades e inversões</h2>
+<p><strong>1.</strong> b) — A tríade empilha duas terças sobre a fundamental, produzindo fundamental, terça e quinta.</p>
+<p><strong>2.</strong> c) — Duas terças menores empilhadas produzem uma quinta diminuta entre os extremos. É o acorde que mais pede resolução.</p>
+<p><strong>3.</strong> b) — A inversão é decidida por qual nota está no baixo: fundamental, terça ou quinta. As notas do acorde não mudam.</p>
+<p><strong>4.</strong> c) — A quinta no baixo caracteriza a segunda inversão — uma posição instável, que raramente serve de repouso.</p>
+<p><strong>5.</strong> b) — Os graus I, IV e V da escala maior geram tríades maiores. O V contém a sensível, e é ele que conduz de volta à tônica.</p>
+<p><strong>6.</strong> b) — Duas terças maiores dividem a oitava em partes iguais. Essa simetria é o que faz o acorde soar sem repouso.</p>
+<h2>12. Cifragem e leitura harmônica</h2>
+<p><strong>1.</strong> b) — A letra indica a fundamental e o "m" minúsculo indica tríade menor. Dó menor é dó–mi bemol–sol.</p>
+<p><strong>2.</strong> b) — A barra separa o acorde da nota do baixo. C/E é dó maior em primeira inversão, com a terça no baixo.</p>
+<p><strong>3.</strong> b) — C7 traz a sétima menor (si bemol); CM7, a sétima maior (si). Um semitom muda o caráter de tensão para repouso.</p>
+<p><strong>4.</strong> b) — Nasceu da prática de acompanhamento: quem acompanha precisa saber a harmonia, não a disposição exata das vozes.</p>
+<p><strong>5.</strong> c) — O círculo indica tríade diminuta: terça menor e quinta diminuta sobre a fundamental.</p>
+<p><strong>6.</strong> a) — Antes da barra, o acorde: sol maior, ou seja, sol–si–ré. Depois da barra, o baixo: si. É a primeira inversão.</p>
+</section>
+
+<section class="secao editavel" id="colofao" data-origem="EDITAVEL" data-papel="COLOFAO">
+
+<p>Composto e publicado pelo Conservatório Muscicapa.</p>
+<p>Texto de Aline Alves Silva.</p>
+<p>Primeira edição, 2026.</p>
+<hr>
+<p>Material didático de curso livre de qualificação profissional. Publicação própria do Conservatório Muscicapa, sem vínculo com o MEC.</p>
+</section>
+<footer class="rodape">
+  Conservatório Muscicapa · Primeira edição · 2026<br>
+  Seções com borda tracejada são <strong>editáveis</strong>: regenerar o livro não as sobrescreve.
+</footer>
+</body>
+</html>

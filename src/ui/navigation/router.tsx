@@ -128,6 +128,7 @@ export const CANONICAL_ROUTES = {
   ADMIN_AUDIT: '/admin/audit',
   ADMIN_CREDENTIALS: '/admin/credentials',
   ADMIN_BOOKLETS: '/admin/booklets',
+  ADMIN_LIBRARY: '/admin/biblioteca',
 
   // Simulador de violino com acompanhamento de partitura.
   VIOLIN_SIMULATOR: '/violin/simulator',
@@ -334,7 +335,8 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
   // Admin
   if (path.startsWith('/admin')) {
     crumbs.push({ label: 'Governança Admin', path: '/admin' });
-    if (path === '/admin/booklets') crumbs.push({ label: 'Livretos de Exercício' });
+    if (path === '/admin/biblioteca') crumbs.push({ label: 'Biblioteca Oficial' });
+    else if (path === '/admin/booklets') crumbs.push({ label: 'Livretos de Exercício' });
     else if (path === '/admin/credentials') crumbs.push({ label: 'Estúdio de Credenciais' });
     else if (path === '/admin/users') crumbs.push({ label: 'Usuários & Papéis' });
     else if (path === '/admin/engines') crumbs.push({ label: 'Engines & Gateway' });

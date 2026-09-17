@@ -141,6 +141,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         { label: 'Engines & Gateway', path: '/admin/engines' },
         { label: 'Conteúdo & Ementas', path: '/admin/content' },
         { label: 'Moderação', path: '/admin/moderation' },
+        { label: 'Biblioteca Oficial', path: '/admin/biblioteca' },
         { label: 'Livretos de Exercício', path: '/admin/booklets' },
         { label: 'Credenciais & Certificados', path: '/admin/credentials' },
         { label: 'Auditoria Imutável', path: '/admin/audit' },
