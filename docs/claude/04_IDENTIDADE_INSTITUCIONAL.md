@@ -38,8 +38,8 @@ pertençam à mesma peça.
 |---|---|---|---|---|
 | **Anil** | Campo do escudo | `#1B3357` | 216° | 900 |
 | **Ouro** | Moldura de volutas, abelha, punhos | `#947D53` | 39° | 600 |
-| **Verde-oliva** | Plumagem da ave à direita | `#60603C` | 60° | 700 |
-| **Terra** | Plumagem da ave central | `#7A5138` | 23° | 700 |
+| Verde-oliva | Plumagem da juruviara | `#60603C` | 60° | *não é cor de design* |
+| Terra | Plumagem do uirapuru | `#7A5138` | 23° | *não é cor de design* |
 | Aço | Lâminas | `#B4A890` – `#C0B490` | — | não virou token |
 | Fundo do arquivo | — | `#F5F0E2` | — | removido |
 
@@ -55,9 +55,17 @@ Extremos do campo azul: `#142541` (mais escuro) → `#2B4C6D` (mais claro).
 | branco sobre botão anil-800 | 11,47:1 | AAA |
 | ouro-600 sobre branco | 5,31:1 | AA |
 | ouro-400 sobre anil-900 | 5,38:1 | AA |
-| verde-700 sobre branco | 6,48:1 | AA |
 
 Nenhuma combinação institucional de texto fica abaixo de 4,5:1.
+
+### 2.2 A paleta de design é anil e ouro — só
+
+O verde da juruviara e o terra do uirapuru **existem no brasão e não são
+cores de design**. Entram apenas quando o próprio brasão é reproduzido.
+
+Mantê-los como utilitários conviteria a usá-los na interface, e uma paleta
+institucional de quatro matizes deixa de ser reconhecível — vira uma coleção
+de cores. Foram removidos do tema por isso.
 
 **Regra derivada disso:** o ouro é moldura e acento cerimonial, nunca texto
 corrido. Sobre branco ele só fecha contraste a partir do passo 600, e um
@@ -72,58 +80,56 @@ certificado precisa continuar legível fotocopiado em preto e branco.
 | Armas cruzadas | 2 | Espada (esquerda do observador) e bastão/cetro com orbe e coroa (direita) |
 | Estrelas no campo | **~20 confirmadas** | Detecção automática de manchas claras compactas sobre o campo azul |
 
-### 3.1 Duas ressalvas factuais sobre as estrelas
+### 3.1 As estrelas — confirmado
 
-**A contagem de 27 não foi confirmada.** A detecção automática encontrou 29
-manchas claras, das quais cerca de 20 são inequivocamente estrelas; as demais
-são artefatos de borda, o bico da ave central e ruído de compressão. Algumas
-estrelas podem estar ocultas sob as asas. **O número exato precisa ser
-confirmado no arquivo vetorial de origem**, não neste JPEG.
+**O campo do escudo reproduz o céu da bandeira brasileira.** São as **27
+estrelas** da bandeira — 26 estados e o Distrito Federal — distribuídas pelas
+**nove constelações** que a compõem, entre elas o **Cruzeiro do Sul**.
+Confirmado pela fundadora.
 
-**"27 estrelas na ordenação exata do Cruzeiro do Sul" reúne duas coisas
-diferentes.** O Cruzeiro do Sul (*Crux*) tem **cinco** estrelas. As **27** são
-a convenção da bandeira brasileira — 26 estados e o Distrito Federal —
-distribuídas por **nove** constelações, das quais Crux é apenas uma.
+A detecção automática sobre o JPEG confirmou cerca de 20 manchas; as demais
+estão sob as asas das aves ou foram perdidas na compressão. Isso é limitação
+do método, não do brasão: a contagem definitiva sai do arquivo vetorial.
 
-Não é um defeito do brasão: ter 27 estrelas **e** ter o Cruzeiro do Sul entre
-elas é perfeitamente coerente. O que não se sustenta é a formulação "27
-estrelas do Cruzeiro do Sul". Duas redações corretas:
+**Redação correta para uso público** — a formulação precisa dizer as duas
+coisas sem colapsá-las numa só:
 
-> "Vinte e sete estrelas, à maneira do firmamento brasileiro, entre as quais
-> se destaca o Cruzeiro do Sul."
+> "Vinte e sete estrelas, o firmamento da bandeira brasileira, entre as quais
+> o Cruzeiro do Sul."
 
-> "O Cruzeiro do Sul, cinco estrelas, sobre o campo de anil."
+O que **não** se deve escrever é "27 estrelas do Cruzeiro do Sul": o Cruzeiro
+tem cinco, e as 27 se espalham por nove constelações. A distinção protege o
+documento de uma contestação fácil — e a formulação correta é mais forte,
+porque afirma o país inteiro e não apenas uma constelação.
 
-A escolha é da fundadora. Registrada aqui porque um documento que reivindica
-precisão heráldica não pode conter uma imprecisão astronômica.
+---
 
-## 4. Discrepância a resolver: esquerda de quem?
+## 4. Posição das aves — confirmado
 
-A formulação de identidade atribui posições assim:
+| Ave | Posição | Plumagem no arquivo | Princípio |
+|---|---|---|---|
+| **Araponga-da-Amazônia** (*Procnias albus*) | superior **esquerda** | branca ✓ | potência, projeção |
+| **Juruviara** (*Vireo olivaceus*) | superior **direita** | verde-oliva ✓ | constância, disciplina |
+| **Uirapuru-verdadeiro** (*Cyphorhinus arada*) | centro inferior | marrom/ruivo ✓ | complexidade, técnica |
 
-| Ave | Posição declarada | Cor no arquivo |
-|---|---|---|
-| Juruviara (*Vireo olivaceus*) | superior **esquerda** | — |
-| Araponga-da-Amazônia (*Procnias albus*) | superior **direita** | — |
-| Uirapuru (*Cyphorhinus arada*) | centro inferior | marrom/ruivo ✓ |
+Posições confirmadas pela fundadora, e cada uma bate com a plumagem no
+arquivo: a araponga é a ave branca, à esquerda; a juruviara é a oliva, à
+direita.
 
-No arquivo, a ave **à esquerda do observador é branca** e a **à direita é
-verde-oliva**. Ora: *Procnias albus* é a ave branca; *Vireo olivaceus* é a
-oliva. Pela leitura do observador, as posições estariam **trocadas**.
+**Esquerda e direita aqui são de quem olha**, não do portador do escudo. O
+documento precisa dizer isso uma vez, logo antes da primeira menção de
+posição — a heráldica clássica usa a convenção oposta (destra e sinistra são
+do portador), e sem a ressalva metade dos leitores versados vai ler o
+contrário do que está escrito.
 
-**Mas provavelmente não estão.** Em heráldica, *destra* e *sinistra* são do
-ponto de vista de **quem porta** o escudo — a destra do portador aparece à
-**esquerda** de quem olha. Se a formulação usa a convenção heráldica correta,
-"Juruviara à esquerda" significa à direita do observador, que é exatamente
-onde está a ave oliva. **Então o documento está certo e a leitura ingênua é
-que erra.**
+> **Nota de leitura, para o documento público:** as posições descritas neste
+> brasão são as do observador.
 
-O problema não é o conteúdo: é a ambiguidade. **O documento final precisa
-declarar qual convenção usa**, em uma linha, logo antes da primeira menção de
-posição. Sem isso, metade dos leitores vai concluir que o brasão contradiz o
-próprio manual.
+### 4.1 Correção de uma formulação anterior
 
-O uirapuru ao centro é inequívoco nas duas convenções.
+Uma versão anterior da fundamentação atribuía a juruviara à esquerda e a
+araponga à direita. Está invertido em relação ao brasão e **não deve ser
+reaproveitado**. A tabela acima é a referência.
 
 ---
 
@@ -201,9 +207,9 @@ Cruzados atrás do escudo, na tradição heráldica, marcam uma instituição qu
 
 ## 9. Tokens implementados
 
-`src/index.css` — quatro rampas de onze passos (`anil`, `ouro`, `verde`,
-`terra`), disponíveis como utilitários Tailwind (`bg-anil-800`,
-`text-ouro-600`, …).
+`src/index.css` — duas rampas de onze passos (`anil` e `ouro`), disponíveis
+como utilitários Tailwind (`bg-anil-800`, `text-ouro-600`, …). Verde e terra
+não geram utilitários, pelo motivo de §2.2.
 
 ## 10. O vermelho saiu da marca e ficou como sinal
 
@@ -255,9 +261,10 @@ Deve constar também dos termos de uso e da página de cada curso — **pendente
 
 | # | Pendência | De quem |
 |---|---|---|
-| I-1 | Contagem exata das estrelas, no arquivo vetorial | fundadora |
-| I-2 | Redação correta sobre 27 estrelas × Cruzeiro do Sul (§3.1) | fundadora |
-| I-3 | Declarar a convenção heráldica de posição (§4) | fundadora |
+| I-1 | ~~Contagem das estrelas~~ — **resolvido:** 27, o céu da bandeira (§3.1) | ✅ |
+| I-2 | ~~Redação sobre as estrelas~~ — **resolvida** (§3.1) | ✅ |
+| I-3 | ~~Posição das aves~~ — **resolvida:** araponga à esquerda, juruviara à direita (§4) | ✅ |
+| I-3b | Contagem definitiva das estrelas no arquivo vetorial, para conferência | fundadora |
 | I-4 | Significado oficial da espada e do bastão (§8) | fundadora |
 | I-5 | Verificar os dados bioacústicos antes de qualquer uso público (§6.1) | pesquisa |
 | I-6 | Brasão em vetor — o JPEG não escala para impressão grande | fundadora |

@@ -4,14 +4,18 @@
  * Paleta institucional do Conservatório Muscicapa.
  *
  * As cores NÃO foram escolhidas: foram MEDIDAS no brasão, por amostragem do
- * arquivo original. O anil é o campo do escudo, o ouro é a moldura e a
- * abelha, o verde é a juruviara e a terra é o uirapuru.
+ * arquivo original. O anil é o campo do escudo; o ouro é a moldura, a abelha
+ * e os punhos das armas.
  *
  * Âncoras medidas no arquivo:
  *   anil   #1B3357  (matiz 216°, campo do escudo)     -> passo 900
  *   ouro   #947D53  (moldura e abelha)                -> passo 600
- *   verde  #60603C  (plumagem da juruviara)           -> passo 700
- *   terra  #7A5138  (plumagem do uirapuru)            -> passo 700
+ *
+ * SAO ESTAS DUAS, E SO ESTAS. O verde da juruviara (#60603C) e o terra do
+ * uirapuru (#7A5138) existem no brasao e NAO sao cores de design: entram
+ * apenas quando o proprio brasao e reproduzido. Mante-los como utilitarios
+ * conviteria a usa-los na interface, e uma paleta institucional de quatro
+ * matizes deixa de ser reconhecivel.
  *
  * As rampas saem da âncora por variação de luminosidade, com a saturação
  * caindo nas pontas: cores muito claras ou muito escuras mantendo saturação
@@ -48,32 +52,6 @@
   --color-ouro-800: #4f4430;
   --color-ouro-900: #3e3628;
   --color-ouro-950: #28231a;
-
-  /* Verde-oliva — juruviara. Constância, prática, progresso. */
-  --color-verde-50: #f8f8f6;
-  --color-verde-100: #f0f0ea;
-  --color-verde-200: #dfdfd2;
-  --color-verde-300: #cacab0;
-  --color-verde-400: #b0b082;
-  --color-verde-500: #93935c;
-  --color-verde-600: #76764c;
-  --color-verde-700: #60603f;
-  --color-verde-800: #4c4c33;
-  --color-verde-900: #3c3c2a;
-  --color-verde-950: #27271c;
-
-  /* Terra — uirapuru. Complexidade, repertório, matéria. */
-  --color-terra-50: #f9f7f6;
-  --color-terra-100: #f1ece9;
-  --color-terra-200: #e3d6ce;
-  --color-terra-300: #d2b8a8;
-  --color-terra-400: #be9074;
-  --color-terra-500: #a46d4c;
-  --color-terra-600: #83593f;
-  --color-terra-700: #6a4935;
-  --color-terra-800: #543b2c;
-  --color-terra-900: #422f24;
-  --color-terra-950: #2a1f18;
 }
 
 @layer base {
