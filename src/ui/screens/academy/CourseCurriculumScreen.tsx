@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { LockedState } from '../../components/feedback/LockedState';
+import { ProgressBar } from '../../components/data-display/Progress';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
@@ -18,7 +20,6 @@ import {
   Clock,
   Layers,
   ArrowRight,
-  Play,
   HelpCircle,
   Volume2,
   Music,
@@ -34,6 +35,7 @@ export const CourseCurriculumScreen: React.FC = () => {
   const [quizzes, setQuizzes] = useState<AcademyQuiz[]>([]);
   const [finalAssessment, setFinalAssessment] = useState<AcademyAssessment | null>(null);
   const [progress, setProgress] = useState<UserAcademyProgress | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadCurriculum = async () => {
@@ -79,6 +81,7 @@ export const CourseCurriculumScreen: React.FC = () => {
       } catch (err) {
         console.error('Error loading curriculum:', err);
       }
+      setIsLoading(false);
     };
 
     loadCurriculum();
@@ -87,28 +90,68 @@ export const CourseCurriculumScreen: React.FC = () => {
   const totalLessons = Object.values(moduleLessons).reduce((acc, curr) => acc + curr.length, 0);
 
   return (
-    <ScreenContainer
-      id={`course-curriculum-${courseId}`}
-      title={`Ementa & Grade Curricular Completa`}
-      subtitle={`${course?.title || 'Curso Acadêmico'} • ${course?.workloadHours}h Totais`}
-      badgeLabel="Programa Curricular Oficial"
-      badgeVariant="brand"
-      primaryAction={{
-        label: progress ? 'Continuar Curso' : 'Ir para Detalhes do Curso',
-        icon: Play,
-        onClick: () => navigate(`/academy/course/${courseId}`),
-      }}
-      secondaryActions={[
-        {
-          label: 'Ver Detalhes do Curso',
-          onClick: () => navigate(`/academy/course/${courseId}`),
-        },
-        {
-          label: 'Meu Progresso',
-          onClick: () => navigate(`/academy/course/${courseId}/progress`),
-        },
-      ]}
+    <PageLayout
+      id="coursecurriculum"
+      form="detail"
+      density="catalog"
+      asideLabel="Grade curricular"
+      state={isLoading ? 'loading' : !course ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
     >
+      <PageLayout.Aside>
+        <div className="space-y-3">
+          <Card variant="default" padding="md" className="space-y-3">
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+              Estrutura da disciplina
+            </p>
+            <dl className="space-y-1.5 text-xs text-stone-700">
+              <div className="flex items-center justify-between">
+                <dt>Modulos</dt>
+                <dd className="font-mono font-bold">{modules.length}</dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt>Quizzes</dt>
+                <dd className="font-mono font-bold">{quizzes.length}</dd>
+              </div>
+              {course && (
+                <div className="flex items-center justify-between border-t border-stone-100 pt-1.5">
+                  <dt>Carga horaria</dt>
+                  <dd className="font-mono font-bold">{course.workloadHours}h</dd>
+                </div>
+              )}
+            </dl>
+            {progress ? (
+              <>
+                <ProgressBar
+                  id="curriculum-progress"
+                  value={progress.progressPercentage}
+                  max={100}
+                  label={`Progresso: ${progress.progressPercentage}%`}
+                />
+                <Button variant="primary" size="sm" className="w-full" onClick={() => course && navigate(`/academy/course/${course.id}`)}>
+                  Voltar a disciplina
+                </Button>
+              </>
+            ) : (
+              <>
+                {/* Sem matricula a grade fica VISIVEL — e ela que sustenta a
+                    decisao de se matricular (wireframes/01 §4). */}
+                <LockedState
+                  id="curriculum-locked"
+                  title="Conteudo bloqueado"
+                  description="A grade esta visivel, mas as licoes exigem matricula."
+                  requirementText="Matricule-se para liberar licoes e avaliacao."
+                />
+                <Button variant="primary" size="sm" className="w-full" onClick={() => course && navigate(`/academy/course/${course.id}`)}>
+                  Ver a disciplina
+                </Button>
+              </>
+            )}
+          </Card>
+        </div>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       <div className="space-y-8">
         {/* Header Summary Banner */}
         <Card variant="muted" padding="lg" className="border-stone-200">
@@ -317,6 +360,7 @@ export const CourseCurriculumScreen: React.FC = () => {
           )}
         </div>
       </div>
-    </ScreenContainer>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

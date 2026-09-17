@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { academyService } from '../../../services/application/academy.service';
 import { AcademyCourse, AcademyModule, AcademyLesson } from '../../../domain/academy';
-import { CheckCircle2, ArrowRight, ArrowLeft, BookOpen, Clock } from 'lucide-react';
+import { CheckCircle2, ArrowRight, BookOpen, Clock } from 'lucide-react';
 
 export const ModuleDetailScreen: React.FC = () => {
   const { params, navigate } = useRouter();
@@ -42,50 +42,36 @@ export const ModuleDetailScreen: React.FC = () => {
     loadModule();
   }, [courseId, moduleId]);
 
-  if (!module && !isLoading) {
-    return (
-      <ScreenContainer
-        id="module-not-found"
-        title="Módulo Acadêmico"
-        subtitle="Módulo não localizado."
-        emptyProps={{
-          title: 'Módulo não encontrado',
-          description: `O módulo [${moduleId}] não pertence a esta disciplina.`,
-          actionLabel: 'Voltar ao Curso',
-          onAction: () => navigate(`/academy/course/${courseId}`),
-        }}
-      >
-        <div />
-      </ScreenContainer>
-    );
-  }
 
   return (
-    <ScreenContainer
-      id={`module-detail-${moduleId}`}
-      title={module?.title || 'Módulo Acadêmico'}
-      subtitle={`Disciplina: ${course?.title || 'Curso'}`}
-      badgeLabel={`Módulo 0${module?.order || 1}`}
-      badgeVariant="brand"
-      primaryAction={{
-        label: lessons.length > 0 ? 'Iniciar 1ª Lição do Módulo' : 'Ver Curso',
-        icon: ArrowRight,
-        onClick: () => {
-          if (lessons.length > 0) {
-            navigate(`/academy/lesson/${lessons[0].id}`);
-          } else {
-            navigate(`/academy/course/${courseId}`);
-          }
-        },
-      }}
-      secondaryActions={[
-        {
-          label: 'Voltar à Disciplina',
-          icon: ArrowLeft,
-          onClick: () => navigate(`/academy/course/${courseId}`),
-        },
-      ]}
+    <PageLayout
+      id="moduledetail"
+      form="detail"
+      density="catalog"
+      asideLabel="Resumo"
+      state={isLoading ? 'loading' : !module ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
     >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-3">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Modulo
+          </p>
+          <dl className="space-y-1.5 text-xs text-stone-700">
+            <div className="flex items-center justify-between">
+              <dt>Licoes</dt>
+              <dd className="font-mono font-bold">{lessons.length}</dd>
+            </div>
+          </dl>
+          {course && (
+            <Button variant="outline" size="sm" className="w-full" onClick={() => navigate(`/academy/course/${course.id}`)}>
+              Voltar a disciplina
+            </Button>
+          )}
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       <div className="space-y-6 max-w-4xl">
         <Card variant="default" padding="lg" className="space-y-4">
           <h2 className="font-serif font-bold text-lg text-stone-900">
@@ -155,6 +141,7 @@ export const ModuleDetailScreen: React.FC = () => {
           </div>
         </div>
       </div>
-    </ScreenContainer>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

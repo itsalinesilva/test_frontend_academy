@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Badge } from '../../components/base/Badge';
@@ -51,19 +51,29 @@ export const AcademySearchScreen: React.FC = () => {
   ];
 
   return (
-    <ScreenContainer
-      id="academy-search-screen"
-      title="Busca Curricular & Competências"
-      subtitle="Localize disciplinas, trilhas formativas, programas e conceitos teóricos em toda a Academia."
-      badgeLabel="Motor de Busca"
-      badgeVariant="neutral"
-      secondaryActions={[
-        {
-          label: 'Ver Catálogo Completo',
-          onClick: () => navigate('/academy/catalog'),
-        },
-      ]}
+    <PageLayout
+      id="academysearch"
+      form="catalog"
+      density="catalog"
+      asideLabel="Refinar busca"
+      state={'content'}
+      loadingMessage="Carregando..."
     >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-2">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Busca academica
+          </p>
+          <p className="text-xs leading-relaxed text-stone-600">
+            Busque por disciplina, trilha, competencia ou obra do acervo.
+          </p>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academy/catalog')}>
+            Ver catalogo completo
+          </Button>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       <div className="space-y-6">
         {/* Search Bar & Quick Tags */}
         <div className="space-y-3 bg-white p-4 border border-stone-200 rounded-xl shadow-2xs">
@@ -260,6 +270,7 @@ export const AcademySearchScreen: React.FC = () => {
           </div>
         )}
       </div>
-    </ScreenContainer>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

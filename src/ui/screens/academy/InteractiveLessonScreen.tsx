@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
@@ -11,16 +11,12 @@ import { authService } from '../../../services/application/auth.service';
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
 import {
   AcademyLesson,
-  AcademyCourse,
-  AcademyModule,
   AudienceVariant,
 } from '../../../domain/academy';
 import {
   Play,
   Volume2,
   Music,
-  CheckCircle2,
-  ArrowLeft,
   ArrowRight,
   Award,
   Activity,
@@ -55,8 +51,7 @@ export const InteractiveLessonScreen: React.FC = () => {
   const lessonId = params.id;
 
   const [lesson, setLesson] = useState<AcademyLesson | null>(null);
-  const [course, setCourse] = useState<AcademyCourse | null>(null);
-  const [module, setModule] = useState<AcademyModule | null>(null);
+  const [isLoading] = useState(false);
   const [variant, setVariant] = useState<AudienceVariant>('TRADITIONAL');
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [interactiveHistory, setInteractiveHistory] = useState<string[]>([]);
@@ -73,13 +68,7 @@ export const InteractiveLessonScreen: React.FC = () => {
         const l = await academyService.getLesson(lessonId);
         if (l) {
           setLesson(l);
-          const [c, m] = await Promise.all([
-            academyService.getCourse(l.courseId),
-            academyService.getModule(l.moduleId),
-          ]);
-          setCourse(c);
-          setModule(m);
-        }
+                  }
       } catch (err) {
         console.error('Error loading interactive lesson:', err);
       }
@@ -126,46 +115,39 @@ export const InteractiveLessonScreen: React.FC = () => {
     setEvidenceCreated(true);
   };
 
-  if (!lesson) {
-    return (
-      <ScreenContainer
-        id="interactive-lesson-loading"
-        title="Lição Interativa"
-        subtitle="Carregando laboratório multimídia..."
-      >
-        <div className="p-8 text-center text-stone-500 font-mono text-xs">
-          Inicializando sintetizador WebAudio e partituras...
-        </div>
-      </ScreenContainer>
-    );
-  }
 
-  const content = lesson.variants[variant] || lesson.variants.TRADITIONAL;
+  const content = lesson?.variants[variant] ?? lesson?.variants.TRADITIONAL ?? null;
 
   return (
-    <ScreenContainer
-      id={`interactive-lesson-${lessonId}`}
-      title={`Laboratório Interativo: ${content.title}`}
-      subtitle={`Curso: ${course?.title || 'Teoria'} • ${module?.title || 'Módulo'}`}
-      badgeLabel="Experiência Interativa"
-      badgeVariant="brand"
-      primaryAction={{
-        label: evidenceCreated ? 'Evidência Registrada ✓' : 'Concluir com Evidência',
-        icon: CheckCircle2,
-        onClick: handleRegisterEvidence,
+    <PageLayout
+      id="interactive-lesson"
+      form="detail"
+      density="editorial"
+      asideLabel="Laboratorio"
+      state={isLoading ? 'loading' : !lesson ? 'empty' : 'content'}
+      loadingMessage="Carregando o laboratorio..."
+      emptyProps={{
+        title: 'Licao nao encontrada',
+        description: 'O identificador informado nao corresponde a uma licao do curriculo.',
+        actionLabel: 'Voltar ao catalogo',
+        onAction: () => navigate('/academy/catalog'),
       }}
-      secondaryActions={[
-        {
-          label: 'Modo Leitura / Texto',
-          icon: ArrowLeft,
-          onClick: () => navigate(`/academy/lesson/${lessonId}`),
-        },
-        {
-          label: 'Ir para Prática Guiada',
-          onClick: () => navigate('/practice'),
-        },
-      ]}
     >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-2">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Laboratorio
+          </p>
+          <p className="text-xs leading-relaxed text-stone-600">
+            Pratique o conceito com medicao real antes de seguir.
+          </p>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/practice/skill-tree')}>
+            Abrir treinador
+          </Button>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       <div className="space-y-6">
         {/* Audience Variant Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-white border border-stone-200 rounded-xl shadow-xs">
@@ -319,7 +301,7 @@ export const InteractiveLessonScreen: React.FC = () => {
             </Card>
 
             {/* Score Renderer */}
-            {content.scoreSnippet && (
+            {content?.scoreSnippet && (
               <Card variant="default" padding="lg" className="space-y-3">
                 <h4 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
                   <Music className="w-4 h-4 text-stone-700" />
@@ -327,10 +309,10 @@ export const InteractiveLessonScreen: React.FC = () => {
                 </h4>
                 <ScoreContainer
                   id={`interactive-score-${lessonId}`}
-                  title={content.scoreSnippet.title}
-                  clef={content.scoreSnippet.clef}
-                  keySignature={content.scoreSnippet.keySignature}
-                  timeSignature={content.scoreSnippet.timeSignature}
+                  title={content?.scoreSnippet.title}
+                  clef={content?.scoreSnippet.clef}
+                  keySignature={content?.scoreSnippet.keySignature}
+                  timeSignature={content?.scoreSnippet.timeSignature}
                 />
               </Card>
             )}
@@ -404,6 +386,7 @@ export const InteractiveLessonScreen: React.FC = () => {
           </div>
         </div>
       </div>
-    </ScreenContainer>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

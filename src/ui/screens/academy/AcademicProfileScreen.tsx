@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
@@ -26,6 +26,7 @@ export const AcademicProfileScreen: React.FC = () => {
   const { navigate } = useRouter();
 
   const [courses, setCourses] = useState<AcademyCourse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [progresses, setProgresses] = useState<UserAcademyProgress[]>([]);
   const [certificates, setCertificates] = useState<AcademicCertificateRecord[]>([]);
   const [userProfile, setUserProfile] = useState<{
@@ -57,6 +58,7 @@ export const AcademicProfileScreen: React.FC = () => {
       } catch (err) {
         console.error('Error loading academic profile:', err);
       }
+      setIsLoading(false);
     };
 
     loadAcademicProfile();
@@ -73,23 +75,26 @@ export const AcademicProfileScreen: React.FC = () => {
   ).length;
 
   return (
-    <ScreenContainer
-      id="academic-profile-screen"
-      title="Perfil & Transcrição Acadêmica"
-      subtitle="Registro Canônico de Aprendizagem, Competências e Certificações Oficiais"
-      badgeLabel="Registro Verificado"
-      badgeVariant="brand"
-      secondaryActions={[
-        {
-          label: 'Explorar Cursos',
-          onClick: () => navigate('/academy/catalog'),
-        },
-        {
-          label: 'Histórico Completo',
-          onClick: () => navigate('/academy/history'),
-        },
-      ]}
+    <PageLayout
+      id="academicprofile"
+      form="catalog"
+      density="operational"
+      asideLabel="Resumo academico"
+      state={isLoading ? 'loading' : 'content'}
+      loadingMessage="Carregando..."
     >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-2">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Registro
+          </p>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academy/history')}>
+            Historico completo
+          </Button>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       <div className="space-y-8 max-w-6xl mx-auto">
         {/* Profile Card / Header Banner */}
         <Card variant="muted" padding="lg" className="border-stone-200">
@@ -332,6 +337,7 @@ export const AcademicProfileScreen: React.FC = () => {
           </div>
         </Card>
       </div>
-    </ScreenContainer>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

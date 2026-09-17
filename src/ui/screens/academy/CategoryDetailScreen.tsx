@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
@@ -21,6 +21,7 @@ export const CategoryDetailScreen: React.FC = () => {
   const categoryId = params.id;
 
   const [category, setCategory] = useState<AcademyCategory | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [courses, setCourses] = useState<AcademyCourse[]>([]);
   const [allCategories, setAllCategories] = useState<AcademyCategory[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
@@ -54,6 +55,7 @@ export const CategoryDetailScreen: React.FC = () => {
       } catch (err) {
         console.error('Error loading category:', err);
       }
+      setIsLoading(false);
     };
 
     loadCategoryData();
@@ -69,23 +71,32 @@ export const CategoryDetailScreen: React.FC = () => {
   });
 
   return (
-    <ScreenContainer
-      id={`category-detail-${categoryId}`}
-      title={category?.name || 'Categoria Curricular'}
-      subtitle={category?.description || 'Exploração das disciplinas e especializações da cátedra.'}
-      badgeLabel="Especialização Acadêmica"
-      badgeVariant="brand"
-      secondaryActions={[
-        {
-          label: 'Ver Todas as Categorias',
-          onClick: () => navigate('/academy/catalog'),
-        },
-        {
-          label: 'Explorar Catálogo Geral',
-          onClick: () => navigate('/academy/catalog'),
-        },
-      ]}
+    <PageLayout
+      id="categorydetail"
+      form="catalog"
+      density="catalog"
+      asideLabel="Filtros da catedra"
+      state={isLoading ? 'loading' : !category ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
     >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-3">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Catedra
+          </p>
+          <dl className="space-y-1.5 text-xs text-stone-700">
+            <div className="flex items-center justify-between">
+              <dt>Disciplinas</dt>
+              <dd className="font-mono font-bold">{courses.length}</dd>
+            </div>
+          </dl>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academy/catalog')}>
+            Catalogo completo
+          </Button>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       <div className="space-y-8">
         {/* Category Hero / Header Banner */}
         <Card variant="muted" padding="lg" className="border-stone-200 bg-gradient-to-r from-stone-50 via-white to-stone-50">
@@ -303,6 +314,7 @@ export const CategoryDetailScreen: React.FC = () => {
           )}
         </div>
       </div>
-    </ScreenContainer>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

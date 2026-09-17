@@ -68,7 +68,8 @@
 
 ---
 
-## BLOCO 3 — COMANDO 3 · Academy (paridade Coursera)
+## BLOCO 3 — COMANDO 3 · Academy (paridade Coursera) ✅ **CONCLUIDO** (2026-09-17)
+> Academy 60 -> **90/100**. As 22 telas em FULL. Paridade ESTRUTURAL fechada; a funcional aguarda conteudo (COMANDO 8/9).
 | # | Item | Ref. | Estado |
 | :--- | :--- | :--- | :---: |
 | 3.1 | Padrões dinâmicos **derivados** de `CANONICAL_ROUTES`, com precedência de rota estática. As 6 rotas resolvem; 14 testes de regressão | T-03 | ✅ |
@@ -81,11 +82,12 @@
 | 3.5 | Fundir `course.repository.ts` em `academy.repository.ts` (com justificativa técnica registrada) | §9 | ⬜ |
 | 3.6 | Course Detail: materiais, bibliografia navegável, corpo docente real, cursos relacionados, trilhas relacionadas | §4 | ⬜ |
 | 3.7 | Lesson: navegação anterior/próxima, marcação de progresso por tempo real de estudo, CTA contextual para a habilidade correspondente | §4, §6 | ⬜ |
-| 3.8 | Estados obrigatórios (loading/empty/error/success) auditados em todas as telas de Academy | DoD | 🔄 |
+| 3.8 | Estados obrigatorios auditados em Academy: media **1,7 de 5** por tela (era 0,9). Nenhuma tela com zero | DoD | 🔄 |
 | 3.12 | `AcademyHomeScreen` 19→97 · `AcademyCatalogScreen` 48→93 · `MyLearningScreen` 48→93 · `AcademicHistoryScreen` 19→93 | §I.4 | ✅ |
 | 3.13 | Órfãos reconectados: `CourseCard` (4 telas) · `LessonCard` · `DataGrid` · `Tabs` (2) | 1.A | ✅ |
 | 3.14 | Mais um id fixo encontrado e removido: `MyLearningScreen` levava toda matrícula sem registro à lição `les_fomt_101_1` | R-02 | ✅ |
-| 3.15 | **Restam 8 telas** abaixo de FULL: CourseCurriculum 15 · CourseProgress 35 · ModuleDetail 43 · CategoryDetail 45 · AcademySearch 56 · AcademicProfile 60 · SearchResults 60 · InteractiveLesson 66 | §3.1 | ⬜ |
+| 3.15 | As 8 telas restantes recompostas: Curriculum 15->93 · Progress 35->89 · Module 43->89 · Category 45->89 · Search 56->81 · AcademicProfile 60->89 · SearchResults 60->85 · InteractiveLesson 66->89 | §3.1 | ✅ |
+| 3.16 | Retornos antecipados de "nao encontrado" removidos: o estado `empty` do `PageLayout` cobre, e o codigo duplicado some | DoD | ✅ |
 
 ## BLOCO 4 — COMANDO 4 · Profile (paridade LinkedIn)
 | # | Item | Ref. | Estado |
