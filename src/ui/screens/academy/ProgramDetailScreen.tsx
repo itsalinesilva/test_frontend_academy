@@ -16,7 +16,7 @@ import {
 
 export const ProgramDetailScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const programId = params.id || 'prg_fundamentos_musicais';
+  const programId = params.id;
 
   const [program, setProgram] = useState<Program | null>(null);
   const [paths, setPaths] = useState<LearningPath[]>([]);
@@ -25,6 +25,10 @@ export const ProgramDetailScreen: React.FC = () => {
 
   useEffect(() => {
     const loadProgram = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!programId) return;
       try {
         const p = await academyService.getProgram(programId);
         if (p) {

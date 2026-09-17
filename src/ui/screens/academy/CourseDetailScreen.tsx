@@ -39,7 +39,7 @@ import {
 
 export const CourseDetailScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const courseId = params.id || 'crs_fomt_01';
+  const courseId = params.id;
 
   const [course, setCourse] = useState<AcademyCourse | null>(null);
   const [modules, setModules] = useState<AcademyModule[]>([]);
@@ -54,9 +54,17 @@ export const CourseDetailScreen: React.FC = () => {
 
   useEffect(() => {
     const loadCourse = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!courseId) return;
       try {
         const session = await authService.getActiveSession();
-        const userId = session?.user.id || 'usr_founder_1';
+        // Sem sessao nao ha progresso a carregar nem a gravar: o fallback
+        // anterior misturava dados de visitantes anonimos com os da
+        // fundadora (CLAUDE_AUDIT.md T-05).
+        if (!session) return;
+        const userId = session.user.id;
 
         const [c, qzs, allPaths] = await Promise.all([
           academyService.getCourse(courseId),
@@ -106,7 +114,11 @@ export const CourseDetailScreen: React.FC = () => {
 
   const handleEnrollOrContinue = async () => {
     const session = await authService.getActiveSession();
-    const userId = session?.user.id || 'usr_founder_1';
+    // Sem sessao nao ha progresso a carregar nem a gravar: o fallback
+    // anterior misturava dados de visitantes anonimos com os da
+    // fundadora (CLAUDE_AUDIT.md T-05).
+    if (!session) return;
+    const userId = session.user.id;
 
     if (!course) return;
 

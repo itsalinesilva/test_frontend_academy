@@ -118,7 +118,13 @@ export class ProfileService {
   // ---------------------------------------------------------
   public async getUnifiedProfile(targetUserId?: string): Promise<UnifiedProfileRecord> {
     const session = await authService.getActiveSession();
-    const userId = targetUserId || session?.user.id || 'usr_founder_1';
+    // Sem alvo explícito e sem sessão não há perfil a devolver. O fallback
+    // anterior entregava o perfil da fundadora a qualquer visitante anônimo
+    // (CLAUDE_AUDIT.md T-05).
+    const userId = targetUserId || session?.user.id;
+    if (!userId) {
+      throw new UnauthorizedError('Nenhum perfil identificado. Autentique-se para acessar o seu.');
+    }
 
     let record = await this.unifiedRepo.findByUserId(userId);
 
@@ -498,7 +504,10 @@ export class ProfileService {
 
   public async toggleConnection(targetUserId: string): Promise<{ connected: boolean; count: number }> {
     const session = await authService.getActiveSession();
-    const currentUserId = session?.user.id || 'usr_founder_1';
+    if (!session) {
+      throw new UnauthorizedError('Autentique-se para gerenciar conexões.');
+    }
+    const currentUserId = session.user.id;
     const profile = await this.getUnifiedProfile(currentUserId);
 
     if (!profile.connectionsList) {

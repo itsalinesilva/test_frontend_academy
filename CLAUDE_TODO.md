@@ -71,10 +71,12 @@
 ## BLOCO 3 — COMANDO 3 · Academy (paridade Coursera)
 | # | Item | Ref. | Estado |
 | :--- | :--- | :--- | :---: |
-| 3.1 | Corrigir `dynamicPatterns` do roteador: curriculum, progress, interactive, quiz, category, feedback | T-03 | ⬜ |
-| 3.2 | Eliminar os 18 fallbacks `params.id \|\| '<id fixo>'`; rota sem parâmetro válido ⇒ `NotFoundScreen` | T-04 | ⬜ |
-| 3.3 | Eliminar os 18 `\|\| 'usr_founder_1'`; sem sessão ⇒ estado não autenticado explícito | T-05 | ⬜ |
+| 3.1 | Padrões dinâmicos **derivados** de `CANONICAL_ROUTES`, com precedência de rota estática. As 6 rotas resolvem; 14 testes de regressão | T-03 | ✅ |
+| 3.2 | **17 ids fixos removidos** (restam 0). `RouteParams` tipado como `string \| undefined`; 15 telas com guarda que recai no estado de não-encontrado | T-04 | ✅ |
+| 3.3 | **16 fallbacks para a fundadora removidos** (restam 0), incluindo 2 no `profile.service` que agora lançam `UnauthorizedError` | T-05 | ✅ |
 | 3.4 | Substituir a cadeia de `if` do `AppRouterOutlet` por tabela de rotas com casamento por padrão | T-06 | ⬜ |
+| 3.9 | `replace()` agora usa `history.replaceState` — antes empilhava, e o "voltar" devolvia o usuário à tela da qual fora redirecionado | R-04 | ✅ |
+| 3.10 | 🔴 **Descoberto:** 17 ocorrências em telas de Practice **fixam** `'usr_founder_1'` diretamente — não é fallback, é atribuição. Todo progresso de prática de qualquer usuário é gravado no perfil da fundadora | T-05 | ⬜ COMANDO 5 |
 | 3.5 | Fundir `course.repository.ts` em `academy.repository.ts` (com justificativa técnica registrada) | §9 | ⬜ |
 | 3.6 | Course Detail: materiais, bibliografia navegável, corpo docente real, cursos relacionados, trilhas relacionadas | §4 | ⬜ |
 | 3.7 | Lesson: navegação anterior/próxima, marcação de progresso por tempo real de estudo, CTA contextual para a habilidade correspondente | §4, §6 | ⬜ |

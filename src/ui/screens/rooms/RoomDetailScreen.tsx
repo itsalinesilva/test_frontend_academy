@@ -9,7 +9,7 @@ import { FileText, Video, ArrowLeft, Upload, Clock } from 'lucide-react';
 
 export const RoomDetailScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const roomId = params.id || 'sala-chopin';
+  const roomId = params.id;
   const [activeTab, setActiveTab] = useState<'tarefas' | 'membros' | 'gravações'>('tarefas');
 
   const room = {

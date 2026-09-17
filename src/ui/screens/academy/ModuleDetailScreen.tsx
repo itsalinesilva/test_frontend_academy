@@ -9,8 +9,8 @@ import { CheckCircle2, ArrowRight, ArrowLeft, BookOpen, Clock } from 'lucide-rea
 
 export const ModuleDetailScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const courseId = params.courseId || 'crs_fomt_01';
-  const moduleId = params.moduleId || 'mod_fomt_101';
+  const courseId = params.courseId;
+  const moduleId = params.moduleId;
 
   const [course, setCourse] = useState<AcademyCourse | null>(null);
   const [module, setModule] = useState<AcademyModule | null>(null);
@@ -19,6 +19,10 @@ export const ModuleDetailScreen: React.FC = () => {
 
   useEffect(() => {
     const loadModule = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!courseId || !moduleId) return;
       try {
         const [c, m, lsns] = await Promise.all([
           academyService.getCourse(courseId),

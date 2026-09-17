@@ -17,7 +17,7 @@ import { useRouter, useRouteParams } from '../../navigation/router';
 export const SkillDetailScreen: React.FC = () => {
   const router = useRouter();
   const params = useRouteParams();
-  const skillId = params.id || 'sk_intervals_basic';
+  const skillId = params.id;
 
   const [loading, setLoading] = useState(true);
   const [skill, setSkill] = useState<Skill | null>(null);
@@ -26,6 +26,10 @@ export const SkillDetailScreen: React.FC = () => {
 
   useEffect(() => {
     async function loadSkillData() {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!skillId) return;
       try {
         setLoading(true);
         const [skillData, exercisesData] = await Promise.all([

@@ -9,7 +9,7 @@ import { ArrowLeft, Flag, MessageSquare, ThumbsUp, Send } from 'lucide-react';
 
 export const TopicDetailScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const topicId = params.id || 'analise-bach-bwv-1001';
+  const topicId = params.id;
   const [replyText, setReplyText] = useState('');
   const [replies, setReplies] = useState([
     {

@@ -27,7 +27,7 @@ import {
 
 export const ActivityScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const activityId = params.id || 'act_fomt_101_1_1';
+  const activityId = params.id;
 
   const [activity, setActivity] = useState<AcademyActivity | null>(null);
   const [lesson, setLesson] = useState<AcademyLesson | null>(null);
@@ -39,6 +39,10 @@ export const ActivityScreen: React.FC = () => {
 
   useEffect(() => {
     const loadActivityData = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!activityId) return;
       try {
         const act = await academyService.getActivity(activityId);
         if (act) {
@@ -58,7 +62,11 @@ export const ActivityScreen: React.FC = () => {
     if (!selectedOptionId || !activity) return;
 
     const session = await authService.getActiveSession();
-    const userId = session?.user.id || 'usr_founder_1';
+    // Sem sessao nao ha progresso a carregar nem a gravar: o fallback
+    // anterior misturava dados de visitantes anonimos com os da
+    // fundadora (CLAUDE_AUDIT.md T-05).
+    if (!session) return;
+    const userId = session.user.id;
 
     setIsSubmitting(true);
     try {

@@ -12,7 +12,7 @@ import { ShieldCheck, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
 export const AssessmentScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const assessmentId = params.id || 'asm_fomt_final';
+  const assessmentId = params.id;
 
   const [assessment, setAssessment] = useState<AcademyAssessment | null>(null);
   const [course, setCourse] = useState<AcademyCourse | null>(null);
@@ -23,6 +23,10 @@ export const AssessmentScreen: React.FC = () => {
 
   useEffect(() => {
     const loadAssessment = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!assessmentId) return;
       try {
         const asm = await academyService.getAssessment(assessmentId);
         if (asm) {
@@ -74,7 +78,11 @@ export const AssessmentScreen: React.FC = () => {
     if (!assessment) return;
 
     const session = await authService.getActiveSession();
-    const userId = session?.user.id || 'usr_founder_1';
+    // Sem sessao nao ha progresso a carregar nem a gravar: o fallback
+    // anterior misturava dados de visitantes anonimos com os da
+    // fundadora (CLAUDE_AUDIT.md T-05).
+    if (!session) return;
+    const userId = session.user.id;
 
     setIsSubmitting(true);
     try {

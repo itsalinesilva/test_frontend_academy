@@ -6,9 +6,9 @@
 | Campo | Valor |
 | :--- | :--- |
 | **Última atualização** | 2026-09-16 |
-| **Missão concluída** | **COMANDO 3 · etapa 4 — Atlas de dois eixos (ADR-006) + ilha do Violino** |
+| **Missão concluída** | **COMANDO 3 · etapa 5 — roteamento corrigido; 33 fallbacks eliminados** |
 | **Branch** | `main` (commit `cad89d0`) |
-| **Próxima missão** | COMANDO 3 · etapa 5 — Academy Home, Catálogo, Meu Aprendizado e as 6 rotas com parâmetro quebrado |
+| **Próxima missão** | COMANDO 3 · etapa 6 — Academy Home, Catálogo e Meu Aprendizado sobre `PageLayout` |
 | **Status global** | 🟠 **PROTÓTIPO COM AUTENTICAÇÃO REAL** — os bloqueadores de segurança estão fechados; a paridade funcional não |
 
 ---
@@ -20,7 +20,7 @@
 | Instalação de dependências | `npm install` | ✅ 222 pacotes (falhava antes: `ComSpec` vazio no shell — ver §6) |
 | Typecheck estrito | `tsc --noEmit` | ✅ **0 erros** |
 | Lint | `eslint src server functions` | ⚠️ 0 erros, **20 warnings** (`no-explicit-any`; eram 28) |
-| Testes | `vitest run` | ✅ **86/86** (10 arquivos) |
+| Testes | `vitest run` | ✅ **100/100** (11 arquivos) |
 | Build de produção | `vite build` | ✅ 7.7s — bundle único de **1.244 kB** (sem code-splitting) |
 | Servidor de API | `curl` contra 5 vetores de ataque | ✅ **404 / 401 / 401 / 401 / 401** — todos recusados |
 | Vazamento no bundle | `npm run verify:secrets` | ✅ **limpo** (guarda encadeada ao `npm run build`) |

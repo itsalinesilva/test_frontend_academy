@@ -12,7 +12,7 @@ import { Award, Clock, ArrowRight, CheckCircle2, GraduationCap, ArrowLeft } from
 
 export const PathDetailScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const pathId = params.id || 'pth_teoria_gramatica';
+  const pathId = params.id;
 
   const [path, setPath] = useState<LearningPath | null>(null);
   const [courses, setCourses] = useState<AcademyCourse[]>([]);
@@ -21,9 +21,17 @@ export const PathDetailScreen: React.FC = () => {
 
   useEffect(() => {
     const loadPathData = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!pathId) return;
       try {
         const session = await authService.getActiveSession();
-        const userId = session?.user.id || 'usr_founder_1';
+        // Sem sessao nao ha progresso a carregar nem a gravar: o fallback
+        // anterior misturava dados de visitantes anonimos com os da
+        // fundadora (CLAUDE_AUDIT.md T-05).
+        if (!session) return;
+        const userId = session.user.id;
 
         const p = await academyService.getPath(pathId);
         if (p) {

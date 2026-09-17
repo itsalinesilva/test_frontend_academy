@@ -15,7 +15,7 @@ import {
 
 export const DawProjectScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const projectId = params.id || 'arranjo-satb-coral';
+  const projectId = params.id;
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [tempo, setTempo] = useState(64);

@@ -13,9 +13,18 @@ export interface RouteAuthorizationResult {
   requiredCapability?: string;
 }
 
+/** Parâmetros extraídos da rota. Ausência é explícita. */
+export type RouteParams = Record<string, string | undefined>;
+
 export interface RouterContextValue {
   currentPath: string;
-  params: Record<string, string>;
+  /**
+   * Parâmetros da rota. `string | undefined` deliberadamente: o tipo
+   * anterior (`Record<string, string>`) afirmava presença que a rota não
+   * garante, e foi o que permitiu as 18 telas com id fixo de reserva (R-02).
+   * Com a ausência no tipo, o compilador exige que ela seja tratada.
+   */
+  params: RouteParams;
   breadcrumbs: BreadcrumbEntry[];
   navigate: (path: string) => void;
   replace: (path: string) => void;
@@ -139,7 +148,7 @@ function parseParams(pattern: string, path: string): Record<string, string> | nu
   return params;
 }
 
-function deriveBreadcrumbs(path: string, params: Record<string, string>): BreadcrumbEntry[] {
+function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[] {
   const crumbs: BreadcrumbEntry[] = [{ label: 'Início', path: '/' }];
 
   if (path === '/' || path === '/overview') {
@@ -299,6 +308,45 @@ function deriveBreadcrumbs(path: string, params: Record<string, string>): Breadc
   return crumbs;
 }
 
+/**
+ * Rotas estáticas e dinâmicas, DERIVADAS de `CANONICAL_ROUTES`.
+ *
+ * A versão anterior mantinha à mão uma lista de 20 padrões dinâmicos, e ela
+ * estava incompleta: `/academy/course/:id/curriculum`, `/.../progress`,
+ * `/academy/lesson/:id/interactive`, `/academy/quiz/:id`,
+ * `/academy/category/:id` e `/practice/feedback/:id` ficaram de fora. Como
+ * `parseParams` exige igualdade de número de segmentos, nenhum padrão casava
+ * e essas 6 rotas recebiam `params = {}` — defeito R-01 do
+ * 01_REPOSITORY_AUDIT. Dezoito telas mascaravam isso com um id fixo de
+ * reserva, de modo que as rotas quebradas PARECIAM funcionar, sempre
+ * exibindo a mesma entidade.
+ *
+ * Derivar elimina a classe inteira do defeito: qualquer rota acrescentada a
+ * `CANONICAL_ROUTES` passa a resolver parâmetros sem edição adicional.
+ */
+const ALL_ROUTES = Object.values(CANONICAL_ROUTES) as string[];
+const STATIC_ROUTES = new Set(ALL_ROUTES.filter((r) => !r.includes(':')));
+
+/**
+ * Padrões dinâmicos ordenados por especificidade: mais segmentos literais
+ * primeiro. Sem isso, `/rooms/:id` capturaria `/rooms/create`.
+ */
+const DYNAMIC_ROUTES = ALL_ROUTES.filter((r) => r.includes(':')).sort((a, b) => {
+  const literals = (r: string) => r.split('/').filter((seg) => seg && !seg.startsWith(':')).length;
+  return literals(b) - literals(a);
+});
+
+export function resolveRouteParams(path: string): RouteParams {
+  // Rota estática tem precedência absoluta sobre padrão dinâmico.
+  if (STATIC_ROUTES.has(path)) return {};
+
+  for (const pattern of DYNAMIC_ROUTES) {
+    const matched = parseParams(pattern, path);
+    if (matched) return matched;
+  }
+  return {};
+}
+
 export interface RouterProviderProps {
   currentUser?: User | null;
   children: React.ReactNode;
@@ -330,11 +378,24 @@ export const RouterProvider: React.FC<RouterProviderProps> = ({ currentUser = nu
     [checkAuth]
   );
 
+  /**
+   * Substitui a entrada atual do histórico, em vez de empilhar uma nova.
+   *
+   * A versão anterior apenas delegava a `navigate`, de modo que um
+   * redirecionamento deixava a página de origem no histórico — e o botão
+   * "voltar" devolvia o usuário à tela da qual ele acabara de ser
+   * redirecionado, num laço. Defeito R-04 do 01_REPOSITORY_AUDIT.
+   */
   const replace = useCallback(
     (newPath: string) => {
-      navigate(newPath);
+      const sanitized = newPath.startsWith('/') ? newPath : `/${newPath}`;
+      setCurrentPath(sanitized);
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(null, '', `#${sanitized}`);
+      }
+      checkAuth(sanitized);
     },
-    [navigate]
+    [checkAuth]
   );
 
   // Sync with browser hash changes (e.g. back/forward button)
@@ -355,36 +416,7 @@ export const RouterProvider: React.FC<RouterProviderProps> = ({ currentUser = nu
   }, [currentUser, currentPath, checkAuth]);
 
   // Calculate params based on known dynamic routes
-  const params = useMemo(() => {
-    const dynamicPatterns = [
-      CANONICAL_ROUTES.ACADEMY_MODULE,
-      CANONICAL_ROUTES.ACADEMY_PROGRAM,
-      CANONICAL_ROUTES.ACADEMY_PATH,
-      CANONICAL_ROUTES.ACADEMY_COURSE,
-      CANONICAL_ROUTES.ACADEMY_LESSON,
-      CANONICAL_ROUTES.ACADEMY_ACTIVITY,
-      CANONICAL_ROUTES.ACADEMY_ASSESSMENT,
-      CANONICAL_ROUTES.ACADEMY_RESULT,
-      CANONICAL_ROUTES.ACADEMY_COMPLETION,
-      CANONICAL_ROUTES.ACADEMY_CERTIFICATE,
-      CANONICAL_ROUTES.WORLDS_WORK,
-      CANONICAL_ROUTES.COMMUNITY_TOPIC,
-      CANONICAL_ROUTES.STUDIO_PROJECT,
-      CANONICAL_ROUTES.ROOMS_DETAIL,
-      CANONICAL_ROUTES.PRACTICE_SKILL,
-      CANONICAL_ROUTES.PRACTICE_MICRO_SKILL,
-      CANONICAL_ROUTES.PRACTICE_EXERCISE,
-      CANONICAL_ROUTES.PRACTICE_SESSION,
-      CANONICAL_ROUTES.PRACTICE_ATTEMPT,
-      CANONICAL_ROUTES.PRACTICE_RESULT,
-    ];
-
-    for (const pattern of dynamicPatterns) {
-      const matched = parseParams(pattern, currentPath);
-      if (matched) return matched;
-    }
-    return {};
-  }, [currentPath]);
+  const params = useMemo(() => resolveRouteParams(currentPath), [currentPath]);
 
   const breadcrumbs = useMemo(() => {
     return deriveBreadcrumbs(currentPath, params);
@@ -411,7 +443,7 @@ export const useRouter = (): RouterContextValue => {
   return ctx;
 };
 
-export const useRouteParams = (): Record<string, string> => {
+export const useRouteParams = (): RouteParams => {
   const router = useRouter();
   return router.params;
 };

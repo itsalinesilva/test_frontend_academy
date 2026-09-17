@@ -18,7 +18,7 @@ import {
 
 export const CategoryDetailScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const categoryId = params.id || 'cat_teoria_harmonia';
+  const categoryId = params.id;
 
   const [category, setCategory] = useState<AcademyCategory | null>(null);
   const [courses, setCourses] = useState<AcademyCourse[]>([]);
@@ -28,6 +28,10 @@ export const CategoryDetailScreen: React.FC = () => {
 
   useEffect(() => {
     const loadCategoryData = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!categoryId) return;
       try {
         const [cats, allCrs] = await Promise.all([
           academyService.getCategories(),

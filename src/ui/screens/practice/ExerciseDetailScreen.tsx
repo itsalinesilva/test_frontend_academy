@@ -16,7 +16,7 @@ import { webAudioSynth } from '../../../infrastructure/audio/synth';
 export const ExerciseDetailScreen: React.FC = () => {
   const router = useRouter();
   const params = useRouteParams();
-  const exerciseId = params.id || 'ex_keyboard_hanon_1';
+  const exerciseId = params.id;
 
   const [loading, setLoading] = useState(true);
   const [exercise, setExercise] = useState<Exercise | null>(null);
@@ -25,6 +25,10 @@ export const ExerciseDetailScreen: React.FC = () => {
 
   useEffect(() => {
     async function loadData() {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!exerciseId) return;
       try {
         setLoading(true);
         const ex = await practiceService.getExercise(exerciseId);

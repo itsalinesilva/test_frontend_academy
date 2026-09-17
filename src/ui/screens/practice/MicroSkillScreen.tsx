@@ -16,7 +16,7 @@ import { useRouter, useRouteParams } from '../../navigation/router';
 export const MicroSkillScreen: React.FC = () => {
   const router = useRouter();
   const params = useRouteParams();
-  const microId = params.id || 'msk_ear_01_01';
+  const microId = params.id;
 
   const [loading, setLoading] = useState(true);
   const [microSkill, setMicroSkill] = useState<MicroSkill | null>(null);
@@ -25,6 +25,10 @@ export const MicroSkillScreen: React.FC = () => {
 
   useEffect(() => {
     async function loadData() {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!microId) return;
       try {
         setLoading(true);
         const ms = await practiceService.getMicroSkill(microId);

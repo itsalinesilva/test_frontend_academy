@@ -52,7 +52,7 @@ const PIANO_KEYS: PianoKey[] = [
 
 export const InteractiveLessonScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const lessonId = params.id || 'les_fomt_101_1';
+  const lessonId = params.id;
 
   const [lesson, setLesson] = useState<AcademyLesson | null>(null);
   const [course, setCourse] = useState<AcademyCourse | null>(null);
@@ -65,6 +65,10 @@ export const InteractiveLessonScreen: React.FC = () => {
 
   useEffect(() => {
     const loadData = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!lessonId) return;
       try {
         const l = await academyService.getLesson(lessonId);
         if (l) {
@@ -110,7 +114,11 @@ export const InteractiveLessonScreen: React.FC = () => {
 
   const handleRegisterEvidence = async () => {
     const session = await authService.getActiveSession();
-    const userId = session?.user.id || 'usr_founder_1';
+    // Sem sessao nao ha progresso a carregar nem a gravar: o fallback
+    // anterior misturava dados de visitantes anonimos com os da
+    // fundadora (CLAUDE_AUDIT.md T-05).
+    if (!session) return;
+    const userId = session.user.id;
     if (!lesson) return;
 
     // Trigger lesson completion and log evidence

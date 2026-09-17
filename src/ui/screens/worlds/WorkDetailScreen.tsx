@@ -9,7 +9,7 @@ import { BookOpen, Sparkles, ShieldCheck, ArrowLeft } from 'lucide-react';
 
 export const WorkDetailScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const workId = params.id || 'bwv-1001';
+  const workId = params.id;
   const [activeTab, setActiveTab] = useState<'contexto' | 'escuta' | 'partitura' | 'pratica'>('contexto');
 
   const work = {

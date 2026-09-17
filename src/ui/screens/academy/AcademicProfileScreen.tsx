@@ -39,17 +39,16 @@ export const AcademicProfileScreen: React.FC = () => {
     const loadAcademicProfile = async () => {
       try {
         const session = await authService.getActiveSession();
-        const user = session?.user || {
-          id: 'usr_founder_1',
-          name: 'Acadêmico de Música',
-          email: 'academico@conservatorio.org',
-        };
-        setUserProfile(user);
+        // Sem sessão não há perfil acadêmico. O objeto de reserva anterior
+        // apresentava a identidade da fundadora — com nome e e-mail
+        // inventados — a qualquer visitante (CLAUDE_AUDIT.md T-05/K-05).
+        if (!session) return;
+        setUserProfile(session.user);
 
         const [allCourses, allProgresses, certs] = await Promise.all([
           academyService.getCourses(),
-          academyService.getAllUserProgress(user.id),
-          academyService.getUserCertificates(user.id),
+          academyService.getAllUserProgress(session.user.id),
+          academyService.getUserCertificates(session.user.id),
         ]);
 
         setCourses(allCourses);
