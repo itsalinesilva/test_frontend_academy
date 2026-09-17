@@ -72,6 +72,7 @@ import { ProfileOverviewScreen } from './profile/ProfileOverviewScreen';
 import { PortfolioScreen } from './profile/PortfolioScreen';
 import { NetworkDirectoryScreen } from './profile/NetworkDirectoryScreen';
 import { CredentialStudioScreen } from './admin/CredentialStudioScreen';
+import { BookletEditorScreen } from './admin/BookletEditorScreen';
 import { CredentialVerifyScreen } from './credentials/CredentialVerifyScreen';
 import { KidsCreateScreen } from './kids/KidsCreateScreen';
 import { SimuladorViolinoScreen } from './violin/SimuladorViolinoScreen';
@@ -496,6 +497,9 @@ export const AppRouterOutlet: React.FC = () => {
   }
   if (currentPath === '/admin/credentials') {
     return <CredentialStudioScreen />;
+  }
+  if (currentPath === '/admin/booklets') {
+    return <BookletEditorScreen />;
   }
   if (currentPath === '/admin/audit') {
     return <AdminAuditScreen />;

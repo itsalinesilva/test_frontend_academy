@@ -57,10 +57,16 @@ describe('Ilhas de instrumento — honestidade estrutural', () => {
   });
 
   it('o slug da ilha casa com a pasta do acervo', () => {
+    // Convenção: `island-knowledge-<slug>`. O prefixo `island-` separa o
+    // acervo de ilha do acervo de curso, que vive em pastas próprias —
+    // foi por isso que as pastas foram renomeadas.
     for (const island of SEED_INSTRUMENT_ISLANDS) {
       if (island.sources.length === 0) continue;
       for (const src of island.sources) {
-        expect(src.corpusPath.startsWith(`knowledge-${island.slug}/`)).toBe(true);
+        expect(
+          src.corpusPath.startsWith(`island-knowledge-${island.slug}/`),
+          `${src.corpusPath} não segue island-knowledge-${island.slug}/`
+        ).toBe(true);
       }
     }
   });
