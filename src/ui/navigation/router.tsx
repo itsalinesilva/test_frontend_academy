@@ -126,6 +126,13 @@ export const CANONICAL_ROUTES = {
   ADMIN_CONTENT: '/admin/content',
   ADMIN_MODERATION: '/admin/moderation',
   ADMIN_AUDIT: '/admin/audit',
+  ADMIN_CREDENTIALS: '/admin/credentials',
+
+  // Verificacao publica de documento. NAO exige sessao: quem confere um
+  // certificado e um empregador, uma banca, uma secretaria — gente que nao
+  // tem conta e nao vai criar uma para conferir um documento.
+  CREDENTIAL_VERIFY: '/credential',
+  CREDENTIAL_BY_CODE: '/credential/:codigo',
 } as const;
 
 function getInitialPath(): string {
@@ -304,7 +311,8 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
   // Admin
   if (path.startsWith('/admin')) {
     crumbs.push({ label: 'Governança Admin', path: '/admin' });
-    if (path === '/admin/users') crumbs.push({ label: 'Usuários & Papéis' });
+    if (path === '/admin/credentials') crumbs.push({ label: 'Estúdio de Credenciais' });
+    else if (path === '/admin/users') crumbs.push({ label: 'Usuários & Papéis' });
     else if (path === '/admin/engines') crumbs.push({ label: 'Engines & Gateway' });
     else if (path === '/admin/content') crumbs.push({ label: 'Conteúdo & Currículo' });
     else if (path === '/admin/moderation') crumbs.push({ label: 'Moderação' });

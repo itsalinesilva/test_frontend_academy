@@ -8,6 +8,7 @@ import {
   Users,
   Activity,
   FileCheck,
+  Award,
   Flag,
   History,
   ArrowRight,
@@ -48,6 +49,14 @@ export const AdminDashboardScreen: React.FC = () => {
       icon: Flag,
       link: '/admin/moderation',
       badge: '0 Denúncias',
+    },
+    {
+      id: 'credentials',
+      title: 'Estúdio de Credenciais',
+      desc: 'A matriz visual de badges, credenciais e certificados: cores, tipografia, logotipo, selo, QR e emissão.',
+      icon: Award,
+      link: '/admin/credentials',
+      badge: 'Identidade & Emissão',
     },
     {
       id: 'audit',

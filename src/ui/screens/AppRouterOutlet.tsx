@@ -69,6 +69,8 @@ import { CreateRoomScreen } from './rooms/CreateRoomScreen';
 import { ProfileOverviewScreen } from './profile/ProfileOverviewScreen';
 import { PortfolioScreen } from './profile/PortfolioScreen';
 import { NetworkDirectoryScreen } from './profile/NetworkDirectoryScreen';
+import { CredentialStudioScreen } from './admin/CredentialStudioScreen';
+import { CredentialVerifyScreen } from './credentials/CredentialVerifyScreen';
 import { EditProfileScreen } from './profile/EditProfileScreen';
 
 // Core & Utilities
@@ -371,6 +373,11 @@ export const AppRouterOutlet: React.FC = () => {
     return <ProfileOverviewScreen />;
   }
 
+  // CREDENCIAIS — verificacao publica, sem sessao
+  if (currentPath === '/credential' || currentPath.startsWith('/credential/')) {
+    return <CredentialVerifyScreen />;
+  }
+
   // AUTHENTICATION
   if (currentPath === '/auth/login') {
     return <LoginScreen />;
@@ -417,6 +424,9 @@ export const AppRouterOutlet: React.FC = () => {
   }
   if (currentPath === '/admin/moderation') {
     return <AdminModerationScreen />;
+  }
+  if (currentPath === '/admin/credentials') {
+    return <CredentialStudioScreen />;
   }
   if (currentPath === '/admin/audit') {
     return <AdminAuditScreen />;
