@@ -131,6 +131,13 @@
 | 7.8 | Expandir o catálogo de 4 lições para o volume que sustente "paridade Coursera" | §4 | ⬜ |
 | 7.10 | **Reancorar o currículo no Bohumil Med** (ADR-002): `seed-academy-content.ts` está estruturado sobre Edinburgh e precisa seguir a progressão do Med, com o *Livro de Exercícios* integrado ao longo do curso | ADR-002 | ⬜ |
 | 7.11 | Edinburgh, Berklee e Grout passam a alimentar **Practice / Duolingo-Astra** e leitura complementar, não a espinha dorsal do currículo | ADR-002 | ⬜ |
+| 7.13 | **Curso História da Música Ocidental** derivado de Grout & Palisca, capítulo a capítulo, com blocos interativos | ADR-007 | ⬜ |
+| 7.14 | **Curso História da Música Brasileira** — Unidade 1 (Vasco Mariz) e Unidade 2 (Tinhorão), eixos separados por decisão editorial | ADR-007 | ⬜ |
+| 7.15 | `CanonicalComposer` / `CanonicalWork` + `FieldProvenance` (proveniência por campo, não por entidade) | ADR-007 | ⬜ |
+| 7.16 | `MusicKnowledgeService` com adaptadores Wikidata · MusicBrainz · IMSLP · Commons · Archive · VIAF/ISNI | ADR-007 | ⬜ |
+| 7.17 | Rotas `/academy/conservatory`, `/conservatory/composer/:id`, `/conservatory/work/:id` | ADR-007 | ⬜ |
+| 7.18 | **Contatar a Música Brasilis** pedindo autorização de uso de dados. Sem acordo, o adaptador fica desabilitado e a integração é apenas link de saída | ADR-007 | ⛔ |
+| 7.19 | Mais exercícios de teoria derivados do *Livro de Exercícios* do Med, com citação de página | ADR-002 | ⬜ |
 | 7.12 | **OCR das duas obras do Med (688 páginas) é caminho crítico**, não tarefa secundária — sem ele não há currículo oficial | ADR-002 | ⬜ |
 | 7.9 | Resolver as ilustrações: ou produzir/licenciar imagens reais, ou remover `illustrations[]` das lições | K-05 | ⬜ |
 

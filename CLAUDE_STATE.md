@@ -196,8 +196,21 @@ Isso **não é um defeito do projeto**, mas deve constar no README/CI para repro
 - ⛔ **Conflito em aberto:** dados inerentemente multiusuário (fórum, salas professor↔aluno, conexões, ranking, perfil público de terceiros, verificação pública de certificado) **não podem existir** apenas com `localStorage` + `drive.appdata` privado. Decisão pendente — ver `CLAUDE_TODO.md`.
 - ℹ️ **Certificados verificáveis sem banco:** assinatura Ed25519 com chave privada em *secret* do Cloudflare; a verificação pública confere apenas a assinatura do payload. **Zero armazenamento.**
 
-### ADR-001.B · Fontes de conhecimento — **5 livros reintegrados**
-Disponíveis em `framework_knowledge/` (110 MB no total):
+### ADR-001.B · Fontes de conhecimento — **acervo em 7 pastas** (atualizado 2026-09-17)
+Organizado por domínio em `framework_knowledge/`:
+
+| Pasta | Papel | Obras |
+| :--- | :--- | ---: |
+| `bohumil-med/` | **base oficial do currículo** (ADR-002) | 2 |
+| `music-ocidental-history/` | espinha de História Ocidental — Grout & Palisca | 1 |
+| `music-brasil-history/` | espinha de História Brasileira — **Vasco Mariz** + **Tinhorão** | 2 |
+| `knowledge-violin/` | ilha de instrumento (ADR-006) | 15 |
+| `endinburgh- musictheory-002/` | curso complementar, insumo de Practice | 37 transcrições |
+| *(raiz)* | Berklee Music Theory I e II | 2 |
+
+**Total: 22 obras + 37 transcrições.**
+
+Camada de texto (verificada):
 
 | Obra | Páginas | Camada de texto | Ingestão |
 | :--- | ---: | :--- | :--- |
@@ -214,7 +227,7 @@ Disponíveis em `framework_knowledge/` (110 MB no total):
 
 ### ADR-001.C · Conteúdo e mídias — **fontes de domínio público + resolução de entidades**
 > **Reescrito em 2026-09-16** para incorporar MusicBrainz, Wikidata, a retificação sobre a API do IMSLP e a camada de resolução de entidades.
-> Especificação normativa completa: **`docs/backend_specs/21.1_CONTENT_APIS_AND_ENTITY_RESOLUTION.md`**.
+> Especificação normativa completa: **`docs/backend_specs/21.1_MUSIC_KNOWLEDGE_SOURCES_AND_ENTITY_RESOLUTION.md`**.
 
 **Princípio:** a plataforma **não hospeda acervo próprio**. Ela **resolve, referencia e reproduz** conteúdo de domínio público a partir de fontes canônicas, e **gera** o que puder ser gerado programaticamente.
 
@@ -406,6 +419,44 @@ Consequência imediata: `AdminUsersScreen`, `AdminContentScreen` e `AdminEngines
 **Estado:** Violino `IN_PREPARATION` — **15 obras presentes, 0 ingeridas**. Piano, Canto e Violão `PLANNED`.
 
 **Carimbos do eixo instrumental** exigem `evidenceId`: carimba-se por execução medida, nunca por ter aberto a página.
+
+---
+
+## 8-octies. ADR-007 · Conservatório e as duas espinhas historiográficas (2026-09-17)
+
+**Princípio:** *a aula ensina a história; o grafo permite explorar a história.* Um curso de História não carrega o catálogo inteiro dentro das aulas — a lição aponta para uma **coleção dinâmica** de compositores e obras que vive no grafo de conhecimento.
+
+**Conservatório** é a seção da Academia onde esse grafo é navegável: o tour por compositores, obras e biografias, em `/academy/conservatory/*`.
+
+**Cadeia canônica:** `LIVRO → CAPÍTULO → PERÍODO → MOVIMENTO → COMPOSITOR → OBRA → PARTITURA → GRAVAÇÃO → ANÁLISE → LIÇÃO → EXERCÍCIO → PRÁTICA → EVIDÊNCIA → PERFIL`
+
+**Entidades próprias, fontes externas como referência:** `CanonicalComposer` e `CanonicalWork`, com **proveniência por CAMPO** (`FieldProvenance`) — a biografia pode vir de uma fonte, as datas de outra e o identificador de obra de uma terceira. Registrar proveniência só no nível da entidade apagaria essa distinção, e é ela que permite auditar, corrigir e dar crédito.
+
+### As duas espinhas
+
+| Curso | Fonte-base | Eixo |
+| :--- | :--- | :--- |
+| **História da Música Ocidental** | Grout & Palisca | cronológico por era; cruza com o eixo temporal do Atlas |
+| **Brasileira · Unidade 1** | Vasco Mariz | música de concerto: colonial, Império, nacionalismo, séc. XX |
+| **Brasileira · Unidade 2** | José Ramos Tinhorão | história social da música popular: modinha, lundu, choro, samba, rádio, bossa, tropicalismo |
+
+Manter Mariz e Tinhorão em unidades **separadas** é decisão editorial: um escreve história da música de concerto, o outro história social da música popular. Fundi-los numa linha do tempo única apagaria a diferença de método que é o valor de cada um.
+
+### Música Brasilis — verificado em 2026-09-17
+
+| Verificação | Resultado |
+| :--- | :--- |
+| `/api/` · `/api/v1/` · `/wp-json/` | 302 · 302 · 301 — **não há endpoint de API** |
+| Documentação pública de API | **não localizada** |
+| `robots.txt` | existe, e contém `Disallow: /media/` |
+
+**`/media/` é exatamente onde ficam as partituras.** A proibição é explícita.
+
+**Decisão:** o `MusicaBrasilisAdapter` fica **especificado e desabilitado** até haver acesso oficial. **Não fazer scraping** — nem do catálogo, nem de `/media/`. Enquanto isso: curadoria manual de metadados com `source: 'MANUAL_CURATION'` e **link de saída** para a página deles. Linkar é uso normal da web; baixar em massa contra o `robots.txt` não é.
+
+**Ação recomendada:** contato institucional pedindo autorização.
+
+Especificação completa em `docs/backend_specs/21.1 §10`.
 
 ---
 

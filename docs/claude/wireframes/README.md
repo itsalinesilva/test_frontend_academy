@@ -35,7 +35,7 @@ Estes documentos são, portanto, a base de:
 
 **Cobertura:** as 72 telas do produto têm wireframe de referência. Nenhuma ficou sem especificação.
 
-**Especificações técnicas relacionadas:** [`21.1`](../../backend_specs/21.1_CONTENT_APIS_AND_ENTITY_RESOLUTION.md) — acervo de domínio público e resolução de entidades · [`21.2`](../../backend_specs/21.2_MEDIA_DRIVE_ARCHITECTURE.md) — mídia do usuário sobre o Google Drive.
+**Especificações técnicas relacionadas:** [`21.1`](../../backend_specs/21.1_MUSIC_KNOWLEDGE_SOURCES_AND_ENTITY_RESOLUTION.md) — acervo de domínio público e resolução de entidades · [`21.2`](../../backend_specs/21.2_MEDIA_DRIVE_ARCHITECTURE.md) — mídia do usuário sobre o Google Drive.
 
 **Leia `00_FOUNDATIONS.md` primeiro.** Os demais dependem dele para grade, formas de página, estados, responsividade, acessibilidade e vinculação a componentes.
 
