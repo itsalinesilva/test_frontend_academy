@@ -211,7 +211,23 @@ export type LessonBlock =
    * Verificação de leitura no meio do texto — não ao final.
    * Fonte natural: Bohumil Med, *Livro de Exercícios* (ADR-002).
    */
-  | { kind: 'CHECKPOINT'; id: string; question: string; options: string[]; correctIndex: number; explanation: string; sourceRef?: string };
+  | { kind: 'CHECKPOINT'; id: string; question: string; options: string[]; correctIndex: number; explanation: string; sourceRef?: string }
+  /**
+   * Sequência de lâminas navegáveis — o equivalente ao deck de slides das
+   * plataformas acadêmicas. Serve para decompor um raciocínio em passos, sem
+   * transformar a página numa parede de texto.
+   */
+  | { kind: 'SLIDES'; id: string; title: string; slides: Array<{ heading: string; body: string; note?: string }> }
+  /**
+   * Marcador discreto de aula em vídeo.
+   *
+   * A plataforma ainda não hospeda vídeo (ADR-004: mídia vive no Drive do
+   * autor, e aula institucional em vídeo é plano futuro). Em vez de omitir o
+   * ponto ou — pior — fingir um player, registramos com sobriedade onde a
+   * aula gravada entrará. Deve ser visualmente discreto: uma linha, nunca um
+   * card grande que sugira conteúdo ausente.
+   */
+  | { kind: 'VIDEO_PLACEHOLDER'; id: string; topic: string };
 
 export interface LessonSection {
   id: string;

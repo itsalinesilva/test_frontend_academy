@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { clsx } from 'clsx';
-import { Play, Square, CheckCircle2, XCircle, Info, ScrollText, AlertTriangle, Lightbulb, Loader2 } from 'lucide-react';
+import { Play, Square, CheckCircle2, XCircle, Info, ScrollText, AlertTriangle, Lightbulb, Loader2, ChevronLeft, ChevronRight, Clapperboard } from 'lucide-react';
 import type { LessonBlock } from '../../../domain/academy';
 import { Card } from '../base/Card';
 import { Button } from '../base/Button';
@@ -454,6 +454,83 @@ const ToneSemitone: React.FC = () => {
   );
 };
 
+/** Lâminas navegáveis: decompõe um raciocínio em passos, sem parede de texto. */
+const Slides: React.FC<{ block: Extract<LessonBlock, { kind: 'SLIDES' }> }> = ({ block }) => {
+  const [i, setI] = useState(0);
+  const total = block.slides.length;
+  const slide = block.slides[i];
+
+  const go = useCallback(
+    (delta: number) => setI((prev) => Math.min(Math.max(prev + delta, 0), total - 1)),
+    [total]
+  );
+
+  return (
+    <Card variant="default" padding="md" className="space-y-3 not-prose">
+      <div className="flex items-center justify-between">
+        <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+          {block.title}
+        </p>
+        <span className="font-mono text-[11px] text-stone-500" aria-hidden="true">
+          {i + 1} / {total}
+        </span>
+      </div>
+
+      <div
+        role="group"
+        aria-roledescription="apresentação"
+        aria-label={`${block.title}: lâmina ${i + 1} de ${total}`}
+        className="min-h-32 space-y-2 rounded-md bg-stone-50 p-4"
+      >
+        <h4 className="font-serif text-base font-bold text-stone-900">{slide.heading}</h4>
+        <p className="text-sm leading-relaxed text-stone-700">{slide.body}</p>
+        {slide.note && <p className="font-mono text-[11px] text-stone-500">{slide.note}</p>}
+      </div>
+
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" disabled={i === 0} onClick={() => go(-1)}>
+          <ChevronLeft className="mr-1 h-3.5 w-3.5" aria-hidden="true" /> Anterior
+        </Button>
+
+        <div className="flex gap-1" role="tablist" aria-label="Lâminas">
+          {block.slides.map((sl, idx) => (
+            <button
+              key={sl.heading}
+              type="button"
+              role="tab"
+              aria-selected={idx === i}
+              aria-label={`Lâmina ${idx + 1}: ${sl.heading}`}
+              onClick={() => setI(idx)}
+              className={clsx(
+                'h-1.5 rounded-full transition-all',
+                idx === i ? 'w-5 bg-red-800' : 'w-1.5 bg-stone-300 hover:bg-stone-400'
+              )}
+            />
+          ))}
+        </div>
+
+        <Button variant="ghost" size="sm" disabled={i === total - 1} onClick={() => go(1)}>
+          Próxima <ChevronRight className="ml-1 h-3.5 w-3.5" aria-hidden="true" />
+        </Button>
+      </div>
+    </Card>
+  );
+};
+
+/**
+ * Marcador de aula em vídeo — deliberadamente discreto.
+ *
+ * Uma linha de texto tênue, sem card, sem ícone grande e sem botão: registra
+ * onde a aula gravada entrará sem sugerir que falta algo agora. Fingir um
+ * player, ou reservar um retângulo vazio, seria pior que a ausência.
+ */
+const VideoPlaceholder: React.FC<{ topic: string }> = ({ topic }) => (
+  <p className="flex items-center gap-1.5 border-l-2 border-stone-200 py-0.5 pl-2.5 text-[11px] text-stone-400 not-prose">
+    <Clapperboard className="h-3 w-3 shrink-0" aria-hidden="true" />
+    <span>Aula em vídeo sobre {topic} prevista para edição futura.</span>
+  </p>
+);
+
 // ----------------------------------------------------------- renderizador ---
 
 const CALLOUT_STYLE = {
@@ -571,6 +648,12 @@ export const LessonBlockRenderer: React.FC<{ block: LessonBlock }> = ({ block })
           {block.caption && <figcaption className="text-xs text-stone-600">{block.caption}</figcaption>}
         </figure>
       );
+
+    case 'SLIDES':
+      return <Slides block={block} />;
+
+    case 'VIDEO_PLACEHOLDER':
+      return <VideoPlaceholder topic={block.topic} />;
 
     case 'CHECKPOINT':
       return <Checkpoint block={block} />;

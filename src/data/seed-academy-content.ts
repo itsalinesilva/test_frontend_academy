@@ -804,6 +804,15 @@ Essa distribuição assimétrica é o segredo acústico que permite ao ouvido hu
           {
             id: 'sec_kids_1',
             title: '1. A Grande Família das Sete Notas',
+            blocks: [
+              { kind: 'MARKDOWN', id: 'bk_l1s1_md', markdown: `Existem **sete** notas musicais. Elas se repetem para sempre, como os dias da semana!
+
+- **Dó** é a nota que mora na casinha antes das duas teclas pretas.
+- Depois vêm **Ré**, **Mi**, **Fá**, **Sol**, **Lá** e **Si**.` },
+              { kind: 'KEYBOARD', id: 'bk_l1s1_kb', title: 'Aperte e ouça cada nota', highlightNotes: ['C4','D4','E4','F4','G4','A4','B4'], startOctave: 4, octaves: 1 },
+              { kind: 'AUDIO_EXAMPLE', id: 'bk_l1s1_scale', title: 'As sete notas subindo', description: 'Ouça a família inteira, do Dó ao Dó de novo.', notes: ['C4','D4','E4','F4','G4','A4','B4','C5'], playMode: 'SEQUENCE', bpm: 100 },
+              { kind: 'CHECKPOINT', id: 'bk_l1s1_check', question: 'Quantas notas musicais existem antes de tudo começar de novo?', options: ['5 notas', '7 notas', '10 notas', '12 notas'], correctIndex: 1, explanation: 'São sete: Dó, Ré, Mi, Fá, Sol, Lá e Si. Depois do Si, tudo recomeça no Dó!' },
+            ],
             contentMarkdown: `No Castelo da Música, moram 7 amiguinhos que adoram cantar juntos:
 - **Dó** (que adora andar de **Carro** = **C**)
 - **Ré** (que tem um **Dinossauro** fofinho = **D**)
@@ -824,6 +833,14 @@ Quando juntamos todos eles, eles cantam a escadinha mais famosa do mundo:
           {
             id: 'sec_kids_2',
             title: '2. Os Degraus Pequeninos e os Degraus Grandes',
+            blocks: [
+              { kind: 'MARKDOWN', id: 'bk_l1s2_md', markdown: `Algumas notas são **vizinhas bem coladinhas** e outras ficam **um pouquinho mais longe**.
+
+Entre **Mi e Fá** e entre **Si e Dó** não existe tecla preta no meio. Elas são as mais grudadinhas de todas!` },
+              { kind: 'DIAGRAM', id: 'bk_l1s2_diag', title: 'Degraus grandes e pequeninos', diagram: 'TONE_SEMITONE', caption: 'O quadradinho vermelho mostra onde o degrau é pequenininho.' },
+              { kind: 'INTERVAL_LAB', id: 'bk_l1s2_lab', title: 'Ouça a diferença', lowerNote: 'E4', upperNote: 'F4', prompt: 'Este é um degrau pequenininho. Aperte e escute!' },
+              { kind: 'CHECKPOINT', id: 'bk_l1s2_check', question: 'Quais notas são as mais grudadinhas, sem tecla preta no meio?', options: ['Dó e Ré', 'Mi e Fá', 'Sol e Lá', 'Ré e Mi'], correctIndex: 1, explanation: 'Mi e Fá são vizinhas coladinhas! Si e Dó também são assim.' },
+            ],
             contentMarkdown: `Imagine que a escada da música tem degraus grandes (que chamamos de **Tom**) e degraus pequenininhos (que chamamos de **Meio-Tom**).
 - O **Mi e o Fá** são vizinhos tão coladinhos que moram no mesmo degrau pequenino!
 - O **Si e o Dó** também são melhores amigos e dão as mãos no degrau pequenino!
@@ -908,6 +925,21 @@ Todos os outros precisam dar um pulinho maior!`,
           {
             id: 'sec_oct_1',
             title: '1. A Proporção 2:1 no Monocórdio',
+            blocks: [
+              { kind: 'MARKDOWN', id: 'b_l2s1_md', markdown: `Pitágoras observou, no século VI a.C., que ao dividir uma corda vibrante exatamente ao meio obtém-se um som que o ouvido reconhece como **a mesma nota**, apenas mais aguda.
+
+A razão entre as duas frequências é de **2:1**. É o intervalo de **oitava** — a consonância mais perfeita depois do uníssono.` },
+              { kind: 'SLIDES', id: 'b_l2s1_slides', title: 'A razão 2:1, passo a passo', slides: [
+                { heading: 'A corda inteira', body: 'Uma corda solta vibra numa frequência fundamental. Digamos que produza Dó3, a 130,8 Hz.', note: 'f = 130,8 Hz' },
+                { heading: 'A metade da corda', body: 'Ao pressionar exatamente o ponto médio, a parte que vibra tem metade do comprimento — e vibra ao dobro da velocidade.', note: 'f x 2 = 261,6 Hz' },
+                { heading: 'O reconhecimento', body: 'O ouvido identifica as duas alturas como a mesma nota. Este fenômeno chama-se equivalência de oitava e sustenta toda a organização das alturas na música ocidental.', note: 'Dó3 e Dó4' },
+              ] },
+              { kind: 'INTERVAL_LAB', id: 'b_l2s1_lab', title: 'A oitava', lowerNote: 'C3', upperNote: 'C4', prompt: 'Ouça as duas alturas separadas e depois juntas. Note como se fundem.' },
+              { kind: 'AUDIO_EXAMPLE', id: 'b_l2s1_cmp', title: 'Oitava contra quinta', description: 'Compare: a oitava funde-se quase num som só; a quinta mantém duas vozes distintas.', notes: ['C4','G4'], playMode: 'CHORD' },
+              { kind: 'KEYBOARD', id: 'b_l2s1_kb', title: 'A distância de oitava no teclado', highlightNotes: ['C4','C5'], startOctave: 4, octaves: 2 },
+              { kind: 'VIDEO_PLACEHOLDER', id: 'b_l2s1_video', topic: 'a demonstração no monocórdio' },
+              { kind: 'CHECKPOINT', id: 'b_l2s1_check', question: 'Qual a razão de frequências entre duas notas separadas por uma oitava?', options: ['3:2', '2:1', '4:3', '5:4'], correctIndex: 1, explanation: 'A oitava corresponde à razão 2:1 — a nota superior vibra exatamente ao dobro da frequência da inferior. A razão 3:2 corresponde à quinta justa.', sourceRef: 'Med, Bohumil. Teoria da Música, cap. 1' },
+            ],
             contentMarkdown: `Pitágoras descobriu no século VI a.C. que, ao pressionar uma corda elástica exatamente no seu ponto médio (divisão de 1/2):
 - O comprimento vibrante é reduzido à metade (1/2).
 - A frequência dobra (2/1).
@@ -964,6 +996,16 @@ Essa propriedade é chamada na teoria musical contemporânea de **Equivalência 
           {
             id: 'sec_oct_kids_1',
             title: '1. O Espelho Mágico da Música',
+            blocks: [
+              { kind: 'MARKDOWN', id: 'bk_l2s1_md', markdown: `Toque um **Dó**. Agora ande **oito casinhas** para a direita e toque de novo.
+
+É o mesmo nome! Só que um é o **Papai Dó**, grossinho, e o outro é o **Bebê Dó**, fininho.` },
+              { kind: 'AUDIO_EXAMPLE', id: 'bk_l2s1_papai', title: 'O Papai Dó', description: 'Bem grave, bem grosso.', notes: ['C3'], playMode: 'SEQUENCE' },
+              { kind: 'AUDIO_EXAMPLE', id: 'bk_l2s1_bebe', title: 'O Bebê Dó', description: 'Bem agudo, bem fininho.', notes: ['C5'], playMode: 'SEQUENCE' },
+              { kind: 'AUDIO_EXAMPLE', id: 'bk_l2s1_juntos', title: 'Os dois juntos!', description: 'Escute como parecem uma coisa só.', notes: ['C3','C5'], playMode: 'CHORD' },
+              { kind: 'KEYBOARD', id: 'bk_l2s1_kb', title: 'Ache os dois Dós', highlightNotes: ['C4','C5'], startOctave: 4, octaves: 2 },
+              { kind: 'CHECKPOINT', id: 'bk_l2s1_check', question: 'Quando você anda oito casinhas e chega em outra nota igual, isso se chama:', options: ['Oitava', 'Quinta', 'Terça', 'Pausa'], correctIndex: 0, explanation: 'Oitava! Porque você andou oito degraus e chegou na mesma nota, só que mais fininha.' },
+            ],
             contentMarkdown: `Quando você toca a primeira tecla de Dó no teclado e depois caminha 8 casinhas para a direita, você chega em outro Dó!
 Eles são como irmãos gêmeos:
 - Um é o **Dó Grandão** (voz grossa e calma)
@@ -1011,6 +1053,21 @@ Eles se abraçam e o som fica lindo e brilhante, como duas estrelas juntas no c�
           {
             id: 'sec_sc_1',
             title: '1. A Fórmula T - T - st - T - T - T - st',
+            blocks: [
+              { kind: 'MARKDOWN', id: 'b_l3s1_md', markdown: `Toda escala maior obedece a uma única sequência de distâncias, independentemente da nota em que comece:
+
+**T - T - st - T - T - T - st**
+
+É essa fórmula — e não as notas em si — que dá à escala maior sua identidade sonora.` },
+              { kind: 'DIAGRAM', id: 'b_l3s1_diag', title: 'A fórmula na escala natural', diagram: 'TONE_SEMITONE', caption: 'Partindo de Dó, a fórmula da escala maior coincide exatamente com as teclas brancas.' },
+              { kind: 'SCALE_LAB', id: 'b_l3s1_do', title: 'Dó maior', tonic: 'C', mode: 'MAJOR' },
+              { kind: 'SCALE_LAB', id: 'b_l3s1_sol', title: 'Sol maior', tonic: 'G', mode: 'MAJOR' },
+              { kind: 'CALLOUT', id: 'b_l3s1_call', type: 'info', title: 'Por que Sol maior exige Fá sustenido', text: 'Para que o sétimo grau fique a um semitom da tônica — como manda a fórmula — o Fá precisa ser elevado. Sem essa alteração, a escala perderia a condução da sensível e deixaria de soar maior.' },
+              { kind: 'DIAGRAM', id: 'b_l3s1_ciclo', title: 'O ciclo das quintas', diagram: 'CIRCLE_OF_FIFTHS', highlight: ['C','G'], caption: 'Cada passo no sentido horário acrescenta um sustenido à armadura.' },
+              { kind: 'SCALE_LAB', id: 'b_l3s1_menor', title: 'Compare: Lá menor natural', tonic: 'A', mode: 'NATURAL_MINOR' },
+              { kind: 'VIDEO_PLACEHOLDER', id: 'b_l3s1_video', topic: 'a construção da escala ao piano' },
+              { kind: 'CHECKPOINT', id: 'b_l3s1_check', question: 'Onde estão os dois semitons na fórmula da escala maior?', options: ['Entre o 1º-2º e o 5º-6º graus', 'Entre o 3º-4º e o 7º-8º graus', 'Entre o 2º-3º e o 6º-7º graus', 'Não há semitons na escala maior'], correctIndex: 1, explanation: 'Os semitons da escala maior ocorrem sempre entre o 3º e o 4º graus e entre o 7º e o 8º. É essa posição fixa que define o modo maior.', sourceRef: 'Med, Bohumil. Teoria da Música, cap. 4' },
+            ],
             contentMarkdown: `Toda e qualquer escala maior obedece impreterivelmente à seguinte sequência de 7 passos:
 1. Da tônica (I) para o segundo grau (II): **Tom**
 2. Do grau II para o grau III: **Tom**
@@ -1067,6 +1124,14 @@ O **Fá sustenido (F#)** torna-se indispensável para manter a distância de tom
           {
             id: 'sec_sc_kids_1',
             title: '1. O Segredo do Coelho e do Elefante',
+            blocks: [
+              { kind: 'MARKDOWN', id: 'bk_l3s1_md', markdown: `Para subir a escada mágica da música, você dá **pulos de elefante** (grandes) e **pulinhos de coelho** (pequenininhos).
+
+A ordem certa é sempre a mesma: elefante, elefante, **coelho**, elefante, elefante, elefante, **coelho**!` },
+              { kind: 'DIAGRAM', id: 'bk_l3s1_diag', title: 'A escadinha', diagram: 'TONE_SEMITONE', caption: 'O quadradinho vermelho é o pulinho de coelho.' },
+              { kind: 'SCALE_LAB', id: 'bk_l3s1_scale', title: 'Suba a escada de Dó', tonic: 'C', mode: 'MAJOR' },
+              { kind: 'CHECKPOINT', id: 'bk_l3s1_check', question: 'Depois de quantos pulos de elefante vem o primeiro pulinho de coelho?', options: ['Depois de 1', 'Depois de 2', 'Depois de 3', 'Depois de 4'], correctIndex: 1, explanation: 'Dois pulos de elefante e aí vem o coelho! Elefante, elefante, coelho.' },
+            ],
             contentMarkdown: `O Elefante dá passos grandões: **TOM!**
 A Formiguinha dá passos curtinhos: **SEMITOM!**
 
@@ -1107,6 +1172,23 @@ Se você cantar essa canção, todos os bichinhos da floresta vão sorrir junto 
           {
             id: 'sec_tr_1',
             title: '1. Anatomia de uma Tríade',
+            blocks: [
+              { kind: 'MARKDOWN', id: 'b_l4s1_md', markdown: `Uma **tríade** é o empilhamento de duas terças sobre uma nota fundamental.
+
+Sobre os graus **I**, **IV** e **V** da escala maior formam-se as três tríades primárias — tônica, subdominante e dominante. Juntas, elas contêm as sete notas da escala.` },
+              { kind: 'SLIDES', id: 'b_l4s1_slides', title: 'Construção da tríade', slides: [
+                { heading: 'A fundamental', body: 'Parte-se de uma nota qualquer da escala. Ela dará nome ao acorde.', note: 'Dó' },
+                { heading: 'A terça', body: 'Empilha-se a nota situada a uma terça acima. É ela que define se o acorde é maior ou menor.', note: 'Dó + Mi' },
+                { heading: 'A quinta', body: 'Empilha-se mais uma terça. O resultado é a tríade completa, com fundamental, terça e quinta.', note: 'Dó + Mi + Sol' },
+              ] },
+              { kind: 'CHORD_LAB', id: 'b_l4s1_i', title: 'Grau I — Tônica', notes: ['C4','E4','G4'], prompt: 'O centro de repouso. Ouça a estabilidade.' },
+              { kind: 'CHORD_LAB', id: 'b_l4s1_iv', title: 'Grau IV — Subdominante', notes: ['F4','A4','C5'], prompt: 'Afasta-se da tônica, preparando o movimento.' },
+              { kind: 'CHORD_LAB', id: 'b_l4s1_v', title: 'Grau V — Dominante', notes: ['G4','B4','D5'], prompt: 'Contém a sensível e exige resolução.' },
+              { kind: 'AUDIO_EXAMPLE', id: 'b_l4s1_cad', title: 'A cadência I - IV - V - I', description: 'A progressão fundamental da música tonal, arpejada.', notes: ['C4','E4','G4','F4','A4','C5','G4','B4','D5','C4','E4','G4'], playMode: 'SEQUENCE', bpm: 120 },
+              { kind: 'CALLOUT', id: 'b_l4s1_call', type: 'historical', title: 'A força da dominante', text: 'A tríade do quinto grau contém a sensível — o sétimo grau da escala, a um semitom da tônica. É essa tensão que produz a sensação de que a música precisa voltar ao repouso, e que organiza o discurso tonal de Bach a Brahms.' },
+              { kind: 'VIDEO_PLACEHOLDER', id: 'b_l4s1_video', topic: 'a análise da cadência em repertório' },
+              { kind: 'CHECKPOINT', id: 'b_l4s1_check', question: 'Qual tríade primária contém a sensível e cria a necessidade de resolução?', options: ['A tônica (I)', 'A subdominante (IV)', 'A dominante (V)', 'Nenhuma delas'], correctIndex: 2, explanation: 'A dominante (V) contém o sétimo grau da escala — a sensível —, situado a um semitom da tônica. Essa proximidade gera a tensão que pede resolução em I.', sourceRef: 'Med, Bohumil. Teoria da Música, cap. 9' },
+            ],
             contentMarkdown: `Uma tríade fundamental é constituída por:
 - **Fundamental (Raiz):** A nota que dá nome ao acorde e define seu centro acústico.
 - **Terça:** A nota localizada a um intervalo de terça (maior ou menor) acima da fundamental, determinando o modo do acorde.
@@ -1169,6 +1251,16 @@ Sobre a escala diatônica de Dó Maior, destacam-se três tríades maiores perfe
           {
             id: 'sec_tr_kids_1',
             title: '1. O Rei Dó, o Cavaleiro Fá e o Mago Sol',
+            blocks: [
+              { kind: 'MARKDOWN', id: 'bk_l4s1_md', markdown: `Três notas tocadas ao mesmo tempo formam um **acorde**.
+
+O **Rei Dó** é quem manda e deixa tudo calminho. O **Cavaleiro Fá** sai em aventura. E o **Mago Sol** faz aquela mágica que pede o Rei de volta!` },
+              { kind: 'CHORD_LAB', id: 'bk_l4s1_rei', title: 'O Rei Dó', notes: ['C4','E4','G4'], prompt: 'Aperte e escute: parece que chegou em casa.' },
+              { kind: 'CHORD_LAB', id: 'bk_l4s1_cav', title: 'O Cavaleiro Fá', notes: ['F4','A4','C5'], prompt: 'Agora parece que saiu para passear.' },
+              { kind: 'CHORD_LAB', id: 'bk_l4s1_mago', title: 'O Mago Sol', notes: ['G4','B4','D5'], prompt: 'Este pede para voltar correndo para o Rei!' },
+              { kind: 'AUDIO_EXAMPLE', id: 'bk_l4s1_hist', title: 'A historinha inteira', description: 'Rei, Cavaleiro, Mago e o Rei de volta.', notes: ['C4','E4','G4','F4','A4','C5','G4','B4','D5','C4','E4','G4'], playMode: 'SEQUENCE', bpm: 130 },
+              { kind: 'CHECKPOINT', id: 'bk_l4s1_check', question: 'Quantas notas tocamos juntas para formar um acorde?', options: ['Uma', 'Duas', 'Três', 'Oito'], correctIndex: 2, explanation: 'Três! A tríade tem três notas tocadas ao mesmo tempo.' },
+            ],
             contentMarkdown: `- **O Rei Dó (Grau I):** Mora no castelo mais seguro e quentinho de todos. Quando a música chega nele, todo mundo suspira de alívio e descanso!
 - **O Cavaleiro Fá (Grau IV):** Adora sair para explorar montanhas e florestas distantes!
 - **O Mago Sol (Grau V):** Solta faíscas brilhantes de magia! Ele faz um mistério tão grande que todo mundo fica esperando o feitiço acabar... e quando acaba, todos correm felizes de volta para o castelo do Rei Dó!`,

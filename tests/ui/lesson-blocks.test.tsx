@@ -190,3 +190,55 @@ describe('CALLOUT e MARKDOWN', () => {
     expect(document.querySelector('script')).toBeNull();
   });
 });
+
+describe('SLIDES — decompõe raciocínio sem parede de texto', () => {
+  const block: LessonBlock = {
+    kind: 'SLIDES',
+    id: 'sl',
+    title: 'A razão 2:1',
+    slides: [
+      { heading: 'A corda inteira', body: 'Vibra na fundamental.', note: 'f = 130,8 Hz' },
+      { heading: 'A metade', body: 'Vibra ao dobro.', note: 'f x 2' },
+      { heading: 'O reconhecimento', body: 'Mesma nota, mais aguda.' },
+    ],
+  };
+
+  it('mostra a primeira lâmina e anuncia a posição', () => {
+    render(<LessonBlockRenderer block={block} />);
+    expect(screen.getByText('A corda inteira')).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: /lâmina 1 de 3/i })).toBeInTheDocument();
+    expect(screen.queryByText('A metade')).not.toBeInTheDocument();
+  });
+
+  it('avança e retrocede, desabilitando nos extremos', async () => {
+    render(<LessonBlockRenderer block={block} />);
+    expect(screen.getByRole('button', { name: /anterior/i })).toBeDisabled();
+
+    await userEvent.click(screen.getByRole('button', { name: /próxima/i }));
+    expect(screen.getByText('A metade')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /próxima/i }));
+    expect(screen.getByText('O reconhecimento')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /próxima/i })).toBeDisabled();
+  });
+
+  it('permite saltar direto para uma lâmina pelos marcadores', async () => {
+    render(<LessonBlockRenderer block={block} />);
+    await userEvent.click(screen.getByRole('tab', { name: /lâmina 3/i }));
+    expect(screen.getByText('O reconhecimento')).toBeInTheDocument();
+  });
+});
+
+describe('VIDEO_PLACEHOLDER — discreto por contrato', () => {
+  it('registra o ponto sem fingir player nem reservar área vazia', () => {
+    const { container } = render(
+      <LessonBlockRenderer block={{ kind: 'VIDEO_PLACEHOLDER', id: 'v', topic: 'a cadência' }} />
+    );
+    expect(screen.getByText(/aula em vídeo sobre a cadência/i)).toBeInTheDocument();
+    // Sem iframe, sem video, sem botão de reprodução: nada que sugira mídia
+    // disponível ou conteúdo faltando.
+    expect(container.querySelector('iframe')).toBeNull();
+    expect(container.querySelector('video')).toBeNull();
+    expect(container.querySelector('button')).toBeNull();
+  });
+});
