@@ -6,9 +6,9 @@
 | Campo | Valor |
 | :--- | :--- |
 | **Última atualização** | 2026-09-16 |
-| **Missão concluída** | **COMANDO 3 · etapa 3 — 4 lições convertidas (10 seções, 60 blocos) + 3 defeitos musicais do motor corrigidos** |
+| **Missão concluída** | **COMANDO 3 · etapa 4 — Atlas de dois eixos (ADR-006) + ilha do Violino** |
 | **Branch** | `main` (commit `cad89d0`) |
-| **Próxima missão** | COMANDO 3 · etapa 3 — Academy Home, Catálogo, Grade e as 6 rotas com parâmetro quebrado |
+| **Próxima missão** | COMANDO 3 · etapa 5 — Academy Home, Catálogo, Meu Aprendizado e as 6 rotas com parâmetro quebrado |
 | **Status global** | 🟠 **PROTÓTIPO COM AUTENTICAÇÃO REAL** — os bloqueadores de segurança estão fechados; a paridade funcional não |
 
 ---
@@ -20,7 +20,7 @@
 | Instalação de dependências | `npm install` | ✅ 222 pacotes (falhava antes: `ComSpec` vazio no shell — ver §6) |
 | Typecheck estrito | `tsc --noEmit` | ✅ **0 erros** |
 | Lint | `eslint src server functions` | ⚠️ 0 erros, **20 warnings** (`no-explicit-any`; eram 28) |
-| Testes | `vitest run` | ✅ **81/81** (9 arquivos) — 16 de autorização + 36 de componente + 12 de teoria |
+| Testes | `vitest run` | ✅ **86/86** (10 arquivos) |
 | Build de produção | `vite build` | ✅ 7.7s — bundle único de **1.244 kB** (sem code-splitting) |
 | Servidor de API | `curl` contra 5 vetores de ataque | ✅ **404 / 401 / 401 / 401 / 401** — todos recusados |
 | Vazamento no bundle | `npm run verify:secrets` | ✅ **limpo** (guarda encadeada ao `npm run build`) |
@@ -378,6 +378,34 @@ O Admin **não** é CRUD de usuários nem central de suporte. É instrumento de 
 Consequência imediata: `AdminUsersScreen`, `AdminContentScreen` e `AdminEnginesScreen` são **descontinuadas** — a primeira porque os dados pessoais vivem no Drive do usuário e a fundadora não tem nem deve ter acesso; a segunda porque autoria pertence ao pipeline de conhecimento; a terceira porque exibia telemetria falsa. Criar `/admin/seo`, `/admin/communication` e `/admin/commercial`.
 
 🔴 **Descoberta que bloqueia o SEO inteiro:** a aplicação roteia por *hash*. Fragmentos de hash **não são indexáveis** — para um buscador, o site tem uma página só. Migrar para `history.pushState` passa a ser **P0 comercial**, não higiene técnica.
+
+---
+
+## 8-septies. ADR-006 · Atlas de dois eixos (2026-09-17)
+
+**Decisão:** o Atlas não é uma linha do tempo com obras penduradas. São **dois eixos que se cruzam**:
+
+- **Eixo temporal** — mundos/eras (Barroco, Classicismo, Romantismo, Moderno, Brasileira)
+- **Eixo instrumental** — **ilhas**, uma por instrumento com corpus próprio
+
+**Encontro:** a obra. A Chaconne BWV 1004 é Barroco **e** Violino; quem a estuda carimba o passaporte nos dois eixos.
+
+**Por que ilha e não filtro:** *"uma trilha orientada a instrumento é um curso à parte"*. O corpus de violino (Suzuki, Hans Sitt, Maia Bang, Laoureux, All for Strings) não é teoria musical — tem progressão, pedagogia e avaliação próprias. Reduzi-lo a faceta de busca apagaria sua ordem, que é o que ele tem de mais importante.
+
+| | Espinha teórica | Ilha de instrumento |
+| :--- | :--- | :--- |
+| Corpus | Bohumil Med, Berklee | Suzuki, Sitt, Maia Bang, Laoureux, AFS |
+| Progressão | conceitual | técnica e de repertório |
+| Avaliação | exame, quiz | execução aferida por evidência |
+| Relação | pré-requisito transversal | consome a teoria, não a substitui |
+
+**Regra de honestidade, verificada por teste** (`tests/atlas-islands.test.ts`): uma ilha só é navegável com corpus real em disco **e** currículo derivado dele. Três estados: `AVAILABLE` · `IN_PREPARATION` · `PLANNED`. Ilha `PLANNED` marca o lugar no mapa e não promete conteúdo. Existe porque o Atlas anunciava "142 obras do Barroco" sobre 5 registros fixos (K-05).
+
+**Convenção de descoberta:** cada ilha corresponde a `framework_knowledge/knowledge-<slug>/`. Abrir uma nova ilha são 5 passos documentados em `seed-atlas-islands.ts`.
+
+**Estado:** Violino `IN_PREPARATION` — **15 obras presentes, 0 ingeridas**. Piano, Canto e Violão `PLANNED`.
+
+**Carimbos do eixo instrumental** exigem `evidenceId`: carimba-se por execução medida, nunca por ter aberto a página.
 
 ---
 

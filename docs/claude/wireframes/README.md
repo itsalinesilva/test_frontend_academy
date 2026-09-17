@@ -31,6 +31,7 @@ Estes documentos são, portanto, a base de:
 | 06 | [`06_SCORE_NOTATION.md`](06_SCORE_NOTATION.md) | Partitura | Dorico / Sibelius / Finale | 2 |
 | 07 | [`07_ADMIN_FOUNDER_CONSOLE.md`](07_ADMIN_FOUNDER_CONSOLE.md) | Console da Fundadora | — (insights · SEO · comunicação · comercial) | 6 |
 | 08 | [`08_CORE_UTILITIES.md`](08_CORE_UTILITIES.md) | Núcleo & utilitárias | — | 11 |
+| 09 | [`09_WORLDS_ATLAS.md`](09_WORLDS_ATLAS.md) | Atlas: mundos, eras e ilhas | autoral | 3 (+1 a criar) |
 
 **Cobertura:** as 72 telas do produto têm wireframe de referência. Nenhuma ficou sem especificação.
 
