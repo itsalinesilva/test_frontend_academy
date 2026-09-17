@@ -1,4 +1,5 @@
 import { CourseLevel } from '../domain/types';
+import { CURSO_TEORIA, MODULOS_TEORIA, LICOES_TEORIA } from './seed-theory-course';
 import {
   Program,
   LearningPath,
@@ -472,6 +473,7 @@ export const SEED_COURSES: AcademyCourse[] = [
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
   },
+  CURSO_TEORIA,
 ];
 
 // ---------------------------------------------------------------------------
@@ -518,6 +520,7 @@ export const SEED_MODULES: AcademyModule[] = [
     objectives: ['Compreender as proporções 2:1 entre figuras musicais.'],
     lessonIds: [],
   },
+  ...MODULOS_TEORIA,
 ];
 
 // ---------------------------------------------------------------------------
@@ -1156,6 +1159,7 @@ O **Rei Dó** é quem manda e deixa tudo calminho. O **Cavaleiro Fá** sai em av
       },
     },
   },
+  ...LICOES_TEORIA,
 ];
 
 // ---------------------------------------------------------------------------

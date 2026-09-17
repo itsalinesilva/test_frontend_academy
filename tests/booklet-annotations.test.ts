@@ -333,3 +333,241 @@ describe('Caderno do curso', () => {
     expect(r.orfas).toBe(2);
   });
 });
+
+// ---------------------------------------------------------------------------
+
+import { LIVRETO_TEORIA } from '../src/data/seed-booklet-theory';
+import { CURSO_TEORIA, MODULOS_TEORIA, LICOES_TEORIA, CAPITULOS_TEORIA } from '../src/data/seed-theory-course';
+
+describe('Curso de Teoria — integridade do conteúdo', () => {
+  it('doze capítulos, doze módulos, doze lições', () => {
+    expect(CAPITULOS_TEORIA).toHaveLength(12);
+    expect(MODULOS_TEORIA).toHaveLength(12);
+    expect(LICOES_TEORIA).toHaveLength(12);
+    expect(CURSO_TEORIA.moduleIds).toHaveLength(12);
+  });
+
+  it('cada módulo declarado no curso existe de fato', () => {
+    const ids = new Set(MODULOS_TEORIA.map((m) => m.id));
+    for (const id of CURSO_TEORIA.moduleIds) {
+      expect(ids.has(id), `módulo ${id} declarado e ausente`).toBe(true);
+    }
+  });
+
+  it('cada lição aponta para um módulo existente, e vice-versa', () => {
+    const modulos = new Set(MODULOS_TEORIA.map((m) => m.id));
+    for (const l of LICOES_TEORIA) {
+      expect(modulos.has(l.moduleId), `lição ${l.id} aponta para módulo inexistente`).toBe(true);
+      expect(l.courseId).toBe(CURSO_TEORIA.id);
+    }
+    for (const m of MODULOS_TEORIA) {
+      for (const licaoId of m.lessonIds) {
+        expect(LICOES_TEORIA.some((l) => l.id === licaoId), `módulo ${m.id} cita lição inexistente`).toBe(true);
+      }
+    }
+  });
+
+  it('nenhuma lição está vazia — todas têm blocos interativos', () => {
+    // Uma lição sem blocos é um título sem aula. O curso tem doze capítulos;
+    // todos os doze precisam ter conteúdo, não só os primeiros.
+    for (const l of LICOES_TEORIA) {
+      const blocos = l.variants.TRADITIONAL.sections[0]?.blocks ?? [];
+      expect(blocos.length, `${l.id} não tem blocos`).toBeGreaterThan(0);
+    }
+  });
+
+  it('toda lição termina com uma verificação', () => {
+    for (const l of LICOES_TEORIA) {
+      const blocos = l.variants.TRADITIONAL.sections[0]?.blocks ?? [];
+      expect(
+        blocos.some((b) => b.kind === 'CHECKPOINT'),
+        `${l.id} não tem checkpoint`
+      ).toBe(true);
+    }
+  });
+
+  it('a maioria das lições traz laboratório ou exemplo sonoro', () => {
+    // Ler sobre uma terça e ouvir uma terça são coisas diferentes.
+    const comSom = LICOES_TEORIA.filter((l) => {
+      const blocos = l.variants.TRADITIONAL.sections[0]?.blocks ?? [];
+      return blocos.some((b) =>
+        ['AUDIO_EXAMPLE', 'INTERVAL_LAB', 'CHORD_LAB', 'SCALE_LAB', 'KEYBOARD', 'STAFF'].includes(b.kind)
+      );
+    });
+    expect(comSom.length).toBeGreaterThanOrEqual(8);
+  });
+});
+
+describe('Livreto de Teoria', () => {
+  it('não tem erro estrutural', () => {
+    const erros = validarLivreto(LIVRETO_TEORIA).filter((p) => p.gravidade === 'erro');
+    expect(erros, erros.map((e) => e.mensagem).join(' | ')).toEqual([]);
+  });
+
+  it('cobre os doze capítulos com quantidade equilibrada', () => {
+    // A quantidade por capítulo não é arbitrária: sai da síntese. Um capítulo
+    // com mais blocos nucleares rende mais questões — e é assim que deve ser.
+    expect(LIVRETO_TEORIA.capitulos).toHaveLength(12);
+    for (const c of LIVRETO_TEORIA.capitulos) {
+      expect(c.questoes.length, `capítulo ${c.numero}`).toBeGreaterThanOrEqual(6);
+      expect(c.questoes.length, `capítulo ${c.numero}`).toBeLessThanOrEqual(8);
+    }
+    expect(totalDeQuestoes(LIVRETO_TEORIA)).toBe(76);
+  });
+
+  it('cada capítulo do livreto aponta para a lição correspondente', () => {
+    const licoes = new Set(LICOES_TEORIA.map((l) => l.id));
+    for (const c of LIVRETO_TEORIA.capitulos) {
+      expect(c.licaoId && licoes.has(c.licaoId), `capítulo ${c.numero} sem lição`).toBe(true);
+    }
+  });
+
+  it('toda questão tem explicação de verdade', () => {
+    // Questão sem explicação ensina a acertar, não o assunto.
+    for (const c of LIVRETO_TEORIA.capitulos) {
+      for (const q of c.questoes) {
+        expect(q.explicacao.length, `${q.id}`).toBeGreaterThan(40);
+      }
+    }
+  });
+
+  it('as competências do livreto são as que o curso declara ensinar', () => {
+    const doCurso = new Set([...CURSO_TEORIA.competencies, 'fundamentos']);
+    for (const c of LIVRETO_TEORIA.capitulos) {
+      for (const q of c.questoes) {
+        for (const comp of q.competencias) {
+          expect(doCurso.has(comp), `${q.id} cobra "${comp}", que o curso não declara`).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('o simulado reúne todas as questões na ordem dos capítulos', () => {
+    const s = montarSimulado(LIVRETO_TEORIA);
+    expect(s.questaoIds).toHaveLength(76);
+    expect(s.questaoIds[0]).toBe('tq_01_1');
+    expect(s.questaoIds[s.questaoIds.length - 1]).toBe('tq_12_6');
+  });
+
+  it('há progressão de dificuldade — não é tudo básico', () => {
+    const todas = LIVRETO_TEORIA.capitulos.flatMap((c) => c.questoes);
+    const porNivel = {
+      basica: todas.filter((q) => q.dificuldade === 'basica').length,
+      intermediaria: todas.filter((q) => q.dificuldade === 'intermediaria').length,
+      avancada: todas.filter((q) => q.dificuldade === 'avancada').length,
+    };
+    expect(porNivel.basica).toBeGreaterThan(0);
+    expect(porNivel.intermediaria).toBeGreaterThan(0);
+    expect(porNivel.avancada).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+
+import { SINTESE_TEORIA } from '../src/data/seed-synthesis-theory';
+import {
+  conferirCobertura,
+  prescrever,
+  validarSintese,
+  totalDeBlocos,
+  QUESTOES_POR_PESO,
+} from '../src/domain/synthesis';
+
+describe('Síntese como base de extração de questões', () => {
+  const questoesDoLivreto = LIVRETO_TEORIA.capitulos.flatMap((c) => c.questoes);
+
+  it('a síntese cobre os doze capítulos', () => {
+    expect(SINTESE_TEORIA.capitulos).toHaveLength(12);
+    expect(totalDeBlocos(SINTESE_TEORIA)).toBeGreaterThanOrEqual(48);
+  });
+
+  it('a síntese não tem erro estrutural', () => {
+    const erros = validarSintese(SINTESE_TEORIA).filter((p) => p.gravidade === 'erro');
+    expect(erros, erros.map((e) => e.mensagem).join(' | ')).toEqual([]);
+  });
+
+  it('cada bloco é UMA afirmação — não um resumo', () => {
+    // Se não cabe numa frase, são dois blocos. É essa granularidade que
+    // permite extrair questão; um resumo não tem onde pegar.
+    for (const c of SINTESE_TEORIA.capitulos) {
+      for (const b of c.blocos) {
+        const frases = b.nucleo.split(/(?<=[.!?])\s+/).filter((f) => f.trim());
+        expect(frases.length, `${b.id}: "${b.nucleo}"`).toBe(1);
+      }
+    }
+  });
+
+  it('todo bloco lista as confusões reais que viram distratores', () => {
+    // Alternativa errada inventada é fácil de descartar e não ensina nada.
+    for (const c of SINTESE_TEORIA.capitulos) {
+      for (const b of c.blocos) {
+        expect(b.confusoesComuns.length, `${b.id}`).toBeGreaterThanOrEqual(2);
+      }
+    }
+  });
+
+  it('todo capítulo tem ao menos um bloco nuclear', () => {
+    for (const c of SINTESE_TEORIA.capitulos) {
+      expect(
+        c.blocos.some((b) => b.peso === 'NUCLEAR'),
+        `capítulo ${c.numero} sem bloco nuclear`
+      ).toBe(true);
+    }
+  });
+
+  it('A COBERTURA É COMPLETA: nenhum bloco sem questão, nenhuma questão órfã', () => {
+    // Este é o teste que a metodologia existe para permitir. Antes dele, a
+    // cobertura era julgamento; agora é contagem.
+    const r = conferirCobertura(SINTESE_TEORIA, questoesDoLivreto);
+
+    expect(
+      r.lacunas,
+      r.lacunas.map((l) => `${l.blocoId}: ${l.encontradas}/${l.esperadas} — ${l.nucleo}`).join('\n')
+    ).toEqual([]);
+
+    expect(r.questoesOrfas, `questões sem bloco de origem: ${r.questoesOrfas.join(', ')}`).toEqual([]);
+    expect(r.completa).toBe(true);
+    expect(r.blocosCobertos).toBe(r.totalDeBlocos);
+  });
+
+  it('as questões correspondem exatamente ao previsto pelos pesos dos blocos', () => {
+    const previstas = SINTESE_TEORIA.capitulos
+      .flatMap((c) => c.blocos)
+      .reduce((a, b) => a + QUESTOES_POR_PESO[b.peso], 0);
+    expect(previstas).toBe(76);
+    expect(questoesDoLivreto).toHaveLength(76);
+  });
+
+  it('com a cobertura completa, não há nada a prescrever', () => {
+    expect(prescrever(SINTESE_TEORIA, questoesDoLivreto)).toEqual([]);
+  });
+
+  it('remover uma questão faz a lacuna aparecer na hora', () => {
+    // A prova de que o mecanismo funciona: tire uma questão e o relatório
+    // aponta exatamente qual bloco ficou descoberto.
+    const faltando = questoesDoLivreto.filter((q) => q.id !== 'tq_05_3');
+    const r = conferirCobertura(SINTESE_TEORIA, faltando);
+    expect(r.completa).toBe(false);
+    expect(r.lacunas.some((l) => l.blocoId === 's05_3')).toBe(true);
+
+    const p = prescrever(SINTESE_TEORIA, faltando);
+    expect(p[0].blocoId).toBe('s05_3');
+    expect(p[0].competencia).toBe('intervalos');
+    expect(p[0].distratoresSugeridos.length).toBeGreaterThan(0);
+  });
+
+  it('o tipo de questão prescrito decorre da natureza do bloco', () => {
+    const semNada = conferirCobertura(SINTESE_TEORIA, []);
+    expect(semNada.completa).toBe(false);
+
+    const todas = prescrever(SINTESE_TEORIA, []);
+    const regra = todas.find((p) => p.blocoId === 's03_1');
+    const distincao = todas.find((p) => p.blocoId === 's05_2');
+    const procedimento = todas.find((p) => p.blocoId === 's05_1');
+
+    expect(regra?.tipoSugerido).toBe('VERDADEIRO_FALSO');
+    expect(distincao?.tipoSugerido).toBe('MULTIPLA_ESCOLHA');
+    expect(procedimento?.tipoSugerido).toBe('IDENTIFICACAO');
+    expect(procedimento?.dificuldadeSugerida).toBe('avancada');
+  });
+});

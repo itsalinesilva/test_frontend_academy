@@ -1,14 +1,12 @@
 import { Livreto } from '../domain/booklet';
+import { LIVRETO_TEORIA } from './seed-booklet-theory';
 
 /**
  * Livretos de fabrica.
  *
- * Vazio por enquanto: os livretos de Teoria, Historia Ocidental e as duas
- * Historias Brasileiras sao gerados a partir do estudo do acervo, e entram
- * aqui conforme cada curso fica pronto.
- *
- * Um livreto inventado agora — com questoes plausiveis sobre um curso que
- * ainda nao existe — seria exatamente o tipo de conteudo de enchimento que
- * esta plataforma nao produz.
+ * Cada curso entra aqui quando fica pronto — com o caderno de exercicios
+ * escrito junto do conteudo, nao depois. Um livreto inventado antes do curso
+ * seria conteudo de enchimento; um curso sem livreto seria leitura sem
+ * fixacao.
  */
-export const LIVRETOS_PADRAO: Livreto[] = [];
+export const LIVRETOS_PADRAO: Livreto[] = [LIVRETO_TEORIA];
