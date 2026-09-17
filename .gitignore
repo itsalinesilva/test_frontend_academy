@@ -1,0 +1,44 @@
+# Dependências
+node_modules/
+
+# Artefatos de build
+dist/
+.vite/
+*.tsbuildinfo
+
+# Ambiente e segredos
+.env
+.env.*
+!.env.example
+.dev.vars
+
+# Cloudflare
+.wrangler/
+.pages/
+
+# Acervo de referência — NÃO VERSIONAR
+#
+# `framework_knowledge/` contém obras protegidas por direito autoral
+# (Bohumil Med, Grout & Palisca, Berklee Press) e transcrições de curso
+# de terceiros. São material de REFERÊNCIA LOCAL para autoria de conteúdo.
+#
+# A plataforma publica apenas o conteúdo ORIGINAL derivado, acompanhado
+# da citação de proveniência — nunca a fonte protegida.
+# Ver CLAUDE_STATE.md §8 (ADR-001.B) e docs/harness/PROMPTS.md (COMANDO 7/8).
+framework_knowledge/
+
+# Sistema operacional
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+*.log
