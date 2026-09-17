@@ -73,10 +73,14 @@ export interface User {
   primaryRole: UserRole;
   assignedRoles: UserRole[];
   isEmailVerified: boolean;
-  authProvider?: 'email' | 'google';
-  passwordHash?: string;
+  authProvider?: 'google';
+  /**
+   * `sub` do Google — identidade estável e imutável, chave canônica do
+   * usuário. Sobrevive à troca de e-mail da conta.
+   */
+  googleSubject?: string;
   linkedAccounts?: Array<{
-    provider: 'email' | 'google';
+    provider: 'google';
     email: string;
     linkedAt: ISOTimestamp;
   }>;

@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 3000 --host 0.0.0.0",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && npm run verify:secrets",
     "preview": "vite preview --port 3000 --host 0.0.0.0",
     "lint": "eslint src --ext .ts,.tsx",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "verify:secrets": "node scripts/verify-bundle-secrets.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

@@ -10,47 +10,28 @@ import {
 } from '../domain/types';
 import { UserEntitlement } from '../domain/entitlements';
 
-export interface LoginRequest {
-  email: string;
-  password?: string;
-  provider?: 'local' | 'google';
-}
-
-export interface GoogleOAuthRequest {
-  email: string;
-  name: string;
-  avatarUrl?: string;
-  idToken?: string;
-}
-
-export interface RegisterRequest {
-  email: string;
-  name: string;
-  selectedRole?: UserRole;
-  password?: string;
-  guardianEmail?: string;
-  authProvider?: 'email' | 'google';
-  avatarUrl?: string;
-  initialMode?: AppMode;
-}
-
-export interface PasswordRecoveryRequest {
-  email: string;
-}
-
-export interface ResetPasswordRequest {
-  token: string;
-  email: string;
-  newPassword: string;
+/**
+ * Única credencial aceita pela plataforma (ADR-001.A).
+ *
+ * `idToken` é o JWT assinado pelo Google; `nonce` é o valor de uso único
+ * gerado pelo cliente e conferido pelo servidor contra a claim do token.
+ *
+ * Não existe `LoginRequest` com senha, `RegisterRequest`,
+ * `PasswordRecoveryRequest` nem `ResetPasswordRequest`: com autenticação
+ * exclusivamente federada, essa superfície não é remendada — ela deixa de
+ * existir. Ver CLAUDE_AUDIT.md S-03/S-05.
+ */
+export interface GoogleAuthenticationRequest {
+  idToken: string;
+  nonce?: string;
 }
 
 export interface LinkAccountRequest {
   userId: string;
-  provider: 'google' | 'email';
+  provider: 'google';
   email: string;
   name?: string;
   avatarUrl?: string;
-  password?: string;
 }
 
 export interface OnboardingCompletionRequest {
@@ -98,8 +79,15 @@ export interface AuthSessionResponse {
   capabilities: UserCapability[];
   entitlements: UserEntitlement[];
   mode: AppMode;
+  /** JWS HS256 emitido e assinado pelo servidor de autoridade. */
   accessToken: string;
   expiresAt: string;
+  /**
+   * Resolvido SERVER-SIDE a partir da allowlist em variável de ambiente.
+   * Nunca inferido no cliente, nunca derivado de `user.primaryRole`.
+   */
+  isAdmin: boolean;
+  adminCapabilities: readonly string[];
 }
 
 export interface SwitchRoleRequest {

@@ -87,12 +87,18 @@ export const ROLE_CAPABILITIES_MAP: Record<UserRole, UserCapability[]> = {
 /**
  * Hardcoded initial founder admin allowlist as per Doc 00 and AGENTS.md
  */
-export const FOUNDER_ADMIN_EMAILS = [
-  'alinealv.silv@gmail.com',
-  'office.alinesilva@gmail.com',
-] as const;
-
-export function isFounderAdminEmail(email: string): boolean {
-  const normalized = email.trim().toLowerCase();
-  return FOUNDER_ADMIN_EMAILS.some((founder) => founder.toLowerCase() === normalized);
-}
+/**
+ * A allowlist de administradores NÃO vive mais aqui.
+ *
+ * CLAUDE_AUDIT.md S-02: `FOUNDER_ADMIN_EMAILS` e `isFounderAdminEmail()`
+ * estavam neste arquivo, dentro de `src/`, e portanto iam para o bundle do
+ * navegador — verificado no artefato compilado. Qualquer visitante lia os
+ * e-mails da fundadora, e qualquer código de cliente podia decidir "isto é
+ * um admin" sozinho.
+ *
+ * Agora a relação vive em `ADMIN_ALLOWLIST`, variável de ambiente lida
+ * apenas por `server/core/admin-authority.ts`. O cliente descobre o
+ * privilégio exclusivamente pelo campo `isAdmin` da sessão assinada, e o
+ * papel ADMIN em `User.assignedRoles` só é atribuído — ou revogado — a
+ * partir dessa resposta do servidor.
+ */

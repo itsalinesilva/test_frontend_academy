@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { PersistentUserRepository } from '../src/repositories/user.repository';
 import { PersistentCourseRepository } from '../src/repositories/course.repository';
 import { MemoryStorageAdapter } from '../src/infrastructure/storage/storage-adapter';
-import { FOUNDER_ADMIN_EMAILS } from '../src/domain/capabilities';
 import { UserRole } from '../src/domain/types';
 
 describe('Persistent Repositories & Seeds', () => {
@@ -15,11 +14,34 @@ describe('Persistent Repositories & Seeds', () => {
     courseRepo = new PersistentCourseRepository(memStorage);
   });
 
-  it('semeia automaticamente os usuários fundadores com o papel ADMIN', async () => {
-    const founder = await userRepo.findByEmail(FOUNDER_ADMIN_EMAILS[0]);
-    expect(founder).not.toBeNull();
-    expect(founder?.primaryRole).toBe(UserRole.ADMIN);
-    expect(founder?.email).toBe(FOUNDER_ADMIN_EMAILS[0]);
+  /**
+   * NOTA DE CORREÇÃO DE TESTE — este caso afirmava "semeia automaticamente
+   * os usuários fundadores com o papel ADMIN". Era a vulnerabilidade S-02
+   * transformada em requisito: o repositório do cliente criava um
+   * administrador só de ver um e-mail. A asserção foi invertida.
+   */
+  it('NÃO provisiona administrador a partir de e-mail (regressão S-02)', async () => {
+    const found = await userRepo.findByEmail('office.alinesilva@gmail.com');
+    expect(found).toBeNull();
+
+    const all = await userRepo.listAll();
+    expect(all).toHaveLength(0);
+  });
+
+  it('persiste o papel exatamente como recebido, sem coerção por e-mail', async () => {
+    const saved = await userRepo.save({
+      id: 'usr_x',
+      email: 'office.alinesilva@gmail.com',
+      name: 'Identidade Qualquer',
+      primaryRole: UserRole.ALUNO,
+      assignedRoles: [UserRole.ALUNO],
+      isEmailVerified: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    expect(saved.primaryRole).toBe(UserRole.ALUNO);
+    expect(saved.assignedRoles).not.toContain(UserRole.ADMIN);
   });
 
   it('lista cursos publicados com dados rigorosos de proveniência intelectual', async () => {

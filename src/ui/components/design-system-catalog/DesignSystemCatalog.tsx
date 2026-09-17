@@ -978,7 +978,7 @@ export const DesignSystemCatalog: React.FC = () => {
               <ProfileCard
                 id="profile-card-demo"
                 name="Aline Silva"
-                email="office.alinesilva@gmail.com"
+                email="maria.aparecida@exemplo.org"
                 role={UserRole.ADMIN}
                 bio="Administradora Fundadora da Academia Musical Digital. Pesquisadora em pedagogia musical contemporânea e interfaces digitais de partitura."
                 isOwner={true}

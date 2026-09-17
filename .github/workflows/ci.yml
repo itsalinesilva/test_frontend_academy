@@ -26,10 +26,19 @@ jobs:
         run: npm run typecheck
 
       - name: Lint
-        run: npm run lint
+        run: npx eslint src server functions --ext .ts,.tsx
 
       - name: Run Test Suite
         run: npm run test
 
       - name: Build Production Assets
-        run: npm run build
+        run: npx tsc && npx vite build
+
+      # Guarda de release: falha se a allowlist administrativa ou qualquer
+      # segredo de servidor aparecer no artefato do cliente (CLAUDE_AUDIT.md S-02).
+      - name: Verify No Secret Leaked Into Client Bundle
+        run: npm run verify:secrets
+        env:
+          ADMIN_ALLOWLIST: ${{ secrets.ADMIN_ALLOWLIST }}
+          SESSION_SIGNING_SECRET: ${{ secrets.SESSION_SIGNING_SECRET }}
+          AUDIT_SIGNING_SECRET: ${{ secrets.AUDIT_SIGNING_SECRET }}

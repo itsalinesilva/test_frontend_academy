@@ -1,5 +1,5 @@
 import { User, UserRole, UserCapability } from '../../domain/types';
-import { ROLE_CAPABILITIES_MAP, isFounderAdminEmail } from '../../domain/capabilities';
+import { ROLE_CAPABILITIES_MAP } from '../../domain/capabilities';
 import { EntitlementId, EntitlementStatus, UserEntitlement, ENTITLEMENT_DEFINITIONS } from '../../domain/entitlements';
 import { ForbiddenError, UnauthorizedError } from '../../domain/errors';
 
@@ -17,7 +17,8 @@ export class EntitlementService {
   public getEffectiveEntitlements(user: User | null): UserEntitlement[] {
     if (!user) return [];
 
-    const isFounder = isFounderAdminEmail(user.email);
+    // O papel ADMIN só existe em `assignedRoles` porque o servidor o concedeu.
+    const isFounder = user.assignedRoles.includes(UserRole.ADMIN);
     const roles = isFounder
       ? [UserRole.ADMIN, UserRole.PROFESSOR, UserRole.MUSICO, UserRole.ALUNO]
       : [user.primaryRole, ...(user.assignedRoles || [])];
@@ -115,7 +116,7 @@ export class EntitlementService {
     }
 
     // Server-side enforcement of founder admin privileges
-    if (isFounderAdminEmail(user.email)) {
+    if (user.assignedRoles.includes(UserRole.ADMIN)) {
       return Object.values(UserCapability);
     }
 
@@ -153,7 +154,7 @@ export class EntitlementService {
     if (!user) return false;
 
     // Founder admins have broad audit/governance access
-    if (isFounderAdminEmail(user.email)) return true;
+    if (user.assignedRoles.includes(UserRole.ADMIN)) return true;
 
     if (!this.hasCapability(user, requiredCapability)) return false;
 
@@ -180,7 +181,7 @@ export class EntitlementService {
 
   public isAdministrator(user: User | null): boolean {
     if (!user) return false;
-    if (isFounderAdminEmail(user.email)) return true;
+    if (user.assignedRoles.includes(UserRole.ADMIN)) return true;
     return user.primaryRole === UserRole.ADMIN || user.assignedRoles.includes(UserRole.ADMIN);
   }
 }
