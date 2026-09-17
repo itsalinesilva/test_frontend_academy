@@ -1,3 +1,4 @@
+import { MedicaoReal } from './practice-measurement';
 import { EntityId, ISOTimestamp } from './types';
 
 /**
@@ -179,7 +180,14 @@ export interface ExerciseAttempt {
   accuracyScore: number; // 0..100
   timingDeviationMs?: number;
   pitchDeviationCents?: number;
-  measurement: PracticeMeasurement;
+  /**
+   * @deprecated Estrutura antiga, em que toda dimensao era um numero — o que
+   * obrigava a inventar um valor quando nao havia o que medir. Substituida
+   * por `medicao`, onde ausencia e representavel.
+   */
+  measurement?: PracticeMeasurement;
+  /** Medicao real. `null` em qualquer dimensao significa "nao medida". */
+  medicao: MedicaoReal;
   immediateFeedback: {
     headline: string;
     details: string;
@@ -192,6 +200,14 @@ export interface ExerciseAttempt {
 }
 
 export interface PracticeSession {
+  /**
+   * Quantas tentativas entraram na media de acuracia.
+   *
+   * Diferente de `attemptsCount`: tentativas sem medicao nao entram na media,
+   * porque inclui-las como zero rebaixaria a sessao por uma falha de
+   * captacao — de microfone mudo, por exemplo.
+   */
+  attemptsMeasured?: number;
   id: EntityId;
   userId: EntityId;
   modality: PracticeModality;
@@ -218,7 +234,14 @@ export interface PracticeResult {
   exerciseTitle: string;
   modality: PracticeModality;
   summaryScore: number; // 0..1000
-  measurement: PracticeMeasurement;
+  /**
+   * @deprecated Estrutura antiga, em que toda dimensao era um numero — o que
+   * obrigava a inventar um valor quando nao havia o que medir. Substituida
+   * por `medicao`, onde ausencia e representavel.
+   */
+  measurement?: PracticeMeasurement;
+  /** Medicao real. `null` em qualquer dimensao significa "nao medida". */
+  medicao: MedicaoReal;
   pitchAccuracy: number;
   rhythmAccuracy: number;
   tempoStability: number;

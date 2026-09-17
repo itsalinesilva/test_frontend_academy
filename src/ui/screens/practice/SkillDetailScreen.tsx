@@ -13,8 +13,10 @@ import {
 import { Skill, Exercise, MasteryRecord } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
+import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
 
 export const SkillDetailScreen: React.FC = () => {
+  const { userId } = useUsuarioAtual();
   const router = useRouter();
   const params = useRouteParams();
   const skillId = params.id;
@@ -26,6 +28,7 @@ export const SkillDetailScreen: React.FC = () => {
 
   useEffect(() => {
     async function loadSkillData() {
+      if (!userId) return;
       // Rota sem parametro: nao consulta o servico e recai no estado de
       // "nao encontrado" da propria tela, em vez de exibir uma entidade
       // fixa de reserva (01_REPOSITORY_AUDIT R-02).
@@ -40,7 +43,7 @@ export const SkillDetailScreen: React.FC = () => {
         setExercises(exercisesData);
 
         // Fetch mastery for founder user
-        const overview = await practiceService.getMasteryOverview('usr_founder_1');
+        const overview = await practiceService.getMasteryOverview(userId);
         const m = overview.masteries.find((rec) => rec.skillId === skillId);
         setMastery(m || null);
       } catch (err) {
@@ -53,9 +56,10 @@ export const SkillDetailScreen: React.FC = () => {
   }, [skillId]);
 
   const handleLaunchExercise = async (ex: Exercise) => {
+    if (!userId) return;
     try {
       const session = await practiceService.startSession(
-        'usr_founder_1',
+        userId,
         ex.modality,
         ex.id,
         skill?.id

@@ -13,13 +13,15 @@ import {
 import { RankingLeaderboardEntry, RankingLeague } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
+import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
 
 export const RankingScreen: React.FC = () => {
+  const { userId } = useUsuarioAtual();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [selectedLeague, setSelectedLeague] = useState<RankingLeague>(RankingLeague.CONSERVATORIO);
   const [entries, setEntries] = useState<RankingLeaderboardEntry[]>([]);
-  const currentUserId = 'usr_founder_1';
+  const currentUserId = userId;
 
   useEffect(() => {
     async function loadRankings() {

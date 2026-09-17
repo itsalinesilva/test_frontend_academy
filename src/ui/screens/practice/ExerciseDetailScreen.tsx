@@ -12,8 +12,10 @@ import { Exercise, Skill } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
+import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
 
 export const ExerciseDetailScreen: React.FC = () => {
+  const { userId } = useUsuarioAtual();
   const router = useRouter();
   const params = useRouteParams();
   const exerciseId = params.id;
@@ -47,10 +49,11 @@ export const ExerciseDetailScreen: React.FC = () => {
   }, [exerciseId]);
 
   const handleStartSession = async () => {
+    if (!userId) return;
     if (!exercise) return;
     try {
       const session = await practiceService.startSession(
-        'usr_founder_1',
+        userId,
         exercise.modality,
         exercise.id,
         exercise.skillId

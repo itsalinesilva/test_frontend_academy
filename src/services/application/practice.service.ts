@@ -1,9 +1,18 @@
 import {
+  medirTentativa,
+  naturezaDoExercicio,
+  tentativaAprovada,
+  LIMIAR_APROVACAO,
+  SinalDaTentativa,
+  agregarMedicoes,
+  descreverSessao,
+  recomendarProximoPasso,
+} from '../../domain/practice-measurement';
+import {
   PracticeModality,
   ExerciseAttempt,
   PracticeSession,
   PracticeResult,
-  PracticeMeasurement,
   MasteryRecord,
   StreakTracker,
   DailyGoal,
@@ -24,16 +33,18 @@ export interface EvaluateAttemptInput {
   exerciseId: string;
   userId: string;
   sessionId?: string;
+  /** Resposta simbólica, quando o exercício tem uma. */
   givenResponse: string;
   expectedResponse?: string;
-  detectedPitch?: string;
-  targetPitch?: string;
-  centsDeviation?: number;
-  timingDeviationMs?: number;
-  recordedBpm?: number;
-  targetBpm?: number;
-  durationSeconds?: number;
-  expectedDurationSeconds?: number;
+  /**
+   * Sinal capturado durante a execução.
+   *
+   * O que não vier aqui NÃO é inventado: a dimensão correspondente sai
+   * ausente da medição, com a razão registrada. A versão anterior desta
+   * assinatura tinha campos já-agregados (`centsDeviation`,
+   * `timingDeviationMs`) que, quando omitidos, eram preenchidos por sorteio.
+   */
+  sinal?: SinalDaTentativa;
 }
 
 export class PracticeService {
@@ -126,111 +137,105 @@ export class PracticeService {
   // Training Loop: Attempt & Measurements
   // ---------------------------------------------------------------------------
 
+  /**
+   * Avalia uma tentativa a partir do sinal REALMENTE capturado.
+   *
+   * A versão anterior sorteava o que não recebia: quem acertasse a nota
+   * ganhava um desvio de afinação entre 0 e 8 cents, quem errasse entre 45 e
+   * 85 — e `consistency` sorteava mesmo com dados reais. Os números tinham
+   * aparência de medição e não descreviam nada do que a pessoa tocou.
+   *
+   * Agora tudo passa por `medirTentativa`, que devolve `null` para o que não
+   * foi medido. Uma tentativa sem medição é registrada como tal: nem
+   * aprovada, nem reprovada.
+   */
   public async evaluateAttempt(input: EvaluateAttemptInput): Promise<ExerciseAttempt> {
     const exercise = await this.repo.findExerciseById(input.exerciseId);
     if (!exercise) {
       throw new Error(`Exercise ${input.exerciseId} not found`);
     }
 
-    const expected = input.expectedResponse || exercise.expectedNotes?.join(' ') || exercise.targetPitch || '';
+    const expected =
+      input.expectedResponse || exercise.expectedNotes?.join(' ') || exercise.targetPitch || '';
     const given = input.givenResponse.trim();
 
-    // 1. Pitch Measurement
-    const targetPitch = input.targetPitch || exercise.targetPitch || 'C4';
-    const detectedPitch = input.detectedPitch || given || 'C4';
-    const isPitchMatch = targetPitch.toUpperCase() === detectedPitch.toUpperCase() || given.toLowerCase() === expected.toLowerCase();
-    const deviationCents = input.centsDeviation !== undefined
-      ? input.centsDeviation
-      : (isPitchMatch ? Math.floor(Math.random() * 8) : 45 + Math.floor(Math.random() * 40));
-    const centsAccuracy = Math.max(0, 100 - Math.abs(deviationCents) * 1.5);
+    const natureza = naturezaDoExercicio(exercise.modality, exercise.type);
 
-    // 2. Timing Measurement
-    const deviationMs = input.timingDeviationMs !== undefined
-      ? input.timingDeviationMs
-      : (isPitchMatch ? Math.floor(Math.random() * 14) - 7 : 35 + Math.floor(Math.random() * 30));
-    const timingScore = Math.max(0, 100 - Math.abs(deviationMs) * 2);
-
-    // 3. Rhythm Measurement
-    const targetBpm = input.targetBpm || exercise.targetBpm || 80;
-    const recordedBpm = input.recordedBpm || targetBpm + Math.floor(Math.random() * 4) - 2;
-    const bpmDiff = Math.abs(targetBpm - recordedBpm);
-    const rhythmStability = Math.max(0, 100 - bpmDiff * 3);
-    const subdivisionAccuracy = Math.min(100, Math.max(0, Math.round(rhythmStability * 0.95 + 5)));
-
-    // 4. Intonation & Duration Measurements
-    const intonation = isPitchMatch ? Math.min(100, Math.round(centsAccuracy * 0.9 + 10)) : Math.round(centsAccuracy * 0.5);
-    const targetSeconds = input.expectedDurationSeconds || 2.0;
-    const recordedSeconds = input.durationSeconds || 1.9;
-    const durationVariance = Math.abs(targetSeconds - recordedSeconds);
-    const sustainScore = Math.max(0, 100 - durationVariance * 25);
-
-    // 5. Overall Accuracy & Consistency
-    const accuracy = Math.round(
-      centsAccuracy * 0.35 +
-      rhythmStability * 0.25 +
-      timingScore * 0.20 +
-      intonation * 0.20
-    );
-
-    const isCorrect = isPitchMatch && accuracy >= 65;
-    const consistency = Math.min(100, Math.max(50, Math.round(accuracy * 0.9 + Math.random() * 10)));
-
-    // 6. Score (0..1000) & XP
-    const score = Math.round(
-      (accuracy * 7) +
-      (consistency * 1.5) +
-      (isCorrect ? 150 : 0)
-    );
-    const xpEarned = isCorrect ? exercise.xpAwarded : Math.max(5, Math.round(exercise.xpAwarded * 0.25));
-
-    const measurement: PracticeMeasurement = {
-      pitch: {
-        targetNote: targetPitch,
-        detectedNote: detectedPitch,
-        deviationCents,
-        centsAccuracy: Math.round(centsAccuracy),
-      },
-      timing: {
-        deviationMs,
-        timingScore: Math.round(timingScore),
-      },
-      rhythm: {
-        stabilityScore: Math.round(rhythmStability),
-        subdivisionAccuracy,
-      },
-      tempo: {
-        targetBpm,
-        recordedBpm,
-        stabilityVariance: bpmDiff,
-      },
-      accuracy,
-      intonation,
-      duration: {
-        targetSeconds,
-        recordedSeconds,
-        sustainScore: Math.round(sustainScore),
-      },
-      consistency,
-      difficulty: exercise.difficulty,
-      score: Math.min(1000, score),
+    const sinal: SinalDaTentativa = {
+      ...input.sinal,
+      notaAlvo: input.sinal?.notaAlvo ?? exercise.targetPitch ?? undefined,
+      bpmAlvo: input.sinal?.bpmAlvo ?? exercise.targetBpm ?? undefined,
+      // A resposta simbólica sempre entra: mesmo num exercício acústico, ter
+      // tocado as notas certas é informação.
+      respostaDada: given || undefined,
+      respostaEsperada: expected || undefined,
     };
 
-    // Immediate Feedback Construction
-    let headline = 'Excelente Execução Canônica!';
-    let details = `Afinação precisa com desvio de apenas ${Math.abs(deviationCents)} cents e desvio rítmico de ${Math.abs(deviationMs)}ms.`;
-    let correctiveAction = 'Mantenha a regularidade nos próximos compassos.';
+    const medicao = medirTentativa(sinal, natureza);
+    const aprovada = tentativaAprovada(medicao);
 
-    if (!isCorrect) {
-      headline = 'Tentativa com Divergência Acústica';
-      if (!isPitchMatch) {
-        details = `A nota detectada foi [${detectedPitch}], divergindo do alvo esperado [${targetPitch}].`;
-        correctiveAction = 'Ajuste a posição no teclado ou afine o ataque vocal antes de soar.';
-      } else if (timingScore < 60) {
-        details = `Afinação correta, porém houve antecipação ou atraso de ${Math.abs(deviationMs)}ms em relação ao metrônomo.`;
-        correctiveAction = 'Sincronize a respiração com o clique do tempo forte.';
+    // Tentativa sem medição não é acerto nem erro. `isCorrect` é booleano no
+    // contrato existente, então o registro fiel fica em `medicao` e o falso
+    // aqui significa "não confirmado", nunca "errou".
+    const isCorrect = aprovada === true;
+
+    const nota = medicao.notaGlobal;
+    const xpEarned =
+      aprovada === true
+        ? exercise.xpAwarded
+        : aprovada === false
+          ? Math.max(5, Math.round(exercise.xpAwarded * 0.25))
+          : 0; // sem medição não há XP: premiaria o silêncio
+
+    // --- devolutiva imediata, construída sobre o que foi medido -------------
+    let headline: string;
+    let details: string;
+    let correctiveAction: string;
+
+    if (aprovada === null) {
+      headline = 'Não foi possível medir esta tentativa';
+      details = medicao.ausencias.join(' ') || 'Nenhum dado de execução foi capturado.';
+      correctiveAction =
+        'Confira se o microfone está liberado e se houve som audível, e tente de novo. Nada foi registrado contra você.';
+    } else if (aprovada) {
+      headline = 'Execução dentro do alvo';
+      const partes: string[] = [];
+      if (medicao.afinacao.desvioCents !== null) {
+        partes.push(`afinação a ${Math.abs(medicao.afinacao.desvioCents)} cents do alvo`);
+      }
+      if (medicao.tempoRitmico.desvioMedioMs !== null) {
+        partes.push(`desvio médio de ${medicao.tempoRitmico.desvioMedioMs} ms em relação ao pulso`);
+      }
+      details = partes.length > 0 ? `Medido: ${partes.join('; ')}.` : `Nota global ${nota}.`;
+      correctiveAction =
+        (medicao.estabilidadeRitmica !== null && medicao.estabilidadeRitmica < 80)
+          ? 'O alvo foi atingido, mas o pulso ainda oscila. Repita mantendo o andamento constante.'
+          : 'Mantenha a regularidade e avance para a próxima dificuldade.';
+    } else {
+      headline = 'Ainda fora do alvo';
+      const pior = [
+        ['afinação', medicao.afinacao.pontuacao],
+        ['tempo', medicao.tempoRitmico.pontuacao],
+        ['constância do pulso', medicao.estabilidadeRitmica],
+        ['constância da altura', medicao.estabilidadeDeAltura],
+        ['sustentação', medicao.sustentacao.pontuacao],
+        ['resposta', medicao.acerto.pontuacao],
+      ]
+        .filter((d): d is [string, number] => typeof d[1] === 'number')
+        .sort((a, b) => a[1] - b[1])[0];
+
+      if (medicao.afinacao.desvioCents !== null && Math.abs(medicao.afinacao.desvioCents) > 25) {
+        const acima = medicao.afinacao.desvioCents > 0;
+        details = `A altura ficou ${Math.abs(medicao.afinacao.desvioCents)} cents ${acima ? 'acima' : 'abaixo'} de ${medicao.afinacao.notaAlvo}.`;
+        correctiveAction = acima
+          ? 'Alivie a pressão do ataque e reapoie a nota um pouco mais grave.'
+          : 'Sustente o apoio e busque a nota um pouco mais aguda antes de soar.';
+      } else if (pior) {
+        details = `A dimensão mais baixa foi ${pior[0]}, em ${pior[1]} de 100. Nota global ${nota}.`;
+        correctiveAction = `Repita trabalhando ${pior[0]} — as outras dimensões já estão no lugar.`;
       } else {
-        details = `Acurácia global de ${accuracy}%, abaixo da nota de corte institucional (65%).`;
-        correctiveAction = 'Repita a execução focando na estabilidade de sustentação.';
+        details = `Nota global ${nota}, abaixo do limiar de ${LIMIAR_APROVACAO}.`;
+        correctiveAction = 'Repita a execução com atenção ao pulso.';
       }
     }
 
@@ -245,16 +250,16 @@ export class PracticeService {
       givenResponse: given,
       expectedResponse: expected,
       isCorrect,
-      accuracyScore: accuracy,
-      timingDeviationMs: deviationMs,
-      pitchDeviationCents: deviationCents,
-      measurement,
+      accuracyScore: nota ?? 0,
+      timingDeviationMs: medicao.tempoRitmico.desvioMedioMs ?? 0,
+      pitchDeviationCents: medicao.afinacao.desvioCents ?? 0,
+      medicao,
       immediateFeedback: {
         headline,
         details,
         correctiveAction,
         isPass: isCorrect,
-        badgeAwarded: accuracy >= 95 ? 'Virtuoso do Compasso' : undefined,
+        badgeAwarded: nota !== null && nota >= 95 ? 'Execução exemplar' : undefined,
       },
       xpEarned,
       timestamp: new Date().toISOString(),
@@ -262,7 +267,6 @@ export class PracticeService {
 
     await this.repo.saveAttempt(attempt);
 
-    // Update Session running metrics if attached
     if (input.sessionId) {
       const session = await this.repo.findSessionById(input.sessionId);
       if (session) {
@@ -270,9 +274,15 @@ export class PracticeService {
         session.notesAttempted += 1;
         if (isCorrect) session.notesCorrect += 1;
         session.totalXpEarned += xpEarned;
-        session.accuracyScore = Math.round(
-          (session.accuracyScore * (session.attemptsCount - 1) + accuracy) / session.attemptsCount
-        );
+        // Tentativas sem medição não entram na média: incluí-las como zero
+        // rebaixaria a sessão por uma falha de captação.
+        if (nota !== null) {
+          const medidasAnteriores = session.attemptsMeasured ?? 0;
+          session.accuracyScore = Math.round(
+            (session.accuracyScore * medidasAnteriores + nota) / (medidasAnteriores + 1)
+          );
+          session.attemptsMeasured = medidasAnteriores + 1;
+        }
         if (!session.exerciseIds.includes(exercise.id)) {
           session.exerciseIds.push(exercise.id);
         }
@@ -333,9 +343,6 @@ export class PracticeService {
     );
     const avgRhythmAcc = Math.round(
       attempts.reduce((sum, a) => sum + (a.measurement?.rhythm.stabilityScore || 80), 0) / attemptsCount
-    );
-    const avgTempo = Math.round(
-      attempts.reduce((sum, a) => sum + (a.measurement?.tempo.recordedBpm || 80), 0) / attemptsCount
     );
     const avgIntonation = Math.round(
       attempts.reduce((sum, a) => sum + (a.measurement?.intonation || 85), 0) / attemptsCount
@@ -449,37 +456,13 @@ export class PracticeService {
       exerciseTitle,
       modality,
       summaryScore: avgScore,
-      measurement: {
-        pitch: {
-          targetNote: 'C4',
-          detectedNote: 'C4',
-          deviationCents: 4,
-          centsAccuracy: avgPitchAcc,
-        },
-        timing: {
-          deviationMs: 8,
-          timingScore: Math.round(100 - 16),
-        },
-        rhythm: {
-          stabilityScore: avgRhythmAcc,
-          subdivisionAccuracy: Math.round(avgRhythmAcc * 0.96),
-        },
-        tempo: {
-          targetBpm: avgTempo,
-          recordedBpm: avgTempo,
-          stabilityVariance: 2,
-        },
-        accuracy: avgAccuracy,
-        intonation: avgIntonation,
-        duration: {
-          targetSeconds: 2.0,
-          recordedSeconds: 2.0,
-          sustainScore: 92,
-        },
-        consistency: avgConsistency,
-        difficulty: 'intermediario',
-        score: avgScore,
-      },
+      // Agregado das medições REAIS das tentativas desta sessão.
+      //
+      // Aqui havia um objeto com valores cravados — nota alvo 'C4', desvio de
+      // 4 cents, 8 ms de atraso, 2 segundos de duração, variância 2 — que
+      // apareciam no relatório de qualquer sessão, de qualquer instrumento,
+      // independentemente do que tivesse sido tocado.
+      medicao: agregarMedicoes(attempts.map((a) => a.medicao).filter(Boolean)),
       pitchAccuracy: avgPitchAcc,
       rhythmAccuracy: avgRhythmAcc,
       tempoStability: avgRhythmAcc,
@@ -495,21 +478,22 @@ export class PracticeService {
         newLevel,
         leveledUp,
       },
-      feedbackPoints: [
-        `Precisão auditiva e de afinação em ${avgPitchAcc}%`,
-        `Estabilidade rítmica aferida em ${avgRhythmAcc}% sob andamento médio de ${avgTempo} BPM`,
-        `Índice de consistência de execução em ${avgConsistency}% ao longo de ${attemptsCount} tentativas`,
-      ],
-      recommendations: [
-        'Consolide o próximo tier da árvore de competências correspondente.',
-        'Pratique com andamento reduzido em 10% para eliminar micro-hesitações.',
-        'Explore o laboratório de percepção harmônica para aprofundamento das consonâncias.',
-      ],
+      // Só se afirma o que foi medido. Antes, três frases fixas — sempre as
+      // mesmas — relatavam afinação e ritmo mesmo numa sessão de teoria, onde
+      // nada disso existe.
+      feedbackPoints: descreverSessao(attempts, attemptsCount),
+      recommendations: recomendarProximoPasso(attempts),
       createdAt: new Date().toISOString(),
     };
 
-    // 4. Ingest as Evidence in Profile
+    // 4. Evidência no perfil — só quando houve o que evidenciar.
+    //
+    // Uma sessão inteira sem medição não deposita evidência: ela afirmaria
+    // uma prática cujo resultado ninguém conhece, e evidência é justamente
+    // aquilo que se pode conferir depois.
+    const houveMedicao = attempts.some((a) => a.medicao?.notaGlobal !== null);
     try {
+      if (!houveMedicao) throw new Error('sessao sem medicao');
       const evidence = await this.profileSvc.ingestEvidence({
         userId,
         source: 'practice',
@@ -524,7 +508,7 @@ export class PracticeService {
           name: 'Motor de Medição Acústica',
           title: 'Aferidor de Telemetria e Microcompetências',
           decision: avgAccuracy >= 70 ? 'aprovado_com_louvor' : 'revisar',
-          feedbackNotes: `Acurácia: ${avgAccuracy}%. Afinação: ${avgPitchAcc}%. Ritmo: ${avgRhythmAcc}%.`,
+          feedbackNotes: descreverSessao(attempts, attemptsCount).join(' '),
         },
       });
       result.evidenceGeneratedId = evidence.evidence.id;

@@ -16,8 +16,11 @@ import { ExerciseAttempt, Exercise } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
 import { useRouter, useRouteParams } from '../../navigation/router';
+import { PainelDeMedicao } from '../../components/practice/PainelDeMedicao';
+import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
 
 export const ImmediateFeedbackScreen: React.FC = () => {
+  const { userId } = useUsuarioAtual();
   const router = useRouter();
   const params = useRouteParams();
   const attemptId = params.id || '';
@@ -28,29 +31,19 @@ export const ImmediateFeedbackScreen: React.FC = () => {
 
   useEffect(() => {
     async function loadData() {
+      if (!userId) return;
       try {
         setLoading(true);
         let att: ExerciseAttempt | null = null;
         if (attemptId) {
           att = await practiceService.getAttempt(attemptId);
         }
-        if (!att) {
-          // If no specific attempt ID, get the latest attempt or evaluate default
-          const allExercises = await practiceService.listExercises();
-          const firstEx = allExercises[0];
-          if (firstEx) {
-            att = await practiceService.evaluateAttempt({
-              exerciseId: firstEx.id,
-              userId: 'usr_founder_1',
-              givenResponse: 'C4 D4 E4',
-              detectedPitch: 'C4',
-              targetPitch: 'C4',
-              timingDeviationMs: 8,
-              targetBpm: 80,
-              recordedBpm: 80,
-            });
-          }
-        }
+        // Sem tentativa identificada, a tela fica vazia — e nao inventa uma.
+        //
+        // Aqui havia um recurso que avaliava um exercicio qualquer com notas
+        // 'C4 D4 E4', 8 ms de atraso e 80 BPM cravados, gravava essa
+        // tentativa no historico da pessoa e a exibia como se ela a tivesse
+        // executado.
         setAttempt(att);
         if (att) {
           const ex = await practiceService.getExercise(att.exerciseId);
@@ -95,7 +88,7 @@ export const ImmediateFeedbackScreen: React.FC = () => {
     );
   }
 
-  const { measurement, immediateFeedback, isCorrect } = attempt;
+  const { medicao, immediateFeedback, isCorrect } = attempt;
 
   return (
     <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
@@ -155,12 +148,14 @@ export const ImmediateFeedbackScreen: React.FC = () => {
 
           <div className="p-3.5 bg-stone-50 rounded-xl border border-stone-200 text-center shrink-0">
             <span className="text-[10px] uppercase font-mono text-stone-400 block font-semibold">
-              Score da Tentativa
+              Nota da Tentativa
             </span>
-            <span className="font-mono text-3xl font-bold text-red-900">
-              {measurement.score}
+            <span className="font-mono text-3xl font-bold text-anil-900">
+              {medicao.notaGlobal !== null ? medicao.notaGlobal : '—'}
             </span>
-            <span className="text-[10px] font-mono text-stone-400 block">/1000 canônico</span>
+            <span className="text-[10px] font-mono text-stone-400 block">
+              {medicao.notaGlobal !== null ? '/100' : 'não medida'}
+            </span>
           </div>
         </div>
 
@@ -172,7 +167,9 @@ export const ImmediateFeedbackScreen: React.FC = () => {
               Orientação do Mestre
             </span>
             <span className="text-[11px] font-mono text-stone-400">
-              Acurácia: {measurement.accuracy}%
+              {medicao.dimensoesMedidas.length > 0
+                ? `${medicao.dimensoesMedidas.length} ${medicao.dimensoesMedidas.length === 1 ? 'dimensão medida' : 'dimensões medidas'}`
+                : 'sem medição'}
             </span>
           </div>
           <p className="text-sm text-stone-800 font-sans leading-relaxed">
@@ -199,79 +196,12 @@ export const ImmediateFeedbackScreen: React.FC = () => {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {/* 1. Pitch */}
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center space-y-0.5">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block font-bold">1. Pitch</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.pitch.centsAccuracy}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">±{Math.abs(measurement.pitch.deviationCents)} cents</span>
-          </div>
-
-          {/* 2. Timing */}
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center space-y-0.5">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block font-bold">2. Timing</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.timing.timingScore}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">{measurement.timing.deviationMs} ms</span>
-          </div>
-
-          {/* 3. Rhythm */}
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center space-y-0.5">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block font-bold">3. Rhythm</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.rhythm.stabilityScore}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Estabilidade</span>
-          </div>
-
-          {/* 4. Tempo */}
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center space-y-0.5">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block font-bold">4. Tempo</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.tempo.recordedBpm}</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Alvo: {measurement.tempo.targetBpm} BPM</span>
-          </div>
-
-          {/* 5. Accuracy */}
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center space-y-0.5">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block font-bold">5. Accuracy</span>
-            <span className="font-mono text-lg font-bold text-red-900">{measurement.accuracy}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Geral Ponderada</span>
-          </div>
-
-          {/* 6. Intonation */}
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center space-y-0.5">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block font-bold">6. Intonation</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.intonation}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Pureza Acústica</span>
-          </div>
-
-          {/* 7. Duration */}
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center space-y-0.5">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block font-bold">7. Duration</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.duration.recordedSeconds}s</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Sustain {measurement.duration.sustainScore}%</span>
-          </div>
-
-          {/* 8. Consistency */}
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center space-y-0.5">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block font-bold">8. Consistency</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.consistency}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Linearidade</span>
-          </div>
-
-          {/* 9. Difficulty */}
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center space-y-0.5">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block font-bold">9. Difficulty</span>
-            <span className="font-mono text-sm font-bold text-stone-800 capitalize mt-1 block">
-              {measurement.difficulty}
-            </span>
-            <span className="text-[10px] font-mono text-stone-400 block">Calibração</span>
-          </div>
-
-          {/* 10. Score */}
-          <div className="p-3 bg-red-50 rounded-xl border border-red-200 text-center space-y-0.5">
-            <span className="text-[10px] uppercase font-mono text-anil-800 block font-bold">10. Score</span>
-            <span className="font-mono text-lg font-bold text-red-900">{measurement.score}</span>
-            <span className="text-[10px] font-mono text-red-700 block">Escala 0..1000</span>
-          </div>
-        </div>
+        {/*
+          Aqui havia dez celulas fixas, todas sempre preenchidas — inclusive
+          quando nao havia o que medir. O painel unico mostra o que foi medido
+          e diz, com a razao, o que nao foi.
+        */}
+        <PainelDeMedicao medicao={medicao} variante="completo" id="feedback-medicao" />
       </section>
 
       {/* Gamified Action Loop Footer */}
@@ -311,7 +241,8 @@ export const ImmediateFeedbackScreen: React.FC = () => {
               variant="primary"
               size="md"
               onClick={async () => {
-                const result = await practiceService.finishSession(attempt.sessionId!, 'usr_founder_1');
+                if (!userId) return;
+                const result = await practiceService.finishSession(attempt.sessionId!, userId);
                 router.navigate(`/practice/result/${result.id}`);
               }}
               className="flex items-center gap-2 bg-anil-800 hover:bg-anil-700 text-white"

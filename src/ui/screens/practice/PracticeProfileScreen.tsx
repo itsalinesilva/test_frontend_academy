@@ -16,17 +16,20 @@ import {
 import { PracticeProfile } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
+import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
 
 export const PracticeProfileScreen: React.FC = () => {
+  const { userId } = useUsuarioAtual();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<PracticeProfile | null>(null);
 
   useEffect(() => {
     async function loadProfile() {
+      if (!userId) return;
       try {
         setLoading(true);
-        const data = await practiceService.getPracticeProfile('usr_founder_1');
+        const data = await practiceService.getPracticeProfile(userId);
         setProfile(data);
       } catch (err) {
         console.error('Failed to load practice profile', err);

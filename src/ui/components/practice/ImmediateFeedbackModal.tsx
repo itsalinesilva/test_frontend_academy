@@ -30,7 +30,8 @@ export const ImmediateFeedbackModal: React.FC<ImmediateFeedbackProps> = ({
   isLastExercise = false,
 }) => {
   const router = useRouter();
-  const { measurement, immediateFeedback, isCorrect, xpEarned } = attempt;
+  const { medicao, immediateFeedback, isCorrect, xpEarned } = attempt;
+  const semMedicao = medicao.notaGlobal === null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-in fade-in duration-200">
@@ -81,48 +82,84 @@ export const ImmediateFeedbackModal: React.FC<ImmediateFeedbackProps> = ({
           </p>
         </div>
 
-        {/* 10 Measurements Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
-          <div className="p-2 bg-stone-50 rounded border border-stone-100">
-            <span className="text-[10px] text-stone-500 uppercase block font-mono">Afinação</span>
-            <span className="font-bold font-mono text-stone-900">
-              {measurement.pitch.centsAccuracy}%
-            </span>
-            <span className="text-[9px] text-stone-400 block font-mono">
-              {measurement.pitch.deviationCents > 0 ? `+${measurement.pitch.deviationCents}` : measurement.pitch.deviationCents} cents
-            </span>
-          </div>
+        {/*
+          Grade de medição.
 
-          <div className="p-2 bg-stone-50 rounded border border-stone-100">
-            <span className="text-[10px] text-stone-500 uppercase block font-mono">Timing</span>
-            <span className="font-bold font-mono text-stone-900">
-              {measurement.timing.timingScore}%
+          Cada célula mostra o que FOI medido. O que não foi aparece como
+          "não medido", e não como zero: zero é uma nota ruim, ausência é a
+          ausência de informação, e confundir as duas faz o aluno corrigir
+          um erro que ele não cometeu.
+        */}
+        <div className="grid grid-cols-2 gap-2 text-center text-xs sm:grid-cols-4">
+          <Celula
+            rotulo="Afinação"
+            valor={medicao.afinacao.pontuacao}
+            detalhe={
+              medicao.afinacao.desvioCents !== null
+                ? `${medicao.afinacao.desvioCents > 0 ? '+' : ''}${medicao.afinacao.desvioCents} cents`
+                : null
+            }
+          />
+          <Celula
+            rotulo="Tempo"
+            valor={medicao.tempoRitmico.pontuacao}
+            detalhe={
+              medicao.tempoRitmico.desvioMedioMs !== null
+                ? `${medicao.tempoRitmico.desvioMedioMs} ms do pulso`
+                : null
+            }
+          />
+          <Celula
+            rotulo="Pulso"
+            valor={medicao.estabilidadeRitmica}
+            detalhe={
+              medicao.tempoRitmico.bpmMedido !== null
+                ? `${medicao.tempoRitmico.bpmMedido} BPM medidos`
+                : null
+            }
+          />
+          <Celula
+            rotulo="Altura firme"
+            valor={medicao.estabilidadeDeAltura}
+            detalhe={medicao.afinacao.notaDetectada}
+          />
+          <Celula rotulo="Sustentação" valor={medicao.sustentacao.pontuacao} detalhe={null} />
+          <Celula
+            rotulo="Resposta"
+            valor={medicao.acerto.pontuacao}
+            detalhe={
+              medicao.acerto.correto === null
+                ? null
+                : medicao.acerto.correto
+                  ? 'correta'
+                  : 'incorreta'
+            }
+          />
+          <div className="col-span-2 rounded border border-stone-200 bg-stone-50 p-2">
+            <span className="block font-mono text-[10px] uppercase text-stone-500">
+              Nota da tentativa
             </span>
-            <span className="text-[9px] text-stone-400 block font-mono">
-              {measurement.timing.deviationMs > 0 ? `+${measurement.timing.deviationMs}` : measurement.timing.deviationMs} ms
+            <span className="font-mono text-lg font-bold text-anil-800">
+              {medicao.notaGlobal !== null ? `${medicao.notaGlobal}/100` : '—'}
             </span>
-          </div>
-
-          <div className="p-2 bg-stone-50 rounded border border-stone-100">
-            <span className="text-[10px] text-stone-500 uppercase block font-mono">Ritmo / BPM</span>
-            <span className="font-bold font-mono text-stone-900">
-              {measurement.rhythm.stabilityScore}%
-            </span>
-            <span className="text-[9px] text-stone-400 block font-mono">
-              {measurement.tempo.recordedBpm} BPM
-            </span>
-          </div>
-
-          <div className="p-2 bg-stone-50 rounded border border-stone-100">
-            <span className="text-[10px] text-stone-500 uppercase block font-mono">Score Total</span>
-            <span className="font-bold font-mono text-anil-800">
-              {measurement.score}/1000
-            </span>
-            <span className="text-[9px] text-stone-400 block font-mono">
-              Precisão {measurement.accuracy}%
+            <span className="block font-mono text-[9px] text-stone-400">
+              {medicao.dimensoesMedidas.length > 0
+                ? `média de ${medicao.dimensoesMedidas.length} ${medicao.dimensoesMedidas.length === 1 ? 'dimensão medida' : 'dimensões medidas'}`
+                : 'nada foi medido'}
             </span>
           </div>
         </div>
+
+        {/* O que não pôde ser medido, e por quê. */}
+        {medicao.ausencias.length > 0 && (
+          <ul className="space-y-1 rounded-md border border-amber-200 bg-amber-50 p-2.5">
+            {medicao.ausencias.map((a, i) => (
+              <li key={i} className="text-[11px] leading-relaxed text-amber-900">
+                {a}
+              </li>
+            ))}
+          </ul>
+        )}
 
         {/* Action Buttons: Retry vs Full Feedback vs Next vs Finish */}
         <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-stone-200">
@@ -135,7 +172,7 @@ export const ImmediateFeedbackModal: React.FC<ImmediateFeedbackProps> = ({
               className="flex items-center gap-1.5 text-xs"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Tentar Novamente</span>
+              <span>{semMedicao ? 'Repetir a captura' : 'Tentar Novamente'}</span>
             </Button>
             <Button
               id="btn-open-full-feedback"
@@ -177,3 +214,31 @@ export const ImmediateFeedbackModal: React.FC<ImmediateFeedbackProps> = ({
     </div>
   );
 };
+
+/**
+ * Uma célula da grade.
+ *
+ * O traço no lugar do número é deliberado: preencher com zero faria o aluno
+ * enxergar uma nota baixa onde houve apenas falta de sinal.
+ */
+const Celula: React.FC<{
+  rotulo: string;
+  valor: number | null;
+  detalhe: string | null;
+}> = ({ rotulo, valor, detalhe }) => (
+  <div
+    className={`rounded border p-2 ${
+      valor === null ? 'border-stone-100 bg-stone-50/50' : 'border-stone-100 bg-stone-50'
+    }`}
+  >
+    <span className="block font-mono text-[10px] uppercase text-stone-500">{rotulo}</span>
+    <span
+      className={`font-mono font-bold ${valor === null ? 'text-stone-300' : 'text-stone-900'}`}
+    >
+      {valor === null ? '—' : valor}
+    </span>
+    <span className="block font-mono text-[9px] text-stone-400">
+      {valor === null ? 'não medido' : (detalhe ?? '')}
+    </span>
+  </div>
+);

@@ -12,17 +12,20 @@ import {
 import { StreakTracker } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
+import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
 
 export const StreakScreen: React.FC = () => {
+  const { userId } = useUsuarioAtual();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState<StreakTracker | null>(null);
 
   useEffect(() => {
     async function loadStreak() {
+      if (!userId) return;
       try {
         setLoading(true);
-        const data = await practiceService.getStreak('usr_founder_1');
+        const data = await practiceService.getStreak(userId);
         setStreak(data);
       } catch (err) {
         console.error('Failed to load streak', err);

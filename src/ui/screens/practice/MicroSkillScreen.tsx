@@ -12,8 +12,10 @@ import {
 import { MicroSkill, Skill, Exercise } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
+import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
 
 export const MicroSkillScreen: React.FC = () => {
+  const { userId } = useUsuarioAtual();
   const router = useRouter();
   const params = useRouteParams();
   const microId = params.id;
@@ -51,9 +53,10 @@ export const MicroSkillScreen: React.FC = () => {
   }, [microId]);
 
   const handleStartExercise = async (ex: Exercise) => {
+    if (!userId) return;
     try {
       const session = await practiceService.startSession(
-        'usr_founder_1',
+        userId,
         ex.modality,
         ex.id,
         parentSkill?.id

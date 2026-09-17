@@ -13,17 +13,20 @@ import {
 import { DailyGoal } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
+import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
 
 export const DailyGoalScreen: React.FC = () => {
+  const { userId } = useUsuarioAtual();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [dailyGoal, setDailyGoal] = useState<DailyGoal | null>(null);
 
   useEffect(() => {
     async function loadGoal() {
+      if (!userId) return;
       try {
         setLoading(true);
-        const goal = await practiceService.getDailyGoal('usr_founder_1');
+        const goal = await practiceService.getDailyGoal(userId);
         setDailyGoal(goal);
       } catch (err) {
         console.error('Failed to load daily goal', err);
@@ -42,10 +45,11 @@ export const DailyGoalScreen: React.FC = () => {
   ];
 
   const handleSelectTier = async (tier: typeof goalTiers[0]) => {
+    if (!userId) return;
     if (!dailyGoal) return;
     try {
       const updated = await practiceService.updateDailyGoal(
-        'usr_founder_1',
+        userId,
         tier.minutes,
         tier.xp,
         tier.exercises

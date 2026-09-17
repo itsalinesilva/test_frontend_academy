@@ -11,8 +11,10 @@ import {
 import { Skill, MasteryRecord } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
+import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
 
 export const MasteryScreen: React.FC = () => {
+  const { userId } = useUsuarioAtual();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -20,11 +22,12 @@ export const MasteryScreen: React.FC = () => {
 
   useEffect(() => {
     async function loadMastery() {
+      if (!userId) return;
       try {
         setLoading(true);
         const [allSkills, overview] = await Promise.all([
           practiceService.listSkills(),
-          practiceService.getMasteryOverview('usr_founder_1'),
+          practiceService.getMasteryOverview(userId),
         ]);
         setSkills(allSkills);
         setMasteries(overview.masteries);

@@ -29,8 +29,13 @@ import { practiceService } from '../../../services/application/practice.service'
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
 import { ImmediateFeedbackModal } from '../../components/practice/ImmediateFeedbackModal';
 import { useRouter, useRouteParams } from '../../navigation/router';
+import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { useCapturaAcustica } from '../../hooks/useCapturaAcustica';
+import { PainelDeCaptura } from '../../components/practice/PainelDeCaptura';
 
 export const ExerciseSessionScreen: React.FC = () => {
+  const { userId } = useUsuarioAtual();
+  const captura = useCapturaAcustica();
   const router = useRouter();
   const params = useRouteParams();
   const sessionId = params.id || '';
@@ -291,6 +296,7 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   // Submit attempt for evaluation across all 10 modalities
   const handleSubmitAttempt = async (customResponse?: string) => {
+    if (!userId) return;
     if (!exercise) return;
     try {
       let responseToEvaluate = customResponse;
@@ -331,20 +337,31 @@ export const ExerciseSessionScreen: React.FC = () => {
         }
       }
 
-      const offsetMs = timingOffsets.length > 0
-        ? Math.round(timingOffsets.reduce((a, b) => a + Math.abs(b), 0) / timingOffsets.length)
-        : Math.floor(Math.random() * 8) - 4;
+      // Sinal REAL da execucao.
+      //
+      // Se o microfone esteve aberto, vem dele: frequencias detectadas pelo
+      // motor de autocorrelacao e instantes dos ataques. Caso contrario, vem
+      // do que a pessoa tocou no teclado da tela — os ataques sao os toques.
+      //
+      // O que nao existir fica de fora. Antes, um desvio de tempo ausente
+      // virava `Math.random() * 8 - 4`: um numero entre -4 e +4 ms, sempre
+      // excelente, que ninguem produziu.
+      const sinalCapturado = captura.estado === 'capturando' ? captura.finalizar() : null;
+
+      const sinal = sinalCapturado ?? {
+        ataquesMs: timingOffsets.length > 0 ? [...timingOffsets] : undefined,
+      };
 
       const attempt = await practiceService.evaluateAttempt({
         exerciseId: exercise.id,
-        userId: 'usr_founder_1',
+        userId: userId,
         sessionId: session?.id,
         givenResponse: responseToEvaluate,
-        detectedPitch: detectedVoicePitch || playedNotes[playedNotes.length - 1] || 'C4',
-        targetPitch: exercise.targetPitch || 'C4',
-        timingDeviationMs: offsetMs,
-        targetBpm: bpm,
-        recordedBpm: bpm,
+        sinal: {
+          ...sinal,
+          notaAlvo: exercise.targetPitch ?? undefined,
+          bpmAlvo: bpm,
+        },
       });
 
       setLatestAttempt(attempt);
@@ -357,10 +374,11 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   // Complete session & create evidence
   const handleFinishSession = async () => {
+    if (!userId) return;
     if (!session) return;
     try {
       if (metronomeIntervalRef.current) clearInterval(metronomeIntervalRef.current);
-      const result = await practiceService.finishSession(session.id, 'usr_founder_1');
+      const result = await practiceService.finishSession(session.id, userId);
       router.navigate(`/practice/result/${result.id}`);
     } catch (e) {
       console.error('Failed to finish session', e);
@@ -468,6 +486,19 @@ export const ExerciseSessionScreen: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {/*
+        Captura acustica. Fica ACIMA do seletor de modalidade, antes de
+        qualquer controle de execucao, porque e a condicao para que a
+        tentativa seja medida — e nao um extra opcional escondido no rodape.
+      */}
+      <PainelDeCaptura
+        estado={captura.estado}
+        leitura={captura.leitura}
+        notaAlvo={exercise.targetPitch ?? undefined}
+        onIniciar={() => void captura.iniciar()}
+        onCancelar={captura.cancelar}
+      />
 
       {/* 10 Modality Selector Tabs */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-stone-200">

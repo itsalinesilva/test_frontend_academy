@@ -29,24 +29,27 @@ import {
 } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
+import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
 
 export const PracticeHomeScreen: React.FC = () => {
+  const { userId } = useUsuarioAtual();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [trees, setTrees] = useState<SkillTree[]>([]);
   const [streak, setStreak] = useState<StreakTracker | null>(null);
   const [dailyGoal, setDailyGoal] = useState<DailyGoal | null>(null);
   const [leaderboard, setLeaderboard] = useState<RankingLeaderboardEntry[]>([]);
-  const currentUserId = 'usr_founder_1';
+  const currentUserId = userId;
 
   useEffect(() => {
     async function loadPracticeHome() {
+      if (!userId) return;
       try {
         setLoading(true);
         const [treesData, streakData, goalData, rankData] = await Promise.all([
           practiceService.listSkillTrees(),
-          practiceService.getStreak(currentUserId),
-          practiceService.getDailyGoal(currentUserId),
+          practiceService.getStreak(userId),
+          practiceService.getDailyGoal(userId),
           practiceService.getLeaderboard(),
         ]);
         setTrees(treesData);
@@ -146,10 +149,12 @@ export const PracticeHomeScreen: React.FC = () => {
   ];
 
   const handleStartTraining = async (modality: PracticeModality) => {
+    if (!userId) return;
+    if (!userId) return;
     try {
       const exercises = await practiceService.listExercises();
       const match = exercises.find((e) => e.modality === modality) || exercises[0];
-      const session = await practiceService.startSession(currentUserId, modality, match.id, match.skillId);
+      const session = await practiceService.startSession(userId, modality, match.id, match.skillId);
       router.navigate(`/practice/session/${session.id}`);
     } catch (e) {
       console.error('Failed to start session', e);

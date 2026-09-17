@@ -16,6 +16,7 @@ import {
 import { PracticeResult } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
+import { PainelDeMedicao } from '../../components/practice/PainelDeMedicao';
 
 export const PracticeResultScreen: React.FC = () => {
   const router = useRouter();
@@ -60,7 +61,7 @@ export const PracticeResultScreen: React.FC = () => {
     );
   }
 
-  const { measurement, masteryAdvancement } = result;
+  const { medicao, masteryAdvancement } = result;
 
   return (
     <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
@@ -167,69 +168,12 @@ export const PracticeResultScreen: React.FC = () => {
           <span>Medições Acústicas & Telemetria</span>
         </h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Afinação</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.pitch.centsAccuracy}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">±{Math.abs(measurement.pitch.deviationCents)} cents</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Timing</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.timing.timingScore}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">{measurement.timing.deviationMs} ms</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Ritmo</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.rhythm.stabilityScore}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Estabilidade</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Tempo</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.tempo.recordedBpm}</span>
-            <span className="text-[10px] font-mono text-stone-500 block">BPM</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Acurácia</span>
-            <span className="font-mono text-lg font-bold text-red-900">{measurement.accuracy}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Global</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Entonação</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.intonation}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Pureza</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Duração</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.duration.recordedSeconds}s</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Sustain</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Consistência</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.consistency}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Linearidade</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Dificuldade</span>
-            <span className="font-mono text-sm font-bold text-stone-800 capitalize mt-1 block">
-              {measurement.difficulty}
-            </span>
-            <span className="text-[10px] font-mono text-stone-400 block">Grau</span>
-          </div>
-
-          <div className="p-3 bg-red-50 rounded-xl border border-red-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-anil-800 block font-bold">Score</span>
-            <span className="font-mono text-lg font-bold text-red-900">{measurement.score}</span>
-            <span className="text-[10px] font-mono text-red-700 block">/1000</span>
-          </div>
-        </div>
+        {/*
+          Aqui havia dez celulas fixas, todas sempre preenchidas — inclusive
+          quando nao havia o que medir. O painel unico mostra o que foi medido
+          e diz, com a razao, o que nao foi.
+        */}
+        <PainelDeMedicao medicao={medicao} variante="completo" id="resultado-medicao" />
       </section>
 
       {/* Recommendations & Feedback points */}

@@ -12,17 +12,20 @@ import {
 import { PracticeResult } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
+import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
 
 export const PracticeHistoryScreen: React.FC = () => {
+  const { userId } = useUsuarioAtual();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState<PracticeResult[]>([]);
 
   useEffect(() => {
     async function loadHistory() {
+      if (!userId) return;
       try {
         setLoading(true);
-        const results = await practiceService.getPracticeHistory('usr_founder_1');
+        const results = await practiceService.getPracticeHistory(userId);
         setHistory(results.reverse());
       } catch (err) {
         console.error('Failed to load history', err);
