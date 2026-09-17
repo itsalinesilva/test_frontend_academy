@@ -235,10 +235,11 @@ export const OverviewScreen: React.FC = () => {
           <Card variant="muted" padding="md" className="space-y-1.5 border-stone-200">
             <div className="flex items-center gap-1.5 text-xs font-bold text-stone-900">
               <ShieldCheck className="w-4 h-4 text-red-800" />
-              <span>Proveniência Musicológica</span>
+              <span>Conteúdo Autoral</span>
             </div>
             <p className="text-xs text-stone-600 leading-relaxed">
-              Todo o repertório e análises são baseados em tratados primários auditados de Tovey, Fux, Piston e Grout.
+              Todo o material didático é escrito e revisado pela Academia, com repertório de
+              domínio público e execuções próprias.
             </p>
           </Card>
 

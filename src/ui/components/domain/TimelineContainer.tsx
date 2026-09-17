@@ -66,7 +66,7 @@ export const TimelineContainer: React.FC<TimelineContainerProps> = ({
       isMuted: false,
       isSolo: false,
       volumePercent: 90,
-      blocks: [{ startBar: 1, durationBars: 6, label: 'Harmonia Edinburgh L1', type: 'midi' }],
+      blocks: [{ startBar: 1, durationBars: 6, label: 'Harmonia I', type: 'midi' }],
     },
     {
       id: 't-3',

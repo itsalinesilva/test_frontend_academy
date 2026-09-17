@@ -241,7 +241,6 @@ export const ProgramDetailScreen: React.FC = () => {
               Proveniência Canônica
             </span>
             <p className="text-stone-700 font-serif leading-snug">
-              {program?.provenanceRef}
             </p>
           </Card>
         </div>

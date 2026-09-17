@@ -42,7 +42,6 @@ export type OfficialLinkType =
   | 'orcid'
   | 'youtube'
   | 'spotify'
-  | 'imslp'
   | 'github'
   | 'other';
 

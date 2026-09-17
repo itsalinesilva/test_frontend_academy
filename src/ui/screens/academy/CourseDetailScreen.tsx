@@ -23,7 +23,6 @@ import {
   Play,
   FileText,
   UserCheck,
-  ShieldCheck,
   Download,
   HelpCircle,
   ArrowRight,
@@ -34,7 +33,6 @@ import {
   Music,
   Activity,
   Sparkles,
-  BookMarked,
 } from 'lucide-react';
 
 export const CourseDetailScreen: React.FC = () => {
@@ -533,28 +531,6 @@ export const CourseDetailScreen: React.FC = () => {
             </div>
 
             {/* 5. Referências Bibliográficas & Citações Canônicas */}
-            <Card variant="default" padding="lg" className="space-y-3">
-              <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-                <BookMarked className="w-4 h-4 text-red-800" />
-                Referências Bibliográficas & Citações
-              </h3>
-              <p className="text-xs text-stone-600">
-                Fontes primárias, tratados teóricos e publicações canônicas que embasam esta disciplina:
-              </p>
-              <div className="space-y-2 pt-1 text-xs">
-                {course?.references && course.references.length > 0 ? (
-                  course.references.map((ref, idx) => (
-                    <div key={idx} className="p-2.5 bg-stone-50 border border-stone-200 rounded font-serif text-stone-800">
-                      • <strong>{ref.author}</strong> ({ref.year || 's.d.'}): <em>{ref.title}</em>. {ref.citation}
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-2.5 bg-stone-50 border border-stone-200 rounded font-serif text-stone-800">
-                    • {course?.provenance.citation || 'Fontes canônicas da literatura musical europeia e teoria tonal clássica.'}
-                  </div>
-                )}
-              </div>
-            </Card>
           </div>
       </PageLayout.Main>
 
@@ -817,18 +793,6 @@ export const CourseDetailScreen: React.FC = () => {
             </Card>
 
             {/* Proveniência */}
-            <Card variant="default" padding="md" className="space-y-2 text-xs">
-              <div className="flex items-center gap-1.5 text-stone-500 font-mono uppercase font-semibold text-[10px]">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Proveniência Acadêmica</span>
-              </div>
-              <p className="text-stone-800 font-serif font-medium">
-                {course?.provenance.source}
-              </p>
-              <p className="text-stone-600 text-[11px] leading-relaxed">
-                {course?.provenance.citation}
-              </p>
-            </Card>
           </div>
       </PageLayout.Aside>
     </PageLayout>

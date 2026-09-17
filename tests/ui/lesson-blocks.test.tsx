@@ -117,7 +117,6 @@ describe('CHECKPOINT — verificação no meio do texto', () => {
     options: ['C-D', 'E-F', 'G-A', 'D-E'],
     correctIndex: 1,
     explanation: 'E-F e B-C são os semitons da escala natural.',
-    sourceRef: 'Med, Livro de Exercícios, cap. 2',
   };
 
   it('não revela a resposta antes da escolha', () => {
@@ -125,15 +124,17 @@ describe('CHECKPOINT — verificação no meio do texto', () => {
     expect(screen.queryByText(/semitons da escala natural/i)).not.toBeInTheDocument();
   });
 
-  it('confirma o acerto e mostra explicação com a fonte', async () => {
+  it('confirma o acerto e mostra a explicação', async () => {
     render(<LessonBlockRenderer block={block} />);
     await userEvent.click(screen.getByRole('button', { name: 'E-F' }));
     expect(screen.getByText('Correto.')).toBeInTheDocument();
     expect(screen.getByText(/semitons da escala natural/i)).toBeInTheDocument();
-    expect(screen.getByText(/Livro de Exercícios/)).toBeInTheDocument();
+    // A explicação é autoral. Não há citação de fonte a exibir — o campo
+    // `sourceRef` foi removido do domínio junto com toda a bibliografia.
+    expect(screen.queryByText(/Fonte:/)).not.toBeInTheDocument();
   });
 
-  it('no erro, explica sem humilhar e ainda dá a fonte', async () => {
+  it('no erro, explica sem humilhar', async () => {
     render(<LessonBlockRenderer block={block} />);
     await userEvent.click(screen.getByRole('button', { name: 'C-D' }));
     expect(screen.getByText('Ainda não.')).toBeInTheDocument();

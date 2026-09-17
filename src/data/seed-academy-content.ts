@@ -127,7 +127,6 @@ export const SEED_PROGRAMS: Program[] = [
     targetAudience: 'Estudantes de música, instrumentistas, cantores, professores e entusiastas formais.',
     certificateTitle: 'Certificado de Conclusão do Programa Integrado em Gramática Musical',
     isPublished: true,
-    provenanceRef: 'Curadoria conjunta Universidade de Edimburgo (Open Courseware) + Bohumil Med (Teoria da Música)',
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
   },
@@ -150,7 +149,6 @@ export const SEED_PROGRAMS: Program[] = [
     targetAudience: 'Compositores, arranjadores, regentes e instrumentistas de concerto.',
     certificateTitle: 'Diploma Acadêmico em Contraponto Canônico & Análise Polifônica',
     isPublished: true,
-    provenanceRef: 'Tratados de J.J. Fux (Gradus ad Parnassum) e Kent Kennan (Counterpoint)',
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
   },
@@ -278,26 +276,6 @@ export const SEED_COURSES: AcademyCourse[] = [
         sizeOrRef: 'FLAC 24-bit / 48kHz Estéreo',
       },
     ],
-    references: [
-      {
-        title: 'Teoria da Música (Edição Canônica)',
-        author: 'Bohumil Med',
-        year: '1996',
-        citation: 'Brasília: Musimed, 4ª ed. Capítulos 1 a 4 (Notação, Intervalos e Escalas).',
-      },
-      {
-        title: 'Fundamentals of Music Theory',
-        author: 'University of Edinburgh (Lectures 1-2)',
-        year: '2021',
-        citation: 'Open Courseware Library. Open educational resource on pitch and scales.',
-      },
-      {
-        title: 'Harmonielehre (Tratado de Harmonia)',
-        author: 'Arnold Schoenberg',
-        year: '1922',
-        citation: 'Universal Edition, Viena. Fundamentos acústicos dos harmônicos.',
-      },
-    ],
     curriculumSummary:
       '2 Módulos Acadêmicos, 4 Lições Interativas com Áudio e Partitura, 4 Atividades Avaliadas, 1 Quiz Rápido e 1 Exame Final.',
     assessmentPolicy:
@@ -331,13 +309,6 @@ export const SEED_COURSES: AcademyCourse[] = [
       title: 'Escala de Dó Maior e Encadeamento I - IV - V (Edição Canônica Urtext)',
       composer: 'Academia Musical Digital',
       clef: 'treble',
-    },
-    provenance: {
-      source:
-        'University of Edinburgh - Fundamentals of Music Theory (Lectures 1-2) & Bohumil Med (Teoria da Música)',
-      citation: 'Lectures 1 & 2: Musical Notes, Octaves, Major Scales, Primary Chords. Open Courseware.',
-      curatorNotes:
-        'Conteúdo derivado conceitualmente com rigor musicológico e integridade pedagógica auditada.',
     },
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
@@ -392,14 +363,6 @@ export const SEED_COURSES: AcademyCourse[] = [
         sizeOrRef: '950 KB',
       },
     ],
-    references: [
-      {
-        title: 'Gramática da Música e Métrica Musical',
-        author: 'Osvaldo Lacerda',
-        year: '1976',
-        citation: 'São Paulo: Ricordi Brasileira. Seções de ritmo e métrica.',
-      },
-    ],
     curriculumSummary: '2 Módulos Acadêmicos, 4 Lições, 4 Atividades, 1 Quiz e 1 Exame Final.',
     assessmentPolicy: 'Nota mínima de 75% na Avaliação Final.',
     certificatePolicy: 'Certificado com verificação institucional e hash SHA-256.',
@@ -430,11 +393,6 @@ export const SEED_COURSES: AcademyCourse[] = [
       title: 'Cadências Autênticas e Plagais nos Corais de J.S. Bach',
       composer: 'J.S. Bach',
       clef: 'treble',
-    },
-    provenance: {
-      source: 'University of Edinburgh - Fundamentals of Music Theory (Lectures 3-5)',
-      citation: 'Lectures 3 to 5: Rhythmic Duration, Tuplets, Meter, Cadences & Inversions.',
-      curatorNotes: 'Adequação formal de proveniência respeitando a separação entre conteúdo canônico e apresentação.',
     },
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
@@ -481,20 +439,6 @@ export const SEED_COURSES: AcademyCourse[] = [
       'Análise crítica da independência textural em peças vocais e instrumentais.',
     ],
     materials: [],
-    references: [
-      {
-        title: 'Gradus ad Parnassum (O Estudo do Contraponto)',
-        author: 'Johann Joseph Fux',
-        year: '1725',
-        citation: 'Tradução para o português por José Antônio de Almeida Prado.',
-      },
-      {
-        title: 'The Style of Palestrina and the Dissonance',
-        author: 'Knud Jeppesen',
-        year: '1946',
-        citation: 'Oxford University Press. Regras rigorosas da polifonia renascentista.',
-      },
-    ],
     curriculumSummary: '2 Módulos Acadêmicos, 4 Lições Especializadas e 1 Projeto Final de Composição.',
     assessmentPolicy: 'Nota mínima de 80% em exercícios contrapontísticos com validação de regras.',
     certificatePolicy: 'Certificado avançado assinado e auditado.',
@@ -524,11 +468,6 @@ export const SEED_COURSES: AcademyCourse[] = [
       title: 'Cantus Firmus em Modo Dórico e Contraponto Modelo',
       composer: 'J.J. Fux (Edição Canônica)',
       clef: 'treble',
-    },
-    provenance: {
-      source: 'Johann Joseph Fux (Gradus ad Parnassum) & Knud Jeppesen (The Style of Palestrina)',
-      citation: 'Fux, J.J. Gradus ad Parnassum (1725). Tradução e anotações canônicas.',
-      curatorNotes: 'Exercícios estritos de condução com validação algorítmica.',
     },
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
@@ -598,7 +537,6 @@ export const SEED_LESSONS: AcademyLesson[] = [
       'Mapear a notação alfabética internacional (A a G) e sua correlação histórica com a afinação em Lá4 (440 Hz).',
     ],
     skills: ['Notação Alfabética', 'Leitura Básica de Alturas', 'Teoria Acústica'],
-    provenanceRef: 'University of Edinburgh Lecture 1 (02_01. Musical Notes) & Med, Bohumil (Cap. 1: Som e Notação)',
     activityIds: ['act_fomt_101_1_notacao'],
     variants: {
       TRADITIONAL: {
@@ -667,7 +605,6 @@ Na ordenação que ascende a partir de Dó (C), obtemos a série diatônica: **C
                 correctIndex: 1,
                 explanation:
                   'A4 — o Lá da quarta oitava — é fixado em 440 Hz pela ISO 16, e serve de referência para a afinação de todo o conjunto.',
-                sourceRef: 'Med, Bohumil. Teoria da Música, cap. 1',
               },
             ],
             callout: {
@@ -727,7 +664,6 @@ Essa assimetria é o que permite ao ouvido reconhecer a tônica e se orientar to
                 correctIndex: 1,
                 explanation:
                   'E-F e B-C são os únicos semitons da escala natural. No teclado, são os pares sem tecla preta entre si.',
-                sourceRef: 'Med, Bohumil. Livro de Exercícios, cap. 2',
               },
             ],
             contentMarkdown: `Nem todas as notas adjacentes na escala natural guardam a mesma distância intervalar entre si:
@@ -778,20 +714,6 @@ Essa distribuição assimétrica é o segredo acústico que permite ao ouvido hu
             altText: 'Ilustração histórica de Pitágoras medindo comprimentos de corda proporcionais no monocórdio.',
             historicalContext: 'Tratado de Teoria Musical, edição fac-similar da biblioteca de Leipzig (1738).',
             caption: 'Pitagóricos demonstrando que a harmonia do universo obedece a proporções numéricas inteiras.',
-          },
-        ],
-        references: [
-          {
-            title: 'Teoria da Música (4ª Edição Revista e Ampliada)',
-            author: 'Bohumil Med',
-            chapterOrLecture: 'Capítulo 1: O Som e sua Representação Gráfica (págs. 11–24)',
-            sourceType: 'book',
-          },
-          {
-            title: 'Fundamentals of Music Theory',
-            author: 'University of Edinburgh',
-            chapterOrLecture: 'Lecture 1: Musical Notes & Staff Notation',
-            sourceType: 'open_courseware',
           },
         ],
       },
@@ -890,14 +812,6 @@ Todos os outros precisam dar um pulinho maior!`,
             caption: 'A escada encantada das 7 notas musicais.',
           },
         ],
-        references: [
-          {
-            title: 'Método de Iniciação Musical para Crianças',
-            author: 'Curadoria Pedagógica Infantil',
-            chapterOrLecture: 'Aventuras na Terra das Alturas',
-            sourceType: 'book',
-          },
-        ],
       },
     },
   },
@@ -913,7 +827,6 @@ Todos os outros precisam dar um pulinho maior!`,
       'Identificar o fenômeno da equivalência de classe de altura (Pitch Class Equivalence).',
     ],
     skills: ['Oitavas Acústicas', 'Equivalência de Alturas', 'Teoria de Frequências'],
-    provenanceRef: 'University of Edinburgh Lecture 1 (03_02. Octaves) & Piston, Walter (Harmony)',
     activityIds: ['act_fomt_101_2_oitava'],
     variants: {
       TRADITIONAL: {
@@ -938,7 +851,7 @@ A razão entre as duas frequências é de **2:1**. É o intervalo de **oitava** 
               { kind: 'AUDIO_EXAMPLE', id: 'b_l2s1_cmp', title: 'Oitava contra quinta', description: 'Compare: a oitava funde-se quase num som só; a quinta mantém duas vozes distintas.', notes: ['C4','G4'], playMode: 'CHORD' },
               { kind: 'KEYBOARD', id: 'b_l2s1_kb', title: 'A distância de oitava no teclado', highlightNotes: ['C4','C5'], startOctave: 4, octaves: 2 },
               { kind: 'VIDEO_PLACEHOLDER', id: 'b_l2s1_video', topic: 'a demonstração no monocórdio' },
-              { kind: 'CHECKPOINT', id: 'b_l2s1_check', question: 'Qual a razão de frequências entre duas notas separadas por uma oitava?', options: ['3:2', '2:1', '4:3', '5:4'], correctIndex: 1, explanation: 'A oitava corresponde à razão 2:1 — a nota superior vibra exatamente ao dobro da frequência da inferior. A razão 3:2 corresponde à quinta justa.', sourceRef: 'Med, Bohumil. Teoria da Música, cap. 1' },
+              { kind: 'CHECKPOINT', id: 'b_l2s1_check', question: 'Qual a razão de frequências entre duas notas separadas por uma oitava?', options: ['3:2', '2:1', '4:3', '5:4'], correctIndex: 1, explanation: 'A oitava corresponde à razão 2:1 — a nota superior vibra exatamente ao dobro da frequência da inferior. A razão 3:2 corresponde à quinta justa.' },
             ],
             contentMarkdown: `Pitágoras descobriu no século VI a.C. que, ao pressionar uma corda elástica exatamente no seu ponto médio (divisão de 1/2):
 - O comprimento vibrante é reduzido à metade (1/2).
@@ -978,14 +891,6 @@ Essa propriedade é chamada na teoria musical contemporânea de **Equivalência 
           caption: 'Oitava justa com 12 semitons de distância cromática.',
         },
         illustrations: [],
-        references: [
-          {
-            title: 'A History of Western Music',
-            author: 'J. Peter Burkholder, Donald J. Grout, Claude V. Palisca',
-            chapterOrLecture: 'Chapter 1: The Curvature of Musical Time and Pythagoras',
-            sourceType: 'book',
-          },
-        ],
       },
       KIDS: {
         title: 'Lição 2: O Salto do Gigante e o Bebê Passarinho (A Oitava!)',
@@ -1025,7 +930,6 @@ Eles se abraçam e o som fica lindo e brilhante, como duas estrelas juntas no c�
           },
         ],
         illustrations: [],
-        references: [],
       },
     },
   },
@@ -1041,7 +945,6 @@ Eles se abraçam e o som fica lindo e brilhante, como duas estrelas juntas no c�
       'Construir a escala maior a partir de qualquer tônica através de acidentes (sustenidos e bemóis).',
     ],
     skills: ['Construção de Escala Maior', 'Acidentes Musicais', 'Tonalidade Maior'],
-    provenanceRef: 'University of Edinburgh Lecture 1 (04_03. Major Scales) & Med (Cap. 4: Escalas Diatônicas)',
     activityIds: ['act_fomt_102_1_escala'],
     variants: {
       TRADITIONAL: {
@@ -1066,7 +969,7 @@ Eles se abraçam e o som fica lindo e brilhante, como duas estrelas juntas no c�
               { kind: 'DIAGRAM', id: 'b_l3s1_ciclo', title: 'O ciclo das quintas', diagram: 'CIRCLE_OF_FIFTHS', highlight: ['C','G'], caption: 'Cada passo no sentido horário acrescenta um sustenido à armadura.' },
               { kind: 'SCALE_LAB', id: 'b_l3s1_menor', title: 'Compare: Lá menor natural', tonic: 'A', mode: 'NATURAL_MINOR' },
               { kind: 'VIDEO_PLACEHOLDER', id: 'b_l3s1_video', topic: 'a construção da escala ao piano' },
-              { kind: 'CHECKPOINT', id: 'b_l3s1_check', question: 'Onde estão os dois semitons na fórmula da escala maior?', options: ['Entre o 1º-2º e o 5º-6º graus', 'Entre o 3º-4º e o 7º-8º graus', 'Entre o 2º-3º e o 6º-7º graus', 'Não há semitons na escala maior'], correctIndex: 1, explanation: 'Os semitons da escala maior ocorrem sempre entre o 3º e o 4º graus e entre o 7º e o 8º. É essa posição fixa que define o modo maior.', sourceRef: 'Med, Bohumil. Teoria da Música, cap. 4' },
+              { kind: 'CHECKPOINT', id: 'b_l3s1_check', question: 'Onde estão os dois semitons na fórmula da escala maior?', options: ['Entre o 1º-2º e o 5º-6º graus', 'Entre o 3º-4º e o 7º-8º graus', 'Entre o 2º-3º e o 6º-7º graus', 'Não há semitons na escala maior'], correctIndex: 1, explanation: 'Os semitons da escala maior ocorrem sempre entre o 3º e o 4º graus e entre o 7º e o 8º. É essa posição fixa que define o modo maior.' },
             ],
             contentMarkdown: `Toda e qualquer escala maior obedece impreterivelmente à seguinte sequência de 7 passos:
 1. Da tônica (I) para o segundo grau (II): **Tom**
@@ -1106,14 +1009,6 @@ O **Fá sustenido (F#)** torna-se indispensável para manter a distância de tom
           caption: 'Armadura com 1 sustenido (F# na 5ª linha da clave de Sol).',
         },
         illustrations: [],
-        references: [
-          {
-            title: 'Harmonia',
-            author: 'Walter Piston',
-            chapterOrLecture: 'Capítulo 1: A Escala Maior e Graus Tonais',
-            sourceType: 'book',
-          },
-        ],
       },
       KIDS: {
         title: 'Lição 3: O Caminho Mágico dos Pulos Grandes e Pequeninos!',
@@ -1144,7 +1039,6 @@ Se você cantar essa canção, todos os bichinhos da floresta vão sorrir junto 
         ],
         audioSamples: [],
         illustrations: [],
-        references: [],
       },
     },
   },
@@ -1160,7 +1054,6 @@ Se você cantar essa canção, todos os bichinhos da floresta vão sorrir junto 
       'Reconhecer auditiva e teoricamente as três tríades primárias: Tônica (I), Subdominante (IV) e Dominante (V).',
     ],
     skills: ['Tríades Primárias', 'Harmonia Funcional', 'Funções Tônica-Subdominante-Dominante'],
-    provenanceRef: 'University of Edinburgh Lecture 1 (05_04 & 06_05. Primary Chords) & Kostka & Payne (Tonal Harmony)',
     activityIds: ['act_fomt_102_2_triades'],
     variants: {
       TRADITIONAL: {
@@ -1187,7 +1080,7 @@ Sobre os graus **I**, **IV** e **V** da escala maior formam-se as três tríades
               { kind: 'AUDIO_EXAMPLE', id: 'b_l4s1_cad', title: 'A cadência I - IV - V - I', description: 'A progressão fundamental da música tonal, arpejada.', notes: ['C4','E4','G4','F4','A4','C5','G4','B4','D5','C4','E4','G4'], playMode: 'SEQUENCE', bpm: 120 },
               { kind: 'CALLOUT', id: 'b_l4s1_call', type: 'historical', title: 'A força da dominante', text: 'A tríade do quinto grau contém a sensível — o sétimo grau da escala, a um semitom da tônica. É essa tensão que produz a sensação de que a música precisa voltar ao repouso, e que organiza o discurso tonal de Bach a Brahms.' },
               { kind: 'VIDEO_PLACEHOLDER', id: 'b_l4s1_video', topic: 'a análise da cadência em repertório' },
-              { kind: 'CHECKPOINT', id: 'b_l4s1_check', question: 'Qual tríade primária contém a sensível e cria a necessidade de resolução?', options: ['A tônica (I)', 'A subdominante (IV)', 'A dominante (V)', 'Nenhuma delas'], correctIndex: 2, explanation: 'A dominante (V) contém o sétimo grau da escala — a sensível —, situado a um semitom da tônica. Essa proximidade gera a tensão que pede resolução em I.', sourceRef: 'Med, Bohumil. Teoria da Música, cap. 9' },
+              { kind: 'CHECKPOINT', id: 'b_l4s1_check', question: 'Qual tríade primária contém a sensível e cria a necessidade de resolução?', options: ['A tônica (I)', 'A subdominante (IV)', 'A dominante (V)', 'Nenhuma delas'], correctIndex: 2, explanation: 'A dominante (V) contém o sétimo grau da escala — a sensível —, situado a um semitom da tônica. Essa proximidade gera a tensão que pede resolução em I.' },
             ],
             contentMarkdown: `Uma tríade fundamental é constituída por:
 - **Fundamental (Raiz):** A nota que dá nome ao acorde e define seu centro acústico.
@@ -1233,14 +1126,6 @@ Sobre a escala diatônica de Dó Maior, destacam-se três tríades maiores perfe
           caption: 'Empilhamento vertical das notas nos graus I, IV, V e I.',
         },
         illustrations: [],
-        references: [
-          {
-            title: 'Tonal Harmony with an Introduction to Twentieth-Century Music',
-            author: 'Stefan Kostka & Dorothy Payne',
-            chapterOrLecture: 'Chapter 3: Triads and Seventh Chords',
-            sourceType: 'book',
-          },
-        ],
       },
       KIDS: {
         title: 'Lição 4: Os Três Super-Heróis da Orquestra (Rei, Cavaleiro e Mago!)',
@@ -1268,7 +1153,6 @@ O **Rei Dó** é quem manda e deixa tudo calminho. O **Cavaleiro Fá** sai em av
         ],
         audioSamples: [],
         illustrations: [],
-        references: [],
       },
     },
   },

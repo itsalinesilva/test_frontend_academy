@@ -11,7 +11,15 @@ import { UserRole } from '../../../domain/types';
 export interface ProfileCardProps {
   id: string; // Mandatory ID
   name: string;
-  email: string;
+  /**
+   * E-mail. So aparece se o proprio dono do perfil tiver optado por expor —
+   * a decisao e dele, nao do componente. Por isso e opcional e nao tem
+   * valor padrao: um card montado sem passar `email` simplesmente nao
+   * mostra e-mail nenhum.
+   */
+  email?: string;
+  /** O dono marcou o e-mail como publico nas configuracoes de privacidade. */
+  isEmailPublic?: boolean;
   role: UserRole;
   bio?: string;
   avatarSrc?: string;
@@ -35,19 +43,17 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   id,
   name,
   email,
+  isEmailPublic = false,
   role,
-  bio = 'Estudante dedicado de teoria musical e performance acústica.',
+  // Sem valores de fabrica. Os padroes anteriores inventavam uma biografia,
+  // duas credenciais de uma instituicao externa e estatisticas (3 cursos,
+  // 42 horas, 7 itens) para QUALQUER pessoa cujo card fosse montado sem
+  // dados — inclusive perfis vazios de verdade.
+  bio,
   avatarSrc,
   isOwner = false,
-  credentials = [
-    { id: 'c1', title: 'Fundamentos de Teoria', institution: 'University of Edinburgh', level: 'L1-5' },
-    { id: 'c2', title: 'Harmonia Funcional I', institution: 'Academia Musical Digital', level: 'Intermediário' },
-  ],
-  stats = {
-    coursesCompleted: 3,
-    practiceHours: 42,
-    portfolioItems: 7,
-  },
+  credentials = [],
+  stats = { coursesCompleted: 0, practiceHours: 0, portfolioItems: 0 },
   onEditProfile,
   className,
 }) => {
@@ -108,9 +114,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
                 {role}
               </Badge>
             </div>
-            <p id={`${id}-email`} className="text-xs text-stone-500 font-mono mt-0.5">
-              {email}
-            </p>
+            {email && (isEmailPublic || isOwner) && (
+              <p id={`${id}-email`} className="text-xs text-stone-500 font-mono mt-0.5">
+                {email}
+              </p>
+            )}
           </div>
 
           {bio && (

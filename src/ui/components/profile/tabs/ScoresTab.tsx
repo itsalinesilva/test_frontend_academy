@@ -45,7 +45,7 @@ export const ScoresTab: React.FC<ScoresTabProps> = ({ profile }) => {
                     rel="noreferrer"
                     className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded bg-stone-100 text-stone-800 hover:bg-stone-200 font-medium transition-colors"
                   >
-                    Ver no IMSLP <ExternalLink className="w-3 h-3" />
+                    Abrir partitura <ExternalLink className="w-3 h-3" />
                   </a>
                 )}
               </div>

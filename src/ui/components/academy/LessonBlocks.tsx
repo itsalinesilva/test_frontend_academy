@@ -377,9 +377,6 @@ const Checkpoint: React.FC<{ block: Extract<LessonBlock, { kind: 'CHECKPOINT' }>
           >
             <p className="font-semibold">{correct ? 'Correto.' : 'Ainda não.'}</p>
             <p className="leading-relaxed">{block.explanation}</p>
-            {block.sourceRef && (
-              <p className="font-mono text-[11px] text-stone-500">Fonte: {block.sourceRef}</p>
-            )}
           </div>
         )}
       </div>

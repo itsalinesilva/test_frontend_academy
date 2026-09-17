@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { PersistentUnifiedProfileRepository } from '../src/repositories/unified-profile.repository';
 import { MemoryStorageAdapter } from '../src/infrastructure/storage/storage-adapter';
 import { resolveRouteParams } from '../src/ui/navigation/router';
+import { criarPerfil, criarEvidencia, criarItemPortfolio } from './helpers/profile-factory';
 
 /**
  * Regressões do COMANDO 4.
@@ -29,11 +30,17 @@ describe('Autoridade do perfil (regressões P-01 a P-06)', () => {
     expect(outro).toBeNull();
   });
 
-  it('P-01: os fundadores reais continuam resolvendo', async () => {
-    const um = await repo.findByUserId('usr_founder_1');
-    const dois = await repo.findByUserId('usr_founder_2');
-    expect(um?.userId).toBe('usr_founder_1');
-    expect(dois?.userId).toBe('usr_founder_2');
+  it('P-01: a plataforma nasce sem NENHUMA pessoa cadastrada', async () => {
+    // O seed trazia um perfil completo da fundadora — cátedra, 420h de
+    // estudo, percentil 99,8 — para alguém que nunca se cadastrou.
+    expect(await repo.listPublicDirectory()).toEqual([]);
+    expect(await repo.findByUserId('usr_founder_1')).toBeNull();
+    expect(await repo.findByUserId('usr_founder_2')).toBeNull();
+  });
+
+  it('P-01: um perfil salvo resolve normalmente', async () => {
+    await repo.save(criarPerfil('usr_ana'));
+    expect((await repo.findByUserId('usr_ana'))?.userId).toBe('usr_ana');
   });
 
   it('P-01: id inexistente sem relação com fundador devolve null', async () => {
@@ -44,40 +51,60 @@ describe('Autoridade do perfil (regressões P-01 a P-06)', () => {
   // P-02 — projeção pública nunca carrega campo privado
   // ---------------------------------------------------------------
   it('P-02: a projeção pública descarta portfólio, evidências e links não públicos', async () => {
-    const completo = await repo.findByUserId('usr_founder_1');
-    expect(completo).not.toBeNull();
+    await repo.save(
+      criarPerfil('usr_bia', {
+        evidences: [
+          criarEvidencia('ev_pub', 'usr_bia', 'public'),
+          criarEvidencia('ev_priv', 'usr_bia', 'private'),
+        ],
+        portfolio: [
+          criarItemPortfolio('pf_pub', 'usr_bia', 'public'),
+          criarItemPortfolio('pf_priv', 'usr_bia', 'private'),
+        ],
+        officialLinks: [
+          { id: 'l1', label: 'Site', url: 'https://exemplo.org', type: 'website', isPublic: true },
+          { id: 'l2', label: 'Interno', url: 'https://interno.exemplo.org', type: 'website', isPublic: false },
+        ],
+      })
+    );
 
-    const projecao = await repo.getPublicProjection('usr_founder_1');
+    const projecao = await repo.getPublicProjection('usr_bia');
     expect(projecao).not.toBeNull();
 
-    expect(projecao!.portfolio.every((p) => p.visibility === 'public')).toBe(true);
-    expect(projecao!.evidences.every((e) => e.visibility === 'public')).toBe(true);
+    // O que é privado não chega ao cliente — nem para ser escondido por CSS.
+    const serializado = JSON.stringify(projecao);
+    expect(serializado).not.toContain('ev_priv');
+    expect(serializado).not.toContain('pf_priv');
+    expect(serializado).not.toContain('interno.exemplo.org');
+
+    expect(projecao!.evidences.map((e) => e.id)).toEqual(['ev_pub']);
+    expect(projecao!.portfolio.map((p) => p.id)).toEqual(['pf_pub']);
     expect(projecao!.officialLinks.every((l) => l.isPublic)).toBe(true);
-    expect(projecao!.sectionsConfig.every((s) => s.enabled && s.visibility === 'public')).toBe(true);
+    expect(projecao!.sectionsConfig.every((c) => c.enabled && c.visibility === 'public')).toBe(true);
   });
 
   it('P-02: perfil inteiramente privado não tem projeção', async () => {
-    const completo = await repo.findByUserId('usr_founder_2');
-    await repo.save({ ...completo!, overallVisibility: 'private' });
-
-    expect(await repo.getPublicProjection('usr_founder_2')).toBeNull();
+    await repo.save(criarPerfil('usr_carlos', { overallVisibility: 'private' }));
+    expect(await repo.getPublicProjection('usr_carlos')).toBeNull();
   });
 
   // ---------------------------------------------------------------
   // P-04 — nenhuma conexão semeada aponta para perfil inexistente
   // ---------------------------------------------------------------
-  it('P-04: toda conexão semeada resolve para um perfil que existe', async () => {
-    const perfil = await repo.findByUserId('usr_founder_1');
-    const conexoes = perfil?.connectionsList ?? [];
-
-    for (const c of conexoes) {
-      const alvo = await repo.findByUserId(c.targetUserId);
-      expect(alvo, `conexão ${c.id} aponta para ${c.targetUserId}, que não existe`).not.toBeNull();
+  it('P-04: nenhum perfil inicial traz conexão para alguém que não existe', async () => {
+    // As 4 conexões semeadas apontavam para usr_gabriel_1, usr_clara_1,
+    // usr_arthur_1 e usr_helena_1 — perfis que nunca existiram. Com
+    // /profile/:userId ativo, cada card seria um link morto.
+    for (const p of await repo.listPublicDirectory()) {
+      for (const c of p.connectionsList ?? []) {
+        expect(await repo.findByUserId(c.targetUserId)).not.toBeNull();
+      }
     }
   });
 
   it('P-04: o contador de conexões bate com a lista', async () => {
-    const perfil = await repo.findByUserId('usr_founder_1');
+    await repo.save(criarPerfil('usr_dani'));
+    const perfil = await repo.findByUserId('usr_dani');
     expect(perfil!.community.connectionsCount).toBe((perfil!.connectionsList ?? []).length);
   });
 
@@ -85,6 +112,13 @@ describe('Autoridade do perfil (regressões P-01 a P-06)', () => {
   // Diretório
   // ---------------------------------------------------------------
   it('o diretório público devolve apenas projeções, nunca registros crus', async () => {
+    await repo.save(
+      criarPerfil('usr_elis', {
+        evidences: [criarEvidencia('ev_x', 'usr_elis', 'private')],
+        portfolio: [criarItemPortfolio('pf_x', 'usr_elis', 'private')],
+      })
+    );
+
     const lista = await repo.listPublicDirectory();
     expect(lista.length).toBeGreaterThan(0);
 
@@ -96,11 +130,11 @@ describe('Autoridade do perfil (regressões P-01 a P-06)', () => {
   });
 
   it('o diretório omite quem está privado', async () => {
-    const completo = await repo.findByUserId('usr_founder_2');
-    await repo.save({ ...completo!, overallVisibility: 'private' });
+    await repo.save(criarPerfil('usr_visivel'));
+    await repo.save(criarPerfil('usr_oculto', { overallVisibility: 'private' }));
 
     const lista = await repo.listPublicDirectory();
-    expect(lista.some((p) => p.userId === 'usr_founder_2')).toBe(false);
+    expect(lista.map((p) => p.userId)).toEqual(['usr_visivel']);
   });
 
   // ---------------------------------------------------------------

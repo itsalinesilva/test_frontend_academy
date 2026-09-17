@@ -76,7 +76,7 @@ export const CANONICAL_TRACKS: PlayerTrack[] = [
     ],
   },
   {
-    id: 'track-edinburgh-cadence',
+    id: 'track-cadencia-autoral',
     title: 'Cadência Perfeita I - IV - V - I com Resolução',
     composer: 'Cátedra de Teoria de Edimburgo',
     period: 'Sistema Tonal Acústico',

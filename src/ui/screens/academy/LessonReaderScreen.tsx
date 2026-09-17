@@ -23,7 +23,6 @@ import {
   CheckCircle2,
   ArrowLeft,
   ArrowRight,
-  BookMarked,
   Target,
   Clock,
   Lock,
@@ -289,12 +288,6 @@ export const LessonReaderScreen: React.FC = () => {
               <Clock className="h-3.5 w-3.5 shrink-0 text-stone-400" aria-hidden="true" />
               <span>{lesson?.durationMinutes} min de leitura estimada</span>
             </div>
-            {lesson?.provenanceRef && (
-              <div className="flex items-start gap-1.5 border-t border-stone-100 pt-2">
-                <BookMarked className="mt-0.5 h-3.5 w-3.5 shrink-0 text-stone-400" aria-hidden="true" />
-                <span className="leading-relaxed">{lesson.provenanceRef}</span>
-              </div>
-            )}
           </Card>
         </div>
       </PageLayout.Aside>
@@ -369,20 +362,6 @@ export const LessonReaderScreen: React.FC = () => {
                 </Button>
               </div>
             </Card>
-          )}
-
-          {content && content.references.length > 0 && (
-            <PageLayout.Section title="Referências">
-              <ul className="space-y-2">
-                {content.references.map((r, i) => (
-                  <li key={i} className="border-l-2 border-stone-200 pl-3 text-xs leading-relaxed text-stone-600">
-                    <span className="font-serif font-semibold text-stone-800">{r.title}</span>
-                    {' — '}
-                    {r.author}. <span className="italic">{r.chapterOrLecture}</span>
-                  </li>
-                ))}
-              </ul>
-            </PageLayout.Section>
           )}
 
           {/* Navegação entre lições */}

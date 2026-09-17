@@ -623,7 +623,7 @@ export const DesignSystemCatalog: React.FC = () => {
                     A avaliação acústica considerará pitch, timing rítmico e cobertura harmônica com base no motor calibrado.
                   </p>
                   <p className="font-mono text-stone-500 bg-stone-100 p-2 rounded">
-                    Audit Token: 0x7f4b89 • Proveniência: Edinburgh Lecture 1
+                    Audit Token: 0x7f4b89 • Conteúdo autoral
                   </p>
                 </div>
               </Dialog>
@@ -777,9 +777,9 @@ export const DesignSystemCatalog: React.FC = () => {
                     </div>
 
                     <CredentialChip
-                      id="cred-chip-edinburgh"
+                      id="cred-chip-teoria"
                       title="Teoria Musical"
-                      institution="Univ. Edinburgh"
+                      institution="Academia Musical Digital"
                       level="L1-5"
                       isVerified
                     />
@@ -802,7 +802,7 @@ export const DesignSystemCatalog: React.FC = () => {
               </h3>
               <ScoreContainer
                 id="score-demo-viewer"
-                title="Estudo em Dó Maior (Edinburgh Lecture 1)"
+                title="Estudo em Dó Maior"
                 composer="Tradição Acadêmica Clássica"
                 clef="treble"
                 keySignature="C Maior (0♯, 0♭)"
@@ -821,7 +821,7 @@ export const DesignSystemCatalog: React.FC = () => {
               </h3>
               <TimelineContainer
                 id="timeline-demo-studio"
-                projectName="Projeto #01: Arranjo Coral Edinburgh"
+                projectName="Projeto #01: Arranjo Coral"
                 bpm={120}
                 timecode="00:01:12.04"
                 currentBar={3}
@@ -902,7 +902,6 @@ export const DesignSystemCatalog: React.FC = () => {
                   level="Fundamentos Acadêmicos"
                   durationHours={18}
                   modulesCount={5}
-                  provenanceCitation="University of Edinburgh (Lectures 1–5)"
                   progressPercent={60}
                   isEnrolled={true}
                   onActionClick={() => {}}
@@ -960,10 +959,9 @@ export const DesignSystemCatalog: React.FC = () => {
                 <MediaCard
                   id="media-card-demo"
                   title="Palestra 1: A Natureza Física do Som & Alturas"
-                  performerOrLecturer="University of Edinburgh Lecture Series"
+                  performerOrLecturer="Academia Musical Digital"
                   mediaType="palestra"
                   durationText="24:18"
-                  provenanceCitation="Edinburgh Online Open Resource"
                   isPlaying={isMediaPlaying}
                   onTogglePlay={() => setIsMediaPlaying(!isMediaPlaying)}
                 />

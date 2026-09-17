@@ -171,11 +171,6 @@ export interface Course {
   modulesCount: number;
   lessonsCount: number;
   isPublished: boolean;
-  provenance: {
-    source: string;
-    citation: string;
-    curatorNotes: string;
-  };
   createdAt: ISOTimestamp;
   updatedAt: ISOTimestamp;
 }
@@ -198,7 +193,6 @@ export interface Lesson {
   summary: string;
   contentMarkdown: string;
   durationMinutes: number;
-  provenanceRef?: string;
 }
 
 export interface UserCourseProgress {

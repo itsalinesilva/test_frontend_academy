@@ -280,7 +280,6 @@ export const AcademyCatalogScreen: React.FC = () => {
                   level={course.level}
                   durationHours={course.workloadHours}
                   modulesCount={course.moduleIds.length}
-                  provenanceCitation={course.provenance?.source}
                   onActionClick={() => navigate(`/academy/course/${course.id}`)}
                 />
               ))}

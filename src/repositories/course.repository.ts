@@ -19,7 +19,8 @@ export class PersistentCourseRepository implements CourseRepository {
     this.storage = storage;
   }
 
-  // Canonical Seed Content with Provenance strictly grounded in Edinburgh Lectures (Docs 00, 09, 21)
+  // Conteudo autoral da Academia. Nenhuma obra de referencia externa e
+  // citada no produto — o material e escrito e revisado internamente.
   private readonly seedCourses: Course[] = [
     {
       id: 'crs_fomt_01',
@@ -35,11 +36,6 @@ export class PersistentCourseRepository implements CourseRepository {
       modulesCount: 2,
       lessonsCount: 4,
       isPublished: true,
-      provenance: {
-        source: 'University of Edinburgh - Fundamentals of Music Theory (Lectures 1-2)',
-        citation: 'Lectures 1 & 2: Musical Notes, Octaves, Major Scales, Primary Chords. Edinburgh University Open Courseware.',
-        curatorNotes: 'Conteúdo derivado conceitualmente e adaptado com notação padronizada e exercícios determinísticos.',
-      },
       createdAt: '2026-01-01T00:00:00.000Z',
       updatedAt: '2026-01-01T00:00:00.000Z',
     },
@@ -57,11 +53,6 @@ export class PersistentCourseRepository implements CourseRepository {
       modulesCount: 2,
       lessonsCount: 4,
       isPublished: true,
-      provenance: {
-        source: 'University of Edinburgh - Fundamentals of Music Theory (Lectures 3-5)',
-        citation: 'Lectures 3 to 5: Rhythmic Duration, Tuplets, Meter, Cadences & Inversions. Edinburgh University.',
-        curatorNotes: 'Abordagem autoral respeitando os princípios de proveniência intelectual da Academia.',
-      },
       createdAt: '2026-01-01T00:00:00.000Z',
       updatedAt: '2026-01-01T00:00:00.000Z',
     },
@@ -109,7 +100,6 @@ Historicamente e convencionalmente, utilizamos tanto a nomenclatura silábica (D
 
 Entre certas notas adjacentes existe uma distância de **tom inteiro**, enquanto entre Mi-Fá e Si-Dó a distância natural é de **meio-tom** (semitom).`,
       durationMinutes: 15,
-      provenanceRef: 'Lecture 1: 02_01. Musical Notes',
     },
     {
       id: 'les_fomt_101_2',
@@ -124,7 +114,6 @@ Quando uma corda vibrante é encurtada exatamente pela metade, a frequência de 
 
 Essa duplicação exata de frequência produz o intervalo de **Oitava**. O ouvido humano percebe notas separadas por uma oitava como tendo a mesma qualidade de altura essencial, motivo pelo qual recebem o mesmo nome de nota em registros diferentes (ex: C3, C4, C5).`,
       durationMinutes: 20,
-      provenanceRef: 'Lecture 1: 03_02. Octaves',
     },
     {
       id: 'les_fomt_102_1',
@@ -146,7 +135,6 @@ A escala maior é a fundação da harmonia funcional clássica e contemporânea.
 
 A partir de C (Dó), nenhuma alteração acidental é necessária: C - D - E - F - G - A - B - C. Para iniciar a escala sobre qualquer outra nota tônica (como G ou F), sustenidos ou bemóis devem ser introduzidos para preservar essa mesma proporção.`,
       durationMinutes: 25,
-      provenanceRef: 'Lecture 1: 04_03. More on scales',
     },
     {
       id: 'les_fomt_102_2',
@@ -164,7 +152,6 @@ Três dessas tríades formam a espinha dorsal da música tonal e contêm, juntas
 - **Grau IV (Subdominante):** Movimento de expansão e tensão intermediária.
 - **Grau V (Dominante):** Tensão máxima que exige resolução de volta à Tônica.`,
       durationMinutes: 30,
-      provenanceRef: 'Lecture 1: 05_04. Introduction to chords & 06_05. Primary',
     },
   ];
 

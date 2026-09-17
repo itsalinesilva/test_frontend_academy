@@ -10,7 +10,6 @@ export interface MediaCardProps {
   performerOrLecturer: string;
   mediaType: 'palestra' | 'ensaio' | 'demonstracao' | 'masterclass';
   durationText: string;
-  provenanceCitation?: string;
   isPlaying?: boolean;
   onTogglePlay: () => void;
   className?: string;
@@ -22,7 +21,6 @@ export const MediaCard: React.FC<MediaCardProps> = ({
   performerOrLecturer,
   mediaType,
   durationText,
-  provenanceCitation,
   isPlaying = false,
   onTogglePlay,
   className,
@@ -104,11 +102,6 @@ export const MediaCard: React.FC<MediaCardProps> = ({
           </p>
         </div>
 
-        {provenanceCitation && (
-          <div className="pt-2 border-t border-stone-100 text-[10px] font-mono text-stone-400 truncate">
-            Fonte: {provenanceCitation}
-          </div>
-        )}
       </div>
     </article>
   );

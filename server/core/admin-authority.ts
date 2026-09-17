@@ -46,11 +46,34 @@ const DENIED: AdminGrant = {
 };
 
 /**
+ * Administradores do fluxo padrão: as contas da fundadora.
+ *
+ * Não são segredo e não são credencial — quem se apresentar com um destes
+ * e-mails ainda precisa provar posse da conta Google, com token verificado
+ * por assinatura RS256 contra o JWKS. A lista só decide o que fazer DEPOIS
+ * dessa prova.
+ *
+ * Existe para que a plataforma da fundadora funcione sem configuração
+ * adicional. Qualquer outro deployment deve definir `ADMIN_ALLOWLIST`, que
+ * substitui esta lista por completo.
+ */
+const FUNDADORA: readonly string[] = [
+  'alinealv.silv@gmail.com',
+  'office.alinesilva@gmail.com',
+];
+
+/**
  * Lê a allowlist do ambiente. Formato: e-mails separados por vírgula.
- * Ausência de configuração resulta em NENHUM administrador — falha fechada.
+ *
+ * `ADMIN_ALLOWLIST` definida substitui integralmente o padrão — inclusive
+ * quando resulta em lista vazia, caso em que NINGUÉM é administrador. Só a
+ * ausência completa da variável recai sobre as contas da fundadora; uma
+ * variável presente e malformada não silencia a intenção de quem a definiu.
  */
 export function parseAdminAllowlist(raw: string | undefined): string[] {
-  if (!raw) return [];
+  if (raw === undefined) {
+    return [...FUNDADORA];
+  }
   return raw
     .split(',')
     .map((entry) => entry.trim().toLowerCase())

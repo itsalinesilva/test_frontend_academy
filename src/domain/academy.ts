@@ -35,7 +35,6 @@ export interface Program {
   isPublished: boolean;
   status?: PublicationStatus;
   version?: string;
-  provenanceRef: string;
   createdAt: ISOTimestamp;
   updatedAt: ISOTimestamp;
   isDeleted?: boolean;
@@ -104,12 +103,6 @@ export interface AcademyCourse {
   skills?: string[];
   prerequisites: string[];
   materials: CourseMaterial[];
-  references?: {
-    title: string;
-    author: string;
-    year?: string;
-    citation: string;
-  }[];
   curriculumSummary: string;
   assessmentPolicy: string;
   certificatePolicy: string;
@@ -143,11 +136,6 @@ export interface AcademyCourse {
     title: string;
     composer: string;
     clef: string;
-  };
-  provenance: {
-    source: string;
-    citation: string;
-    curatorNotes: string;
   };
   createdAt: ISOTimestamp;
   updatedAt: ISOTimestamp;
@@ -209,9 +197,9 @@ export type LessonBlock =
   | { kind: 'DIAGRAM'; id: string; title: string; diagram: 'CIRCLE_OF_FIFTHS' | 'TONE_SEMITONE' | 'INTERVAL_RULER'; highlight?: string[]; caption?: string }
   /**
    * Verificação de leitura no meio do texto — não ao final.
-   * Fonte natural: Bohumil Med, *Livro de Exercícios* (ADR-002).
+   * Conteudo autoral da Academia.
    */
-  | { kind: 'CHECKPOINT'; id: string; question: string; options: string[]; correctIndex: number; explanation: string; sourceRef?: string }
+  | { kind: 'CHECKPOINT'; id: string; question: string; options: string[]; correctIndex: number; explanation: string }
   /**
    * Sequência de lâminas navegáveis — o equivalente ao deck de slides das
    * plataformas acadêmicas. Serve para decompor um raciocínio em passos, sem
@@ -290,12 +278,6 @@ export interface LessonPresentationContent {
   audioSamples: AudioSample[];
   scoreSnippet?: ScoreSnippet;
   illustrations: MediaIllustration[];
-  references: {
-    title: string;
-    author: string;
-    chapterOrLecture: string;
-    sourceType: 'book' | 'lecture' | 'open_courseware';
-  }[];
 }
 
 export interface AcademyLesson {
@@ -307,7 +289,6 @@ export interface AcademyLesson {
   durationMinutes: number;
   objectives: string[];
   skills: string[];
-  provenanceRef: string;
   activityIds: EntityId[];
   variants: Record<AudienceVariant, LessonPresentationContent>;
   status?: PublicationStatus;

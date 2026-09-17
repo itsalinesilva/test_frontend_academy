@@ -160,9 +160,30 @@ describe('S-05 — integridade do token de sessão', () => {
 });
 
 describe('S-02 — allowlist é configuração de servidor, e falha fechada', () => {
-  it('allowlist vazia não concede administrador a ninguém', () => {
-    const grant = resolveAdminGrant({ email: 'admin.institucional@exemplo.org' }, parseAdminAllowlist(undefined));
+  it('allowlist declarada vazia não concede administrador a ninguém', () => {
+    // Variável PRESENTE e vazia é uma decisão explícita de quem configurou:
+    // ninguém é administrador, nem as contas da fundadora.
+    const grant = resolveAdminGrant({ email: 'alinealv.silv@gmail.com' }, parseAdminAllowlist(''));
     expect(grant.isAdmin).toBe(false);
+  });
+
+  it('sem a variável definida, valem as contas da fundadora', () => {
+    const padrao = parseAdminAllowlist(undefined);
+    expect(resolveAdminGrant({ email: 'alinealv.silv@gmail.com' }, padrao).isAdmin).toBe(true);
+    expect(resolveAdminGrant({ email: 'office.alinesilva@gmail.com' }, padrao).isAdmin).toBe(true);
+  });
+
+  it('a variável definida SUBSTITUI o padrão — a fundadora deixa de ser admin', () => {
+    // Outro deployment define a sua própria relação e não herda a nossa.
+    const outra = parseAdminAllowlist('governanca@outra-instituicao.org');
+    expect(resolveAdminGrant({ email: 'alinealv.silv@gmail.com' }, outra).isAdmin).toBe(false);
+    expect(resolveAdminGrant({ email: 'governanca@outra-instituicao.org' }, outra).isAdmin).toBe(true);
+  });
+
+  it('e-mail de terceiro nunca vira administrador', () => {
+    const padrao = parseAdminAllowlist(undefined);
+    expect(resolveAdminGrant({ email: 'alinealv.silv@gmail.com.atacante.net' }, padrao).isAdmin).toBe(false);
+    expect(resolveAdminGrant({ email: 'qualquer@exemplo.org' }, padrao).isAdmin).toBe(false);
   });
 
   it('servidor sem configuração responde 503 em vez de liberar', async () => {

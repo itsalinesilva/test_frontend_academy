@@ -14,7 +14,6 @@ export interface CourseCardProps {
   level: string;
   durationHours: number;
   modulesCount: number;
-  provenanceCitation?: string; // e.g. "University of Edinburgh - Fundamentals of Music Theory (Lectures 1-5)"
   progressPercent?: number; // if enrolled
   isEnrolled?: boolean;
   onActionClick: () => void;
@@ -29,7 +28,6 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   level,
   durationHours,
   modulesCount,
-  provenanceCitation,
   progressPercent,
   isEnrolled = false,
   onActionClick,
@@ -51,15 +49,6 @@ export const CourseCard: React.FC<CourseCardProps> = ({
           <Badge id={`${id}-level-badge`} variant="neutral" size="sm">
             {level}
           </Badge>
-          {provenanceCitation && (
-            <span
-              id={`${id}-provenance-tag`}
-              className="text-[10px] font-mono text-stone-500 bg-stone-100 border border-stone-200 px-2 py-0.5 rounded truncate max-w-[220px]"
-              title={`Proveniência: ${provenanceCitation}`}
-            >
-              Ref: {provenanceCitation}
-            </span>
-          )}
         </div>
 
         {/* Title and Instructor */}

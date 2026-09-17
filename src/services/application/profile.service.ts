@@ -138,26 +138,26 @@ export class ProfileService {
         userId,
         displayName: basicProfile?.displayName || user?.name || 'Músico Acadêmico',
         title: basicProfile?.title || 'Estudante da Academia',
-        headline: basicProfile?.headline || 'Música de Concerto • Investigação Tonal',
-        biography: basicProfile?.biography || 'Estudante de música e performance na Academia Musical Digital.',
+        headline: basicProfile?.headline || '',
+        biography: basicProfile?.biography || '',
         avatarUrl: basicProfile?.avatarUrl || user?.avatarUrl,
         avatarSource: basicProfile?.avatarSource || 'google',
         primaryRole: user?.primaryRole || UserRole.ALUNO,
         assignedRoles: user?.assignedRoles || [UserRole.ALUNO],
-        instruments: basicProfile?.instruments || ['Piano', 'Violino'],
-        musicalInterests: basicProfile?.musicalInterests || ['Harmonia Funcional', 'Contraponto'],
-        experienceLevel: basicProfile?.experienceLevel || 'intermediario',
+        // Quem acabou de se cadastrar nao toca nenhum instrumento "por
+        // padrao". Os valores anteriores — Piano, Violino, Harmonia Funcional,
+        // Contraponto, nivel intermediario — apareciam no perfil de alguem
+        // que nunca os informou.
+        instruments: basicProfile?.instruments || [],
+        musicalInterests: basicProfile?.musicalInterests || [],
+        experienceLevel: basicProfile?.experienceLevel || 'iniciante',
+        // Privado por padrao: aparecer no diretorio publico e opt-in.
         overallVisibility: basicProfile?.isPublic ? 'public' : 'private',
         officialLinks: [],
-        sectionsConfig: [
-          { key: 'academic', label: 'Academia & Cursos', enabled: true, visibility: 'public', order: 1 },
-          { key: 'practice', label: 'Prática & Habilidades', enabled: true, visibility: 'public', order: 2 },
-          { key: 'studio', label: 'Estúdio & Portfólio', enabled: true, visibility: 'public', order: 3 },
-          { key: 'worlds', label: 'Mundos & Passaportes', enabled: true, visibility: 'public', order: 4 },
-          { key: 'community', label: 'Comunidade & Conexões', enabled: true, visibility: 'public', order: 5 },
-          { key: 'rooms', label: 'Salas & Cátedras', enabled: true, visibility: 'public', order: 6 },
-          { key: 'teacher', label: 'Cátedra Docente', enabled: user?.assignedRoles?.includes(UserRole.PROFESSOR) || false, visibility: 'public', order: 7 },
-        ],
+        // Configuracao unica, vinda do repositorio. Aqui havia uma segunda
+        // copia com 7 secoes enquanto o repositorio definia 23 — as telas
+        // mostravam conjuntos diferentes conforme o caminho de criacao.
+        sectionsConfig: this.unifiedRepo.getDefaultSectionsConfig(),
         academic: {
           totalStudyHours: basicProfile?.academicProgressSummary?.totalStudyHours || 32,
           enrolledCourses: [],

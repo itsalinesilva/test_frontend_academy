@@ -258,7 +258,7 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800">
                 <Link2 className="w-4 h-4 text-red-800" />
-                <span>Links Oficiais (Lattes, IMSLP, YouTube, Portal)</span>
+                <span>Links Oficiais (Lattes, YouTube, site pessoal)</span>
               </div>
               <Button variant="outline" size="sm" type="button" onClick={addLink}>
                 <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar Link
@@ -279,7 +279,6 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
                     >
                       <option value="website">Website</option>
                       <option value="lattes">Lattes CNPq</option>
-                      <option value="imslp">IMSLP</option>
                       <option value="youtube">YouTube</option>
                       <option value="spotify">Spotify</option>
                       <option value="orcid">ORCID</option>
