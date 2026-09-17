@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
+import { ProgressBar } from '../../components/data-display/Progress';
 import { AudienceToggle } from '../../components/domain/AudienceToggle';
-import { ScoreContainer } from '../../components/domain/ScoreContainer';
+import { LessonBlockRenderer } from '../../components/academy/LessonBlocks';
 import { academyService } from '../../../services/application/academy.service';
 import { authService } from '../../../services/application/auth.service';
-import { webAudioSynth } from '../../../infrastructure/audio/synth';
 import {
   AcademyLesson,
   AcademyCourse,
@@ -16,646 +16,405 @@ import {
   AcademyActivity,
   AudienceVariant,
   UserAcademyProgress,
+  LessonBlock,
+  LessonSection,
 } from '../../../domain/academy';
 import {
-  CheckCircle,
+  CheckCircle2,
   ArrowLeft,
   ArrowRight,
-  Play,
-  Volume2,
-  BookOpen,
-  Film,
-  Music,
   BookMarked,
-  Info,
-  CheckCircle2,
-  Sparkles,
+  Target,
+  Clock,
+  Lock,
+  ListTree,
 } from 'lucide-react';
+
+/**
+ * Ambiente de aula.
+ *
+ * RECOMPOSIÇÃO (wireframes/01_ACADEMY_COURSERA §5):
+ *
+ * 1. **Sumário do curso fixo à esquerda.** É ele que faz a tela parecer uma
+ *    aula em vez de um artigo: a pessoa sempre sabe onde está na disciplina
+ *    e alcança qualquer lição sem voltar.
+ *
+ * 2. **Blocos interativos intercalados no texto.** A versão anterior
+ *    separava o conteúdo em abas — leitura, áudio, partitura, vídeo — o que
+ *    afastava a demonstração da afirmação que ela demonstra. Agora o
+ *    laboratório aparece exatamente onde o conceito é introduzido, e os
+ *    resultados vêm dos motores reais de teoria e áudio.
+ *
+ * 3. **CTA de prática contextual.** Aponta para a habilidade correspondente,
+ *    não para `/practice` genérico — é o que cumpre a regra constitucional 1
+ *    (Curso → Prática) em vez de apenas sugeri-la.
+ */
+
+/** Converte o formato legado (`contentMarkdown` + `callout`) em blocos. */
+function sectionToBlocks(section: LessonSection): LessonBlock[] {
+  if (section.blocks?.length) return section.blocks;
+  const blocks: LessonBlock[] = [
+    { kind: 'MARKDOWN', id: `${section.id}-md`, markdown: section.contentMarkdown },
+  ];
+  if (section.callout) {
+    blocks.push({
+      kind: 'CALLOUT',
+      id: `${section.id}-callout`,
+      type: section.callout.type,
+      title: section.callout.title,
+      text: section.callout.text,
+    });
+  }
+  return blocks;
+}
 
 export const LessonReaderScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const lessonId = params.id || 'les_fomt_101_1';
+  const lessonId = params.id;
 
   const [variant, setVariant] = useState<AudienceVariant>('TRADITIONAL');
   const [lesson, setLesson] = useState<AcademyLesson | null>(null);
   const [course, setCourse] = useState<AcademyCourse | null>(null);
   const [module, setModule] = useState<AcademyModule | null>(null);
+  const [moduleLessons, setModuleLessons] = useState<AcademyLesson[]>([]);
   const [activities, setActivities] = useState<AcademyActivity[]>([]);
   const [progress, setProgress] = useState<UserAcademyProgress | null>(null);
-
-  const [activeTab, setActiveTab] = useState<'conteudo' | 'audio' | 'video' | 'partitura' | 'atividades' | 'referencias'>('conteudo');
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
-  const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadLessonData = async () => {
-      try {
-        const session = await authService.getActiveSession();
-        const userId = session?.user.id || 'usr_founder_1';
-
-        const l = await academyService.getLesson(lessonId);
-        if (l) {
-          setLesson(l);
-
-          const [c, m, acts, prog] = await Promise.all([
-            academyService.getCourse(l.courseId),
-            academyService.getModule(l.moduleId),
-            academyService.getActivities(l.id),
-            academyService.getUserProgress(userId, l.courseId),
-          ]);
-
-          setCourse(c);
-          setModule(m);
-          setActivities(acts);
-          setProgress(prog);
-        }
-      } catch (err) {
-        console.error('Error loading lesson:', err);
+  const loadLesson = useCallback(async () => {
+    if (!lessonId) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    setLoadFailed(false);
+    try {
+      const l = await academyService.getLesson(lessonId);
+      if (!l) {
+        setLesson(null);
+        return;
       }
-    };
+      setLesson(l);
 
-    loadLessonData();
+      const session = await authService.getActiveSession();
+      const [c, m, acts, prog, siblings] = await Promise.all([
+        academyService.getCourse(l.courseId),
+        academyService.getModule(l.moduleId),
+        academyService.getActivities(l.id),
+        session ? academyService.getUserProgress(session.user.id, l.courseId) : Promise.resolve(null),
+        academyService.getLessons(l.moduleId),
+      ]);
+      setCourse(c);
+      setModule(m);
+      setActivities(acts);
+      setProgress(prog);
+      setModuleLessons(siblings);
+    } catch {
+      setLoadFailed(true);
+    } finally {
+      setIsLoading(false);
+    }
   }, [lessonId]);
 
-  const isCompleted = !!progress?.completedLessonIds.includes(lessonId);
+  useEffect(() => {
+    void loadLesson();
+  }, [loadLesson]);
 
-  const handleToggleComplete = async () => {
+  const isCompleted = !!progress?.completedLessonIds.includes(lessonId ?? '');
+  const content = lesson ? lesson.variants[variant] || lesson.variants.TRADITIONAL : null;
+
+  const { previous, next } = useMemo(() => {
+    const i = moduleLessons.findIndex((l) => l.id === lessonId);
+    return {
+      previous: i > 0 ? moduleLessons[i - 1] : null,
+      next: i >= 0 && i < moduleLessons.length - 1 ? moduleLessons[i + 1] : null,
+    };
+  }, [moduleLessons, lessonId]);
+
+  const handleComplete = async () => {
     const session = await authService.getActiveSession();
-    const userId = session?.user.id || 'usr_founder_1';
-    if (!lesson) return;
-
+    if (!session || !lesson) return;
     setIsMarkingComplete(true);
     try {
-      const updatedProgress = await academyService.completeLesson(userId, lesson.id);
-      setProgress(updatedProgress);
+      setProgress(await academyService.completeLesson(session.user.id, lesson.id));
+      if (next) navigate(`/academy/lesson/${next.id}`);
     } finally {
       setIsMarkingComplete(false);
     }
   };
 
-  const playAudioSample = (sampleId: string, freqs: number[]) => {
-    setPlayingAudioId(sampleId);
-    if (freqs.length === 1) {
-      webAudioSynth.playTone(freqs[0], 2.0);
-    } else {
-      webAudioSynth.playSequence(freqs, 0.45);
-    }
-    setTimeout(() => setPlayingAudioId(null), 2500);
-  };
-
-  if (!lesson) {
+  // Rota sem parâmetro válido: estado explícito, sem substituir por lição fixa.
+  if (!lessonId) {
     return (
-      <ScreenContainer
-        id="lesson-loading"
-        title="Lição Acadêmica"
-        subtitle="Carregando dados da lição..."
+      <PageLayout
+        id="lesson-missing-id"
+        form="focus"
+        state="error"
+        errorProps={{
+          title: 'Lição não identificada',
+          message: 'O endereço acessado não indica qual lição abrir.',
+          onRetry: () => navigate('/academy/catalog'),
+        }}
       >
-        <div className="p-8 text-center text-stone-500 font-mono text-xs">
-          Buscando plano canônico e mídia...
-        </div>
-      </ScreenContainer>
+        <PageLayout.Main>{null}</PageLayout.Main>
+      </PageLayout>
     );
   }
 
-  const content = lesson.variants[variant] || lesson.variants.TRADITIONAL;
+  // Sem matrícula a lição não abre — mas a pessoa descobre POR QUE e COMO
+  // desbloquear, em vez de bater numa porta muda (wireframes/01 §4).
+  const isLocked = !isLoading && !loadFailed && !!lesson && !progress;
+
+  const pageState = isLoading
+    ? 'loading'
+    : loadFailed
+    ? 'error'
+    : !lesson || !content
+    ? 'empty'
+    : isLocked
+    ? 'locked'
+    : 'content';
 
   return (
-    <ScreenContainer
-      id={`lesson-reader-${lessonId}`}
-      title={content.title}
-      subtitle={`Curso: ${course?.title || 'Teoria'} • ${module?.title || 'Módulo'}`}
-      badgeLabel={isCompleted ? 'Lição Concluída' : 'Em Andamento'}
-      badgeVariant={isCompleted ? 'brand' : 'neutral'}
-      primaryAction={{
-        label: isMarkingComplete
-          ? 'Registrando...'
-          : isCompleted
-          ? 'Lição Concluída ✓'
-          : 'Marcar como Concluída',
-        icon: CheckCircle,
-        onClick: handleToggleComplete,
+    <PageLayout
+      id={`lesson-${lessonId}`}
+      form="detail"
+      density="editorial"
+      state={pageState}
+      asideLabel="Conteúdo do curso"
+      loadingMessage="Carregando a lição e seus laboratórios…"
+      errorProps={{
+        title: 'Não foi possível abrir a lição',
+        message: 'Houve uma falha ao carregar o conteúdo acadêmico.',
+        onRetry: () => void loadLesson(),
       }}
-      secondaryActions={[
-        {
-          label: 'Laboratório Interativo',
-          icon: Sparkles,
-          onClick: () => navigate(`/academy/lesson/${lessonId}/interactive`),
-        },
-        {
-          label: 'Voltar à Disciplina',
-          icon: ArrowLeft,
-          onClick: () => navigate(`/academy/course/${lesson.courseId}`),
-        },
-      ]}
+      lockedProps={{
+        title: 'Matricule-se para acessar esta lição',
+        description: course
+          ? `Esta lição pertence à disciplina "${course.title}". A matrícula é gratuita e libera todo o conteúdo do curso.`
+          : 'A matrícula na disciplina libera o conteúdo desta lição.',
+        requirementText: 'Matrícula na disciplina',
+        unlockActionLabel: 'Ver a disciplina',
+        onUnlockAction: () => course && navigate(`/academy/course/${course.id}`),
+      }}
+      emptyProps={{
+        title: 'Lição não encontrada',
+        description: `O identificador [${lessonId}] não corresponde a uma lição do currículo.`,
+        actionLabel: 'Voltar ao catálogo',
+        onAction: () => navigate('/academy/catalog'),
+      }}
     >
-      <div className="space-y-6">
-        {/* Sub-bar: Audience variant switcher & Activity Jump */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-white border border-stone-200 rounded-xl">
-          <AudienceToggle
-            id="lesson-audience-toggle"
-            variant={variant}
-            onChange={(v) => setVariant(v)}
-          />
+      {/* ------------------------------------------------- SUMÁRIO FIXO --- */}
+      <PageLayout.Aside>
+        <div className="space-y-3">
+          <Card variant="default" padding="md" className="space-y-3">
+            <div className="flex items-center gap-1.5 text-stone-500">
+              <ListTree className="h-3.5 w-3.5" aria-hidden="true" />
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-wider">
+                Conteúdo do curso
+              </p>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              id="btn-open-interactive-lab"
-              size="sm"
-              variant="outline"
-              onClick={() => navigate(`/academy/lesson/${lessonId}/interactive`)}
-            >
-              <Sparkles className="w-3.5 h-3.5 mr-1 text-red-800" />
-              <span>Lab Interativo & Síntese</span>
-            </Button>
-            {activities.length > 0 && (
-              <Button
-                id="btn-jump-to-activity"
-                size="sm"
-                variant="primary"
-                onClick={() => navigate(`/academy/activity/${activities[0].id}`)}
-              >
-                <span>Exercício ({activities.length})</span>
-                <ArrowRight className="w-3.5 h-3.5 ml-1" />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Pedagogical Chain Strip: Lesson → Practice → Exercise → Score → Evidence → Profile */}
-        <div className="p-3 bg-stone-100/80 border border-stone-200 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
-          <span className="font-mono text-stone-500 uppercase tracking-wider text-[10px] font-semibold">
-            Cadeia Pedagógica Integrada:
-          </span>
-          <div className="flex items-center gap-1.5 flex-wrap font-sans text-stone-700">
-            <span className="px-2 py-0.5 bg-red-900 text-white rounded font-medium">1. Lição Teórica</span>
-            <span className="text-stone-400">→</span>
-            <button
-              type="button"
-              onClick={() => navigate('/practice')}
-              className="px-2 py-0.5 bg-white hover:bg-stone-200 text-stone-800 border border-stone-200 rounded transition-colors"
-            >
-              2. Prática Deliberada
-            </button>
-            <span className="text-stone-400">→</span>
-            {activities.length > 0 ? (
+            {course && (
               <button
                 type="button"
-                onClick={() => navigate(`/academy/activity/${activities[0].id}`)}
-                className="px-2 py-0.5 bg-white hover:bg-stone-200 text-stone-800 border border-stone-200 rounded transition-colors"
+                onClick={() => navigate(`/academy/course/${course.id}`)}
+                className="block text-left font-serif text-sm font-bold text-stone-900 hover:underline"
               >
-                3. Exercício Avaliado
+                {course.title}
               </button>
-            ) : (
-              <span className="px-2 py-0.5 bg-stone-200 text-stone-500 rounded">3. Exercício</span>
             )}
-            <span className="text-stone-400">→</span>
-            <button
-              type="button"
-              onClick={() => navigate('/score')}
-              className="px-2 py-0.5 bg-white hover:bg-stone-200 text-stone-800 border border-stone-200 rounded transition-colors"
-            >
-              4. Partitura Urtext
-            </button>
-            <span className="text-stone-400">→</span>
-            <button
-              type="button"
-              onClick={() => navigate('/academy/academic-profile')}
-              className="px-2 py-0.5 bg-white hover:bg-stone-200 text-stone-800 border border-stone-200 rounded transition-colors"
-            >
-              5. Evidência & Perfil
-            </button>
-          </div>
-        </div>
 
-        {/* Tab Navigation Strip */}
-        <div className="flex border-b border-stone-200 gap-1 overflow-x-auto pb-1 text-xs sm:text-sm">
-          <button
-            type="button"
-            onClick={() => setActiveTab('conteudo')}
-            className={`flex items-center gap-1.5 px-3 py-2 border-b-2 font-medium transition-colors whitespace-nowrap ${
-              activeTab === 'conteudo'
-                ? 'border-red-800 text-red-900 font-semibold'
-                : 'border-transparent text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
-            Texto & Teoria
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('audio')}
-            className={`flex items-center gap-1.5 px-3 py-2 border-b-2 font-medium transition-colors whitespace-nowrap ${
-              activeTab === 'audio'
-                ? 'border-red-800 text-red-900 font-semibold'
-                : 'border-transparent text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            <Volume2 className="w-4 h-4" />
-            Áudio Interativo ({content.audioSamples?.length || 0})
-          </button>
-
-          {content.scoreSnippet && (
-            <button
-              type="button"
-              onClick={() => setActiveTab('partitura')}
-              className={`flex items-center gap-1.5 px-3 py-2 border-b-2 font-medium transition-colors whitespace-nowrap ${
-                activeTab === 'partitura'
-                  ? 'border-red-800 text-red-900 font-semibold'
-                  : 'border-transparent text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              <Music className="w-4 h-4" />
-              Partitura Interativa
-            </button>
-          )}
-
-          {content.video && (
-            <button
-              type="button"
-              onClick={() => setActiveTab('video')}
-              className={`flex items-center gap-1.5 px-3 py-2 border-b-2 font-medium transition-colors whitespace-nowrap ${
-                activeTab === 'video'
-                  ? 'border-red-800 text-red-900 font-semibold'
-                  : 'border-transparent text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              <Film className="w-4 h-4" />
-              Vídeo & Transcrição
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('atividades')}
-            className={`flex items-center gap-1.5 px-3 py-2 border-b-2 font-medium transition-colors whitespace-nowrap ${
-              activeTab === 'atividades'
-                ? 'border-red-800 text-red-900 font-semibold'
-                : 'border-transparent text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            Atividades Avaliadas ({activities.length})
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('referencias')}
-            className={`flex items-center gap-1.5 px-3 py-2 border-b-2 font-medium transition-colors whitespace-nowrap ${
-              activeTab === 'referencias'
-                ? 'border-red-800 text-red-900 font-semibold'
-                : 'border-transparent text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            <BookMarked className="w-4 h-4" />
-            Referências Bibliográficas
-          </button>
-        </div>
-
-        {/* TAB 1: TEXTO & TEORIA */}
-        {activeTab === 'conteudo' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              {/* Introduction Banner */}
-              <Card variant="default" padding="lg" className="space-y-4">
-                <div className="space-y-2">
-                  <Badge variant={variant === 'KIDS' ? 'brand' : 'neutral'} size="sm">
-                    {variant === 'KIDS' ? 'Versão Lúdica Ilustrada' : 'Exposição Teórica Canônica'}
-                  </Badge>
-                  <h3 className="font-serif font-bold text-xl text-stone-900 leading-snug">
-                    {content.summary}
-                  </h3>
-                </div>
-
-                <p className="text-sm text-stone-700 leading-relaxed font-sans">
-                  {content.introduction}
+            {progress && (
+              <div className="space-y-1">
+                <ProgressBar
+                  id="lesson-course-progress"
+                  value={progress.progressPercentage}
+                  max={100}
+                  label={`Progresso no curso: ${progress.progressPercentage}%`}
+                />
+                <p className="font-mono text-[11px] text-stone-500">
+                  {progress.progressPercentage}% concluído
                 </p>
-              </Card>
+              </div>
+            )}
 
-              {/* Sections */}
-              {content.sections.map((sec) => (
-                <Card key={sec.id} variant="default" padding="lg" className="space-y-4">
-                  <h4 className="font-serif font-bold text-lg text-stone-900">
-                    {sec.title}
-                  </h4>
-                  <div className="text-sm text-stone-800 leading-relaxed space-y-3 font-sans whitespace-pre-line">
-                    {sec.contentMarkdown}
-                  </div>
-
-                  {sec.callout && (
-                    <div
-                      className={`p-4 rounded-lg border text-xs space-y-1 ${
-                        sec.callout.type === 'historical'
-                          ? 'bg-amber-50/60 border-amber-200 text-amber-900'
-                          : sec.callout.type === 'tip'
-                          ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
-                          : 'bg-stone-50 border-stone-200 text-stone-800'
-                      }`}
-                    >
-                      <div className="font-bold uppercase tracking-wider flex items-center gap-1.5 font-mono">
-                        <Info className="w-3.5 h-3.5" />
-                        {sec.callout.title}
-                      </div>
-                      <p className="leading-relaxed font-sans">{sec.callout.text}</p>
-                    </div>
-                  )}
-                </Card>
-              ))}
-            </div>
-
-            {/* Right column: Audio Quick Previews, Illustrations, Provenance */}
-            <div className="space-y-6">
-              {/* Audio quick widget */}
-              <Card variant="default" padding="md" className="space-y-3">
-                <h4 className="font-serif font-bold text-sm text-stone-900 flex items-center gap-2">
-                  <Volume2 className="w-4 h-4 text-red-800" />
-                  Demonstrações Acústicas
-                </h4>
-                <div className="space-y-2">
-                  {content.audioSamples.map((aud) => (
-                    <div
-                      key={aud.id}
-                      className="p-3 bg-stone-50 border border-stone-200 rounded-lg space-y-2"
-                    >
-                      <div className="text-xs font-semibold text-stone-900 font-serif">
-                        {aud.title}
-                      </div>
-                      <p className="text-[11px] text-stone-600 leading-tight">
-                        {aud.description}
-                      </p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full text-xs"
-                        onClick={() => playAudioSample(aud.id, aud.frequenciesHz)}
-                      >
-                        <Play className="w-3 h-3 mr-1 text-red-800" />
-                        {playingAudioId === aud.id ? 'Tocando Frequências...' : 'Reproduzir Amostra'}
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-
-              {/* Illustrations */}
-              {content.illustrations.length > 0 && (
-                <Card variant="default" padding="md" className="space-y-3">
-                  <h4 className="font-serif font-bold text-sm text-stone-900">
-                    Gravuras & Iconografia
-                  </h4>
-                  {content.illustrations.map((ill) => (
-                    <div key={ill.id} className="space-y-2">
-                      <div className="h-32 bg-stone-100 rounded border border-stone-200 flex items-center justify-center text-center p-3 text-xs text-stone-500 font-serif">
-                        <span>[Gravura Histórica: {ill.title}]</span>
-                      </div>
-                      <p className="text-xs text-stone-700 font-medium">{ill.caption}</p>
-                      <span className="text-[10px] text-stone-400 font-mono block">
-                        {ill.historicalContext}
-                      </span>
-                    </div>
-                  ))}
-                </Card>
+            <nav aria-label="Lições do módulo" className="space-y-0.5 border-t border-stone-100 pt-2">
+              {module && (
+                <p className="px-1 pb-1 font-mono text-[10px] uppercase text-stone-400">
+                  {module.title}
+                </p>
               )}
-
-              {/* Provenance Box */}
-              <Card variant="muted" padding="md" className="space-y-2 text-xs border-stone-200">
-                <span className="font-mono text-[10px] uppercase text-stone-500 font-bold block">
-                  Proveniência Curatorial
-                </span>
-                <p className="text-stone-800 font-serif">{lesson.provenanceRef}</p>
-              </Card>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: AUDIO INTERATIVO */}
-        {activeTab === 'audio' && (
-          <div className="max-w-3xl space-y-4">
-            <Card variant="default" padding="lg" className="space-y-4">
-              <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-                <Volume2 className="w-5 h-5 text-red-800" />
-                Laboratório de Percepção & Frequências Acústicas
-              </h3>
-              <p className="text-sm text-stone-600 leading-relaxed">
-                Utilizamos o motor nativo de síntese em tempo real (Web Audio API) para reproduzir as frequências exatas descritas nos tratados de acústica, sem compressão lossy.
-              </p>
-
-              <div className="space-y-4 pt-2">
-                {content.audioSamples.map((sample) => (
-                  <div
-                    key={sample.id}
-                    className="p-4 bg-stone-50 border border-stone-200 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+              {moduleLessons.map((l, i) => {
+                const done = !!progress?.completedLessonIds.includes(l.id);
+                const current = l.id === lessonId;
+                const locked = !progress && i > 0;
+                return (
+                  <button
+                    key={l.id}
+                    type="button"
+                    disabled={locked}
+                    aria-current={current ? 'page' : undefined}
+                    onClick={() => navigate(`/academy/lesson/${l.id}`)}
+                    className={[
+                      'flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors',
+                      current ? 'bg-red-50 font-semibold text-red-900' : 'text-stone-700 hover:bg-stone-50',
+                      locked && 'cursor-not-allowed text-stone-400',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
                   >
-                    <div className="space-y-1">
-                      <h4 className="font-serif font-bold text-base text-stone-900">
-                        {sample.title}
-                      </h4>
-                      <p className="text-xs text-stone-600">{sample.description}</p>
-                      <div className="flex items-center gap-2 text-xs font-mono text-stone-500 pt-1">
-                        <span>Notas: {sample.notes.join(' - ')}</span>
-                        <span>•</span>
-                        <span>Frequências: {sample.frequenciesHz.map((f) => `${f.toFixed(1)}Hz`).join(', ')}</span>
-                      </div>
-                    </div>
-
-                    <Button
-                      id={`btn-play-sample-${sample.id}`}
-                      variant="primary"
-                      size="sm"
-                      onClick={() => playAudioSample(sample.id, sample.frequenciesHz)}
-                    >
-                      <Play className="w-3.5 h-3.5 mr-1" />
-                      {playingAudioId === sample.id ? 'Reproduzindo...' : 'Ouvir Agora'}
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        )}
-
-        {/* TAB 3: PARTITURA INTERATIVA */}
-        {activeTab === 'partitura' && content.scoreSnippet && (
-          <div className="max-w-4xl space-y-4">
-            <ScoreContainer
-              id="lesson-interactive-score"
-              title={content.scoreSnippet.title}
-              composer="Cátedra de Teoria Musical - Academia Musical Digital"
-              clef={content.scoreSnippet.clef}
-              keySignature={content.scoreSnippet.keySignature}
-              timeSignature={content.scoreSnippet.timeSignature}
-              tempoBpm={100}
-              measures={[
-                { measureNumber: 1, notes: ['C4', 'D4', 'E4', 'F4'], chords: 'C', isCurrent: true },
-                { measureNumber: 2, notes: ['G4', 'A4', 'B4', 'C5'], chords: 'G', isCurrent: false },
-              ]}
-            />
-            {content.scoreSnippet.caption && (
-              <p className="text-xs text-stone-600 text-center font-sans">
-                {content.scoreSnippet.caption}
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* TAB 4: VÍDEO & TRANSCRIÇÃO */}
-        {activeTab === 'video' && content.video && (
-          <div className="max-w-4xl space-y-6">
-            <Card variant="default" padding="lg" className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-                  <Film className="w-5 h-5 text-red-800" />
-                  {content.video.title}
-                </h3>
-                <span className="text-xs font-mono text-stone-500">
-                  {content.video.durationMinutes} minutos
-                </span>
-              </div>
-
-              {/* Simulated accessible media player container */}
-              <div className="w-full aspect-video bg-stone-900 rounded-lg flex flex-col items-center justify-center text-white p-6 space-y-3">
-                <div className="w-16 h-16 rounded-full bg-red-800/80 hover:bg-red-800 flex items-center justify-center cursor-pointer transition-colors shadow-lg">
-                  <Play className="w-8 h-8 text-white ml-1" />
-                </div>
-                <span className="text-xs font-sans text-stone-300">
-                  Vídeo Pedagógico Acessível • Demonstração no Piano de Cauda
-                </span>
-              </div>
-
-              {/* Transcript */}
-              <div className="space-y-2 pt-4 border-t border-stone-200">
-                <h4 className="font-serif font-bold text-sm text-stone-900">
-                  Transcrição Textual & Didática:
-                </h4>
-                <p className="text-xs text-stone-700 leading-relaxed font-sans bg-stone-50 p-4 rounded border border-stone-200">
-                  {content.video.transcript}
-                </p>
-              </div>
-            </Card>
-          </div>
-        )}
-
-        {/* TAB 5: ATIVIDADES PRÁTICAS */}
-        {activeTab === 'atividades' && (
-          <div className="max-w-3xl space-y-4">
-            <Card variant="default" padding="lg" className="space-y-4">
-              <div>
-                <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-red-800" />
-                  Atividades Práticas de Fixação
-                </h3>
-                <p className="text-xs text-stone-600">
-                  Exercícios avaliados com feedback imediato, registro de tentativa e emissão de evidência.
-                </p>
-              </div>
-
-              <div className="space-y-3 pt-2">
-                {activities.map((act, idx) => (
-                  <div
-                    key={act.id}
-                    className="p-4 bg-stone-50 border border-stone-200 rounded-lg flex items-center justify-between gap-4"
-                  >
-                    <div className="space-y-1">
-                      <span className="text-[11px] font-mono uppercase text-stone-500 font-semibold">
-                        Atividade 0{idx + 1} • Dificuldade: {act.difficulty}
+                    {done ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" aria-hidden="true" />
+                    ) : locked ? (
+                      <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    ) : (
+                      <span aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-center font-mono text-[10px] leading-4">
+                        {i + 1}
                       </span>
-                      <h4 className="font-serif font-bold text-base text-stone-900">
-                        {act.variants[variant]?.question || act.variants.TRADITIONAL.question}
-                      </h4>
-                      <div className="flex gap-1.5">
-                        {act.skills.map((s, i) => (
-                          <span key={i} className="text-[10px] bg-stone-200 text-stone-700 px-2 py-0.5 rounded">
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                    )}
+                    <span className="line-clamp-2">
+                      {l.variants[variant]?.title || l.variants.TRADITIONAL.title}
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>
+          </Card>
 
-                    <Button
-                      id={`btn-start-act-${act.id}`}
-                      size="sm"
-                      variant="primary"
-                      onClick={() => navigate(`/academy/activity/${act.id}`)}
-                    >
-                      Resolver Atividade
-                      <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                    </Button>
-                  </div>
-                ))}
+          <Card variant="default" padding="md" className="space-y-2 text-xs text-stone-600">
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5 shrink-0 text-stone-400" aria-hidden="true" />
+              <span>{lesson?.durationMinutes} min de leitura estimada</span>
+            </div>
+            {lesson?.provenanceRef && (
+              <div className="flex items-start gap-1.5 border-t border-stone-100 pt-2">
+                <BookMarked className="mt-0.5 h-3.5 w-3.5 shrink-0 text-stone-400" aria-hidden="true" />
+                <span className="leading-relaxed">{lesson.provenanceRef}</span>
               </div>
-            </Card>
-          </div>
-        )}
-
-        {/* TAB 6: REFERÊNCIAS BIBLIOGRÁFICAS */}
-        {activeTab === 'referencias' && (
-          <div className="max-w-3xl space-y-4">
-            <Card variant="default" padding="lg" className="space-y-4">
-              <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-                <BookMarked className="w-5 h-5 text-red-800" />
-                Tratados & Bibliografia Canônica
-              </h3>
-              <p className="text-xs text-stone-600">
-                Fontes acadêmicas de proveniência formal que embasam rigorosamente as proposições desta lição.
-              </p>
-
-              <div className="space-y-3 pt-2">
-                {content.references.map((ref, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 bg-stone-50 border border-stone-200 rounded-lg space-y-1 text-xs"
-                  >
-                    <div className="font-bold font-serif text-stone-900 text-sm">
-                      {ref.title}
-                    </div>
-                    <div className="text-stone-700 font-sans">
-                      Autor(es): <span className="font-medium">{ref.author}</span>
-                    </div>
-                    <div className="text-stone-500 font-mono text-[11px]">
-                      {ref.chapterOrLecture}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        )}
-
-        {/* Bottom Navigation Toolbar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-stone-200">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(`/academy/course/${lesson.courseId}`)}
-          >
-            <ArrowLeft className="w-4 h-4 mr-1.5" />
-            Grade do Curso
-          </Button>
-
-          <div className="flex items-center gap-3">
-            <Button
-              id="btn-bottom-complete-lesson"
-              variant={isCompleted ? 'outline' : 'primary'}
-              size="sm"
-              onClick={handleToggleComplete}
-            >
-              <CheckCircle className="w-4 h-4 mr-1.5" />
-              {isCompleted ? 'Lição Concluída ✓' : 'Concluir Lição'}
-            </Button>
-
-            {activities.length > 0 && (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => navigate(`/academy/activity/${activities[0].id}`)}
-              >
-                Próxima Atividade
-                <ArrowRight className="w-4 h-4 ml-1.5" />
-              </Button>
             )}
-          </div>
+          </Card>
         </div>
-      </div>
-    </ScreenContainer>
+      </PageLayout.Aside>
+
+      {/* -------------------------------------------------- CORPO DA AULA --- */}
+      <PageLayout.Main>
+        <article className="space-y-8">
+          <header className="space-y-3 border-b border-stone-200 pb-5">
+            <div className="flex flex-wrap items-center gap-2">
+              {module && <Badge variant="neutral">{module.title}</Badge>}
+              {isCompleted && <Badge variant="brand">Concluída</Badge>}
+              <div className="ml-auto">
+                <AudienceToggle variant={variant} onChange={setVariant} />
+              </div>
+            </div>
+
+            <h1 className="font-serif text-3xl font-bold leading-tight text-stone-900">
+              {content?.title}
+            </h1>
+            <p className="text-base leading-relaxed text-stone-600">{content?.summary}</p>
+
+            {lesson && lesson.objectives.length > 0 && (
+              <ul className="space-y-1 rounded-md bg-stone-50 p-3">
+                {lesson.objectives.map((o, i) => (
+                  <li key={i} className="flex gap-2 text-xs text-stone-700">
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" aria-hidden="true" />
+                    <span>{o}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </header>
+
+          {content?.introduction && (
+            <p className="text-[17px] leading-relaxed text-stone-800 first-letter:float-left first-letter:mr-2 first-letter:font-serif first-letter:text-5xl first-letter:leading-[0.85] first-letter:text-red-900">
+              {content.introduction}
+            </p>
+          )}
+
+          {/* Seções com blocos interativos intercalados */}
+          {content?.sections.map((section) => (
+            <PageLayout.Section key={section.id} title={section.title} className="space-y-4">
+              {sectionToBlocks(section).map((block) => (
+                <LessonBlockRenderer key={block.id} block={block} />
+              ))}
+            </PageLayout.Section>
+          ))}
+
+          {/* Prática vinculada — regra constitucional 1 */}
+          {lesson && lesson.skills.length > 0 && (
+            <Card variant="accent" padding="lg" className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-red-800" aria-hidden="true" />
+                <h2 className="font-serif text-base font-bold text-stone-900">
+                  Pratique esta competência
+                </h2>
+              </div>
+              <p className="text-sm leading-relaxed text-stone-700">
+                Esta lição desenvolve {lesson.skills.length === 1 ? 'a competência' : 'as competências'}{' '}
+                <strong>{lesson.skills.join(', ')}</strong>. O treinador mede sua precisão e
+                registra a evolução no seu perfil.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {activities.map((a) => (
+                  <Button key={a.id} variant="outline" size="sm" onClick={() => navigate(`/academy/activity/${a.id}`)}>
+                    {a.variants?.[variant]?.instruction || 'Atividade prática'}
+                  </Button>
+                ))}
+                <Button variant="primary" size="sm" onClick={() => navigate('/practice/skill-tree')}>
+                  Abrir no Treinador
+                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                </Button>
+              </div>
+            </Card>
+          )}
+
+          {content && content.references.length > 0 && (
+            <PageLayout.Section title="Referências">
+              <ul className="space-y-2">
+                {content.references.map((r, i) => (
+                  <li key={i} className="border-l-2 border-stone-200 pl-3 text-xs leading-relaxed text-stone-600">
+                    <span className="font-serif font-semibold text-stone-800">{r.title}</span>
+                    {' — '}
+                    {r.author}. <span className="italic">{r.chapterOrLecture}</span>
+                  </li>
+                ))}
+              </ul>
+            </PageLayout.Section>
+          )}
+
+          {/* Navegação entre lições */}
+          <nav
+            aria-label="Navegação entre lições"
+            className="flex flex-col gap-3 border-t border-stone-200 pt-6 sm:flex-row sm:items-center sm:justify-between"
+          >
+            {previous ? (
+              <Button variant="outline" size="sm" onClick={() => navigate(`/academy/lesson/${previous.id}`)}>
+                <ArrowLeft className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                Lição anterior
+              </Button>
+            ) : (
+              <span />
+            )}
+
+            <Button
+              variant="primary"
+              size="md"
+              disabled={isMarkingComplete}
+              onClick={handleComplete}
+            >
+              {isCompleted ? (
+                <>Revisada · seguir {next ? 'para a próxima' : 'adiante'}</>
+              ) : (
+                <>Concluir lição {next && 'e seguir'}</>
+              )}
+              <ArrowRight className="ml-1.5 h-3.5 w-3.5" aria-hidden="true" />
+            </Button>
+          </nav>
+        </article>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

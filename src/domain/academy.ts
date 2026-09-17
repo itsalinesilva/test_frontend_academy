@@ -172,15 +172,63 @@ export interface AcademyModule {
 // 3. Lesson (Content vs Presentation Separation)
 // ---------------------------------------------------------------------------
 
+/**
+ * Blocos interativos intercalados no corpo da lição.
+ *
+ * MOTIVO: até aqui `LessonSection` só tinha `contentMarkdown`, e toda a
+ * mídia vivia no nível da LIÇÃO — os exemplos sonoros, a pauta e as
+ * ilustrações eram empilhados à parte, depois do texto. O resultado é uma
+ * leitura corrida e pesada, com a demonstração longe da afirmação que ela
+ * demonstra.
+ *
+ * Com blocos, o laboratório fica ONDE o conceito é apresentado: o parágrafo
+ * que define a terça maior é seguido imediatamente pelo laboratório em que
+ * o aluno ouve, compara e verifica no motor de teoria real.
+ *
+ * Todo bloco é servido por um motor que JÁ EXISTE no repositório
+ * (`adapters/engines/`) — nenhum deles simula resultado.
+ */
+export type LessonBlock =
+  /** Prosa acadêmica. */
+  | { kind: 'MARKDOWN'; id: string; markdown: string }
+  /** Destaque contextual: nota histórica, atenção, dica. */
+  | { kind: 'CALLOUT'; id: string; type: 'info' | 'historical' | 'warning' | 'tip'; title: string; text: string }
+  /** Exemplo sonoro sintetizado em tempo real (WebAudio). */
+  | { kind: 'AUDIO_EXAMPLE'; id: string; title: string; description?: string; notes: string[]; playMode: 'SEQUENCE' | 'CHORD'; bpm?: number }
+  /** Laboratório de intervalo: ouvir, comparar e analisar no motor de teoria. */
+  | { kind: 'INTERVAL_LAB'; id: string; title: string; lowerNote: string; upperNote: string; prompt?: string }
+  /** Laboratório de acorde: identificação de tríade e inversão. */
+  | { kind: 'CHORD_LAB'; id: string; title: string; notes: string[]; prompt?: string }
+  /** Laboratório de escala: geração pela fórmula T-T-st-T-T-T-st. */
+  | { kind: 'SCALE_LAB'; id: string; title: string; tonic: string; mode: 'MAJOR' | 'NATURAL_MINOR' | 'HARMONIC_MINOR' }
+  /** Teclado tocável, com teclas em destaque. */
+  | { kind: 'KEYBOARD'; id: string; title?: string; highlightNotes?: string[]; startOctave?: number; octaves?: number }
+  /** Pauta canônica renderizada. */
+  | { kind: 'STAFF'; id: string; title?: string; clef: 'treble' | 'bass' | 'alto'; timeSignature?: string; notes: string[]; caption?: string }
+  /** Diagrama gerado programaticamente (SVG), sem dependência de imagem. */
+  | { kind: 'DIAGRAM'; id: string; title: string; diagram: 'CIRCLE_OF_FIFTHS' | 'TONE_SEMITONE' | 'INTERVAL_RULER'; highlight?: string[]; caption?: string }
+  /**
+   * Verificação de leitura no meio do texto — não ao final.
+   * Fonte natural: Bohumil Med, *Livro de Exercícios* (ADR-002).
+   */
+  | { kind: 'CHECKPOINT'; id: string; question: string; options: string[]; correctIndex: number; explanation: string; sourceRef?: string };
+
 export interface LessonSection {
   id: string;
   title: string;
+  /**
+   * @deprecated Preferir `blocks`. Mantido para não quebrar as lições já
+   * semeadas: quando `blocks` está ausente, o leitor renderiza este campo
+   * como um único bloco MARKDOWN.
+   */
   contentMarkdown: string;
   callout?: {
     type: 'info' | 'historical' | 'warning' | 'tip';
     title: string;
     text: string;
   };
+  /** Sequência interativa da seção. Quando presente, prevalece. */
+  blocks?: LessonBlock[];
 }
 
 export interface AudioSample {

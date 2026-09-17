@@ -624,6 +624,52 @@ Observe a correlação estrita entre os dois sistemas:
 - **G** = Sol
 
 Na ordenação que ascende a partir de Dó (C), obtemos a célebre série diatônica: **C - D - E - F - G - A - B - (C)**.`,
+            blocks: [
+              {
+                kind: 'MARKDOWN',
+                id: 'b_l1s1_intro',
+                markdown: `A notação musical ocidental adota dois sistemas primordiais:
+- **Nomenclatura Silábica (Guido d'Arezzo):** Dó, Ré, Mi, Fá, Sol, Lá, Si.
+- **Nomenclatura Alfabética Internacional:** A, B, C, D, E, F, G.
+
+Na ordenação que ascende a partir de Dó (C), obtemos a série diatônica: **C - D - E - F - G - A - B - (C)**.`,
+              },
+              {
+                kind: 'KEYBOARD',
+                id: 'b_l1s1_kb',
+                title: 'As sete naturais no teclado',
+                highlightNotes: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4'],
+                startOctave: 4,
+                octaves: 2,
+              },
+              {
+                kind: 'AUDIO_EXAMPLE',
+                id: 'b_l1s1_a440',
+                title: 'O diapasão',
+                description: 'Lá 4 a 440 Hz — a referência adotada pela ISO 16.',
+                notes: ['A4'],
+                playMode: 'SEQUENCE',
+              },
+              {
+                kind: 'STAFF',
+                id: 'b_l1s1_staff',
+                title: 'As sete naturais na clave de sol',
+                clef: 'treble',
+                timeSignature: '4/4',
+                notes: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'],
+                caption: 'Observe a alternância sucessiva entre linha e espaço no pentagrama.',
+              },
+              {
+                kind: 'CHECKPOINT',
+                id: 'b_l1s1_check',
+                question: 'Qual nota alfabética corresponde à frequência de referência do diapasão?',
+                options: ['C (Dó)', 'A (Lá)', 'G (Sol)', 'E (Mi)'],
+                correctIndex: 1,
+                explanation:
+                  'A4 — o Lá da quarta oitava — é fixado em 440 Hz pela ISO 16, e serve de referência para a afinação de todo o conjunto.',
+                sourceRef: 'Med, Bohumil. Teoria da Música, cap. 1',
+              },
+            ],
             callout: {
               type: 'historical',
               title: 'Nota de Proveniência Histórica',
@@ -633,6 +679,57 @@ Na ordenação que ascende a partir de Dó (C), obtemos a célebre série diatô
           {
             id: 'sec_2',
             title: '2. Tons e Semitons Naturais',
+            blocks: [
+              {
+                kind: 'MARKDOWN',
+                id: 'b_l1s2_md',
+                markdown: `Nem todas as notas adjacentes na escala natural guardam a mesma distância entre si:
+- Entre **C-D**, **D-E**, **F-G**, **G-A** e **A-B**, a distância é de um **tom inteiro**.
+- Entre **E-F** e entre **B-C**, a distância natural é de apenas um **semitom**.
+
+Essa assimetria é o que permite ao ouvido reconhecer a tônica e se orientar tonalmente.`,
+              },
+              {
+                kind: 'DIAGRAM',
+                id: 'b_l1s2_diag',
+                title: 'Distribuição de tons e semitons',
+                diagram: 'TONE_SEMITONE',
+                caption: 'Os dois semitons naturais — E-F e B-C — são os pontos sem tecla preta intermediária.',
+              },
+              {
+                kind: 'INTERVAL_LAB',
+                id: 'b_l1s2_lab_tom',
+                title: 'Tom inteiro',
+                lowerNote: 'C4',
+                upperNote: 'D4',
+                prompt: 'Ouça e analise: dois semitons separam estas notas.',
+              },
+              {
+                kind: 'INTERVAL_LAB',
+                id: 'b_l1s2_lab_semi',
+                title: 'Semitom natural',
+                lowerNote: 'E4',
+                upperNote: 'F4',
+                prompt: 'Compare com o anterior. A distância aqui é metade.',
+              },
+              {
+                kind: 'SCALE_LAB',
+                id: 'b_l1s2_scale',
+                title: 'Escala de Dó maior',
+                tonic: 'C',
+                mode: 'MAJOR',
+              },
+              {
+                kind: 'CHECKPOINT',
+                id: 'b_l1s2_check',
+                question: 'Entre quais pares de notas naturais a distância é de apenas um semitom?',
+                options: ['C-D e G-A', 'E-F e B-C', 'D-E e A-B', 'F-G e C-D'],
+                correctIndex: 1,
+                explanation:
+                  'E-F e B-C são os únicos semitons da escala natural. No teclado, são os pares sem tecla preta entre si.',
+                sourceRef: 'Med, Bohumil. Livro de Exercícios, cap. 2',
+              },
+            ],
             contentMarkdown: `Nem todas as notas adjacentes na escala natural guardam a mesma distância intervalar entre si:
 - Entre **C e D**, **D e E**, **F e G**, **G e A**, **A e B**, a distância acústica é de um **Tom Inteiro** (dois semitons).
 - Entre **E e F** (Mi e Fá) e entre **B e C** (Si e Dó), a distância natural é de apenas um **Semitom** (meio-tom).

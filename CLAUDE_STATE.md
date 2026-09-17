@@ -6,9 +6,9 @@
 | Campo | Valor |
 | :--- | :--- |
 | **Última atualização** | 2026-09-16 |
-| **Missão concluída** | **COMANDO 3 · etapa 1 — `PageLayout` + CourseDetailScreen** (58→97/100) |
+| **Missão concluída** | **COMANDO 3 · etapa 2 — lição imersiva com blocos interativos** (LessonReader 50→97) |
 | **Branch** | `main` (commit `cad89d0`) |
-| **Próxima missão** | COMANDO 3 · etapa 2 — `LessonReaderScreen` e o restante da Academy sobre `PageLayout` |
+| **Próxima missão** | COMANDO 3 · etapa 3 — Academy Home, Catálogo, Grade e as 6 rotas com parâmetro quebrado |
 | **Status global** | 🟠 **PROTÓTIPO COM AUTENTICAÇÃO REAL** — os bloqueadores de segurança estão fechados; a paridade funcional não |
 
 ---
@@ -20,7 +20,7 @@
 | Instalação de dependências | `npm install` | ✅ 222 pacotes (falhava antes: `ComSpec` vazio no shell — ver §6) |
 | Typecheck estrito | `tsc --noEmit` | ✅ **0 erros** |
 | Lint | `eslint src server functions` | ⚠️ 0 erros, **20 warnings** (`no-explicit-any`; eram 28) |
-| Testes | `vitest run` | ✅ **54/54** (8 arquivos) — 16 de autorização + 17 de componente |
+| Testes | `vitest run` | ✅ **69/69** (9 arquivos) — 16 de autorização + 32 de componente |
 | Build de produção | `vite build` | ✅ 7.7s — bundle único de **1.244 kB** (sem code-splitting) |
 | Servidor de API | `curl` contra 5 vetores de ataque | ✅ **404 / 401 / 401 / 401 / 401** — todos recusados |
 | Vazamento no bundle | `npm run verify:secrets` | ✅ **limpo** (guarda encadeada ao `npm run build`) |

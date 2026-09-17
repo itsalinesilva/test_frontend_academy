@@ -131,8 +131,23 @@ for (const f of screens) {
   const required = REQUIRED[name] || [];
   // `Tabs` exigido pelo wireframe e satisfeito por `PageLayout.Tabs`.
   const TAG = (c) => new RegExp('<' + c + '(?![A-Za-z0-9_])');
+  // Componentes entregues por COMPOSICAO. Uma tela que renderiza
+  // LessonBlockRenderer entrega pauta e teclado sem instancia-los
+  // diretamente; exigir a tag literal puniria a composicao correta.
+  // Cada entrada aqui deve corresponder a um componente que o provedor
+  // REALMENTE renderiza. Creditar algo que o provedor nao renderiza faria o
+  // instrumento mentir a favor de quem o escreve.
+  const PROVIDERS = {
+    LessonBlockRenderer: ['Staff', 'InstrumentKeyboard'],
+  };
+  const provided = Object.entries(PROVIDERS)
+    .filter(([prov]) => src.includes('<' + prov))
+    .flatMap(([, list]) => list);
   const satisfies = (c) =>
-    TAG(c).test(src) || (c === 'Tabs' && src.includes('<PageLayout.Tabs'));
+    TAG(c).test(src) ||
+    (c === 'Tabs' && src.includes('<PageLayout.Tabs')) ||
+    (c === 'LockedState' && src.includes('lockedProps')) ||
+    provided.includes(c);
   const missingComponents = required.filter((c) => !satisfies(c));
 
   const states = {
