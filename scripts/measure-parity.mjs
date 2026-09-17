@@ -144,6 +144,8 @@ for (const f of screens) {
     // CredentialsTab renderiza <Credential/> de verdade (certificados
     // academicos). So entra aqui o que o provedor de fato desenha.
     CredentialsTab: ['Credential'],
+    // PainelDeCaptura desenha o Tuner ao vivo durante a execucao.
+    PainelDeCaptura: ['Tuner'],
   };
   const provided = Object.entries(PROVIDERS)
     .filter(([prov]) => src.includes('<' + prov))

@@ -17,6 +17,7 @@ import { PracticeResult } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
 import { PainelDeMedicao } from '../../components/practice/PainelDeMedicao';
+import { PageLayout } from '../../components/layout/PageLayout';
 
 export const PracticeResultScreen: React.FC = () => {
   const router = useRouter();
@@ -24,6 +25,7 @@ export const PracticeResultScreen: React.FC = () => {
   const resultId = params.id || '';
 
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<PracticeResult | null>(null);
 
   useEffect(() => {
@@ -35,6 +37,7 @@ export const PracticeResultScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load practice result', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -64,7 +67,14 @@ export const PracticeResultScreen: React.FC = () => {
   const { medicao, masteryAdvancement } = result;
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="practiceresult"
+      form="focus"
+      density="editorial"
+      state={isLoading ? 'loading' : !result ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Main>
       {/* Top Victory Banner */}
       <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900 text-white shadow-xl border border-stone-800 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -239,6 +249,7 @@ export const PracticeResultScreen: React.FC = () => {
           </Button>
         </div>
       </div>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

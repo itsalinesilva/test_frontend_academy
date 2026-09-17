@@ -14,11 +14,14 @@ import { DailyGoal } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
 import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { ProgressRing } from '../../components/data-display/ProgressRing';
 
 export const DailyGoalScreen: React.FC = () => {
   const { userId } = useUsuarioAtual();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [dailyGoal, setDailyGoal] = useState<DailyGoal | null>(null);
 
   useEffect(() => {
@@ -31,6 +34,7 @@ export const DailyGoalScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load daily goal', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -76,7 +80,34 @@ export const DailyGoalScreen: React.FC = () => {
   const exPct = Math.min(100, Math.round((dailyGoal.completedExercises / dailyGoal.targetExercises) * 100));
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="dailygoal"
+      form="focus"
+      density="editorial"
+      state={isLoading ? 'loading' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Main>
+      {dailyGoal && (
+        <div className="mb-6 flex items-center justify-center gap-4">
+          <ProgressRing
+            id="meta-diaria-ring"
+            value={Math.min(100, Math.round((dailyGoal.completedXp / Math.max(1, dailyGoal.targetXp)) * 100))}
+            size={96}
+            strokeWidth={7}
+            showLabel
+            isCompleted={dailyGoal.isCompleted}
+          />
+          <div className="text-sm text-stone-700">
+            <p className="font-serif text-lg font-bold text-stone-900">
+              {dailyGoal.completedXp} de {dailyGoal.targetXp} XP
+            </p>
+            <p className="text-xs text-stone-500">
+              {dailyGoal.completedMinutes} de {dailyGoal.targetMinutes} minutos
+            </p>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div>
         <button
@@ -227,6 +258,7 @@ export const DailyGoalScreen: React.FC = () => {
           <span>Continuar Treinamento do Dia</span>
         </Button>
       </div>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

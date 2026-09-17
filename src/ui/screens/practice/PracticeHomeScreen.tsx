@@ -30,11 +30,16 @@ import {
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
 import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { ProgressRing } from '../../components/data-display/ProgressRing';
+import { XPIndicator } from '../../components/data-display/XPIndicator';
+import { PracticeCard } from '../../components/domain/PracticeCard';
 
 export const PracticeHomeScreen: React.FC = () => {
   const { userId } = useUsuarioAtual();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [trees, setTrees] = useState<SkillTree[]>([]);
   const [streak, setStreak] = useState<StreakTracker | null>(null);
   const [dailyGoal, setDailyGoal] = useState<DailyGoal | null>(null);
@@ -59,6 +64,7 @@ export const PracticeHomeScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load practice home', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -179,7 +185,73 @@ export const PracticeHomeScreen: React.FC = () => {
     : 0;
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="practicehome"
+      form="detail"
+      density="operational"
+      asideLabel="Seu treino"
+      state={isLoading ? 'loading' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-3">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Hoje
+          </p>
+          {dailyGoal && (
+            <div className="flex items-center gap-3">
+              <ProgressRing
+                id="home-meta-ring"
+                value={Math.min(100, Math.round((dailyGoal.completedXp / Math.max(1, dailyGoal.targetXp)) * 100))}
+                size={52}
+                showLabel
+              />
+              <div className="text-xs text-stone-600">
+                <p className="font-semibold text-stone-900">Meta diária</p>
+                <p>{dailyGoal.completedXp} de {dailyGoal.targetXp} XP</p>
+              </div>
+            </div>
+          )}
+          {streak && (
+            <div className="space-y-1.5">
+              <XPIndicator id="home-xp" totalXp={dailyGoal?.completedXp ?? 0} compact />
+              <p className="font-mono text-[10px] text-stone-500">
+                ofensiva: {streak.currentStreakDays} {streak.currentStreakDays === 1 ? 'dia' : 'dias'}
+              </p>
+            </div>
+          )}
+          <Button variant="outline" size="sm" className="w-full" onClick={() => router.navigate('/practice/skill-tree')}>
+            Árvore de habilidades
+          </Button>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Tabs
+        id="practice-home-tabs"
+        tabs={[
+          { id: 'treino', label: 'Treinar' },
+          { id: 'arvore', label: 'Árvore de habilidades' },
+          { id: 'maestria', label: 'Maestria' },
+          { id: 'historico', label: 'Histórico' },
+          { id: 'ranking', label: 'Classificação' },
+        ]}
+        activeTab="treino"
+        onChange={(id) =>
+          router.navigate(
+            id === 'arvore'
+              ? '/practice/skill-tree'
+              : id === 'maestria'
+                ? '/practice/mastery'
+                : id === 'historico'
+                  ? '/practice/history'
+                  : id === 'ranking'
+                    ? '/practice/ranking'
+                    : '/practice'
+          )
+        }
+      />
+
+      <PageLayout.Main>
       {/* Top Banner: Training Hero & Gamification Ticker */}
       <div className="flex flex-col lg:flex-row items-stretch justify-between gap-6 bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900 text-stone-100 p-6 md:p-8 rounded-2xl shadow-xl border border-stone-800">
         <div className="space-y-3 max-w-2xl">
@@ -336,41 +408,17 @@ export const PracticeHomeScreen: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {modalitiesList.map((m) => {
-            const Icon = m.icon;
-            return (
-              <Card
-                key={m.id}
-                variant="default"
-                padding="md"
-                onClick={() => handleStartTraining(m.id)}
-                className="cursor-pointer hover:border-anil-800 transition-all hover:shadow-md flex flex-col justify-between space-y-3 group"
-              >
-                <div className="flex items-start justify-between">
-                  <div className={`p-2.5 rounded-lg border ${m.color}`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <Badge variant="neutral" className="text-[10px]">
-                    {m.badge}
-                  </Badge>
-                </div>
-
-                <div>
-                  <h3 className="font-serif font-bold text-stone-900 group-hover:text-anil-900 transition-colors">
-                    {m.title}
-                  </h3>
-                  <p className="text-xs text-stone-500 mt-1 line-clamp-2 leading-relaxed font-sans">
-                    {m.desc}
-                  </p>
-                </div>
-
-                <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs font-medium text-stone-700 group-hover:text-anil-800">
-                  <span>Praticar</span>
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                </div>
-              </Card>
-            );
-          })}
+          {modalitiesList.map((m) => (
+            <PracticeCard
+              key={m.id}
+              id={`modalidade-${m.id}`}
+              title={m.title}
+              skillName={m.desc}
+              category={m.id}
+              estimatedMinutes={10}
+              onStart={() => handleStartTraining(m.id)}
+            />
+          ))}
         </div>
       </section>
 
@@ -521,6 +569,7 @@ export const PracticeHomeScreen: React.FC = () => {
           </Card>
         </div>
       </section>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

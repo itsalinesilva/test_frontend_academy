@@ -5,7 +5,6 @@ import { Badge } from '../../components/base/Badge';
 import {
   Star,
   Play,
-  ArrowRight,
   Layers,
   Sparkles,
   ChevronLeft,
@@ -14,6 +13,9 @@ import { Skill, Exercise, MasteryRecord } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
 import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { ProgressRing } from '../../components/data-display/ProgressRing';
+import { SkillNode } from '../../components/domain/SkillNode';
 
 export const SkillDetailScreen: React.FC = () => {
   const { userId } = useUsuarioAtual();
@@ -22,6 +24,7 @@ export const SkillDetailScreen: React.FC = () => {
   const skillId = params.id;
 
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [skill, setSkill] = useState<Skill | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [mastery, setMastery] = useState<MasteryRecord | null>(null);
@@ -49,6 +52,7 @@ export const SkillDetailScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load skill details', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -94,7 +98,39 @@ export const SkillDetailScreen: React.FC = () => {
   const levelNames = ['', 'Novato', 'Aprendiz', 'Competente', 'Mestre', 'Virtuoso'];
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="skilldetail"
+      form="detail"
+      density="operational"
+      asideLabel="Habilidade"
+      state={isLoading ? 'loading' : !skill ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-3">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Domínio
+          </p>
+          {skill && (
+            <div className="flex items-center gap-3">
+              <ProgressRing
+                id="skill-ring"
+                value={mastery?.scorePercentage ?? 0}
+                size={52}
+                showLabel
+              />
+              <p className="text-xs text-stone-600">
+                {skill.microSkills?.length ?? 0} micro-habilidades
+              </p>
+            </div>
+          )}
+          <Button variant="outline" size="sm" className="w-full" onClick={() => router.navigate('/practice/skill-tree')}>
+            Voltar à árvore
+          </Button>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       {/* Back Button */}
       <div>
         <button
@@ -167,39 +203,15 @@ export const SkillDetailScreen: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {skill.microSkills?.map((ms) => (
-            <Card
+            <SkillNode
               key={ms.id}
-              variant="default"
-              padding="md"
-              className="hover:border-stone-400 transition-all flex flex-col justify-between space-y-3 cursor-pointer"
+              id={`micro-${ms.id}`}
+              title={ms.name}
+              level={mastery?.level ?? 0}
+              maxLevel={5}
+              progressPercentage={mastery?.scorePercentage ?? 0}
               onClick={() => router.navigate(`/practice/microskill/${ms.id}`)}
-            >
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono font-bold text-stone-600 bg-stone-100 px-2 py-0.5 rounded">
-                    {ms.code}
-                  </span>
-                  <Badge variant="neutral" className="text-[10px]">
-                    +{ms.xpBonus} XP
-                  </Badge>
-                </div>
-                <h3 className="font-serif font-bold text-base text-stone-900 mt-2">
-                  {ms.name}
-                </h3>
-                <p className="text-xs text-stone-500 mt-1 line-clamp-2">
-                  {ms.description}
-                </p>
-              </div>
-
-              <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs">
-                <span className="text-stone-500 font-mono text-[11px]">
-                  Alvo: {ms.targetMetric}
-                </span>
-                <span className="font-medium text-anil-800 flex items-center gap-1">
-                  Ver Rúbrica <ArrowRight className="w-3 h-3" />
-                </span>
-              </div>
-            </Card>
+            />
           ))}
         </div>
       </section>
@@ -257,6 +269,7 @@ export const SkillDetailScreen: React.FC = () => {
           ))}
         </div>
       </section>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

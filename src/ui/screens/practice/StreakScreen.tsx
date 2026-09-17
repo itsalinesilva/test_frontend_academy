@@ -13,11 +13,14 @@ import { StreakTracker } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
 import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { ProgressRing } from '../../components/data-display/ProgressRing';
 
 export const StreakScreen: React.FC = () => {
   const { userId } = useUsuarioAtual();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [streak, setStreak] = useState<StreakTracker | null>(null);
 
   useEffect(() => {
@@ -30,6 +33,7 @@ export const StreakScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load streak', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -55,7 +59,31 @@ export const StreakScreen: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="streak"
+      form="focus"
+      density="editorial"
+      state={isLoading ? 'loading' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Main>
+      {streak && (
+        <div className="mb-6 flex items-center justify-center gap-4">
+          <ProgressRing
+            id="ofensiva-ring"
+            value={Math.min(100, Math.round((streak.currentStreakDays / Math.max(1, streak.longestStreakDays || 7)) * 100))}
+            size={96}
+            strokeWidth={7}
+            showLabel
+          />
+          <div className="text-sm text-stone-700">
+            <p className="font-serif text-lg font-bold text-stone-900">
+              {streak.currentStreakDays} {streak.currentStreakDays === 1 ? 'dia' : 'dias'}
+            </p>
+            <p className="text-xs text-stone-500">recorde: {streak.longestStreakDays}</p>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div>
         <button
@@ -184,6 +212,7 @@ export const StreakScreen: React.FC = () => {
           ))}
         </div>
       </section>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

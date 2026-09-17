@@ -13,6 +13,8 @@ import { MicroSkill, Skill, Exercise } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
 import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { ProgressRing } from '../../components/data-display/ProgressRing';
 
 export const MicroSkillScreen: React.FC = () => {
   const { userId } = useUsuarioAtual();
@@ -21,6 +23,7 @@ export const MicroSkillScreen: React.FC = () => {
   const microId = params.id;
 
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [microSkill, setMicroSkill] = useState<MicroSkill | null>(null);
   const [parentSkill, setParentSkill] = useState<Skill | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -46,6 +49,7 @@ export const MicroSkillScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load microskill', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -88,7 +92,32 @@ export const MicroSkillScreen: React.FC = () => {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="microskill"
+      form="detail"
+      density="operational"
+      asideLabel="Micro-habilidade"
+      state={isLoading ? 'loading' : !microSkill ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-3">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Progresso
+          </p>
+          {microSkill && (
+            <div className="flex items-center gap-3">
+              <ProgressRing id="micro-ring" value={exercises.length > 0 ? 100 : 0} size={52} showLabel />
+              <div className="text-xs text-stone-600">
+                <p className="font-semibold text-stone-900">{exercises.length} exercícios</p>
+                <p>{microSkill.targetMetric}</p>
+              </div>
+            </div>
+          )}
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       {/* Breadcrumb Back */}
       <div>
         <button
@@ -215,6 +244,7 @@ export const MicroSkillScreen: React.FC = () => {
           ))}
         </div>
       </section>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

@@ -17,11 +17,13 @@ import { PracticeProfile } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
 import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { PageLayout } from '../../components/layout/PageLayout';
 
 export const PracticeProfileScreen: React.FC = () => {
   const { userId } = useUsuarioAtual();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<PracticeProfile | null>(null);
 
   useEffect(() => {
@@ -34,6 +36,7 @@ export const PracticeProfileScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load practice profile', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -52,7 +55,26 @@ export const PracticeProfileScreen: React.FC = () => {
   if (!profile) return null;
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="practiceprofile"
+      form="detail"
+      density="operational"
+      asideLabel="Resumo"
+      state={isLoading ? 'loading' : !profile ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-2">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Perfil de prática
+          </p>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => router.navigate('/practice/history')}>
+            Ver histórico
+          </Button>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 pb-6">
         <div>
@@ -237,6 +259,7 @@ export const PracticeProfileScreen: React.FC = () => {
           ))}
         </div>
       </section>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

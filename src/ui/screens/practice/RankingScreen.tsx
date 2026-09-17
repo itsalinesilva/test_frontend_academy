@@ -14,11 +14,13 @@ import { RankingLeaderboardEntry, RankingLeague } from '../../../domain/practice
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
 import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { PageLayout } from '../../components/layout/PageLayout';
 
 export const RankingScreen: React.FC = () => {
   const { userId } = useUsuarioAtual();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedLeague, setSelectedLeague] = useState<RankingLeague>(RankingLeague.CONSERVATORIO);
   const [entries, setEntries] = useState<RankingLeaderboardEntry[]>([]);
   const currentUserId = userId;
@@ -32,6 +34,7 @@ export const RankingScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load ranking', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -57,7 +60,26 @@ export const RankingScreen: React.FC = () => {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="ranking"
+      form="catalog"
+      density="operational"
+      asideLabel="Liga"
+      state={isLoading ? 'loading' : entries.length === 0 ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-2">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Classificação
+          </p>
+          <p className="text-xs leading-relaxed text-stone-600">
+            A posição considera o XP da semana corrente.
+          </p>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 pb-6">
         <div>
@@ -178,6 +200,7 @@ export const RankingScreen: React.FC = () => {
           Os 3 primeiros colocados da semana no Conservatório recebem o Laurel de Excelência e multiplicador de 1.5x em todas as evidências geradas na plataforma.
         </p>
       </div>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

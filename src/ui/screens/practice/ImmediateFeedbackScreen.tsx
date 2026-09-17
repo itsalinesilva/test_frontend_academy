@@ -18,6 +18,7 @@ import { webAudioSynth } from '../../../infrastructure/audio/synth';
 import { useRouter, useRouteParams } from '../../navigation/router';
 import { PainelDeMedicao } from '../../components/practice/PainelDeMedicao';
 import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { PageLayout } from '../../components/layout/PageLayout';
 
 export const ImmediateFeedbackScreen: React.FC = () => {
   const { userId } = useUsuarioAtual();
@@ -26,6 +27,7 @@ export const ImmediateFeedbackScreen: React.FC = () => {
   const attemptId = params.id || '';
 
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [attempt, setAttempt] = useState<ExerciseAttempt | null>(null);
   const [exercise, setExercise] = useState<Exercise | null>(null);
 
@@ -62,6 +64,7 @@ export const ImmediateFeedbackScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load immediate feedback data', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -91,7 +94,14 @@ export const ImmediateFeedbackScreen: React.FC = () => {
   const { medicao, immediateFeedback, isCorrect } = attempt;
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="immediatefeedback"
+      form="focus"
+      density="editorial"
+      state={isLoading ? 'loading' : !attempt ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Main>
       {/* Back button & stage breadcrumb */}
       <div className="flex items-center justify-between">
         <button
@@ -264,6 +274,7 @@ export const ImmediateFeedbackScreen: React.FC = () => {
           )}
         </div>
       </div>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

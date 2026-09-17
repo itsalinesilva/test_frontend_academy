@@ -13,6 +13,7 @@ import { practiceService } from '../../../services/application/practice.service'
 import { useRouter, useRouteParams } from '../../navigation/router';
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
 import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { PageLayout } from '../../components/layout/PageLayout';
 
 export const ExerciseDetailScreen: React.FC = () => {
   const { userId } = useUsuarioAtual();
@@ -21,6 +22,7 @@ export const ExerciseDetailScreen: React.FC = () => {
   const exerciseId = params.id;
 
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [skill, setSkill] = useState<Skill | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -42,6 +44,7 @@ export const ExerciseDetailScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load exercise detail', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -98,7 +101,14 @@ export const ExerciseDetailScreen: React.FC = () => {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="exercisedetail"
+      form="focus"
+      density="editorial"
+      state={isLoading ? 'loading' : !exercise ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Main>
       {/* Back Button */}
       <div>
         <button
@@ -203,6 +213,7 @@ export const ExerciseDetailScreen: React.FC = () => {
           </Button>
         </div>
       </Card>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };
