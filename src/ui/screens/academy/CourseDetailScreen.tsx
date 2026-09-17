@@ -60,11 +60,15 @@ export const CourseDetailScreen: React.FC = () => {
       if (!courseId) return;
       try {
         const session = await authService.getActiveSession();
-        // Sem sessao nao ha progresso a carregar nem a gravar: o fallback
-        // anterior misturava dados de visitantes anonimos com os da
-        // fundadora (CLAUDE_AUDIT.md T-05).
-        if (!session) return;
-        const userId = session.user.id;
+        // O catalogo e publico; so o progresso exige sessao. A guarda anterior
+        // bloqueava ambos, escondendo o catalogo de visitantes anonimos.
+        const userId = session?.user.id;
+    if (!userId) {
+      // Matricula exige identidade. Sem sessao, o caminho e autenticar-se —
+      // nao falhar em silencio nem gravar sob outra conta.
+      navigate('/auth/login');
+      return;
+    }
 
         const [c, qzs, allPaths] = await Promise.all([
           academyService.getCourse(courseId),
@@ -99,7 +103,7 @@ export const CourseDetailScreen: React.FC = () => {
             setFinalAssessment(asm);
           }
 
-          const userProgress = await academyService.getUserProgress(userId, c.id);
+          const userProgress = userId ? await academyService.getUserProgress(userId, c.id) : null;
           setProgress(userProgress);
         }
       } catch (err) {
@@ -114,12 +118,16 @@ export const CourseDetailScreen: React.FC = () => {
 
   const handleEnrollOrContinue = async () => {
     const session = await authService.getActiveSession();
-    // Sem sessao nao ha progresso a carregar nem a gravar: o fallback
-    // anterior misturava dados de visitantes anonimos com os da
-    // fundadora (CLAUDE_AUDIT.md T-05).
-    if (!session) return;
-    const userId = session.user.id;
+    // O catalogo e publico; so o progresso exige sessao. A guarda anterior
+    // bloqueava ambos, escondendo o catalogo de visitantes anonimos.
+    const userId = session?.user.id;
 
+    // Matrícula exige identidade. Sem sessão o caminho é autenticar-se — não
+    // falhar em silêncio, e muito menos gravar sob outra conta.
+    if (!userId) {
+      navigate('/auth/login');
+      return;
+    }
     if (!course) return;
 
     if (!progress) {

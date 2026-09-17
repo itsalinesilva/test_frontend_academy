@@ -26,16 +26,18 @@ export const CourseCompletionScreen: React.FC = () => {
       if (!courseId) return;
       try {
         const session = await authService.getActiveSession();
-        // Sem sessao nao ha progresso a carregar nem a gravar: o fallback
-        // anterior misturava dados de visitantes anonimos com os da
-        // fundadora (CLAUDE_AUDIT.md T-05).
-        if (!session) return;
-        const userId = session.user.id;
+        // O catalogo e publico; so o progresso exige sessao. A guarda anterior
+        // bloqueava ambos, escondendo o catalogo de visitantes anonimos.
+        const userId = session?.user.id;
 
         const [c, prog, certs] = await Promise.all([
           academyService.getCourse(courseId),
-          academyService.getUserProgress(userId, courseId),
-          academyService.listUserCertificates(userId),
+          userId
+            ? academyService.getUserProgress(userId, courseId)
+            : Promise.resolve(null),
+          userId
+            ? academyService.listUserCertificates(userId)
+            : Promise.resolve([]),
         ]);
 
         setCourse(c);

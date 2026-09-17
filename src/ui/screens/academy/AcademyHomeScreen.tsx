@@ -40,17 +40,17 @@ export const AcademyHomeScreen: React.FC = () => {
     const loadAcademyHomeData = async () => {
       try {
         const session = await authService.getActiveSession();
-        // Sem sessao nao ha progresso a carregar nem a gravar: o fallback
-        // anterior misturava dados de visitantes anonimos com os da
-        // fundadora (CLAUDE_AUDIT.md T-05).
-        if (!session) return;
-        const userId = session.user.id;
+        // O catalogo e publico; so o progresso exige sessao. A guarda anterior
+        // bloqueava ambos, escondendo o catalogo de visitantes anonimos.
+        const userId = session?.user.id;
 
         const [progs, pths, crss, enrolls, cats] = await Promise.all([
           academyService.getPrograms(),
           academyService.getPaths(),
           academyService.getCourses(),
-          academyService.listUserEnrollments(userId),
+          userId
+            ? academyService.listUserEnrollments(userId)
+            : Promise.resolve([]),
           academyService.getCategories(),
         ]);
 

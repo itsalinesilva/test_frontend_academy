@@ -76,6 +76,7 @@
 | 3.3 | **16 fallbacks para a fundadora removidos** (restam 0), incluindo 2 no `profile.service` que agora lançam `UnauthorizedError` | T-05 | ✅ |
 | 3.4 | Substituir a cadeia de `if` do `AppRouterOutlet` por tabela de rotas com casamento por padrão | T-06 | ⬜ |
 | 3.9 | `replace()` agora usa `history.replaceState` — antes empilhava, e o "voltar" devolvia o usuário à tela da qual fora redirecionado | R-04 | ✅ |
+| 3.11 | ⚠️ **Regressão minha, corrigida no mesmo turno:** a guarda de sessão inserida em massa (item 3.3) bloqueava também o **catálogo público** em 7 telas — visitante anônimo não via curso algum. Sessão passou a condicionar só as chamadas específicas do usuário | T-05 | ✅ |
 | 3.10 | 🔴 **Descoberto:** 17 ocorrências em telas de Practice **fixam** `'usr_founder_1'` diretamente — não é fallback, é atribuição. Todo progresso de prática de qualquer usuário é gravado no perfil da fundadora | T-05 | ⬜ COMANDO 5 |
 | 3.5 | Fundir `course.repository.ts` em `academy.repository.ts` (com justificativa técnica registrada) | §9 | ⬜ |
 | 3.6 | Course Detail: materiais, bibliografia navegável, corpo docente real, cursos relacionados, trilhas relacionadas | §4 | ⬜ |
