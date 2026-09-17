@@ -1,0 +1,417 @@
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { User } from '../../domain/types';
+import { authService } from '../../services/application/auth.service';
+
+export interface BreadcrumbEntry {
+  label: string;
+  path?: string;
+}
+
+export interface RouteAuthorizationResult {
+  authorized: boolean;
+  reason?: string;
+  requiredCapability?: string;
+}
+
+export interface RouterContextValue {
+  currentPath: string;
+  params: Record<string, string>;
+  breadcrumbs: BreadcrumbEntry[];
+  navigate: (path: string) => void;
+  replace: (path: string) => void;
+  authorization: RouteAuthorizationResult;
+  recheckAuthorization: () => Promise<void>;
+}
+
+const RouterContext = createContext<RouterContextValue | null>(null);
+
+export const CANONICAL_ROUTES = {
+  // Global & Core
+  OVERVIEW: '/',
+  DESIGN_SYSTEM: '/design-system',
+  AUTH_LOGIN: '/auth/login',
+  AUTH_REGISTER: '/auth/register',
+  AUTH_RECOVERY: '/auth/recovery',
+  AUTH_CALLBACK: '/auth/callback',
+  ONBOARDING: '/onboarding',
+  SETTINGS: '/settings',
+  NOTIFICATIONS: '/notifications',
+  SEARCH: '/search',
+  HELP: '/help',
+
+  // 8 Primary Canonical Pillars & Navigation Axes
+  ACADEMY: '/academy',
+  ACADEMY_CATALOG: '/academy/catalog',
+  ACADEMY_SEARCH: '/academy/search',
+  ACADEMY_SEARCH_RESULTS: '/academy/search/results',
+  ACADEMY_CATEGORY: '/academy/category/:id',
+  ACADEMY_PROGRAM: '/academy/program/:id',
+  ACADEMY_PATH: '/academy/path/:id',
+  ACADEMY_COURSE: '/academy/course/:id',
+  ACADEMY_COURSE_CURRICULUM: '/academy/course/:id/curriculum',
+  ACADEMY_COURSE_PROGRESS: '/academy/course/:id/progress',
+  ACADEMY_MODULE: '/academy/course/:courseId/module/:moduleId',
+  ACADEMY_LESSON: '/academy/lesson/:id',
+  ACADEMY_INTERACTIVE_LESSON: '/academy/lesson/:id/interactive',
+  ACADEMY_ACTIVITY: '/academy/activity/:id',
+  ACADEMY_QUIZ: '/academy/quiz/:id',
+  ACADEMY_ASSESSMENT: '/academy/assessment/:id',
+  ACADEMY_RESULT: '/academy/result/:id',
+  ACADEMY_COMPLETION: '/academy/completion/:id',
+  ACADEMY_CERTIFICATE: '/academy/certificate/:id',
+  ACADEMY_MY_LEARNING: '/academy/my-learning',
+  ACADEMY_HISTORY: '/academy/history',
+  ACADEMY_PROFILE: '/academy/academic-profile',
+
+  PRACTICE: '/practice',
+  PRACTICE_SKILL_TREE: '/practice/skill-tree',
+  PRACTICE_SKILL: '/practice/skill/:id',
+  PRACTICE_SKILL_DETAIL: '/practice/skill/:id',
+  PRACTICE_MICRO_SKILL: '/practice/microskill/:id',
+  PRACTICE_EXERCISE: '/practice/exercise/:id',
+  PRACTICE_SESSION: '/practice/session/:id',
+  PRACTICE_ATTEMPT: '/practice/attempt/:id',
+  PRACTICE_FEEDBACK: '/practice/feedback/:id',
+  PRACTICE_RESULT: '/practice/result/:id',
+  PRACTICE_MASTERY: '/practice/mastery',
+  PRACTICE_HISTORY: '/practice/history',
+  PRACTICE_DAILY_GOAL: '/practice/daily-goal',
+  PRACTICE_STREAK: '/practice/streak',
+  PRACTICE_RANKING: '/practice/ranking',
+  PRACTICE_PROFILE: '/practice/profile',
+
+  SCORE: '/score',
+
+  WORLDS: '/worlds',
+  WORLDS_WORK: '/worlds/work/:id',
+  WORLDS_GRAPH: '/worlds/graph',
+
+  COMMUNITY: '/community',
+  COMMUNITY_TOPIC: '/community/topic/:id',
+  COMMUNITY_EVENTS: '/community/events',
+
+  STUDIO: '/studio',
+  STUDIO_PROJECT: '/studio/project/:id',
+  STUDIO_SCORE: '/studio/score',
+  STUDIO_VOICE_EAR: '/studio/voice-ear',
+
+  ROOMS: '/rooms',
+  ROOMS_DETAIL: '/rooms/:id',
+  ROOMS_CREATE: '/rooms/create',
+
+  PROFILE: '/profile',
+  PROFILE_PORTFOLIO: '/profile/portfolio',
+  PROFILE_EDIT: '/profile/edit',
+
+  // Admin Governance (Protected)
+  ADMIN: '/admin',
+  ADMIN_USERS: '/admin/users',
+  ADMIN_ENGINES: '/admin/engines',
+  ADMIN_CONTENT: '/admin/content',
+  ADMIN_MODERATION: '/admin/moderation',
+  ADMIN_AUDIT: '/admin/audit',
+} as const;
+
+function getInitialPath(): string {
+  if (typeof window === 'undefined') return '/';
+  if (window.location.hash && window.location.hash.startsWith('#/')) {
+    return window.location.hash.slice(1);
+  }
+  const path = window.location.pathname;
+  return path && path !== '' ? path : '/';
+}
+
+function parseParams(pattern: string, path: string): Record<string, string> | null {
+  const patternParts = pattern.split('/').filter(Boolean);
+  const pathParts = path.split('/').filter(Boolean);
+
+  if (patternParts.length !== pathParts.length) return null;
+
+  const params: Record<string, string> = {};
+  for (let i = 0; i < patternParts.length; i++) {
+    if (patternParts[i].startsWith(':')) {
+      const paramName = patternParts[i].slice(1);
+      params[paramName] = decodeURIComponent(pathParts[i]);
+    } else if (patternParts[i] !== pathParts[i]) {
+      return null;
+    }
+  }
+  return params;
+}
+
+function deriveBreadcrumbs(path: string, params: Record<string, string>): BreadcrumbEntry[] {
+  const crumbs: BreadcrumbEntry[] = [{ label: 'Início', path: '/' }];
+
+  if (path === '/' || path === '/overview') {
+    return crumbs;
+  }
+
+  // Academy
+  if (path.startsWith('/academy')) {
+    crumbs.push({ label: 'Academia', path: '/academy' });
+    if (path === '/academy/catalog') {
+      crumbs.push({ label: 'Catálogo de Cursos' });
+    } else if (path === '/academy/search') {
+      crumbs.push({ label: 'Busca Acadêmica' });
+    } else if (path === '/academy/search/results') {
+      crumbs.push({ label: 'Resultados da Busca' });
+    } else if (path.startsWith('/academy/category/')) {
+      crumbs.push({ label: `Cátedra: ${params.id || 'Especialização'}` });
+    } else if (path.startsWith('/academy/program/')) {
+      crumbs.push({ label: `Programa: ${params.id || 'Detalhes'}` });
+    } else if (path.startsWith('/academy/path/')) {
+      crumbs.push({ label: `Trilha: ${params.id || 'Detalhes'}` });
+    } else if (path.includes('/curriculum')) {
+      crumbs.push({ label: 'Grade Curricular' });
+    } else if (path.includes('/progress')) {
+      crumbs.push({ label: 'Progresso do Curso' });
+    } else if (path.startsWith('/academy/course/')) {
+      crumbs.push({ label: `Curso: ${params.id || 'Detalhes'}` });
+    } else if (path.includes('/interactive')) {
+      crumbs.push({ label: 'Laboratório Interativo' });
+    } else if (path.startsWith('/academy/lesson/')) {
+      crumbs.push({ label: 'Lição' });
+    } else if (path.startsWith('/academy/activity/')) {
+      crumbs.push({ label: 'Atividade Prática' });
+    } else if (path.startsWith('/academy/quiz/')) {
+      crumbs.push({ label: 'Quiz de Verificação' });
+    } else if (path.startsWith('/academy/assessment/')) {
+      crumbs.push({ label: 'Avaliação Acadêmica' });
+    } else if (path.startsWith('/academy/result/')) {
+      crumbs.push({ label: 'Resultado do Exame' });
+    } else if (path.startsWith('/academy/completion/')) {
+      crumbs.push({ label: 'Conclusão de Curso' });
+    } else if (path.startsWith('/academy/certificate/')) {
+      crumbs.push({ label: 'Certificado Digital' });
+    } else if (path === '/academy/my-learning') {
+      crumbs.push({ label: 'Meu Aprendizado' });
+    } else if (path === '/academy/history') {
+      crumbs.push({ label: 'Histórico Acadêmico' });
+    } else if (path === '/academy/academic-profile') {
+      crumbs.push({ label: 'Perfil Acadêmico' });
+    }
+    return crumbs;
+  }
+
+  // Practice
+  if (path.startsWith('/practice')) {
+    crumbs.push({ label: 'Prática & Treino', path: '/practice' });
+    if (path === '/practice/skill-tree') crumbs.push({ label: 'Árvore de Habilidades' });
+    else if (path.startsWith('/practice/skill/')) crumbs.push({ label: `Habilidade: ${params.id || 'Detalhes'}` });
+    else if (path.startsWith('/practice/microskill/')) crumbs.push({ label: `Micro-Habilidade: ${params.id || 'Detalhes'}` });
+    else if (path.startsWith('/practice/exercise/')) crumbs.push({ label: `Exercício: ${params.id || 'Ficha'}` });
+    else if (path.startsWith('/practice/session/')) crumbs.push({ label: `Sessão de Prática: ${params.id || 'Ao Vivo'}` });
+    else if (path.startsWith('/practice/attempt/')) crumbs.push({ label: `Tentativa: ${params.id || 'Medição'}` });
+    else if (path.startsWith('/practice/feedback/')) crumbs.push({ label: 'Feedback Imediato' });
+    else if (path.startsWith('/practice/result/')) crumbs.push({ label: 'Diagnóstico de Desempenho' });
+    else if (path === '/practice/mastery') crumbs.push({ label: 'Matriz de Maestria' });
+    else if (path === '/practice/history') crumbs.push({ label: 'Histórico de Sessões' });
+    else if (path === '/practice/daily-goal') crumbs.push({ label: 'Meta Diária' });
+    else if (path === '/practice/streak') crumbs.push({ label: 'Ofensiva & Sequência' });
+    else if (path === '/practice/ranking') crumbs.push({ label: 'Ligas & Ranking' });
+    else if (path === '/practice/profile') crumbs.push({ label: 'Perfil de Prática' });
+    return crumbs;
+  }
+
+  // Score
+  if (path.startsWith('/score')) {
+    crumbs.push({ label: 'Partituras & Repertório', path: '/score' });
+    return crumbs;
+  }
+
+  // Worlds
+  if (path.startsWith('/worlds')) {
+    crumbs.push({ label: 'Atlas Musical', path: '/worlds' });
+    if (path.startsWith('/worlds/work/')) {
+      crumbs.push({ label: `Obra: ${params.id || 'Detalhes'}` });
+    } else if (path === '/worlds/graph') {
+      crumbs.push({ label: 'Grafo de Conexões' });
+    }
+    return crumbs;
+  }
+
+  // Community
+  if (path.startsWith('/community')) {
+    crumbs.push({ label: 'Comunidade', path: '/community' });
+    if (path.startsWith('/community/topic/')) {
+      crumbs.push({ label: `Tópico: ${params.id || 'Discussão'}` });
+    } else if (path === '/community/events') {
+      crumbs.push({ label: 'Eventos & Recitais' });
+    }
+    return crumbs;
+  }
+
+  // Studio
+  if (path.startsWith('/studio')) {
+    crumbs.push({ label: 'Estúdio', path: '/studio' });
+    if (path.startsWith('/studio/project/')) {
+      crumbs.push({ label: `Projeto DAW: ${params.id || 'Trabalho'}` });
+    } else if (path === '/studio/score') {
+      crumbs.push({ label: 'Editor de Partituras' });
+    } else if (path === '/studio/voice-ear') {
+      crumbs.push({ label: 'Voz & Afinação' });
+    }
+    return crumbs;
+  }
+
+  // Rooms
+  if (path.startsWith('/rooms')) {
+    crumbs.push({ label: 'Salas & Mestres', path: '/rooms' });
+    if (path === '/rooms/create') {
+      crumbs.push({ label: 'Criar Nova Sala' });
+    } else if (path !== '/rooms') {
+      crumbs.push({ label: `Sala: ${params.id || 'Classe'}` });
+    }
+    return crumbs;
+  }
+
+  // Profile
+  if (path.startsWith('/profile')) {
+    crumbs.push({ label: 'Meu Perfil', path: '/profile' });
+    if (path === '/profile/portfolio') {
+      crumbs.push({ label: 'Portfólio de Evidências' });
+    } else if (path === '/profile/edit') {
+      crumbs.push({ label: 'Editar Perfil' });
+    }
+    return crumbs;
+  }
+
+  // Admin
+  if (path.startsWith('/admin')) {
+    crumbs.push({ label: 'Governança Admin', path: '/admin' });
+    if (path === '/admin/users') crumbs.push({ label: 'Usuários & Papéis' });
+    else if (path === '/admin/engines') crumbs.push({ label: 'Engines & Gateway' });
+    else if (path === '/admin/content') crumbs.push({ label: 'Conteúdo & Currículo' });
+    else if (path === '/admin/moderation') crumbs.push({ label: 'Moderação' });
+    else if (path === '/admin/audit') crumbs.push({ label: 'Auditoria Imutável' });
+    return crumbs;
+  }
+
+  // Global utilities
+  if (path === '/settings') crumbs.push({ label: 'Configurações' });
+  else if (path === '/notifications') crumbs.push({ label: 'Central de Notificações' });
+  else if (path === '/search') crumbs.push({ label: 'Busca Global' });
+  else if (path === '/help') crumbs.push({ label: 'Ajuda & Suporte' });
+  else if (path === '/onboarding') crumbs.push({ label: 'Boas-Vindas & Integração' });
+  else if (path === '/design-system') crumbs.push({ label: 'Design System' });
+  else if (path.startsWith('/auth')) crumbs.push({ label: 'Autenticação' });
+
+  return crumbs;
+}
+
+export interface RouterProviderProps {
+  currentUser?: User | null;
+  children: React.ReactNode;
+}
+
+export const RouterProvider: React.FC<RouterProviderProps> = ({ currentUser = null, children }) => {
+  const [currentPath, setCurrentPath] = useState<string>(getInitialPath);
+  const [authorization, setAuthorization] = useState<RouteAuthorizationResult>({ authorized: true });
+
+  const checkAuth = useCallback(
+    async (pathToCheck: string) => {
+      // Server-side check
+      const result = await authService.checkRouteAccess(pathToCheck, currentUser);
+      setAuthorization(result);
+    },
+    [currentUser]
+  );
+
+  const navigate = useCallback(
+    (newPath: string) => {
+      const sanitized = newPath.startsWith('/') ? newPath : `/${newPath}`;
+      setCurrentPath(sanitized);
+
+      if (typeof window !== 'undefined') {
+        window.location.hash = `#${sanitized}`;
+      }
+      checkAuth(sanitized);
+    },
+    [checkAuth]
+  );
+
+  const replace = useCallback(
+    (newPath: string) => {
+      navigate(newPath);
+    },
+    [navigate]
+  );
+
+  // Sync with browser hash changes (e.g. back/forward button)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hashPath = window.location.hash ? window.location.hash.replace('#', '') : '/';
+      setCurrentPath(hashPath);
+      checkAuth(hashPath);
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [checkAuth]);
+
+  // Re-check authorization when user changes
+  useEffect(() => {
+    checkAuth(currentPath);
+  }, [currentUser, currentPath, checkAuth]);
+
+  // Calculate params based on known dynamic routes
+  const params = useMemo(() => {
+    const dynamicPatterns = [
+      CANONICAL_ROUTES.ACADEMY_MODULE,
+      CANONICAL_ROUTES.ACADEMY_PROGRAM,
+      CANONICAL_ROUTES.ACADEMY_PATH,
+      CANONICAL_ROUTES.ACADEMY_COURSE,
+      CANONICAL_ROUTES.ACADEMY_LESSON,
+      CANONICAL_ROUTES.ACADEMY_ACTIVITY,
+      CANONICAL_ROUTES.ACADEMY_ASSESSMENT,
+      CANONICAL_ROUTES.ACADEMY_RESULT,
+      CANONICAL_ROUTES.ACADEMY_COMPLETION,
+      CANONICAL_ROUTES.ACADEMY_CERTIFICATE,
+      CANONICAL_ROUTES.WORLDS_WORK,
+      CANONICAL_ROUTES.COMMUNITY_TOPIC,
+      CANONICAL_ROUTES.STUDIO_PROJECT,
+      CANONICAL_ROUTES.ROOMS_DETAIL,
+      CANONICAL_ROUTES.PRACTICE_SKILL,
+      CANONICAL_ROUTES.PRACTICE_MICRO_SKILL,
+      CANONICAL_ROUTES.PRACTICE_EXERCISE,
+      CANONICAL_ROUTES.PRACTICE_SESSION,
+      CANONICAL_ROUTES.PRACTICE_ATTEMPT,
+      CANONICAL_ROUTES.PRACTICE_RESULT,
+    ];
+
+    for (const pattern of dynamicPatterns) {
+      const matched = parseParams(pattern, currentPath);
+      if (matched) return matched;
+    }
+    return {};
+  }, [currentPath]);
+
+  const breadcrumbs = useMemo(() => {
+    return deriveBreadcrumbs(currentPath, params);
+  }, [currentPath, params]);
+
+  const value: RouterContextValue = {
+    currentPath,
+    params,
+    breadcrumbs,
+    navigate,
+    replace,
+    authorization,
+    recheckAuthorization: () => checkAuth(currentPath),
+  };
+
+  return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
+};
+
+export const useRouter = (): RouterContextValue => {
+  const ctx = useContext(RouterContext);
+  if (!ctx) {
+    throw new Error('useRouter must be used within a RouterProvider');
+  }
+  return ctx;
+};
+
+export const useRouteParams = (): Record<string, string> => {
+  const router = useRouter();
+  return router.params;
+};

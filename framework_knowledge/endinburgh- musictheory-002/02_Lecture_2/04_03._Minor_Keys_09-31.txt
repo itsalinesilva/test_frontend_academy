@@ -1,0 +1,265 @@
+[BLANK_AUDIO]
+In the last section we were talking about
+key signatures,
+and whenever we did that, we were talking
+about major keys.
+>> We were saying things like, the two
+Sharps, F-sharp, and C -sharp,
+so we must me in D-major, or there's three
+flats, B E, A flats.
+So we must be in E-Flat major.
+>> Now a lot of you watching this video
+might have
+already realized, but we've only really
+given half the picture here
+because we're only talking about major
+keys, and the thing that
+we've neglected to talk about up until now
+is minor keys.
+Now, when we're looking at the circle of
+fifths, we noticed that
+there were 12 distinct tonics that we
+could build our major scales from.
+And actually for minor keys, there's 12
+distinct
+tonics that we can build these from as
+well.
+>> But, it's the same key signature system
+that we're using.
+So we don't have to learn an entirely new
+system of building these key signatures.
+The key signatures that we already learnt,
+and the way
+they're constructed from collections of
+sharps and collections of flats.
+This applies equally to the, to minor
+scale
+systems as it does to major scale systems.
+Every key signature actually represents
+not one, but two keys.
+It represents the major key and it
+represents the related, the relative minor
+key.
+>> So this music we need to have a think
+about what we actually mean by minor keys.
+And how we work out what major keys
+they're related to.
+One of the easiest ways to do that is
+to start thinking about minor scales,
+although this is
+slightly problematic, because when we talk
+about minor scales,
+we're talking about something less
+concrete, the major scales.
+And this is because there's more than one
+version of a minor scale.
+But we'll start with the simplest.
+Now, every minor scale is related to a
+major
+scale and if we look at that major scale,
+it just so happens that the sixth degree,
+is
+the degree that the minor scale is built
+from.
+>> So if we take D major example with it's
+F-sharp and its C-sharp, we're going to
+start building up from D.
+D is number one.
+[MUSIC]
+1, 2, 3, 4, 5, 6.
+6 takes us to B.
+B is the relative minor for D.
+>> So, from this degree that we're
+going to build our relative minor scale.
+So if we take the sharps that belong to D
+major, F-sharp and C-sharp.
+We keep them, but we're just going to
+start the whole sequence on B.
+We get B, C-sharp, D [SOUND]
+E, F-sharp, G, A, B.
+>> What we got to produce that B minor,
+was all the
+notes of D major, but just rearranged with
+B as our new tonic.
+[MUSIC]
+We call this the Natural Minor.
+It's the most closely related to D.
+Now we mentioned that there's a couple of
+different types of minor scale that are in
+use.
+The reasons that we've got a few different
+variations on that, is partly because of
+the transition we made from D to the
+relative Minor B, there in the natural
+form.
+Where, where we're only using exactly the
+notes
+of D Major but rearranged from B to B.
+And the results of that, is that although
+we can
+start and end on B if we want to, we
+could easily, just as easily, end on D and
+we'd
+be back feeling as though D was still our
+tonic.
+[MUSIC]
+>> So D really feels the point of which
+the music has come to rest that
+we feel comfortable with this as being the
+center of the key and the whole note.
+And this goes back to what we talked about
+in
+the previous section, whereby it's
+actually not just the notes that
+are available to us, but it's the special
+relationship that
+they have, and the environment, the sonic
+environment that they create.
+And that's inevitably going to pull us
+back to D.
+Listen to this though.
+[MUSIC]
+>> Now that minor scale had a really
+different
+feeling to the natural minor that we
+started with.
+We only changed one note, but the result
+of that one change was
+to give us a scale that showed us how B
+really is our new tonic.
+[MUSIC]
+>> So the note that we changed was the 7th
+degree.
+So instead of an A natural, as we had when
+we derived the scale
+from D-Major, we have an A-Sharp and
+actually, what we heard was that this.
+[MUSIC]
+Really led our ears to B, being the new tonic.
+And actually the 7th degree of a scale is
+called the Leading Note.
+And we really had this,
+[MUSIC]
+Raised 7th.
+Raised by a semitone, from an A to an
+A-sharp.
+Led our ears to B as our new tonic.
+>> So, just to recap from previous
+lectures, we now know
+that the 1st degree of this scale is
+called the Tonic.
+The 5th degree of this scale is called the
+Dominant and
+the 7th degree of this scale is called the
+Leading Note.
+>> And this is one leads our ears to the
+Tonic.
+But don't worry we're going to cover all
+these note names and the others in week 4.
+[MUSIC]
+This leads our ears back to the Tonic.
+[BLANK_AUDIO]
+>> So the scale that we just produced by
+raising that 7th degree, we
+call the Harmonic Minor Scale and it's the
+one that has a really distinctive sound.
+In lecture 4, we're going to talk about
+Harmony.
+We're going to talk about the relationship
+of chords within a
+key and the way that the chords move and
+progress.
+And at that point, it'll hopefully be a
+little clearer
+as to why we call this the Harmonic Minor
+Scale.
+>> So, up until now we've talked about
+the Natural Minor Scale, the Harmonic
+Minor Scale, and
+we're going to go on to talk about the
+third main type, which is the Melodic
+Minor Scale.
+Now remember we were talking about the
+Harmonic Minor Scale.
+We noted how distinctive the sound was,
+and the
+reason for this distinctive sound is the
+big gap between
+the 6th degree and the 7th degree, created
+by raising
+our 6th degree, before leading back to our
+7th degree.
+>> It's a whole tone and a half.
+It's three semi tones in one leap.
+[MUSIC]
+So, it takes us up, if we want to sing it,
+we have to sing.
+[MUSIC]
+B, C-Sharp, D, E, F-Sharp, G, A-Sharp, B.
+It's a long way to travel.
+>> And it's particularly awkward for
+people to sing.
+It's a big, big interval to sing.
+So, although that distinctive sound, or
+the Harmonic Minor Scale is really
+useful in composition and it can create
+some really nice, interesting sounds.
+Actually in practice to get around the
+difficulty of that interval.
+The melodic shape of the scale is smoothed
+out.
+And actually when it's smoothed out, the
+result is the Melodic Minor.
+So the Melodic Minor scale's different.
+Actually to all the scales we've
+encountered so far, in that the ascending
+form when it's going up, differs from the
+descending form, when it comes back down.
+[MUSIC]
+>> So you can hear that we wanted to do
+something that would smooth out that
+great big tone and a half gap that, that
+was difficult to sing, a great big leap.
+So on the way up [music] - that one.
+So on the way up, the way that the
+melodic minor is shaped, is it smooths out
+that gap.
+[MUSIC]
+It keeps that sharp in 7th, the one that
+leads our ears up from the Leading note
+to the tonic, but to fill in that big old
+gap it raises the 6th degree as well.
+[MUSIC]
+It's easier to sing.
+B, C-sharp, D, E, F-sharp, G-sharp,
+A-sharp, B.
+Now when we come down our ears care less
+about that leading tone to tonic Interval.
+That when we're going the other way, the
+leading note isn't leading up to the tonic
+anymore.
+It's kind of just the 7th.
+So, when we come down in the Melodic Minor
+Shape, both the
+sharpened 7th goes back, and the sharpened 6th reverts back.
+So we just come down in the Natural Minor
+Form.
+[MUSIC]
+So, to make a nice smooth melodic musical
+shape coming down, we
+just take away that sharpened 7th and
+we take away
+that sharpened 6th and we just come
+back down in
+the same pattern as the Natural Minor, and
+that's easy to sing to.
+B-A-G-F sharp-E-D-C sharp-B.
+>> So what we can see, is that the
+ascendant
+form of the Harmonic Minor Scale, is just
+the Natural
+Minor with a raised 6th and 7th, whereas when
+we
+come back down, it's exactly the same as a
+Natural Minor.
+[BLANK_AUDIO]

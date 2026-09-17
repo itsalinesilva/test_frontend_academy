@@ -1,0 +1,246 @@
+Hello everybody, it's Zack here.
+I've been looking through the forums today
+and what I've noticed is that the idea of
+looking at intervals and finding out what
+they are and how to fully describe them.
+It's one of the areas that I think some
+people might benefit
+from having some extra assistance with and
+some, some course of explanation.
+So what I'm going to do here is I'm just
+going to flash up some
+intervals on the screen, I'm going to talk
+through, roughly, the way that I would.
+Approach working out what they are and
+describing them
+and hopefully just that this, this will be
+useful for
+some people because it will allow you to
+almost see
+the process happen in action and watch it
+top through.
+Now what I'm using here on the screen is
+musictheory.net, I've just got to close up
+of the.
+Application.
+I would say check out this website because
+it is a fantastic one and
+it'd be really useful for you practicing
+some of the things that we're talking
+about.
+So, as I said I'm just gona really quickly
+chat through a
+few examples for you and give you some
+tips as we go.
+Okay so first thing I'm going to do is I'm
+going to look
+at the clef and I'm going to notice it's
+the base clef.
+Which means that this lowest note here is
+a D.
+Come up from our lowest note we get D, E,
+F, G.
+One, two, three, four.
+So this is a fourth of some description.
+Now, what I always say to people.
+Is to look at the lowest note and imagine
+that
+you're in the major key of which this is
+the tonic.
+So if you look at the lowest note here,
+we've got a D.
+So what I want you to do is just imagine
+that you're in the key of D major.
+So if you're in the key of D major, you'd
+expect
+to find an F sharp and a C sharp and
+nothing else.
+So in this case we've got a G.
+We're looking for D to G-natural.
+G would occur in the key of D-major.
+Now, for what we're going to call this, a
+perfect fourth.
+Let's click the button here and find out
+if we're right.
+[SOUND] Correct.
+Perfect fourths.
+So the lowest note here we've got is D.
+Again, just by coincidence.
+So what we're going to do is we're
+going to carry up four.
+One, two, three, four and the [INAUDIBLE]
+G.
+Now this is just sheer coincidence that
+we're
+getting a similar interval to the last
+one.
+And in the last one you said it was D to
+G.
+There were no other sharps and flats.
+So therefore D to G was our perfect fouth.
+Now we've got a D to a G, but this time
+it's G sharp.
+So we've got D to G sharp.
+Now, because this upper note's been
+sharpened.
+It's make this note a semitone higher.
+And what that serves to do is stretch
+them,
+the gap's a bit bigger now between the
+bottom one.
+And the top one.
+So what we've got here actually is what
+looks like a perfect fourth, if
+it was just D to G, but it's been made
+larger by one semitone.
+So perfect if made larger by one semitone,
+just going to
+click on augmented fourth here and see if
+we're right.
+Okay, so this time what we're got in an A
+to an F.
+Now, we do have an F sharp on the
+key signature, but because we've got an F
+natural here.
+This natural sign cancels out the sharp,
+so what we
+can say is this is an A to an F.
+Let's out it out numerically.
+One, two, three, four, five, six.
+An A to an F is a sixth of some
+description.
+Now if we were in the key of A major, we
+would expect to find an F sharp, C sharp
+and G sharp.
+Right so if this was to be A to F sharp,
+what we
+would find out is that this is a major
+sixth, in fact it isn't.
+There's natural, F natural is a semitone
+lower than
+the F sharp that we expect in the major
+key.
+So, what we can say then is that it's a
+major interval that's
+been made smaller by a semitone and that
+gives us a minor sixth.
+Let's click this and see if we're right.
+Fantastic.
+Okay, so in this case we've got an E to C
+flat.
+Let's work through this one then, because
+this could be quite interesting.
+We've got A, B, C, so that's one, two,
+three.
+We know it's a third of some description.
+Now, if we had, If we will imagine that
+we're in the key of the lowest note,
+so A-major, we would expect to find an
+F-sharp, C-sharp, and G-sharp.
+So this is a C flat.
+But not only is it a C sharp that's been
+made lower by one semitone, taking it to a
+C natural.
+This has been lowered again, talking it to
+a C flat.
+So if we had a C sharp, it would be a
+major
+third, lower again to C natural, it would
+be a minor third.
+And lower again to a C flat, that's a
+minor third that's been lowered by a half
+step.
+And a minor third that has been smaller by
+a
+semitone or by a half step, is a
+diminished third.
+Okay so let's have a look at this one,
+this is an
+F, because remember we're in the bass clef
+now, to an A flat.
+Now, if we were in the key of F major.
+Remember we're [INAUDIBLE] we're in the
+major key of the lower two levels.
+Then we would expect to find a B flat and
+that's all.
+Now, in this case we've got an A flat.
+So we would expect to find an A natural in
+the key of F
+major and that would be a major third
+because we've got an A flat.
+It's been lowered by a semi-tone.
+Got an F to an A flat.
+So that's no longer a major third as it
+would be if we had an F
+to an A, if we lowered by a semitone so
+what we got is minor third.
+Okay, so this is one of the examples.
+Refer to that we can't really imagine
+within the key of the lower note.
+The reason for that is that our lower note
+in this example
+is a B sharp and there isn't a key of B
+sharp major.
+So what I'm going to say is, when we get
+an example like this,
+just ignore the accidental and ignore the
+key signature and imagine that we're in.
+A key of B major.
+So you can imagine that this lower note is
+a B
+natural and therefore we will be in the
+key of B major.
+Now B major has F sharp, C sharp, G sharp,
+D sharp and A sharp.
+So we would expect this to be a D sharp.
+So let's just go back one step then and
+count the the number together with the
+numeric code
+description of them to [UNKNOWN] code BS1,
+CS2, DS3
+so this is the third of some of the
+description.
+I'd rather say if we ran in the key of B
+major we do
+expect that to be a D sharp, because
+that's part of the key signature.
+If that was a D Sharp, that we be a major
+third.
+Okay.
+However, this is only a D natural, so B
+still
+ignoring the sharp for just now, B to D
+natural.
+Is a minor third.
+Now because the lower note here has been
+raised by a semitone,
+what that does is that effectively makes
+the interval smaller by a semitone.
+The gap has been closed, making the
+interval smaller.
+So would be a minor start if it was B to
+D, but what we've got is B sharp to D.
+So it's actually a semitone smaller than a
+minor
+third, and we refer to that as as
+diminished third.
+Okay so what about this interval then.
+We've got a B flat, to D flat.
+Now if we were in the key of B flat major.
+Again that's going to back imagining that
+we're in the key.
+Of which the lower note is the tonic B
+flat.
+You'd expect a B flat and an E flat.
+Nothing else.
+And what we find here is that we've
+actually got a D flat.
+So if this a B flat to D natural, it would
+be major third.
+But because it's a B flat to a D flat,
+which is a semitone smaller.
+That means to interval is a semitone
+smaller than the major
+third would be, so what we get is a minor
+third.
+

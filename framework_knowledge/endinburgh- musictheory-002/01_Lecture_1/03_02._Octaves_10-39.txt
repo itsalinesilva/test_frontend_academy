@@ -1,0 +1,282 @@
+[BLANK_AUDIO]
+In this section, we're going to look more
+at the vertical distances between notes.
+If you remember back to the graph we
+originally drew and
+we said the vertical axis represented high
+pitches or low pitches.
+We're now going to start quantifying
+those.
+Now, we did say that we had an octave
+which is a real phenomenon, a phenomenon
+of nature.
+And we said that was eight notes.
+Of course, it's actually seven note names,
+A, B, C, D, E, F, G, back to A.
+But, of course, if you look, for instance,
+at
+Zack's guitar here, you'll see that there
+aren't seven notes.
+There's a lot more.
+>> So, we did an example where we said
+that the
+open A string is here and then if you half
+that string.
+It's an octave above.
+But if we look at the, the discreet
+pitches available to us in between.
+We've actually got, 1, 2, 3, 4, 5, 6, 7,
+8, 9,
+10, 11, 12, and then things start to repeat
+again, actually.
+So what we're saying is the octave on many
+musical instruments nowadays
+isn't divided into eight, as you'd expect
+based on the prefix oct.
+Actually, we have 12 distinct pitch
+classes.
+>> Yeah.
+Now, if we were to look at the piano, we
+will see the same thing again.
+So looking at what Zack did on guitar.
+If we look at it on the piano, instead of
+having frets, of course we've got all of
+these white notes.
+We've also got these black notes, which
+we're now going to introduce.
+So, starting on A, where Zack was, 1,2,
+3, 4, 5, 6, 7, 8, 9, 10,
+11, 12, and then we're back to A.
+And there's the octave [SOUND].
+Now, going back to this A, this distance
+here is called a semitone.
+Where semi means half.
+If that distance is called a semitone this
+distance
+is called a Tone.
+Semitone, half, double it, tone.
+That's the same on all instruments.
+Okay, keep that thought in mind.
+We're now going to have a look at that
+represented back on our stave.
+Now, this semitone is the smallest
+distance that
+we're going to work with at the moment.
+Now, if you want to find out more about
+that, we have additional material on it.
+But let's just say for the moment, the
+semitone is
+the smallest working distance we can have
+between two notes.
+Also, at this point we're going to stop
+using A and start orientating ourselves
+around C.
+And so, here is C on our stave.
+The next note up on the line is D.
+We can count from C to D, one, two.
+It's a tone.
+But if we're going to name it in a
+different
+way, we can say it's an interval of a
+second.
+One, two, a second.
+There
+are lots more intervals for us to look at,
+and
+to do that we're actually going to go back
+to the keyboard.
+>> So Richard's just talked to you about
+this interval, the second, from C to D.
+But as he said, there's much more than
+that.
+So let's have another look through that,
+and we'll do that within the octave.
+So, we've got C to D.
+There's a second, one, two.
+We ve got C to E, 1 2 3.
+That's a third.
+C to F, a fourth.
+C to G, a fifth.
+C to A, a sixth.
+C to B, a seventh.
+And from C to C, we're not going to call
+that an eighth,
+we're going to use the word that we've
+already used, which is octave.
+But what we don't want you to think
+is that intervals are only ever counted
+from C.
+You know, we could go from G to A, is a
+second.
+G to C is a fourth.
+F to A is a third.
+It's all about counting the space.
+One, two, three.
+F to A is a third.
+Now, if we were to play B to C, for
+example.
+We can see that this is a second.
+One, two.
+Okay.
+Let's play F to G.
+F to G.
+There's a second.
+One, two.
+But actually what we see here is that the
+B to C
+Is a second, but the C is only a semitone
+above B.
+Whereas, for instance, F to G, 1, 2, is a
+second.
+But G is actually a tone,
+that's to say, two semitones above F.
+Now, they are both seconds, and it's
+perfectly correct to describe them that
+way.
+But they do have a different quality.
+We're going to talk about that more next
+week, so hold that thought, but
+at the moment let's use that information
+and turn to think about scales.
+So now I'm going to turn our attention to
+scales.
+[flute plays scale]
+There's one.
+Scales are a pathway.
+through an octave, okay?
+It's like they're a pool of notes, a set
+of notes which melodies can be drawn from.
+And if we can have that on the piano as
+well,
+[MUSIC]
+I could say if I was doing Julie Andrews.
+Which is that is a Do, Re, Mi, Fa, Sol,
+La, Ti, Do.
+But I can also say it is, C, D, E, F, G, A, B,
+C.
+That is why we have orientated ourselves
+to C, because we've now
+found the scale of C Major, which I'm sure
+you've heard of.
+Which is very common throughout the world.
+Similarities exist in many cultures, and
+it's what
+lots of music is built on, C Major.
+>> And an important thing for you, looking
+at this, is when you're
+looking at your piano, it's all the white
+notes from C to C.
+So, Richard just said that this is an
+example of a major scale.
+And actually, what's important here, is
+the relationship between the notes.
+The relationship between all of these
+notes that are
+available to us within this pool of notes.
+And actually what we have to remember
+here is the difference between tones and
+semitones.
+So let's look at them again on the last
+stave.
+C to D.
+That's a tone, so I'm going to write T
+underneath here for tone.
+D to E another tone.
+So here is a T.
+E to F there is no black note in between
+so this is a semi tone.
+Which I will show with an S.
+F to G a tone.
+G to A a tone.
+A to B, a tone.
+And again, B to C, a semitone.
+There's no blank note in between.
+So, that gives us a pattern of Tone, Tone,
+Semitone, Tone, Tone, Tone, Semitone.
+>> So, this pattern of two tones and then
+a semi-tone and three more
+tones and a final semi-tone is what makes
+this scale sound the way it does.
+Now we could say that each note on it's own doesn't
+actually mean that much, what's
+important is how they sound next to each
+other in the context.
+How they stand next to each other
+and build up relationships between one
+another.
+What this does is it gives us the flavor,
+gives us the overall sound.
+And if we're going to talk about that
+formally in music
+theoretic terms, it gives us the quality
+of the scale.
+An important piece of terminology to
+remember, then, is that the
+letter name that the scale is named after
+is called the tonic.
+So, in the case of C Major, C is the
+tonic.
+In the case of F Major, F is the tonic.
+This major scale is also an example.
+What is called a Diatonic Scale.
+Dia between to tonics.
+Diatonic scales are ones where we always
+have seven
+notes with some pattern of five tones and
+two semitones.
+Now, lets just have a little bit of the
+scale again on the staff.
+And, remember we said C to D was a second.
+Zack had pointed out that B to C was
+also a second but one of the smaller ones:.
+A semi tone.
+So, I'm going to put this little dart sign
+here, to
+show that between B and C is the semi
+tone.
+Now, the other place we have a semi tone
+is between E and F.
+So, I'm also going to put the dart sign
+there.
+That will just help us to see, on
+the stave, or major scale, where the
+semitones are.
+So, there you have it, we found C Major.
+Through our pattern of tones and
+semitones, we've found our first major
+scale.
+But of course, a scale isn't just a scale.
+A scale helps to make music.
+C major can give us this.
+[Piano plays Auld Langs Syne]
+Well, we are in Scotland.
+C major can also give us this.
+[Flute plays Twinkle Twinkle little star]
+And don't think I'm being patronizing
+playing Twinkle Twinkle, Little Star.
+It's a good exemplifier of the major
+scale.
+It's also was a good enough tune for
+Mozart to write a whole set of variations
+on.
+While I'm on Mozart, that brings me to a
+little disclaimer.
+In this course, we're dealing with musical
+techniques that are known as the Common
+Practice.
+And the Common Practice Era is basically
+Western Europe from 1600 to 1900.
+So, it's very much the music of Bach,
+Haydn, Mozart, Beethoven, etc.
+but there are other forms of music around
+the world.
+That might use different techniques.
+Where possible, we will reference them,
+but it has to be
+said that the common practice is a good
+system to work from.
+It applies to quite a lot of pop and rock,
+a lot of jazz,
+quite a lot of folk music, and so that's
+our main focus in this course.
+[BLANK_AUDIO]

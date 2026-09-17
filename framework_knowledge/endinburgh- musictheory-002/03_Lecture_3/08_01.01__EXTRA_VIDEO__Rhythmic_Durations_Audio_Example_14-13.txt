@@ -1,0 +1,407 @@
+[BLANK_AUDIO]
+Hello everyone.
+It's Zach here again, and what I wanted to
+do this week is just make a little video
+to
+give you some idea of what all these
+different notes
+and durations that we've been talking
+about actually sound like.
+So you will have heard things like
+crotchets
+and quarter notes, and semibreves and
+whole notes.
+Sixteenth notes and same in quavers.
+These type of words, but I thought it
+might be
+useful if actually you could hear what it
+sounded like.
+And more importantly if you could hear
+what they sounded
+like, in connection with one another and
+when they work together.
+So what I've got here is, two programs up
+and running, just in case anyone is
+interested, I've got
+proTunes on the right hand side of the
+screen
+and Sibelius on the left hand side of the
+screen.
+Sibelius, this white half of the string
+here
+will show you what these notes look like
+and show you how they interact on this,
+little illustration score that I've got
+for you.
+And really, you don't need to worry about
+what's
+happening on the right-hand side of the
+screen, because
+that's just me turning on and off
+different channels
+to let you hear how things sound with each
+other.
+So this is just a very brief example.
+I'm sure there are a lot of people
+who could probably find other ways of
+demonstrating
+this, but I just wanted to make a really
+quick rough video, just to help with
+all these people who've been saying, in
+the
+forums, things like, what do these notes
+actually
+sound like and how do we know, what we're
+actually given and how to describe it?
+So hopefully this will help.
+So what I've done is I've set up this
+course so
+that we're just looking at it in four
+four, or common time.
+You can see that from the time signatures
+on the different lines of music here.
+And what I'm going to do is I'm going to
+use four crotchet beats
+per bar with a bass drum sound as our kind
+of basis
+for everything because then that gives us
+our beat, it gets us
+a pulse, and allows us to see how
+everything else interacts with it.
+So, the way that sounds, is like this.
+[MUSIC]
+Hear one.
+Two, three, four.
+One, two, three, four.
+One, two, three, four.
+Just repeat on and on.
+Just going to stop that just now.
+That's all we're going to use as our basis
+and
+this is our crotchet beats when we're in
+four, four.
+Four four means four crotchet beats per
+bar, and these are our four
+crotchet beats: One two three four, two
+two three four, and so on.
+There's no point in laboring that at the
+moment.
+What I'm going to do is I'm going to go
+back into the Sibelius
+square here and I am going to move on next
+to talk about quavers.
+As you know, we also call quavers eighth
+notes.
+If crotchet is quarter notes then clearly
+we
+can get two eighth notes pair of quarter
+note.
+And you can see that actually on the
+screen that for
+each one crotchet the same space is taken
+up by two quavers.
+So each quaver is half of a crotchet.
+Now I'm going to go to back over to
+proTools here,
+and I am going to hear what that sounds
+like.
+So we're still going to have our
+crotchets, but at
+least then we're going to have our quavers
+playing too.
+So what we will be able to hear is
+[MUSIC].
+So you can still hear our bass drum.
+One two three four, one two three four.
+But we've also got our quavers on top.
+Okay.
+Quavers are on.
+One and two and three and four and tat tat
+tat tat tat tat tat tat.
+The high hats and, the high pitch
+[UNKNOWN] are quavers.
+Notice you can hear just two for each
+project.
+[MUSIC]
+Okay, so that's a fairly simple division
+of the beat.
+Let's go on to look at minims.
+[COUGH] Now minims are also known as half
+notes and as
+we can see, in a beat, in a bar of four
+beats, you get
+two minims per bar, and then obviously
+that minims are worth two beats.
+So just as quavers, two quavers occupied
+the space of one crotchet,.
+Two crotchets occupy the space of one
+minim.
+So, what I'm going to do now is I'm going
+to just get rid of this [SOUND] line snag.
+So, all we're looking at here is the
+sound of the minims played against [SOUND]
+the crotchets.
+I'm going to go over to proTools here and
+I, going to have these play simultaneously
+so you can
+hear the difference again, crotchets will
+be the bass
+drum note that we've been used to hearing
+so far
+[MUSIC]
+So you've got one, two, three, four, one,
+two, three, four and the bass drum there,
+but what we're hearing on top of that
+is a cymbal sound [SOUND] two, [SOUND]
+four [SOUND].
+So one these are lasting two beats, listen
+again.
+[MUSIC]
+One two three four, one two three four.
+I'm going to put it on beats one, where we
+can see that that line's at
+the beat one on the music, and beat
+three [UNKNOWN] line [UNKNOWN] three on
+the music.
+So these minims last for double the amount
+of time as a crotchet.
+And another way to say that, of course, is
+that
+the original note can be divided up into
+two crotchets.
+Now the next one that I want to look at,
+is [SOUND] the semibreve.
+[SOUND].
+And this is the, what we also call the
+whole nut.
+So what I'm going to do here is I'm just
+going to put a semibreve in this place.
+I'm going to jump back over to Pro Tunes
+and
+I'm going to let you hear what that sounds
+like.
+So again, we're going to hear a four beats
+per bar, the pulse of the, the crotchet
+beat.
+With the bass drum sound, but we're
+going to hear a different
+cymbal this time, and that's going to be
+shown here at this semibreve.
+You only hear that every four beats,
+because this is
+in a loop and the semibreve lasts for four
+beats.
+[SOUND] four [SOUND] two three four,
+[SOUND]
+two three four, one [SOUND] two three
+four.
+Okay, so these are our simple ones we can
+hear it
+at the four crotchet beats, a pulse and
+[UNKNOWN] in the background.
+When we had the quavers we could hear that
+we got two quavers per crotchet.
+When we had the minims we had [UNKNOWN]
+two crotchets per minim.
+Remember we had the semibreve.
+We have here, we've got four crotchets per
+semibreve.
+Of course the other thing to note is that
+we get two minims
+per semibreve.
+We just put that in so you can see that
+[UNKNOWN].
+So this time what we're going to hear is
+the semibreves, the
+crotchets and the minims in the audio
+example and you can follow
+that on the score [NOISE] [SOUND] One,
+two, three, four.
+So, you've got semibreve [SOUND], second
+minim.
+[SOUND] And let's just put the quavers
+back in there, just
+so you can hear all these simple divisions
+together.
+You can see what's going on on the screen
+as I go through it.
+So I'm going to put the quavers back into
+it.
+[MUSIC]
+Okay [SOUND].
+So the next most simple division that
+we're going to have here is semiquavers.
+So, I'm just going to draw this onto this
+chord
+for you so you can see what that looks
+like.
+And as we can see, we get 16 semiquavers
+per semibreve.
+Which means that we call semiquavers
+sixteenth notes
+if sometime we have ever a need for them.
+So, what we're going to hear this time
+just for simplicity is we're going to hear
+the crotchet, the quavers, and the
+semiquavers this time.
+So just to adapt that into the score,
+so you can actually follow what's
+happening cause they're
+at the same time, I'm not going to have
+any
+semibreves playing, we're not going to
+have any minims playing.
+We're just going to have crotchets, or,
+quarter notes.
+Quavers, or eighth notes, and semiquavers,
+or sixteenth
+notes, so you can hear what that sounds
+like.
+[MUSIC]
+Okay, so the tom toms sort of sound a bit
+[UNKNOWN] in there as the semiquavers
+[UNKNOWN] one two three
+four, two two three four, three two three
+four, four
+two three four, one two three four, two
+two three four.
+You have your crotchet [SOUND] was the
+bass drum, and then
+you're hearing the quavers, which is the
+closed cymbals sound [SOUND].
+Okay so just to be more specific here
+cause it might be starting to get
+complicated.
+What we're hearing is our crotchets.
+[SOUND] We're going to add quavers on top
+of that.
+[SOUND] And then we're going to add our
+semiquavers on top of that.
+[MUSIC]
+Now the other things that you have heard
+about this week in the videos is triplets.
+[SOUND] And what we see when we're dealing
+with triplets is that
+we're squeezing three things into the
+space that two would normally occupy.
+So on the screen here, I'm going to get
+rid of the semiquavers just now,
+'cause we don't need to worry about them
+too much at the moment [COUGH].
+And what we're going to have is a look
+firstly at our crotchet triplets [SOUND].
+Now we know that we get four crotchets per
+bar, and one crotchet per beat.
+But if we squeeze three crotchets into the
+space that two would
+occupy, that is to say the space a minimum
+of those would occupy.
+If we squeeze three into that space,
+not that you can see the brace, the
+bracket that goes over the top
+of the three notes as shown which are
+included in the triplet for them.
+What this means is that we get three
+crotchets in the space that two would
+occupy.
+And I'm showing you this in the screen,
+right next to the
+simple crotchet beats in four four, so you
+can see that where two
+normal crotchets exist, we've got three
+crotchet triplets in the same space.
+What I want to do is give you another
+example of that
+again, so that you can hear just how,
+[SOUND] definitely these two things
+are actually signed, and you can hear the
+compressed feeling that you
+get out of squeezing three crotchets into
+the space that two should occupy.
+So I'm going to start just with a crotchet
+beat.
+[MUSIC]
+One two three four, one two three four.
+Just as we've heard so far already.
+And what we're going to do is we're
+going to rid the crotchet triplets on top
+this time.
+One two three four.
+Here it comes.
+[MUSIC].
+Okay.
+And in that example what we had is the
+compressed
+feeling and an almost staggered feeling
+that we get from squeezing.
+Three of these crotchets into the space of
+two.
+Obviously, in that case the hand claps
+were the, triplets.
+Now this is an interesting one because, it
+really does
+give us this feeling of things being
+compressed into space.
+What I'm going to do is I'm going to get
+rid of these for the moment.
+And if you look over the score again, what
+we'll
+see is that I'm going to put in quaver
+triplets this time.
+But what I'm going to do before I do that
+is I'm just going to put
+in some quavers so you can see how all
+these beats actually line up.
+So what I'm going to do, I'm going to tell
+this that I want it to be a triplet again
+and this time because the notes are
+beamed, you just got three setting above
+to signal that this is a triplet, we don't
+need a bracket in this case.
+And again, what we can see, if you look
+really closely, is for each two quavers
+we've got three squeezed into the space
+that
+two would occupy when we're dealing with
+quaver triplets.
+Two quavers fit into the space of one
+crotchet, so
+three quaver triplets fit into the space
+of one crotchet.
+Okay, so what I'm going to do is I'm
+going to play this to
+you and this time what I'm going to have
+is a crotchet beat
+playing in the background as it has been
+and just give you
+a little example first, so you can see how
+it sounds again.
+[MUSIC]
+Four, one, two, three, four.
+Just churning away like a steady pulse,
+like a heart beating in the background so
+that we've got point of reference for
+the [UNKNOWN] system that's going to be
+going on.
+Let's hear that again and this time with
+the quavers.
+Just to refresh your memory.
+[MUSIC]
+Okay, so you've got one and two and three
+and four and.
+So, two per crotchet beat.
+And most of the time most people quaver
+triplets in there as well.
+[MUSIC]
+One two three, one two three, one two
+three, one two three.
+Okay, so again we're hearing that we're
+getting three
+quaver triplets put in the space of two
+quavers.
+Obviously, two quavers are played in the
+space of one
+crotchet so we got three quaver triplets
+and a crotchet.
+[BLANK_AUDIO]
+

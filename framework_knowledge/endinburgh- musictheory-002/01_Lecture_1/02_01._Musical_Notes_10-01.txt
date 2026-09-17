@@ -1,0 +1,319 @@
+Welcome to the first lecture.
+Before we get started, a word about pianos
+and keyboards.
+We are going to use the piano quite a lot
+for this music theory course.
+And we're hoping that you can get access
+to any kind
+of keyboard, including one that you might
+download as an app.
+You don't need to be a piano player, you
+simply need to be able to put
+your fingers on the keys and play along
+with some of the stuff as we do it.
+>> The only reason that we're doing this
+is because it's a really
+nice visual illustration of some of the
+things that we're going to be talking
+about.
+[BLANK_AUDIO]
+>> So let's get started.
+Here's a sound.
+[SOUND].
+>> And here is another sound.
+[SOUND].
+>> You'd probably say that this one is
+high.
+[NOISE].
+>> Whereas this one [NOISE] is low.
+>> And that is the case in nearly every
+language in the planet.
+The thing is with this sound [NOISE],
+while I
+can say it's high, I can't seem to sing
+it.
+[tries to sing] I can't find the note.
+>> And that's just exactly the same as
+this one.
+We know it's low, but again bom, bom, bom.
+There's no, there's no note to, to latch
+on to and recognize there.
+>> But compare with this, [piccolo note] which is
+high, but is a note.
+La- sings same note
+[sxophone low note].
+>> And then we've got a low note.
+That's, again, something that we can sing,
+we can recognize.
+>> So those two examples have what we call
+Pitch.
+Okay?
+A singable musical quality to the sound,
+all right?
+Now, we're going to be looking at how to
+represent this stuff graphically.
+This is the written part of music.
+So, I could say obviously my note was
+high, so I'll stick it up here.
+Zack's note came afterwards with low down
+here, shall we, shall we say.
+That would imply that this axis is giving
+us time.
+My note first, Zack's second.
+And this axis, this axis is giving us
+Pitch.
+High and low, okay?
+>> And that's fine.
+But actually, it's really quite difficult
+to know just how
+high that note is, or how low this note
+is.
+It's not very good for us to able to give
+this
+to someone else, to be able to replicate
+what we did.
+You know?
+It's, it's, it's purely a, a kind of graph
+of where our notes were.
+>> I can try and make a tune, like, la,
+la, la, la.
+But we don't really know.
+>> Yeah, this is just a, a, Scatter Graph.
+It's just plotting where things happened,
+and roughly how high or low they were.
+>> In the 7th century, Archbishop Isidore
+of Seville, said, that unless sounds could
+be
+held in the memory of man, they are lost
+because they cannot be written down.
+You've got to imagine you're a 9th century
+monk and you've come
+up with a really great piece of music for
+the church liturgy, okay?
+You can use this kind of system here, as a
+memory
+jogger for you and for the people you're
+immediately working with.
+But you have no musical instrument and you
+have no recording devices.
+So if you wanted to send this to another
+monastery, if
+you wanted to submit it to the Pope for
+authentication, you couldn't.
+There's no way that anyone else would be
+able to interpret these dots.
+They struggled with this right through,
+until in
+the 16th century, they came up with this.
+[BLANK_AUDIO]
+Five lines called a Stave, or if you're
+American, a Staff.
+Okay?
+These five lines are like a grid system
+that can be overlaid onto those dots.
+Now we have some relativity that we can
+work with.
+Right.
+So we got this stave, and I'm going to put
+a symbol here,
+which you'll probably recognize.
+Now, these monks started naming the notes.
+Things like Do Re Mi, which we still use.
+But, also, particularly in English
+speaking countries, letters
+from the alphabet, and we'll start with A.
+Which on the piano, sounds like.
+[MUSIC]
+A, and I'll put that right here, on this
+space.
+So that's, A.
+>> Okay, so we said it was alphabetical.
+So the next thing obviously is B, and that
+sits on the line, just above that space.
+>> B.
+>> You guessed it.
+The next one is C, and that's in the space
+above.
+>> C.
+>> And then we've got D on the next line.
+>> D.
+>> E on the next space.
+>> E.
+>> F on the next line.
+>> F.
+>> G compares just on top of the stave.
+>> G.
+>> And then it looks like we've ran out of
+stave actually, but we can, we
+can write notes that are higher than this
+and there's a trick for getting around
+that.
+Richard's going to show you [CROSSTALK].
+>> It's called a Ledger Line, and that
+gets us that note.
+>> Okay, so on that note if we were
+following
+that up alphabetically, A, B, C, D, E, F,
+G.
+Not H, what we get is another.
+>> A.
+>> Okay, so we can say that our musical
+alphabet runs A,
+B, C, D, E, F, G and then the sequence
+starts repeating itself.
+>> Going down, I'm just going to come down
+to
+this stave and A goes down, of course, to
+G.
+>> And then if you keep going down we've
+got an F
+and the space, E on the line, D perched
+just below the stave.
+And again, we've got the same problem.
+But as Richard says, we can use a short
+line, which
+is temporary and it's called a Ledger Line
+that represents our C.
+We can draw them, the line again, and
+write the next note in the
+space below, that gives us a B and we can
+keep going with this.
+So, so the next thing is two ledger lines.
+And all we're doing is temporarily
+extending the stave when we
+do this and this takes us back down to our
+E, again.
+>> Now one other thing I'll just mention.
+So we started on A and we came down to a
+G.
+This G is on the line and this line is
+where this symbol circles itself around.
+So this symbol can be called a G-Clef, or
+more commonly nowadays, a Treble-Clef.
+But the really important thing we've got to
+deal
+with is the existence of more than one A.
+And in fact now we've seen this being a C,
+more than one C.
+What does that mean?
+That's what we're going to look at next.
+>> Following on from this idea of having
+more than one
+of any given note represented at different
+points on the stave.
+Let's use the guitar as an illustration.
+So on the guitar, if we play this string,
+[SOUND] we get an A.
+Now this instrument makes sound by having
+a string that vibrates.
+If I was to put my finger halfway along
+the length
+of that string, [SOUND] it now vibrates at
+double the frequency.
+This is what we call an Octave.
+This A [SOUND] is an octave higher than
+[SOUND] this A.
+But we can hear, although there are
+different notes on there're
+different points on the instrument, they
+do sound equivalent in some way.
+And this is something that we'll recognize
+intuitively, and
+we'll be able to illustrate that with our
+voices.
+Okay, so imagine you're at a party.
+Sing:Happy birthday to you, happy birthday to
+you.
+That's quite enough of that!
+but, I sang high, the part that often
+children
+or, some women would sing, and Zack sang
+low.
+We were singing the same melody.
+You always do this in your everyday life.
+We were singing in octaves.
+Okay?
+>> It sounded equivalent.
+It didn't sound weird.
+It didn't clash.
+This is what we mean by the an Octave.
+>> So again looking at our stave, let's
+see what this octaves mean.
+Right here's A, and if we count these
+notes,
+A being 1, B 2, C 3, D 4, E 5,
+F6, G7, number 8 is when we come back to
+A.
+>> That's not going to be much of a
+surprise
+to us given that we've called it an
+Octave.
+>> The 8.
+>> So we've looked at these notes on the
+stave, but let's just go
+back to the keyboard so we can look at
+where they are on an instrument.
+So the A that we've started with was here.
+[SOUND] We never got that A.
+An octave above [SOUND] up here.
+So we had A, B, C, D, E, F, G, and A.
+And you'll notice that that's just used
+every line and space on the stave,
+but we've only used the white notes
+on a piano and that's going to become
+important.
+We'll talk about that more in a minute.
+We can go down to A.
+[piano plays]
+A, G, F, E, B, C, B, and right down to A.
+So again, just to highlight this idea of
+the octaves.
+We've got an A here.
+We've got an A here.
+We've got an A here.
+We've even got an A up here, and this
+carries on both ways up and down the
+piano.
+>> Great.
+So we've seen the notes on the keyboard.
+We've been writing them down.
+You need a way to remember where they are
+on the stave, if you don't already read
+music.
+>> So as Richard said, this is called the
+G-Clef, the Treble Clef and if we wanted,
+we could always go back to first
+principles and
+count everything from this G on the second
+line.
+[CROSSTALK].
+>> G, A, B, C, D, E [CROSSTALK].
+>> That's going to take a long time
+though.
+So, we've got some nice ways to remember
+it.
+>> So, if I start on the bottom line, it's
+an E.
+Then the next line is a G.
+The next line is a B.
+The next one a D.
+And then the line at the top is an F.
+E G B D F could spell Every Good Boy
+Deserves Fruit.
+>> Football.
+>> Fun.
+>> Food.
+>> And, if we go to the spaces, the bottom
+space is
+F, the next space is an A, a C, then an E:
+F-A-C-E.
+>> So, that's a way to remember the lines
+and the spaces separately,
+but of course we've always got to remember
+that it's part of a spectrum.
+So at the bottom we've got E line, F on
+the
+space, G line, A on the space and so on
+alphabetically.
+These two things come together.
+[BLANK_AUDIO]

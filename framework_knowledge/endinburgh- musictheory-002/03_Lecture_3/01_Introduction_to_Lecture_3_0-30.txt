@@ -1,0 +1,20 @@
+Hello.
+This week's lecture is given by me, for a
+change.
+I'm a composer and music technologist
+working at the
+Reid School of Music at the University of
+Edinburgh.
+My specialty is algorithmic composition,
+which is writing software, to make
+complete pieces of music, but I also
+improvise on laptop and saxophones.
+This week, we're going to look at rhythm
+and form.
+We looked at pitches in week one, and we
+can think of pitch as our Y axis, that
+is on the vertical axis, with time now
+being
+on our X axis, moving horizontally from
+left to right.
+

@@ -1,0 +1,59 @@
+We can, of course, divide our rhythms into
+subdivisions of three, five, seven, etc.
+These are generally
+referred to as tuplets and
+can be any arbitrary division of a note,
+but the most common are in fact triplets.
+There are as you might imagine,
+three triplets quavers, or eighth notes to
+a quarter note, three in the time of two.
+Or three triplet quarter
+notes to a half note.
+Any basic rhythm could be
+subdivided in this manner.
+So if I've got a beat
+that goes at this speed,
+[NOISE]
+that would be quarter notes.
+And triplets would be [NOISE] one,
+two, three.
+One, two three.
+One, two, three.
+One, two, three.
+One, two, three.
+One, two, three.
+As mentioned, we can have other
+subdivisions, for instances, quintuplets.
+So for example, I could divide a minim,
+or a half note,
+into five quintuplet eighth notes.
+That would go something like this.
+[NOISE] One, two, three, four, five.
+One, two, three, four, five.
+One, two, three, four, five.
+One, two, three, four, five.
+Tuplets are generally notated in the
+simplest fashion by putting a number above
+a beam, as in the triplet quaver or
+eighth notes we've already seen.
+The three there implicitly
+means three in the time of two.
+So whereas a crotchet, or a quarter note,
+would usually be divided into two quavers,
+or eighth notes.
+By putting the three above three quavers,
+we indicate that we want these three
+triplet eighths to be in the time of two.
+We can also use brackets with numbers if
+we have notes that we don't have flags or
+beams for.
+So to create triplet quarter notes,
+we would normally use the bracket to group
+the three notes that we want
+played in the time of two.
+And if it's not obvious how many shorter
+notes we want in the time of how many
+longer notes, we could explicitly
+write a proportion such as 4:3.
+[MUSIC]
+

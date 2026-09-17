@@ -1,0 +1,119 @@
+[BLANK_AUDIO]
+Before we leave meter and move onto
+phrases,
+let's look at something that bridges the
+two...
+anacrusis.
+This is both a poetic and a musical term,
+and in music, it indicates that the
+start of a piece or section begins with
+an under-full bar, most characteristically
+just the last beat.
+This is often called a pickup note.
+Some very well-known melodies are
+structured
+in this way, for instance, Happy Birthday
+to You or the main theme of the final
+movement of Brahms's Fourth Symphony.
+[MUSIC]
+So when we have music with anacrusis, we
+tend to start each of the
+phrases in the music with the pickup note,
+as in the examples just noted.
+But what are phrases?
+[BLANK_AUDIO]
+A phrase is a part of a melody, a group of
+several bars, most often four.
+It forms a melodic unit that feels more or
+less complete, depending upon its harmonic
+context at the end.
+In fact, phrases are generally articulated
+by harmony in western music, and
+in particular by what we call cadences;
+we'll cover these in week five.
+Not coincidentally, a phrase is often the
+approximate
+length of a singer's or a wind player's
+breath.
+So there might be rests at the end of a
+phrase, in which they can take a breath.
+Phrases might be indicated in notation by
+a curved line above the stave, much as
+a wind player's slur line indicates a
+passage to be performed in one breath
+also.
+Phrase marks and slur lines are not
+equivalent, but
+they are related and look pretty much the
+same.
+So what we can see now is a clear
+hierarchy
+of musical structure from rhythms grouped
+into beats, beats into bars,
+bars now into phrases and as you'll see
+next, phrases
+into periods, or phrase groups if they're
+not grouped into pairs.
+Periods into sections, sections into
+movements or songs and
+movements into symphonies, concertos, et
+cetera, or songs into albums.
+[BLANK_AUDIO]
+There are, however, a couple of other
+things to add in here.
+The first of which is the motif or motive.
+Many melodies and phrases make use of
+concise musical signposts or motives.
+These are usually short musical statements
+that are easily
+recognizable by their strong rhythmic or
+intervallic character.
+Motives are often repeated considerably
+and developed and varied
+both rhythmically and melodically during
+the course of a piece.
+Probably the most famous music motive in
+Western classical music
+is found at the very opening of
+Beethoven's Fifth Symphony.
+[MUSIC]
+This is fairly typical of motives, in that
+it is an isolated short statement.
+Shorter, in fact, from not, what we'd
+normally consider to be a phrase, but it
+could by itself, or in compilation with
+extensions
+of itself, form a complete phrase of
+music.
+Somewhere between phrases and sections, we
+have melodies.
+But the confines of these are open ended.
+They may or may not constitute a complete
+section of a piece, depending on stylistic
+context.
+It all depends on how long the melody is.
+Wagner's were famously never-ending, for
+instance.
+But in any case, melodies generally
+consist of several phrases.
+Take for instance, the old English tune
+Greensleeves.
+This displays an anacruces or pickup note,
+which we've already discussed.
+The pickup here is on the last eight note,
+or last quiver of the six eight-bar.
+So we got a six eight melody, which we may
+remember
+is a compound duple form with two dotted
+crochet beats per bar.
+The Greensleeves melody consists of four
+four-bar phrases.
+These are grouped into two periods, each
+consisting
+of two phrases, the antecedent phrase,
+which doesn't
+come home to our tonic of G and
+the consequent phrase which does indeed
+come home.
+[MUSIC]
+[BLANK_AUDIO]

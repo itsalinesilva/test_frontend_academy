@@ -1,0 +1,242 @@
+>> With our scales so far, we've been
+working sequentially.
+In a linear fashion, sounding one note at
+a time.
+But in fact, it's very common for music to
+sound notes, at the same time.
+Just now when we were playing, Zack was
+playing, chords on the piano.
+>> So this is what we're going to go and
+look at now.
+But, before we do, it's going to be
+important
+to recap, the difference between our C
+major
+scale, and our A (Aeolian) mode, the
+natural
+minor, the scale that we built from six
+degree.
+So, here you have our C major scale.
+[MUSIC]
+And then, if we start from the sixth
+degree of that
+scale and say this, play the same pool of
+notes, we get.
+[MUSIC]
+Which we called out natural minor or The
+Aeolian mode.
+>> Right, remembering how God Rest Ye
+Marry
+Gentlemen, did sound different from the
+major scale.
+Let's have a look at some important
+relationship ships within this.
+So looking at the, natural minor scale,
+the A minor scale.
+Looking from A to E.
+that's the note- the tonic up to note number
+five.
+I can count tone, semi tone, tone, tone.
+That would be three tones and one
+semitones.
+If I break that down into semi tones, that
+will
+be one, two, three, four, five, six, seven
+semitones.
+[MUSIC]
+That's the sound of the seven semitones A
+to E.
+Okay, and back to the C major.
+If I do the same thing and start on the
+tonic C and go
+up to note number five which is G, I get
+tone, tone, semitone, tone.
+The same except that the tones and semitones
+are in a different order.
+But again, I'm getting seven semitones.
+Let's hear those.
+[MUSIC]
+The C to G.
+>> That one's from C to G.
+And then, from A to E.
+[MUSIC]
+>> Right.
+So, A and E to, and C to G both have the
+seven semitones.
+They're the same.
+That interval was called a Fifth.
+And in fact, we can now give it a quality
+and say it's a Perfect Fifth.
+And note also that the two notes sound
+nice together.
+[MUSIC]
+Now, going back to A, let's now have a
+look at A to C.
+This is note one to three, the interval of
+third.
+[MUSIC]
+Here, we get a tone and a semitone, so
+that adds up to three semitones
+however if I start on C and go from C to
+it's third note which is E.
+[MUSIC]
+I get two tones, which adds up to four
+semitones and there is the difference.
+[MUSIC]
+The second one, is the C Major chord.
+And when you hear it, you'll probably
+find,
+it's very natural to hear the major scale.
+[MUSIC]
+So there, looking again at our C major
+scale, we now isolate the
+three notes the C, E and G and then we
+stack them up vertically.
+Like this, and that is the C major triad.
+Now, there are other ways of writing this.
+If you play a lot of Rock music or
+Jazz, you're used to using something called
+a lead sheet.
+Where instead of writing the chords out
+with notation, as you can see here.
+We use chord symbols. There are several
+different chord symbols: so for C major
+it could simply be shown with a capital C
+like this, or
+Cmaj, abbreviated for C major, or a
+capital C and a capital M.
+All of those could be used, in different
+kinds of music.
+Now, going to the A minor, the A
+natural minor scale, again, we'll do the
+same trick.
+We'll isolate the three notes of the A
+minor triad, so that's A, C, and E.
+And again, we'll stack them up vertically
+to show the A minor triad.
+And again, if you were using a lead sheet,
+this could be shown
+with an Amin, short for minor,
+or A little m, or A with a minus sign,
+that you'll find in jazz.
+So if we take one, three, five starting on
+C and the key of C Major.
+We've got C E G.
+Now, we know that we've got seven
+semitones between the C and the G.
+So it's a Perfect fifth.
+And we've got four semitones between the C
+and the E, and that's a Major third.
+Now because this has got three notes, it's
+a triad.
+It's a simplest type of chord and what
+we're going to see is that a triad that
+has a Perfect fifth and a Major third is a
+Major triad.
+Let's start it on D.
+We've got one three five.
+D F A.
+Now again, we've got seven semi-tones
+between the D
+and the A, which gives us a Perfect fifth.
+But this time, we've only got three
+semi-tones between the D and the F.
+So this gives us a Minor Third.
+Again, because it's got three notes, we're
+going to say that this is a triad.
+But this time, we have a Perfect fifth and
+a Minor third.
+So, we have a Minor triad.
+Let's move on to E.
+Again, we've got a perfect fifth between E
+and B, and our third this
+time is G, which is a minor third, so we
+get a minor triad.
+Move on to the fourth degree in this case,
+which is F.
+We've got F A C so we've got, a Perfect
+fifth.
+This time we've got a Major third, so,
+this is a Major triad.
+G, B, D, it's built on the fifth.
+So, we've got G to D, which is a Perfect
+fifth, G to B, which is a Major third.
+So, in this case we get, a Major triad.
+In each case, the name of the Major triad,
+is the same as the tonic.
+So, this is the G Major triad.
+[MUSIC]
+If we go to the sixth degree, we already
+know this one, this is A, C, E.
+So we got our Perfect fifth and then we've
+got our Minor third, so we've got a, Minor
+triad.
+The A minor triad.
+Now, the next one that we need to look at,
+starts with B, and we've got B, D, F.
+Now, some of you already, may be aware
+that that sounds different but
+what we've got between B and F is actually
+only six semitones this time.
+So, it's one semitone smaller than the
+Perfect fifth.
+Now we actually call this a Diminished
+fifth
+and we're going to talk more about this
+next week.
+But we have a Diminished fifth and we've
+got a Minor third.
+Now, a triad with a Diminished fifth and
+Minor third, is called a Diminished triad.
+So, it sounds different and it has a
+different structure to the
+rest of the chords within the key because
+of the, Diminished fifth.
+So again, if you're a keyboard player, try
+them for yourself now.
+Even if you're not, grab your keyboard app
+or even have a look at a
+picture of a piano keyboard, just so you
+can work out where the notes fall, how
+we're going to build the chords, and just
+think about the nature of the fifth and
+the nature of the third and the quality,
+as we would say in music theory terms.
+And from that, you can determine which
+type of triad, you
+would be able to play, on each degree of
+this scale.
+>> So, that last chord that Zack just
+showed
+us, the B Diminished, looks like this, in
+notation.
+And using lead sheet symbols, it could be
+written
+as this, a B with a little zero after it.
+Or B Dim, short for Diminished.
+And what Zack's just shown us, in this
+last segment, are
+all the triads that we can derive from C
+major scale.
+And here they all are again.
+And you can also find these in your
+handout, print them out and look at them
+which you need to do, because you should
+sit down at a piano and play through them.
+Just again looking at them, we can see
+that there are three major
+chords the C major, the F major and the G
+major, so these three
+chords all have the same internal
+relationship
+between the three notes and then we
+have three minor chords the D minor, the E
+minor and the A minor.
+And again, they have the same internal
+relationship with each other.
+And then we found this one, other
+different chord,
+the B Diminished chord, which will be
+important later.
+So, that's three kinds of chords from one
+set of white notes.

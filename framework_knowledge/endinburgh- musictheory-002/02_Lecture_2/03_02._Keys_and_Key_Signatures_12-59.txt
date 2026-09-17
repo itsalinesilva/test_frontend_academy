@@ -1,0 +1,367 @@
+So in the last section we talked about
+scales and notes that
+we need to create these scales in quite an
+abstract theoretical way.
+Now it's a good time to actually go back
+and relate this to music in more general
+terms.
+So if you had a piece of music that just
+used the notes of C-Major.
+That's the notes of the C-Major scale.
+We could say that this music is in the key
+of C-Major.
+>> And if we had the notes of the G-Major
+scale; with that
+F-sharp, we can say that this is in the
+key of G-Major.
+>> So what do we actually mean by key?
+Well, it's quite a complex term really,
+and it relates not only to the
+notes that are available to us, as drawn
+from the scale, but also to the
+way that we subconsciously hear the way
+that these notes work with each other
+and react with each other and the
+relationship that exists between each of
+these notes.
+>> So, that feeling in G-major.
+[MUSIC]
+We have a sense, that out of all these
+notes.
+[MUSIC]
+G has got a kind of gravity for us.
+[MUSIC]
+G pulls us home.
+G is our tonic.
+>> Yeah, we could say that when we are
+playing
+a piece of music that uses these notes;
+when we
+arrive back at G, there's a feeling of
+completeness or
+that we're at rest; it's the home note if
+you like.
+So, when we are talking about scales
+and keys, they are sometimes confused as
+terms,
+and what we really mean when we are
+talking about scales is this sort of
+ordered.
+[MUSIC]
+String of notes.
+When we're talking about key, just to
+reiterate, it is this relationship and
+the feeling that pulls us back to the
+tonic when we feel at rest.
+>> Okay, so, if you did the exercise that
+we used in the last section where we
+started on D, you'll note that we got
+in D-major, we got an F-sharp and the
+C-sharp.
+[MUSIC]
+So, if were looking at piece of music
+written down
+in a score, how would we know what key
+it's in?
+What we might want to do is look to see
+whether any of the Fs
+are sharpened, and we say, yes, all the Fs
+have got a sharp next to them.
+And we see that, oh, also, all the Cs have
+got a sharp next to them.
+In the context of everything we've just
+said, so far in this lecture, it would
+make a lot of sense to say, oh, this piece
+of music's probably in D-Major.
+>> So given that we know in this case
+that we're going to have every F-Sharp and
+every C
+as a sharp, it might make sense for us
+to know this information up front, right
+at the start.
+And the convention that we've got for
+this, we call 'key signatures'.
+So by announcing what we're going to have
+in terms of sharps or
+flats right at the very start, it does a
+couple of things for us.
+So firstly from a musical point of view,
+what it does is it, it
+gives us an indication of where the tonic
+is, what's going to be most important.
+And also the relationship that exists
+between the notes in this key.
+But also, just from a visual point of
+view,
+what it does is it really tidies things
+up.
+So that no longer do we have the need for
+every F and every C to
+have a sharp in front of it to say that
+these are going to be F and C-Sharp.
+Actually, we see this at the very start by
+means of the key
+signature, and we take it as
+read throughout unless we are signaled
+otherwise.
+>> There's additional on the website
+that'll help you learn more about the
+conventions of notation because what we
+are talking about here, is the idea of
+graphically representing, for people to
+read and to write with, all of these
+concepts and terms that we're, that we're
+introducing to you for, for music theory.
+>> So key signatures are used to tell
+whoever's looking
+at the music, what key the music's in and
+to
+do so by signaling, which notes are
+going to be sharp
+and which notes are going to be flat; from
+the outset.
+There's a really logical way for writing
+key signatures.
+And also, if we're looking at key
+signature and determining what key it
+signifies.
+>> We call this the circle, or sometimes
+the cycle of fifths.
+Let's start with C.
+C, as we know, C-Major is signified by
+having no sharps and no flats.
+That's the key signature.
+G, however, contains one sharp.
+>> F sharp.
+>> F sharp.
+>> G.
+>> And D, has got two sharps; it's also
+got an
+F-Sharp, and now it's also got a C-Sharp
+on top.
+>> So if we look at the cycle of fifths,
+we can see when
+we look at the key signature for C, there
+are no sharps or flats.
+And this makes sense because when we play
+C-Major and we're
+looking at it on the piano, we only use
+the white notes.
+If we look at the next stage round
+clockwise, we see
+that we're looking at G-Major, which is
+signified by having an F-Sharp.
+If we look at the next stage again,
+clockwise.
+We see that we've got D-Major, and that
+this is an F-Sharp and a C-Sharp.
+>> So you'll note, notice the cycle of
+fifth is proceeding literally stages of a
+fifth.
+C, D, E, F, G.
+>> And then we've got G, A, B, C, D.
+>> Each stage includes five note names
+forwards.
+And each stage includes one additional
+sharp as we go around the circle.
+Okay, so we've looked at our circle, the
+circle of fifths moving
+around clockwise where each stage takes on
+five notes for further forward.
+Okay, what happens if we look
+anticlockwise?
+The results of this is that we're, in
+fact, going, moving in fourths instead of
+fifths.
+So, we're starting at C again.
+>> So, let's start with C and move around
+in fourths.
+So if we go from C, we go to the fourth
+note of C-Major.
+C, D, E, F.
+So we're going to start on F.
+Now just to illustrate this really, let's
+apply the major scale pattern to F.
+Okay, when we do that we get F, G, A,
+B-Flat, C, D, E, F.
+So what we can say now is that the scale
+of F has a B-Flat in it.
+One flat.
+>> One flat.
+One B-Flat.
+Clockwise sharps, anti-clockwise, the
+first thing we
+notice is that we're introducing one flat.
+Okay, so we might be able to guess where
+this is going.
+Starting from the F, let's travel another
+fourth around the circle.
+So we're going anticlockwise.
+>> F, G, A, B-Flat.
+>> B-Flat.
+So, we can take our B-Flat as our tonic
+now, and we're going to apply our major
+scale pattern.
+We've got B-Flat, C, D, and a semitone
+takes
+us to E-Flat, F, G, A and back to B-Flat.
+So what we've found now is we've got a
+B-Flat and an E-Flat, so we've added an
+extra flat.
+for an extra step, around the circle,
+just as we did for sharps.
+Therefore, B-Flat has B-Flat and E-Flat.
+So it's all fair and well, then, when
+we're looking at the circle of
+fifths to say when we move around
+clockwise, we're going to add one extra
+sharp.
+Or when we move anticlockwise, for each
+step, we're going to add one extra flat.
+But it's not really enough information.
+We need to know, which extra sharps and
+which extra flats we're going to add for
+each step.
+So we could really go back to the keyboard
+and
+work it out from first principles, and for
+each new
+tonic, we build a major scale, and we work
+out
+which extra sharps we've got and which
+extra flats we've got.
+But that's time consuming, it's a bit of a
+pain; we need to remember lots of
+different information.
+Actually, having some sort of mnemonic
+device for the order
+that sharps and flats occur is probably
+going to be quite useful.
+And it's really common for people to learn
+it in this way.
+So, and good pneumonic advice for the
+order that the sharps occur.
+Father Christmas gave Dad an Electric
+Blanket.
+>> So, that's F, C, G, D, A, E, B.
+>> You
+could also say, Father Charles Goes Down
+And Ends Battle.
+That's a very common one to hear people
+talking about.
+>> Okay, so there's two.
+You could make your own up.
+Now, this being the circle of fifths, with
+all the patterns inherent
+in that, when we go anticlockwise and
+start introducing flats, you might
+not be that surprised to find out that the
+order in which
+flats occur, is actually the same sequence
+as the sharps but in reverse.
+B, E, A, D, G, E, C [LAUGH] C, F.
+So two sentences that we could use to try
+and remember that sequence,.
+>> Well, we've got Blanket Explodes And
+Dad Gets
+cold feet, which is the reverse of the Father
+Christmas one.
+>> Or Battle Ends and Down Goes Charles'
+Father.
+So, we now know that if you see a key
+signature at the start of a piece of
+music, and it's got four sharps in it;
+those
+four sharps have to be F, C, G and D.
+And we know that if you see a key
+signature with three
+flats in it, they're going to have to be
+B, E and A.
+>> So we've been talking about sharps and
+flats within keys.
+So that's to say that we've been talking
+about the sharps that belong to a
+particular key.
+Or the flats that belong to a particular
+key.
+But what happens if we want to use a note
+that's out
+with the pool of not available to us in
+any given key?
+So say we were in G-Major.
+We wanted to use a B-Flat for instance.
+We know this isn't part of the key
+signature.
+But there's absolutely nothing wrong with
+using
+a B-Flat in the overall context of
+G-Major.
+If we do this, if we use a sharp or a flat
+in a place that we don't
+expect that based on the key signature, we
+call
+these accidentals; let's say it's
+absolutely fine to use these.
+We just need to be aware of some
+conventions
+surrounding them, so we can actually use
+them, talk about them accurately.
+Have a look at the example:
+>> We can see that in this example, the
+music got a
+key signature of one sharp, so we know
+it's going to be
+an F-Sharp, and we know that this signals
+G-Major; however, there are
+notes here that don't belong to the key;
+there are some accidentals.
+[MUSIC]
+As we work from left to right, looking
+along the example, we can see that
+there's a sharp sign in front of the third
+note, meaning that this is a G-Sharp.
+[MUSIC]
+>> And looking further along, we notice a
+flat in front of the B.
+Making it a B-Flat.
+[MUSIC]
+Now, just in front of the next B, we see a
+symbol that we haven't seen before.
+[MUSIC]
+This is another type of accidental, and we
+call it a natural.
+Its purpose is to cancel out the sharps
+or flats that have just previously been
+shown.
+>> One thing that we need to mention at
+this point is
+that when an accidental is used, it's
+actually effective for the whole bar.
+We'll discuss what bars mean more next
+week, but really what we
+mean is until we see the next vertical
+line across the stave.
+So the second bar, we see a B-Flat.
+And this means that any other B in that
+bar is also a flat.
+The natural sign in front of the last note
+in this bar actually cancels
+out the flat, meaning that this particular
+note is to be played as a B-Natural.
+That is to say that it is no longer a
+B-Flat.
+And again, although this is the last note
+in the
+bar, this instruction lasts right to the
+end of the bar.
+If we can look at the next bar, we see a
+natural in front of the F.
+Again, this cancels out the F-Sharp in the
+key signature.
+And it means that this note is to be
+played as an F-Natural, not an F-Sharp.
+>> Have a look at additional material on
+on the website.
+We've included some practice questions to
+help you get to grips with this.
+[BLANK_AUDIO]
