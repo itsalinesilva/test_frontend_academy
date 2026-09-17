@@ -6,7 +6,7 @@ import { CourseLevel } from '../domain/types';
  *
  * SOBRE A ORIGEM
  * --------------
- * A SEQUÊNCIA dos doze capítulos foi determinada estudando a progressão
+ * A SEQUÊNCIA dos dezesseis capítulos foi determinada estudando a progressão
  * consolidada do campo: som → notação → duração → alturas → intervalos →
  * escalas → armaduras → métrica → andamento → subdivisões → acordes →
  * cifragem.
@@ -53,7 +53,7 @@ export const CURSO_TEORIA: AcademyCourse = {
     'duração, intervalos, escalas, armaduras, métrica e acordes. Cada capítulo alterna leitura ' +
     'curta com laboratório sonoro: você ouve o que acabou de ler antes de seguir adiante.',
   level: CourseLevel.FUNDAMENTAL,
-  workloadHours: 60,
+  workloadHours: 80,
   ...AUTOR,
   authorBio:
     'A cátedra de teoria reúne o material didático escrito e revisado internamente pelo Conservatório.',
@@ -76,22 +76,26 @@ export const CURSO_TEORIA: AcademyCourse = {
     'subdivisao',
     'acordes',
     'cifragem',
+    'escalas-especiais',
+    'funcoes',
+    'ornamentos',
+    'fraseado',
   ],
   skills: ['leitura', 'percepcao', 'harmonia'],
   prerequisites: [],
   materials: [],
   curriculumSummary:
-    '12 capítulos · 12 lições interativas com laboratório sonoro · livreto de exercícios ao fim de cada capítulo · simulado geral · prova final.',
+    '16 capítulos · 16 lições interativas com laboratório sonoro · livreto de exercícios ao fim de cada capítulo · simulado geral · prova final.',
   assessmentPolicy:
     'Cada capítulo termina com exercícios de fixação. O simulado reúne todas as questões do curso, na ordem estudada. A prova final cobre as mesmas competências com questões próprias.',
   certificatePolicy:
-    'Certificado de curso livre emitido ao concluir os doze capítulos com 70% de acerto na prova final.',
+    'Certificado de curso livre emitido ao concluir os dezesseis capítulos com 70% de acerto na prova final.',
   certificateInfo: {
     title: 'Certificado em Teoria da Música — Fundamentos',
     accreditation: 'Curso livre de qualificação profissional. Certificação própria.',
-    criteria: 'Conclusão dos doze capítulos e 70% de acerto na prova final.',
+    criteria: 'Conclusão dos dezesseis capítulos e 70% de acerto na prova final.',
   },
-  moduleIds: Array.from({ length: 12 }, (_, i) => `mod_teoria_${String(i + 1).padStart(2, '0')}`),
+  moduleIds: Array.from({ length: 16 }, (_, i) => `mod_teoria_${String(i + 1).padStart(2, '0')}`),
   isPublished: true,
   createdAt: AGORA,
   updatedAt: AGORA,
@@ -259,6 +263,58 @@ export const CAPITULOS_TEORIA: DefinicaoCapitulo[] = [
     competencia: 'cifragem',
     minutos: 45,
   },
+  {
+    numero: 13,
+    titulo: 'Escalas cromática, pentatônica e os modos',
+    descricao:
+      'O que existe além de maior e menor — e por que essas outras escalas soam como soam.',
+    objetivos: [
+      'Construir a escala cromática e explicar sua função de passagem.',
+      'Reconhecer a pentatônica e o motivo de ela não ter semitons.',
+      'Identificar os sete modos a partir dos graus da escala maior.',
+    ],
+    competencia: 'escalas-especiais',
+    minutos: 40,
+  },
+  {
+    numero: 14,
+    titulo: 'Graus, funções e cadências',
+    descricao:
+      'Os nomes dos graus não são etiquetas: descrevem o que cada um faz dentro da tonalidade.',
+    objetivos: [
+      'Nomear os sete graus e descrever a função de cada um.',
+      'Distinguir as funções de tônica, dominante e subdominante.',
+      'Reconhecer as cadências perfeita, plagal, interrompida e suspensiva.',
+    ],
+    competencia: 'funcoes',
+    minutos: 45,
+  },
+  {
+    numero: 15,
+    titulo: 'Ornamentos',
+    descricao:
+      'Os sinais que acrescentam notas à melodia sem alterar a duração escrita.',
+    objetivos: [
+      'Executar apojatura, mordente, trinado e grupeto.',
+      'Distinguir ornamento de nota real.',
+      'Ler a notação abreviada de cada um.',
+    ],
+    competencia: 'ornamentos',
+    minutos: 35,
+  },
+  {
+    numero: 16,
+    titulo: 'Articulação, fraseado e forma',
+    descricao:
+      'Como as notas se ligam entre si, e como se agrupam em unidades de sentido.',
+    objetivos: [
+      'Aplicar legato, staccato e acentuação.',
+      'Delimitar motivo, frase e período.',
+      'Reconhecer a estrutura de pergunta e resposta na frase musical.',
+    ],
+    competencia: 'fraseado',
+    minutos: 40,
+  },
 ];
 
 export const MODULOS_TEORIA: AcademyModule[] = CAPITULOS_TEORIA.map((c) => ({
@@ -326,6 +382,14 @@ const BLOCOS: Record<number, LessonBlock[]> = {
       bpm: 50,
     },
     {
+      kind: 'MARKDOWN',
+      id: 'c1_temperamento',
+      markdown:
+        '## O diapasão e o temperamento\n\n' +
+        'Para que músicos toquem juntos é preciso um ponto de partida combinado. O **diapasão** é essa referência: hoje, o lá4 a 440 Hz. Não é um valor natural — foi convencionado, e variou bastante ao longo da história.\n\n' +
+        'Já o **temperamento igual** é a decisão de dividir a oitava em doze semitons exatamente iguais. A acústica pura não produz isso: os intervalos naturais, derivados da série harmônica, não fecham a oitava quando empilhados. O temperamento abre mão de uma pureza mínima em cada intervalo para que todas as tonalidades soem igualmente utilizáveis — e é o que permite modular sem reafinar o instrumento.',
+    },
+    {
       kind: 'CHECKPOINT',
       id: 'c1_check',
       question: 'Dois sons têm a mesma frequência, mas um é muito mais forte. O que difere entre eles?',
@@ -366,6 +430,15 @@ const BLOCOS: Record<number, LessonBlock[]> = {
       highlightNotes: ['C4'],
       octaves: 2,
       startOctave: 3,
+    },
+    {
+      kind: 'MARKDOWN',
+      id: 'c2_anatomia',
+      markdown:
+        '## A anatomia da nota escrita\n\n' +
+        'A **cabeça** define a altura pela posição na pauta. A **haste** sobe à direita quando a nota está abaixo da terceira linha e desce à esquerda quando está acima — a regra existe para a haste não invadir o espaço do sistema vizinho. O **colchete** encurta a duração: um colchete faz a colcheia, dois fazem a semicolcheia.\n\n' +
+        '**Linhas suplementares** estendem a pauta momentaneamente, acima ou abaixo, para notas fora das cinco linhas.\n\n' +
+        'Além das claves de sol e fá existe a **clave de dó**, que fixa o dó4 na linha onde for colocada — na terceira, serve à viola; na quarta, ao registro agudo do violoncelo e do fagote.',
     },
     {
       kind: 'CHECKPOINT',
@@ -530,6 +603,14 @@ const BLOCOS: Record<number, LessonBlock[]> = {
         '- **a qualidade troca**: maior vira menor, aumentado vira diminuto. Justo continua justo.',
     },
     {
+      kind: 'MARKDOWN',
+      id: 'c5_simples_composto',
+      markdown:
+        '## Simples e composto\n\n' +
+        'Um intervalo é **simples** quando cabe dentro de uma oitava, e **composto** quando a ultrapassa.\n\n' +
+        'A nona é a segunda mais uma oitava; a décima é a terça; a décima primeira, a quarta. Para reduzir um composto ao simples correspondente, subtraia sete. A qualidade não muda: uma nona maior é uma segunda maior deslocada de oitava.',
+    },
+    {
       kind: 'CHECKPOINT',
       id: 'c5_check',
       question: 'Qual é a inversão de uma terça maior?',
@@ -664,6 +745,14 @@ const BLOCOS: Record<number, LessonBlock[]> = {
       notes: ['C4', 'G4', 'C4', 'G4', 'C4', 'G4'],
       playMode: 'SEQUENCE',
       bpm: 120,
+    },
+    {
+      kind: 'MARKDOWN',
+      id: 'c8_anacruse',
+      markdown:
+        '## Anacruse\n\n' +
+        'Nem toda peça começa no tempo forte. Quando ela começa antes — num tempo fraco que impulsiona para o primeiro tempo forte — esse trecho inicial incompleto chama-se **anacruse**.\n\n' +
+        'O compasso da anacruse e o último compasso da peça costumam se completar: se a anacruse tem um tempo, o compasso final tem um a menos. É uma convenção de escrita, e ver isso ajuda a identificar onde a frase realmente começa.',
     },
     {
       kind: 'CHECKPOINT',
@@ -854,6 +943,14 @@ const BLOCOS: Record<number, LessonBlock[]> = {
       prompt: 'Tríade menor com sétima menor. O acorde que costuma preceder o C7.',
     },
     {
+      kind: 'MARKDOWN',
+      id: 'c12_arpejo',
+      markdown:
+        '## Arpejo, e o parente antigo da cifra\n\n' +
+        'Tocar as notas de um acorde em sequência, e não simultaneamente, é **arpejar**. O acorde continua o mesmo: muda a apresentação, não a harmonia.\n\n' +
+        'A cifra alfabética tem um antepassado: o **baixo cifrado**, usado nos séculos XVII e XVIII. Ali, escrevia-se apenas a linha do baixo, com números indicando os intervalos a construir acima dela. O princípio é idêntico ao da cifra moderna — descrever a harmonia sem fixar a disposição das vozes —, e muda apenas a referência: o baixo cifrado parte do baixo, a cifra parte da fundamental.',
+    },
+    {
       kind: 'CHECKPOINT',
       id: 'c12_check',
       question: 'A cifra G/B pede quais notas, e com o quê no baixo?',
@@ -866,6 +963,238 @@ const BLOCOS: Record<number, LessonBlock[]> = {
       correctIndex: 0,
       explanation:
         'A letra antes da barra é o acorde: sol maior, ou seja, sol–si–ré. O que vem depois da barra é a nota do baixo: si. É a primeira inversão de sol maior.',
+    },
+  ],
+
+  13: [
+    {
+      kind: 'MARKDOWN',
+      id: 'c13_intro',
+      markdown:
+        'Maior e menor não esgotam o assunto. Há escalas construídas com outros princípios, e cada uma soa diferente porque a distribuição dos semitons é outra.\n\n' +
+        'A **escala cromática** usa os doze semitons da oitava, sem exceção. Como todos os passos são iguais, ela não tem tônica — nenhuma nota se destaca como centro. Por isso não se escreve música nela: usa-se como **passagem**, ligando duas notas estruturais.',
+    },
+    {
+      kind: 'SCALE_LAB',
+      id: 'c13_lab_cromatica',
+      title: 'Escala de dó maior, para comparar',
+      tonic: 'C4',
+      mode: 'MAJOR',
+    },
+    {
+      kind: 'MARKDOWN',
+      id: 'c13_pentatonica',
+      markdown:
+        '## A pentatônica e a ausência de atrito\n\n' +
+        'A **pentatônica maior** tem cinco notas: os graus 1, 2, 3, 5 e 6 da escala maior. O que ela deixa de fora são exatamente o 4º e o 7º graus — as duas notas que formam os semitons.\n\n' +
+        'Sem semitons, não há atrito: qualquer combinação de notas soa aceitável. É por isso que a pentatônica aparece em tradições musicais de todos os continentes, independentemente umas das outras, e é por isso que é a primeira escala ensinada a crianças.',
+    },
+    {
+      kind: 'AUDIO_EXAMPLE',
+      id: 'c13_audio_penta',
+      title: 'Pentatônica de dó',
+      description: 'Dó, ré, mi, sol, lá. Repare que nenhum par soa áspero.',
+      notes: ['C4', 'D4', 'E4', 'G4', 'A4', 'C5'],
+      playMode: 'SEQUENCE',
+      bpm: 90,
+    },
+    {
+      kind: 'MARKDOWN',
+      id: 'c13_modos',
+      markdown:
+        '## Os modos\n\n' +
+        'Toque as notas de dó maior começando e terminando em ré, e o resultado não soa a dó maior: soa a outra coisa. As notas são as mesmas; o que mudou foi qual delas funciona como repouso — e, com isso, onde os semitons caem em relação a ela.\n\n' +
+        'Cada grau da escala maior gera um modo:\n\n' +
+        '| Grau | Modo | Marca |\n|---|---|---|\n' +
+        '| I | jônio | é a própria maior |\n' +
+        '| II | dórico | menor com sexta maior |\n' +
+        '| III | frígio | menor com segunda menor |\n' +
+        '| IV | lídio | maior com quarta aumentada |\n' +
+        '| V | mixolídio | maior com sétima menor |\n' +
+        '| VI | eólio | é a menor natural |\n' +
+        '| VII | lócrio | quinta diminuta — instável |',
+    },
+    {
+      kind: 'CALLOUT',
+      id: 'c13_call',
+      type: 'tip',
+      title: 'Como ouvir um modo',
+      text:
+        'Toque a nota do modo no baixo e sustente-a enquanto percorre a escala por cima. Sem esse apoio, o ouvido reinterpreta tudo como a escala maior de origem — e a diferença desaparece.',
+    },
+    {
+      kind: 'CHECKPOINT',
+      id: 'c13_check',
+      question: 'Por que a pentatônica maior não produz dissonâncias ásperas?',
+      options: [
+        'Porque tem menos notas',
+        'Porque não contém semitons',
+        'Porque não tem tônica',
+        'Porque usa só notas naturais',
+      ],
+      correctIndex: 1,
+      explanation:
+        'Ela omite o 4º e o 7º graus, que são justamente as notas que formam os dois semitons da escala maior. Sem semitons, não há o atrito que produz dissonância áspera.',
+    },
+  ],
+
+  14: [
+    {
+      kind: 'MARKDOWN',
+      id: 'c14_intro',
+      markdown:
+        'Os graus da escala têm nome, e os nomes descrevem **função** — o que cada um faz dentro da tonalidade, não apenas onde fica.\n\n' +
+        '| Grau | Nome | O que faz |\n|---|---|---|\n' +
+        '| I | tônica | repouso; para onde tudo converge |\n' +
+        '| II | supertônica | prepara a dominante |\n' +
+        '| III | mediante | entre tônica e dominante |\n' +
+        '| IV | subdominante | afasta-se da tônica |\n' +
+        '| V | dominante | tensão máxima; puxa de volta |\n' +
+        '| VI | superdominante | substitui a tônica |\n' +
+        '| VII | sensível | a um semitom da tônica |',
+    },
+    {
+      kind: 'MARKDOWN',
+      id: 'c14_funcoes',
+      markdown:
+        '## Três funções, sete graus\n\n' +
+        'Os sete graus se agrupam em três funções:\n\n' +
+        '- **Tônica** (I, VI, III) — repouso.\n' +
+        '- **Subdominante** (IV, II) — afastamento.\n' +
+        '- **Dominante** (V, VII) — tensão que exige resolução.\n\n' +
+        'A dominante deve sua força à **sensível**: o sétimo grau, a um semitom da tônica. Esse semitom é uma distância que o ouvido percebe como incompleta, e é ele que produz a sensação de que a música precisa voltar.',
+    },
+    {
+      kind: 'CHORD_LAB',
+      id: 'c14_lab_dominante',
+      title: 'A dominante de dó maior',
+      notes: ['G4', 'B4', 'D5'],
+      prompt: 'O si é a sensível. Ouça a vontade que ele tem de subir ao dó.',
+    },
+    {
+      kind: 'MARKDOWN',
+      id: 'c14_cadencias',
+      markdown:
+        '## Cadências\n\n' +
+        'A **cadência** é a fórmula que encerra uma frase. Quatro são correntes:\n\n' +
+        '- **Perfeita** (V → I) — conclusão plena. É o ponto final.\n' +
+        '- **Plagal** (IV → I) — conclusão suave, sem a tensão da sensível. É o "amém" dos hinos.\n' +
+        '- **Interrompida** (V → VI) — prepara o repouso e entrega outra coisa. Prolonga a frase.\n' +
+        '- **Suspensiva** (termina no V) — para na tensão. É a vírgula.',
+    },
+    {
+      kind: 'AUDIO_EXAMPLE',
+      id: 'c14_audio_cadencia',
+      title: 'Cadência perfeita em dó',
+      description: 'A dominante resolvendo na tônica — a conclusão mais comum da música tonal.',
+      notes: ['G4', 'B4', 'D5', 'C4', 'E4', 'G4'],
+      playMode: 'SEQUENCE',
+      bpm: 60,
+    },
+    {
+      kind: 'CHECKPOINT',
+      id: 'c14_check',
+      question: 'Uma frase termina com a progressão V → VI. Que cadência é?',
+      options: ['Perfeita', 'Plagal', 'Interrompida', 'Suspensiva'],
+      correctIndex: 2,
+      explanation:
+        'A dominante prepara a tônica, mas entrega o sexto grau. A expectativa é criada e não cumprida — daí o nome interrompida, e daí o efeito de prolongar a frase.',
+    },
+  ],
+
+  15: [
+    {
+      kind: 'MARKDOWN',
+      id: 'c15_intro',
+      markdown:
+        'Os **ornamentos** acrescentam notas à melodia sem que elas apareçam como figuras de duração própria. São escritos em notação abreviada — um sinal ou uma nota pequena — e o intérprete os desdobra na execução.\n\n' +
+        'Isso não é economia de espaço: é indicação de **hierarquia**. A nota ornamentada é a real; as acrescentadas são decoração dela, e devem soar como tal.',
+    },
+    {
+      kind: 'MARKDOWN',
+      id: 'c15_quatro',
+      markdown:
+        '## Os quatro mais frequentes\n\n' +
+        '**Apojatura** — uma nota vizinha que toma parte da duração da nota principal, resolvendo nela. Escreve-se como nota pequena antes. Não é acréscimo: ela ocupa tempo da nota real.\n\n' +
+        '**Mordente** — alternância rápida com a nota vizinha e retorno imediato: principal, vizinha, principal. Superior ou inferior, conforme a direção.\n\n' +
+        '**Trinado** — alternância rápida e continuada com a nota superior, por toda a duração da figura.\n\n' +
+        '**Grupeto** — um giro em torno da nota principal: superior, principal, inferior, principal.',
+    },
+    {
+      kind: 'AUDIO_EXAMPLE',
+      id: 'c15_audio_mordente',
+      title: 'Mordente superior sobre lá',
+      description: 'Lá, si, lá — rápido, e de volta. A nota real é o lá.',
+      notes: ['A4', 'B4', 'A4'],
+      playMode: 'SEQUENCE',
+      bpm: 160,
+    },
+    {
+      kind: 'CALLOUT',
+      id: 'c15_call',
+      type: 'historical',
+      title: 'Por que a execução varia',
+      text:
+        'A notação de ornamentos nunca foi inteiramente padronizada, e o mesmo sinal foi executado de formas diferentes conforme a época e a região. Quem toca repertório antigo precisa saber a convenção do período — e é por isso que edições sérias trazem nota sobre o assunto.',
+    },
+    {
+      kind: 'CHECKPOINT',
+      id: 'c15_check',
+      question: 'O que distingue a apojatura dos demais ornamentos?',
+      options: [
+        'É executada mais rápido',
+        'Toma parte da duração da nota principal',
+        'Só aparece em música antiga',
+        'Usa a nota inferior',
+      ],
+      correctIndex: 1,
+      explanation:
+        'A apojatura ocupa tempo da nota principal, encurtando-a — os outros ornamentos cabem dentro da duração dela sem reduzi-la.',
+    },
+  ],
+
+  16: [
+    {
+      kind: 'MARKDOWN',
+      id: 'c16_intro',
+      markdown:
+        'A **articulação** indica como cada nota se liga à seguinte. Duas notas com as mesmas alturas e durações soam completamente diferentes conforme sejam ligadas ou destacadas.\n\n' +
+        '**Legato** — ligadas, sem interrupção entre elas. Indicado por uma linha curva sobre o grupo.\n\n' +
+        '**Staccato** — destacadas, cada uma encurtada. Indicado por um ponto sobre ou sob a nota.\n\n' +
+        '**Acento** — atacada com mais ênfase. Indicado por um sinal angular.',
+    },
+    {
+      kind: 'CALLOUT',
+      id: 'c16_call',
+      type: 'warning',
+      title: 'Duas linhas curvas diferentes',
+      text:
+        'A ligadura de EXPRESSÃO liga notas de alturas diferentes e pede legato. A ligadura de VALOR liga duas notas de mesma altura e soma as durações — não se toca a segunda. O desenho é o mesmo; o que decide é se as alturas são iguais.',
+    },
+    {
+      kind: 'MARKDOWN',
+      id: 'c16_frase',
+      markdown:
+        '## Motivo, frase, período\n\n' +
+        'A música se organiza em unidades de sentido, como a linguagem.\n\n' +
+        'O **motivo** é a menor célula reconhecível — poucas notas com fisionomia própria, que reaparecem transformadas ao longo da peça.\n\n' +
+        'A **frase** é a unidade que se ouve como completa ou incompleta. Costuma ter quatro compassos, e termina numa cadência.\n\n' +
+        'O **período** reúne duas frases numa relação de **pergunta e resposta**: a primeira termina em cadência suspensiva — para no ar — e a segunda em cadência perfeita, concluindo. É a estrutura mais comum da música tonal, e ouvi-la é o que permite prever para onde a peça vai.',
+    },
+    {
+      kind: 'CHECKPOINT',
+      id: 'c16_check',
+      question:
+        'Duas notas de mesma altura unidas por uma linha curva. O que isso indica?',
+      options: [
+        'Legato entre elas',
+        'Somar as durações e tocar uma só',
+        'Staccato na segunda',
+        'Acentuar a primeira',
+      ],
+      correctIndex: 1,
+      explanation:
+        'Alturas iguais caracterizam a ligadura de valor: as durações se somam e a segunda nota não é atacada. Entre alturas diferentes, a mesma curva significaria legato.',
     },
   ],
 };

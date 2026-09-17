@@ -83,6 +83,14 @@ As passagens marcadas **ao instrumento** pedem que você pare de ler e toque. S�
 
 12. **Cifragem e leitura harmônica** — O sistema de símbolos que descreve um acorde sem escrevê-lo nota a nota.
 
+13. **Escalas cromática, pentatônica e os modos** — O que existe além de maior e menor — e por que essas outras escalas soam como soam.
+
+14. **Graus, funções e cadências** — Os nomes dos graus não são etiquetas: descrevem o que cada um faz dentro da tonalidade.
+
+15. **Ornamentos** — Os sinais que acrescentam notas à melodia sem alterar a duração escrita.
+
+16. **Articulação, fraseado e forma** — Como as notas se ligam entre si, e como se agrupam em unidades de sentido.
+
 
 <!-- secao: cap-1 · CAPITULO · GERADA -->
 
@@ -121,6 +129,12 @@ Quando uma corda vibra, ela não produz uma frequência só. Produz a **fundamen
 A intensidade relativa de cada harmônico é o que produz o timbre. Um violino e uma flauta tocando lá 440 emitem a mesma fundamental; o que difere é a receita de harmônicos que acompanha.
 
 **Exemplo sonoro — Os primeiros harmônicos de dó.** Fundamental, oitava, quinta e oitava seguinte — as proporções 1:2:3:4, ouvidas em sequência e depois juntas. Notas: C3 · C4 · G4 · C5 (50 bpm).
+
+## O diapasão e o temperamento
+
+Para que músicos toquem juntos é preciso um ponto de partida combinado. O **diapasão** é essa referência: hoje, o lá4 a 440 Hz. Não é um valor natural — foi convencionado, e variou bastante ao longo da história.
+
+Já o **temperamento igual** é a decisão de dividir a oitava em doze semitons exatamente iguais. A acústica pura não produz isso: os intervalos naturais, derivados da série harmônica, não fecham a oitava quando empilhados. O temperamento abre mão de uma pureza mínima em cada intervalo para que todas as tonalidades soem igualmente utilizáveis — e é o que permite modular sem reafinar o instrumento.
 
 **Verificação.** Dois sons têm a mesma frequência, mas um é muito mais forte. O que difere entre eles?
 
@@ -207,6 +221,14 @@ Se houvesse uma clave só, instrumentos graves viveriam abaixo da pauta e agudos
 A **clave de sol** fixa o sol4 na segunda linha e serve a vozes e instrumentos agudos. A **clave de fá** fixa o fá3 na quarta linha e serve aos graves. A mesma posição na pauta significa notas diferentes conforme a clave — é isso que a clave decide.
 
 **Ao teclado.** Localize: C4.
+
+## A anatomia da nota escrita
+
+A **cabeça** define a altura pela posição na pauta. A **haste** sobe à direita quando a nota está abaixo da terceira linha e desce à esquerda quando está acima — a regra existe para a haste não invadir o espaço do sistema vizinho. O **colchete** encurta a duração: um colchete faz a colcheia, dois fazem a semicolcheia.
+
+**Linhas suplementares** estendem a pauta momentaneamente, acima ou abaixo, para notas fora das cinco linhas.
+
+Além das claves de sol e fá existe a **clave de dó**, que fixa o dó4 na linha onde for colocada — na terceira, serve à viola; na quarta, ao registro agudo do violoncelo e do fagote.
 
 **Verificação.** Uma nota escrita na segunda linha da pauta. Que nota é?
 
@@ -481,6 +503,12 @@ Inverter um intervalo é subir a nota grave uma oitava — ou baixar a aguda. O 
 
 - **os números somam nove**: terça inverte em sexta, quinta em quarta, segunda em sétima;
 - **a qualidade troca**: maior vira menor, aumentado vira diminuto. Justo continua justo.
+
+## Simples e composto
+
+Um intervalo é **simples** quando cabe dentro de uma oitava, e **composto** quando a ultrapassa.
+
+A nona é a segunda mais uma oitava; a décima é a terça; a décima primeira, a quarta. Para reduzir um composto ao simples correspondente, subtraia sete. A qualidade não muda: uma nona maior é uma segunda maior deslocada de oitava.
 
 **Verificação.** Qual é a inversão de uma terça maior?
 
@@ -768,6 +796,12 @@ Em 4/4: quatro tempos, cada um valendo uma semínima.
 > Em 6/8, o número de cima NÃO significa seis tempos. Compassos compostos subdividem cada tempo em três, e 6/8 tem DOIS tempos, cada um valendo uma semínima pontuada. Ler 6/8 como seis tempos é o erro mais comum de iniciante.
 
 **Exemplo sonoro — O mesmo número de colcheias, agrupado de dois jeitos.** Primeiro em 3/4 — três tempos de duas colcheias. Depois em 6/8 — dois tempos de três. A acentuação muda tudo. Notas: C4 · G4 · C4 · G4 · C4 · G4 (120 bpm).
+
+## Anacruse
+
+Nem toda peça começa no tempo forte. Quando ela começa antes — num tempo fraco que impulsiona para o primeiro tempo forte — esse trecho inicial incompleto chama-se **anacruse**.
+
+O compasso da anacruse e o último compasso da peça costumam se completar: se a anacruse tem um tempo, o compasso final tem um a menos. É uma convenção de escrita, e ver isso ajuda a identificar onde a frase realmente começa.
 
 **Verificação.** Quantos tempos tem um compasso 6/8?
 
@@ -1140,6 +1174,12 @@ O que vem depois qualifica:
 
 **Ao instrumento.** Monte D4 – F4 – A4 – C5. Tríade menor com sétima menor. O acorde que costuma preceder o C7.
 
+## Arpejo, e o parente antigo da cifra
+
+Tocar as notas de um acorde em sequência, e não simultaneamente, é **arpejar**. O acorde continua o mesmo: muda a apresentação, não a harmonia.
+
+A cifra alfabética tem um antepassado: o **baixo cifrado**, usado nos séculos XVII e XVIII. Ali, escrevia-se apenas a linha do baixo, com números indicando os intervalos a construir acima dela. O princípio é idêntico ao da cifra moderna — descrever a harmonia sem fixar a disposição das vozes —, e muda apenas a referência: o baixo cifrado parte do baixo, a cifra parte da fundamental.
+
 **Verificação.** A cifra G/B pede quais notas, e com o quê no baixo?
 
 a) Sol maior com si no baixo
@@ -1194,6 +1234,434 @@ a) Sol–si–ré, com si no baixo
 b) Sol e si em sequência
 c) Si–ré–fá, com sol no baixo
 d) Sol com sétima em si
+
+*Respostas comentadas no gabarito, ao fim do livro.*
+
+
+<!-- secao: cap-13 · CAPITULO · GERADA -->
+
+# Capítulo 13 — Escalas cromática, pentatônica e os modos
+
+*O que existe além de maior e menor — e por que essas outras escalas soam como soam.*
+
+**Ao final deste capítulo, você deve ser capaz de:**
+
+- Construir a escala cromática e explicar sua função de passagem.
+- Reconhecer a pentatônica e o motivo de ela não ter semitons.
+- Identificar os sete modos a partir dos graus da escala maior.
+
+---
+
+Maior e menor não esgotam o assunto. Há escalas construídas com outros princípios, e cada uma soa diferente porque a distribuição dos semitons é outra.
+
+A **escala cromática** usa os doze semitons da oitava, sem exceção. Como todos os passos são iguais, ela não tem tônica — nenhuma nota se destaca como centro. Por isso não se escreve música nela: usa-se como **passagem**, ligando duas notas estruturais.
+
+**Ao instrumento.** Toque a escala de C4, modo major, subindo e descendo.
+
+## A pentatônica e a ausência de atrito
+
+A **pentatônica maior** tem cinco notas: os graus 1, 2, 3, 5 e 6 da escala maior. O que ela deixa de fora são exatamente o 4º e o 7º graus — as duas notas que formam os semitons.
+
+Sem semitons, não há atrito: qualquer combinação de notas soa aceitável. É por isso que a pentatônica aparece em tradições musicais de todos os continentes, independentemente umas das outras, e é por isso que é a primeira escala ensinada a crianças.
+
+**Exemplo sonoro — Pentatônica de dó.** Dó, ré, mi, sol, lá. Repare que nenhum par soa áspero. Notas: C4 · D4 · E4 · G4 · A4 · C5 (90 bpm).
+
+## Os modos
+
+Toque as notas de dó maior começando e terminando em ré, e o resultado não soa a dó maior: soa a outra coisa. As notas são as mesmas; o que mudou foi qual delas funciona como repouso — e, com isso, onde os semitons caem em relação a ela.
+
+Cada grau da escala maior gera um modo:
+
+| Grau | Modo | Marca |
+|---|---|---|
+| I | jônio | é a própria maior |
+| II | dórico | menor com sexta maior |
+| III | frígio | menor com segunda menor |
+| IV | lídio | maior com quarta aumentada |
+| V | mixolídio | maior com sétima menor |
+| VI | eólio | é a menor natural |
+| VII | lócrio | quinta diminuta — instável |
+
+> **Como ouvir um modo**
+>
+> Toque a nota do modo no baixo e sustente-a enquanto percorre a escala por cima. Sem esse apoio, o ouvido reinterpreta tudo como a escala maior de origem — e a diferença desaparece.
+
+**Verificação.** Por que a pentatônica maior não produz dissonâncias ásperas?
+
+a) Porque tem menos notas
+b) Porque não contém semitons
+c) Porque não tem tônica
+d) Porque usa só notas naturais
+
+*Resposta: b. Ela omite o 4º e o 7º graus, que são justamente as notas que formam os dois semitons da escala maior. Sem semitons, não há o atrito que produz dissonância áspera.*
+
+---
+
+## Exercícios
+
+**1.** A escala cromática não tem tônica porque:
+
+a) Tem doze notas
+b) Todos os seus passos são iguais
+c) Não usa acidentes
+d) É muito rápida
+
+**2.** Quais graus da escala maior a pentatônica maior omite?
+
+a) O 2º e o 6º
+b) O 4º e o 7º
+c) O 3º e o 5º
+d) O 1º e o 8º
+
+**3.** Por que a pentatônica aparece em tradições musicais de continentes diferentes?
+
+a) Por difusão cultural
+b) Porque a ausência de semitons evita combinações ásperas
+c) Por ser mais fácil de escrever
+d) Por exigência dos instrumentos antigos
+
+**4.** O modo dórico corresponde a qual grau da escala maior?
+
+a) Ao primeiro
+b) Ao segundo
+c) Ao quarto
+d) Ao sexto
+
+**5.** Que modo corresponde à escala menor natural?
+
+a) Dórico
+b) Frígio
+c) Eólio
+d) Lócrio
+
+**6.** Para ouvir um modo é preciso:
+
+a) Tocá-lo muito rápido
+b) Sustentar a nota do modo no baixo
+c) Usar apenas notas naturais
+d) Mudar a armadura
+
+*Respostas comentadas no gabarito, ao fim do livro.*
+
+
+<!-- secao: cap-14 · CAPITULO · GERADA -->
+
+# Capítulo 14 — Graus, funções e cadências
+
+*Os nomes dos graus não são etiquetas: descrevem o que cada um faz dentro da tonalidade.*
+
+**Ao final deste capítulo, você deve ser capaz de:**
+
+- Nomear os sete graus e descrever a função de cada um.
+- Distinguir as funções de tônica, dominante e subdominante.
+- Reconhecer as cadências perfeita, plagal, interrompida e suspensiva.
+
+---
+
+Os graus da escala têm nome, e os nomes descrevem **função** — o que cada um faz dentro da tonalidade, não apenas onde fica.
+
+| Grau | Nome | O que faz |
+|---|---|---|
+| I | tônica | repouso; para onde tudo converge |
+| II | supertônica | prepara a dominante |
+| III | mediante | entre tônica e dominante |
+| IV | subdominante | afasta-se da tônica |
+| V | dominante | tensão máxima; puxa de volta |
+| VI | superdominante | substitui a tônica |
+| VII | sensível | a um semitom da tônica |
+
+## Três funções, sete graus
+
+Os sete graus se agrupam em três funções:
+
+- **Tônica** (I, VI, III) — repouso.
+- **Subdominante** (IV, II) — afastamento.
+- **Dominante** (V, VII) — tensão que exige resolução.
+
+A dominante deve sua força à **sensível**: o sétimo grau, a um semitom da tônica. Esse semitom é uma distância que o ouvido percebe como incompleta, e é ele que produz a sensação de que a música precisa voltar.
+
+**Ao instrumento.** Monte G4 – B4 – D5. O si é a sensível. Ouça a vontade que ele tem de subir ao dó.
+
+## Cadências
+
+A **cadência** é a fórmula que encerra uma frase. Quatro são correntes:
+
+- **Perfeita** (V → I) — conclusão plena. É o ponto final.
+- **Plagal** (IV → I) — conclusão suave, sem a tensão da sensível. É o "amém" dos hinos.
+- **Interrompida** (V → VI) — prepara o repouso e entrega outra coisa. Prolonga a frase.
+- **Suspensiva** (termina no V) — para na tensão. É a vírgula.
+
+**Exemplo sonoro — Cadência perfeita em dó.** A dominante resolvendo na tônica — a conclusão mais comum da música tonal. Notas: G4 · B4 · D5 · C4 · E4 · G4 (60 bpm).
+
+**Verificação.** Uma frase termina com a progressão V → VI. Que cadência é?
+
+a) Perfeita
+b) Plagal
+c) Interrompida
+d) Suspensiva
+
+*Resposta: c. A dominante prepara a tônica, mas entrega o sexto grau. A expectativa é criada e não cumprida — daí o nome interrompida, e daí o efeito de prolongar a frase.*
+
+---
+
+## Exercícios
+
+**1.** O sétimo grau da escala maior chama-se:
+
+a) Mediante
+b) Subdominante
+c) Sensível
+d) Supertônica
+
+**2.** Que graus exercem a função de dominante?
+
+a) I e VI
+b) IV e II
+c) V e VII
+d) III e I
+
+**3.** A cadência plagal é a progressão:
+
+a) V → I
+b) IV → I
+c) V → VI
+d) I → V
+
+**4.** Uma frase que termina na dominante, sem resolver, tem cadência:
+
+a) Perfeita
+b) Plagal
+c) Interrompida
+d) Suspensiva
+
+**5.** O que dá à dominante a sua força de atração?
+
+a) Ser o acorde mais agudo
+b) Conter a sensível
+c) Ter quatro notas
+d) Estar em inversão
+
+**6.** A sensível recebe esse nome porque:
+
+a) É a nota mais aguda da escala
+b) Está a um semitom da tônica
+c) Aparece só na menor harmônica
+d) É sempre alterada
+
+**7.** A cadência interrompida prepara a tônica e entrega:
+
+a) A dominante
+b) O sexto grau
+c) A subdominante
+d) A sensível
+
+*Respostas comentadas no gabarito, ao fim do livro.*
+
+
+<!-- secao: cap-15 · CAPITULO · GERADA -->
+
+# Capítulo 15 — Ornamentos
+
+*Os sinais que acrescentam notas à melodia sem alterar a duração escrita.*
+
+**Ao final deste capítulo, você deve ser capaz de:**
+
+- Executar apojatura, mordente, trinado e grupeto.
+- Distinguir ornamento de nota real.
+- Ler a notação abreviada de cada um.
+
+---
+
+Os **ornamentos** acrescentam notas à melodia sem que elas apareçam como figuras de duração própria. São escritos em notação abreviada — um sinal ou uma nota pequena — e o intérprete os desdobra na execução.
+
+Isso não é economia de espaço: é indicação de **hierarquia**. A nota ornamentada é a real; as acrescentadas são decoração dela, e devem soar como tal.
+
+## Os quatro mais frequentes
+
+**Apojatura** — uma nota vizinha que toma parte da duração da nota principal, resolvendo nela. Escreve-se como nota pequena antes. Não é acréscimo: ela ocupa tempo da nota real.
+
+**Mordente** — alternância rápida com a nota vizinha e retorno imediato: principal, vizinha, principal. Superior ou inferior, conforme a direção.
+
+**Trinado** — alternância rápida e continuada com a nota superior, por toda a duração da figura.
+
+**Grupeto** — um giro em torno da nota principal: superior, principal, inferior, principal.
+
+**Exemplo sonoro — Mordente superior sobre lá.** Lá, si, lá — rápido, e de volta. A nota real é o lá. Notas: A4 · B4 · A4 (160 bpm).
+
+> **Por que a execução varia**
+>
+> A notação de ornamentos nunca foi inteiramente padronizada, e o mesmo sinal foi executado de formas diferentes conforme a época e a região. Quem toca repertório antigo precisa saber a convenção do período — e é por isso que edições sérias trazem nota sobre o assunto.
+
+**Verificação.** O que distingue a apojatura dos demais ornamentos?
+
+a) É executada mais rápido
+b) Toma parte da duração da nota principal
+c) Só aparece em música antiga
+d) Usa a nota inferior
+
+*Resposta: b. A apojatura ocupa tempo da nota principal, encurtando-a — os outros ornamentos cabem dentro da duração dela sem reduzi-la.*
+
+---
+
+## Exercícios
+
+**1.** O que distingue a apojatura dos outros ornamentos?
+
+a) É mais rápida
+b) Toma parte da duração da nota principal
+c) Usa a nota inferior
+d) Só existe em música antiga
+
+**2.** O mordente consiste em:
+
+a) Alternância contínua com a nota superior
+b) Principal, vizinha e retorno imediato
+c) Um giro em torno da principal
+d) Uma nota longa antes da principal
+
+**3.** O trinado difere do mordente por:
+
+a) Usar a nota inferior
+b) Ser contínuo por toda a duração
+c) Ocupar tempo da principal
+d) Ser escrito por extenso
+
+**4.** O grupeto é:
+
+a) Uma nota longa acentuada
+b) Um giro em torno da nota principal
+c) Uma pausa ornamentada
+d) Uma ligadura de valor
+
+**5.** A notação abreviada dos ornamentos indica sobretudo:
+
+a) Economia de espaço na página
+b) A hierarquia entre nota real e decoração
+c) A dinâmica do trecho
+d) O andamento
+
+**6.** Por que a execução dos ornamentos varia conforme a época?
+
+a) Porque os instrumentos mudaram
+b) Porque a notação nunca foi inteiramente padronizada
+c) Porque o andamento era mais lento
+d) Porque não havia metrônomo
+
+*Respostas comentadas no gabarito, ao fim do livro.*
+
+
+<!-- secao: colofao · COLOFAO · EDITAVEL -->
+
+<!-- EDITÁVEL -->
+
+Composto e publicado pelo Conservatório Muscicapa.
+
+Texto de Aline Alves Silva.
+
+Primeira edição, 2026.
+
+---
+
+Material didático de curso livre de qualificação profissional. Publicação própria do Conservatório Muscicapa, sem vínculo com o MEC.
+
+
+<!-- secao: cap-16 · CAPITULO · GERADA -->
+
+# Capítulo 16 — Articulação, fraseado e forma
+
+*Como as notas se ligam entre si, e como se agrupam em unidades de sentido.*
+
+**Ao final deste capítulo, você deve ser capaz de:**
+
+- Aplicar legato, staccato e acentuação.
+- Delimitar motivo, frase e período.
+- Reconhecer a estrutura de pergunta e resposta na frase musical.
+
+---
+
+A **articulação** indica como cada nota se liga à seguinte. Duas notas com as mesmas alturas e durações soam completamente diferentes conforme sejam ligadas ou destacadas.
+
+**Legato** — ligadas, sem interrupção entre elas. Indicado por uma linha curva sobre o grupo.
+
+**Staccato** — destacadas, cada uma encurtada. Indicado por um ponto sobre ou sob a nota.
+
+**Acento** — atacada com mais ênfase. Indicado por um sinal angular.
+
+> **Duas linhas curvas diferentes**
+>
+> A ligadura de EXPRESSÃO liga notas de alturas diferentes e pede legato. A ligadura de VALOR liga duas notas de mesma altura e soma as durações — não se toca a segunda. O desenho é o mesmo; o que decide é se as alturas são iguais.
+
+## Motivo, frase, período
+
+A música se organiza em unidades de sentido, como a linguagem.
+
+O **motivo** é a menor célula reconhecível — poucas notas com fisionomia própria, que reaparecem transformadas ao longo da peça.
+
+A **frase** é a unidade que se ouve como completa ou incompleta. Costuma ter quatro compassos, e termina numa cadência.
+
+O **período** reúne duas frases numa relação de **pergunta e resposta**: a primeira termina em cadência suspensiva — para no ar — e a segunda em cadência perfeita, concluindo. É a estrutura mais comum da música tonal, e ouvi-la é o que permite prever para onde a peça vai.
+
+**Verificação.** Duas notas de mesma altura unidas por uma linha curva. O que isso indica?
+
+a) Legato entre elas
+b) Somar as durações e tocar uma só
+c) Staccato na segunda
+d) Acentuar a primeira
+
+*Resposta: b. Alturas iguais caracterizam a ligadura de valor: as durações se somam e a segunda nota não é atacada. Entre alturas diferentes, a mesma curva significaria legato.*
+
+---
+
+## Exercícios
+
+**1.** Duas notas de MESMA altura unidas por linha curva indicam:
+
+a) Legato
+b) Soma das durações, tocando uma só
+c) Staccato
+d) Acento na segunda
+
+**2.** O ponto sobre a nota indica:
+
+a) Aumento de metade do valor
+b) Staccato
+c) Acento
+d) Repetição
+
+**3.** Onde fica o ponto que AUMENTA a duração da nota?
+
+a) Sobre a cabeça da nota
+b) À direita da cabeça da nota
+c) Sob a haste
+d) Antes da nota
+
+**4.** O motivo, em música, é:
+
+a) A frase completa
+b) A menor célula reconhecível
+c) O tema principal
+d) A conclusão da peça
+
+**5.** O período tonal costuma reunir:
+
+a) Dois motivos
+b) Duas frases em pergunta e resposta
+c) Quatro compassos
+d) Três cadências
+
+**6.** A ligadura de expressão se distingue da de valor por:
+
+a) Ser mais longa
+b) Ligar notas de alturas diferentes
+c) Aparecer só em legato
+d) Ter desenho diferente
+
+**7.** Ouvir a estrutura de pergunta e resposta permite ao ouvinte:
+
+a) Identificar a tonalidade
+b) Prever para onde a peça vai
+c) Reconhecer o instrumento
+d) Contar os compassos
 
 *Respostas comentadas no gabarito, ao fim do livro.*
 
@@ -1760,6 +2228,196 @@ b) Sol e si em sequência
 c) Si–ré–fá, com sol no baixo
 d) Sol com sétima em si
 
+## 13. Escalas cromática, pentatônica e os modos
+
+**1.** A escala cromática não tem tônica porque:
+
+a) Tem doze notas
+b) Todos os seus passos são iguais
+c) Não usa acidentes
+d) É muito rápida
+
+**2.** Quais graus da escala maior a pentatônica maior omite?
+
+a) O 2º e o 6º
+b) O 4º e o 7º
+c) O 3º e o 5º
+d) O 1º e o 8º
+
+**3.** Por que a pentatônica aparece em tradições musicais de continentes diferentes?
+
+a) Por difusão cultural
+b) Porque a ausência de semitons evita combinações ásperas
+c) Por ser mais fácil de escrever
+d) Por exigência dos instrumentos antigos
+
+**4.** O modo dórico corresponde a qual grau da escala maior?
+
+a) Ao primeiro
+b) Ao segundo
+c) Ao quarto
+d) Ao sexto
+
+**5.** Que modo corresponde à escala menor natural?
+
+a) Dórico
+b) Frígio
+c) Eólio
+d) Lócrio
+
+**6.** Para ouvir um modo é preciso:
+
+a) Tocá-lo muito rápido
+b) Sustentar a nota do modo no baixo
+c) Usar apenas notas naturais
+d) Mudar a armadura
+
+## 14. Graus, funções e cadências
+
+**1.** O sétimo grau da escala maior chama-se:
+
+a) Mediante
+b) Subdominante
+c) Sensível
+d) Supertônica
+
+**2.** Que graus exercem a função de dominante?
+
+a) I e VI
+b) IV e II
+c) V e VII
+d) III e I
+
+**3.** A cadência plagal é a progressão:
+
+a) V → I
+b) IV → I
+c) V → VI
+d) I → V
+
+**4.** Uma frase que termina na dominante, sem resolver, tem cadência:
+
+a) Perfeita
+b) Plagal
+c) Interrompida
+d) Suspensiva
+
+**5.** O que dá à dominante a sua força de atração?
+
+a) Ser o acorde mais agudo
+b) Conter a sensível
+c) Ter quatro notas
+d) Estar em inversão
+
+**6.** A sensível recebe esse nome porque:
+
+a) É a nota mais aguda da escala
+b) Está a um semitom da tônica
+c) Aparece só na menor harmônica
+d) É sempre alterada
+
+**7.** A cadência interrompida prepara a tônica e entrega:
+
+a) A dominante
+b) O sexto grau
+c) A subdominante
+d) A sensível
+
+## 15. Ornamentos
+
+**1.** O que distingue a apojatura dos outros ornamentos?
+
+a) É mais rápida
+b) Toma parte da duração da nota principal
+c) Usa a nota inferior
+d) Só existe em música antiga
+
+**2.** O mordente consiste em:
+
+a) Alternância contínua com a nota superior
+b) Principal, vizinha e retorno imediato
+c) Um giro em torno da principal
+d) Uma nota longa antes da principal
+
+**3.** O trinado difere do mordente por:
+
+a) Usar a nota inferior
+b) Ser contínuo por toda a duração
+c) Ocupar tempo da principal
+d) Ser escrito por extenso
+
+**4.** O grupeto é:
+
+a) Uma nota longa acentuada
+b) Um giro em torno da nota principal
+c) Uma pausa ornamentada
+d) Uma ligadura de valor
+
+**5.** A notação abreviada dos ornamentos indica sobretudo:
+
+a) Economia de espaço na página
+b) A hierarquia entre nota real e decoração
+c) A dinâmica do trecho
+d) O andamento
+
+**6.** Por que a execução dos ornamentos varia conforme a época?
+
+a) Porque os instrumentos mudaram
+b) Porque a notação nunca foi inteiramente padronizada
+c) Porque o andamento era mais lento
+d) Porque não havia metrônomo
+
+## 16. Articulação, fraseado e forma
+
+**1.** Duas notas de MESMA altura unidas por linha curva indicam:
+
+a) Legato
+b) Soma das durações, tocando uma só
+c) Staccato
+d) Acento na segunda
+
+**2.** O ponto sobre a nota indica:
+
+a) Aumento de metade do valor
+b) Staccato
+c) Acento
+d) Repetição
+
+**3.** Onde fica o ponto que AUMENTA a duração da nota?
+
+a) Sobre a cabeça da nota
+b) À direita da cabeça da nota
+c) Sob a haste
+d) Antes da nota
+
+**4.** O motivo, em música, é:
+
+a) A frase completa
+b) A menor célula reconhecível
+c) O tema principal
+d) A conclusão da peça
+
+**5.** O período tonal costuma reunir:
+
+a) Dois motivos
+b) Duas frases em pergunta e resposta
+c) Quatro compassos
+d) Três cadências
+
+**6.** A ligadura de expressão se distingue da de valor por:
+
+a) Ser mais longa
+b) Ligar notas de alturas diferentes
+c) Aparecer só em legato
+d) Ter desenho diferente
+
+**7.** Ouvir a estrutura de pergunta e resposta permite ao ouvinte:
+
+a) Identificar a tonalidade
+b) Prever para onde a peça vai
+c) Reconhecer o instrumento
+d) Contar os compassos
+
 
 <!-- secao: gabarito · GABARITO · GERADA -->
 
@@ -1943,17 +2601,62 @@ Cada resposta vem com a explicação. Ler o comentário de uma questão que voc�
 
 **6.** a) — Antes da barra, o acorde: sol maior, ou seja, sol–si–ré. Depois da barra, o baixo: si. É a primeira inversão.
 
+## 13. Escalas cromática, pentatônica e os modos
 
-<!-- secao: colofao · COLOFAO · EDITAVEL -->
+**1.** b) — Com todos os intervalos iguais, nenhuma nota se destaca como ponto de repouso. É por isso que ela serve de passagem entre notas estruturais, e não de base para uma peça.
 
-<!-- EDITÁVEL -->
+**2.** b) — Omite exatamente o 4º e o 7º graus — as duas notas que formam os semitons da escala maior. Sem elas, não há o atrito que produz dissonância áspera.
 
-Composto e publicado pelo Conservatório Muscicapa.
+**3.** b) — Sem semitons, qualquer combinação de notas soa aceitável. Escalas assim foram encontradas independentemente em culturas sem contato entre si.
 
-Texto de Aline Alves Silva.
+**4.** b) — Percorrer as notas da escala maior a partir do segundo grau produz o dórico — uma escala menor, porém com sexta maior.
 
-Primeira edição, 2026.
+**5.** c) — O eólio, construído sobre o sexto grau da escala maior, é exatamente a menor natural.
 
----
+**6.** b) — Sem o apoio do baixo, o ouvido reinterpreta tudo como a escala maior de origem e a diferença modal desaparece.
 
-Material didático de curso livre de qualificação profissional. Publicação própria do Conservatório Muscicapa, sem vínculo com o MEC.
+## 14. Graus, funções e cadências
+
+**1.** c) — Sensível, por estar a um semitom da tônica. Essa proximidade é o que produz a sensação de que a música precisa resolver.
+
+**2.** c) — O V e o VII contêm a sensível, e é ela que cria a tensão que exige resolução na tônica.
+
+**3.** b) — Subdominante para tônica. Conclui sem a tensão da sensível, e daí o caráter mais suave — é a cadência do "amém" dos hinos.
+
+**4.** d) — A suspensiva para na tensão, sem resolvê-la. Funciona como vírgula: a frase continua depois.
+
+**5.** b) — A sensível está a um semitom da tônica — distância que o ouvido percebe como incompleta, e que pede o movimento de volta.
+
+**6.** b) — A proximidade de um semitom faz o ouvido percebê-la como incompleta — e é essa incompletude que produz a tração de volta à tônica.
+
+**7.** b) — V → VI. A expectativa de repouso é criada e não cumprida, o que prolonga a frase em vez de encerrá-la.
+
+## 15. Ornamentos
+
+**1.** b) — A apojatura ocupa tempo da nota principal, encurtando-a. Os demais ornamentos cabem dentro da duração da nota sem reduzi-la.
+
+**2.** b) — Alternância rápida com a nota vizinha e retorno imediato à principal. Pode ser superior ou inferior, conforme a direção.
+
+**3.** b) — O trinado alterna continuamente com a nota superior por toda a duração da figura; o mordente é uma alternância única, rápida.
+
+**4.** b) — Superior, principal, inferior, principal — um giro completo em torno da nota real.
+
+**5.** b) — A nota ornamentada é a real; as acrescentadas são decoração dela. A notação abreviada torna essa hierarquia visível, e é assim que devem soar.
+
+**6.** b) — O mesmo sinal foi executado de formas diferentes conforme o período e a região. Quem toca repertório antigo precisa conhecer a convenção da época.
+
+## 16. Articulação, fraseado e forma
+
+**1.** b) — Alturas iguais caracterizam a ligadura de valor: as durações se somam e a segunda não é atacada. Entre alturas diferentes, a mesma curva significaria legato.
+
+**2.** b) — O ponto SOBRE ou SOB a nota indica staccato. O ponto à DIREITA dela é o ponto de aumento — sinais diferentes, posições diferentes.
+
+**3.** b) — O ponto de aumento fica à DIREITA da cabeça. Sobre ou sob a nota, o mesmo sinal significa staccato — a posição é que decide.
+
+**4.** b) — Poucas notas com fisionomia própria, que reaparecem transformadas ao longo da peça. É a menor unidade que se reconhece ao voltar.
+
+**5.** b) — A primeira frase termina em cadência suspensiva — para no ar — e a segunda em cadência perfeita, concluindo. É a estrutura mais comum da música tonal.
+
+**6.** b) — O desenho é o mesmo. O que decide é se as alturas são iguais — aí é de valor — ou diferentes, e aí é de expressão, pedindo legato.
+
+**7.** b) — A cadência suspensiva cria expectativa de continuação; a perfeita a satisfaz. Reconhecer o padrão é o que permite antecipar a resolução.

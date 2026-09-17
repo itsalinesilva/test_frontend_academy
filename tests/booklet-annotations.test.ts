@@ -340,11 +340,11 @@ import { LIVRETO_TEORIA } from '../src/data/seed-booklet-theory';
 import { CURSO_TEORIA, MODULOS_TEORIA, LICOES_TEORIA, CAPITULOS_TEORIA } from '../src/data/seed-theory-course';
 
 describe('Curso de Teoria — integridade do conteúdo', () => {
-  it('doze capítulos, doze módulos, doze lições', () => {
-    expect(CAPITULOS_TEORIA).toHaveLength(12);
-    expect(MODULOS_TEORIA).toHaveLength(12);
-    expect(LICOES_TEORIA).toHaveLength(12);
-    expect(CURSO_TEORIA.moduleIds).toHaveLength(12);
+  it('dezesseis capítulos, dezesseis módulos, dezesseis lições', () => {
+    expect(CAPITULOS_TEORIA).toHaveLength(16);
+    expect(MODULOS_TEORIA).toHaveLength(16);
+    expect(LICOES_TEORIA).toHaveLength(16);
+    expect(CURSO_TEORIA.moduleIds).toHaveLength(16);
   });
 
   it('cada módulo declarado no curso existe de fato', () => {
@@ -394,7 +394,7 @@ describe('Curso de Teoria — integridade do conteúdo', () => {
         ['AUDIO_EXAMPLE', 'INTERVAL_LAB', 'CHORD_LAB', 'SCALE_LAB', 'KEYBOARD', 'STAFF'].includes(b.kind)
       );
     });
-    expect(comSom.length).toBeGreaterThanOrEqual(8);
+    expect(comSom.length).toBeGreaterThanOrEqual(10);
   });
 });
 
@@ -404,15 +404,15 @@ describe('Livreto de Teoria', () => {
     expect(erros, erros.map((e) => e.mensagem).join(' | ')).toEqual([]);
   });
 
-  it('cobre os doze capítulos com quantidade equilibrada', () => {
+  it('cobre os dezesseis capítulos com quantidade equilibrada', () => {
     // A quantidade por capítulo não é arbitrária: sai da síntese. Um capítulo
     // com mais blocos nucleares rende mais questões — e é assim que deve ser.
-    expect(LIVRETO_TEORIA.capitulos).toHaveLength(12);
+    expect(LIVRETO_TEORIA.capitulos).toHaveLength(16);
     for (const c of LIVRETO_TEORIA.capitulos) {
       expect(c.questoes.length, `capítulo ${c.numero}`).toBeGreaterThanOrEqual(6);
       expect(c.questoes.length, `capítulo ${c.numero}`).toBeLessThanOrEqual(8);
     }
-    expect(totalDeQuestoes(LIVRETO_TEORIA)).toBe(76);
+    expect(totalDeQuestoes(LIVRETO_TEORIA)).toBe(102);
   });
 
   it('cada capítulo do livreto aponta para a lição correspondente', () => {
@@ -444,9 +444,9 @@ describe('Livreto de Teoria', () => {
 
   it('o simulado reúne todas as questões na ordem dos capítulos', () => {
     const s = montarSimulado(LIVRETO_TEORIA);
-    expect(s.questaoIds).toHaveLength(76);
+    expect(s.questaoIds).toHaveLength(102);
     expect(s.questaoIds[0]).toBe('tq_01_1');
-    expect(s.questaoIds[s.questaoIds.length - 1]).toBe('tq_12_6');
+    expect(s.questaoIds[s.questaoIds.length - 1]).toBe('tq_16_6');
   });
 
   it('há progressão de dificuldade — não é tudo básico', () => {
@@ -476,8 +476,8 @@ import {
 describe('Síntese como base de extração de questões', () => {
   const questoesDoLivreto = LIVRETO_TEORIA.capitulos.flatMap((c) => c.questoes);
 
-  it('a síntese cobre os doze capítulos', () => {
-    expect(SINTESE_TEORIA.capitulos).toHaveLength(12);
+  it('a síntese cobre os dezesseis capítulos', () => {
+    expect(SINTESE_TEORIA.capitulos).toHaveLength(16);
     expect(totalDeBlocos(SINTESE_TEORIA)).toBeGreaterThanOrEqual(48);
   });
 
@@ -534,8 +534,8 @@ describe('Síntese como base de extração de questões', () => {
     const previstas = SINTESE_TEORIA.capitulos
       .flatMap((c) => c.blocos)
       .reduce((a, b) => a + QUESTOES_POR_PESO[b.peso], 0);
-    expect(previstas).toBe(76);
-    expect(questoesDoLivreto).toHaveLength(76);
+    expect(previstas).toBe(102);
+    expect(questoesDoLivreto).toHaveLength(102);
   });
 
   it('com a cobertura completa, não há nada a prescrever', () => {

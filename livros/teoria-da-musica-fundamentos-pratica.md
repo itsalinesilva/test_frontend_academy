@@ -83,6 +83,14 @@ Trabalhe com o instrumento afinado e, quando o exercício pedir, com metrônomo.
 
 12. **Cifragem e leitura harmônica** — O sistema de símbolos que descreve um acorde sem escrevê-lo nota a nota.
 
+13. **Escalas cromática, pentatônica e os modos** — O que existe além de maior e menor — e por que essas outras escalas soam como soam.
+
+14. **Graus, funções e cadências** — Os nomes dos graus não são etiquetas: descrevem o que cada um faz dentro da tonalidade.
+
+15. **Ornamentos** — Os sinais que acrescentam notas à melodia sem alterar a duração escrita.
+
+16. **Articulação, fraseado e forma** — Como as notas se ligam entre si, e como se agrupam em unidades de sentido.
+
 
 <!-- secao: cap-1 · CAPITULO · GERADA -->
 
@@ -284,6 +292,25 @@ Trabalhe com o instrumento afinado e, quando o exercício pedir, com metrônomo.
 **Ao instrumento.** Monte D4 – F4 – A4 – C5. Tríade menor com sétima menor. O acorde que costuma preceder o C7.
 
 
+<!-- secao: cap-13 · CAPITULO · GERADA -->
+
+# Capítulo 13 — Escalas cromática, pentatônica e os modos
+
+*O que existe além de maior e menor — e por que essas outras escalas soam como soam.*
+
+**Ao final deste capítulo, você deve ser capaz de:**
+
+- Construir a escala cromática e explicar sua função de passagem.
+- Reconhecer a pentatônica e o motivo de ela não ter semitons.
+- Identificar os sete modos a partir dos graus da escala maior.
+
+---
+
+**Ao instrumento.** Toque a escala de C4, modo major, subindo e descendo.
+
+**Exemplo sonoro — Pentatônica de dó.** Dó, ré, mi, sol, lá. Repare que nenhum par soa áspero. Notas: C4 · D4 · E4 · G4 · A4 · C5 (90 bpm).
+
+
 <!-- secao: colofao · COLOFAO · EDITAVEL -->
 
 <!-- EDITÁVEL -->
@@ -297,3 +324,39 @@ Primeira edição, 2026.
 ---
 
 Material didático de curso livre de qualificação profissional. Publicação própria do Conservatório Muscicapa, sem vínculo com o MEC.
+
+
+<!-- secao: cap-14 · CAPITULO · GERADA -->
+
+# Capítulo 14 — Graus, funções e cadências
+
+*Os nomes dos graus não são etiquetas: descrevem o que cada um faz dentro da tonalidade.*
+
+**Ao final deste capítulo, você deve ser capaz de:**
+
+- Nomear os sete graus e descrever a função de cada um.
+- Distinguir as funções de tônica, dominante e subdominante.
+- Reconhecer as cadências perfeita, plagal, interrompida e suspensiva.
+
+---
+
+**Ao instrumento.** Monte G4 – B4 – D5. O si é a sensível. Ouça a vontade que ele tem de subir ao dó.
+
+**Exemplo sonoro — Cadência perfeita em dó.** A dominante resolvendo na tônica — a conclusão mais comum da música tonal. Notas: G4 · B4 · D5 · C4 · E4 · G4 (60 bpm).
+
+
+<!-- secao: cap-15 · CAPITULO · GERADA -->
+
+# Capítulo 15 — Ornamentos
+
+*Os sinais que acrescentam notas à melodia sem alterar a duração escrita.*
+
+**Ao final deste capítulo, você deve ser capaz de:**
+
+- Executar apojatura, mordente, trinado e grupeto.
+- Distinguir ornamento de nota real.
+- Ler a notação abreviada de cada um.
+
+---
+
+**Exemplo sonoro — Mordente superior sobre lá.** Lá, si, lá — rápido, e de volta. A nota real é o lá. Notas: A4 · B4 · A4 (160 bpm).
