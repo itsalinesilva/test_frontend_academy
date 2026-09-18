@@ -2,7 +2,7 @@ import {
   SkillCategory,
   PracticeModality,
   ExerciseType,
-  RankingLeague,
+
   SkillTree,
   Skill,
   Exercise,
@@ -592,92 +592,62 @@ export const SEED_EXERCISES: Exercise[] = [
   },
 ];
 
-export const SEED_STREAK: StreakTracker = {
-  id: 'streak_usr_founder_1',
-  userId: 'usr_founder_1',
-  currentStreakDays: 7,
-  longestStreakDays: 14,
-  lastActiveDate: new Date().toISOString().split('T')[0],
-  freezeDaysAvailable: 2,
-  calendarHistory: [
-    { date: '2026-09-10', completedMinutes: 25, xp: 120 },
-    { date: '2026-09-11', completedMinutes: 30, xp: 140 },
-    { date: '2026-09-12', completedMinutes: 20, xp: 90 },
-    { date: '2026-09-13', completedMinutes: 45, xp: 210 },
-    { date: '2026-09-14', completedMinutes: 15, xp: 80 },
-    { date: '2026-09-15', completedMinutes: 35, xp: 175 },
-    { date: '2026-09-16', completedMinutes: 22, xp: 110 },
-  ],
-  updatedAt: new Date().toISOString(),
-};
+/**
+ * Estado inicial do Practice — VAZIO, e vazio de propósito.
+ *
+ * O que havia aqui era uma sequência de sete dias, catorze de recorde, meta do
+ * dia com dezoito dos vinte minutos cumpridos e um ranking encabeçado por
+ * Johann Sebastian Bach e Clara Schumann. Um aluno que criasse a conta agora
+ * abriria o Practice e veria uma semana de estudo que ele não fez.
+ *
+ * Isso não é dado de exemplo: é a plataforma mentindo sobre a própria pessoa,
+ * no primeiro minuto de uso. Zero é a informação correta antes do primeiro
+ * exercício — e o que a tela precisa é saber dizer isso bem.
+ */
+export function sequenciaInicial(userId: string): StreakTracker {
+  return {
+    id: `streak_${userId}`,
+    userId,
+    currentStreakDays: 0,
+    longestStreakDays: 0,
+    lastActiveDate: '',
+    freezeDaysAvailable: 0,
+    calendarHistory: [],
+    updatedAt: new Date().toISOString(),
+  };
+}
 
-export const SEED_DAILY_GOAL: DailyGoal = {
-  id: 'goal_usr_founder_1',
-  userId: 'usr_founder_1',
-  date: new Date().toISOString().split('T')[0],
-  targetMinutes: 20,
-  completedMinutes: 18,
-  targetXp: 100,
-  completedXp: 85,
-  targetExercises: 5,
-  completedExercises: 4,
-  isCompleted: false,
-};
+/**
+ * A meta é decisão do produto; o cumprimento é do aluno.
+ *
+ * Vinte minutos por dia é a meta padrão — número escolhido, não medido, e
+ * ajustável pelo aluno. O que nasce em zero é quanto ele já cumpriu hoje.
+ */
+export const META_DIARIA_PADRAO = {
+  minutos: 20,
+  xp: 100,
+  exercicios: 5,
+} as const;
 
-export const SEED_LEADERBOARD: RankingLeaderboardEntry[] = [
-  {
-    id: 'rank_1',
-    period: 'WEEKLY',
-    league: RankingLeague.CONSERVATORIO,
-    userId: 'usr_maestro_bach',
-    userDisplayName: 'Johann Sebastian B.',
-    xp: 2840,
-    rankPosition: 1,
-    changeDirection: 'neutral',
-    computedAt: '2026-09-16T00:00:00Z',
-  },
-  {
-    id: 'rank_2',
-    period: 'WEEKLY',
-    league: RankingLeague.CONSERVATORIO,
-    userId: 'usr_clara_schumann',
-    userDisplayName: 'Clara Schumann',
-    xp: 2450,
-    rankPosition: 2,
-    changeDirection: 'up',
-    computedAt: '2026-09-16T00:00:00Z',
-  },
-  {
-    id: 'rank_3',
-    period: 'WEEKLY',
-    league: RankingLeague.CONSERVATORIO,
-    userId: 'usr_founder_1',
-    userDisplayName: 'Acadêmico de Música (Você)',
-    xp: 1920,
-    rankPosition: 3,
-    changeDirection: 'up',
-    computedAt: '2026-09-16T00:00:00Z',
-  },
-  {
-    id: 'rank_4',
-    period: 'WEEKLY',
-    league: RankingLeague.CONSERVATORIO,
-    userId: 'usr_villa_lobos',
-    userDisplayName: 'Heitor Villa-Lobos',
-    xp: 1810,
-    rankPosition: 4,
-    changeDirection: 'down',
-    computedAt: '2026-09-16T00:00:00Z',
-  },
-  {
-    id: 'rank_5',
-    period: 'WEEKLY',
-    league: RankingLeague.CONSERVATORIO,
-    userId: 'usr_chopin_f',
-    userDisplayName: 'Frédéric Chopin',
-    xp: 1690,
-    rankPosition: 5,
-    changeDirection: 'neutral',
-    computedAt: '2026-09-16T00:00:00Z',
-  },
-];
+export function metaDoDia(userId: string, dia = new Date().toISOString().split('T')[0]): DailyGoal {
+  return {
+    id: `goal_${userId}_${dia}`,
+    userId,
+    date: dia,
+    targetMinutes: META_DIARIA_PADRAO.minutos,
+    completedMinutes: 0,
+    targetXp: META_DIARIA_PADRAO.xp,
+    completedXp: 0,
+    targetExercises: META_DIARIA_PADRAO.exercicios,
+    completedExercises: 0,
+    isCompleted: false,
+  };
+}
+
+/**
+ * Ranking sem participantes.
+ *
+ * Uma liga só existe quando há gente nela. Enquanto o Conservatório não tiver
+ * turma, a classificação correta é a lista vazia — e a tela diz isso.
+ */
+export const RANKING_INICIAL: RankingLeaderboardEntry[] = [];

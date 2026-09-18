@@ -132,7 +132,7 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
             </label>
             <input
               type="url"
-              placeholder="https://images.unsplash.com/..."
+              placeholder="https://…"
               value={heroImageUrl}
               onChange={(e) => setHeroImageUrl(e.target.value)}
               className="w-full text-xs p-2 rounded border border-stone-300 font-mono"

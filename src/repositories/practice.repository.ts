@@ -17,9 +17,9 @@ import {
   SEED_SKILL_TREES,
   SEED_SKILLS,
   SEED_EXERCISES,
-  SEED_STREAK,
-  SEED_DAILY_GOAL,
-  SEED_LEADERBOARD,
+  sequenciaInicial,
+  metaDoDia,
+  RANKING_INICIAL,
 } from '../data/seed-practice-content';
 
 export interface PracticeRepository {
@@ -93,15 +93,13 @@ export class PersistentPracticeRepository implements PracticeRepository {
     if (!this.storage.get<Exercise[]>(this.STORAGE_KEYS.EXERCISES)) {
       this.storage.set(this.STORAGE_KEYS.EXERCISES, SEED_EXERCISES);
     }
-    if (!this.storage.get<StreakTracker>(this.STORAGE_KEYS.STREAK)) {
-      this.storage.set(this.STORAGE_KEYS.STREAK, SEED_STREAK);
-    }
-    if (!this.storage.get<DailyGoal>(this.STORAGE_KEYS.GOALS)) {
-      this.storage.set(this.STORAGE_KEYS.GOALS, SEED_DAILY_GOAL);
-    }
-    if (!this.storage.get<RankingLeaderboardEntry[]>(this.STORAGE_KEYS.LEADERBOARD)) {
-      this.storage.set(this.STORAGE_KEYS.LEADERBOARD, SEED_LEADERBOARD);
-    }
+    /**
+     * Sequência, meta e ranking NÃO são semeados.
+     *
+     * São dados do aluno, e dado do aluno nasce do que o aluno fez. Semear
+     * aqui era o que fazia a conta recém-criada exibir uma semana de estudo
+     * inexistente.
+     */
   }
 
   public async listSkillTrees(): Promise<SkillTree[]> {
@@ -221,8 +219,17 @@ export class PersistentPracticeRepository implements PracticeRepository {
     return list.find((m) => m.userId === userId && m.skillId === skillId) || null;
   }
 
-  public async listMasteriesByUser(_userId: string): Promise<MasteryRecord[]> {
-    return this.storage.get<MasteryRecord[]>(this.STORAGE_KEYS.MASTERY) || [];
+  /**
+   * O parâmetro se chamava `_userId` e era ignorado: o método devolvia o
+   * domínio de habilidade de TODAS as pessoas que já usaram aquele navegador.
+   *
+   * Num produto sem banco, em que o armazenamento é o do dispositivo, é assim
+   * que o dado de um aluno chega ao outro — sem invasão nenhuma, bastando
+   * dividir o computador de casa ou da escola.
+   */
+  public async listMasteriesByUser(userId: string): Promise<MasteryRecord[]> {
+    const list = this.storage.get<MasteryRecord[]>(this.STORAGE_KEYS.MASTERY) || [];
+    return list.filter((m) => m.userId === userId);
   }
 
   public async saveMastery(mastery: MasteryRecord): Promise<MasteryRecord> {
@@ -242,7 +249,7 @@ export class PersistentPracticeRepository implements PracticeRepository {
     if (stored && stored.userId === userId) {
       return stored;
     }
-    return { ...SEED_STREAK, userId };
+    return sequenciaInicial(userId);
   }
 
   public async saveStreak(streak: StreakTracker): Promise<StreakTracker> {
@@ -255,7 +262,7 @@ export class PersistentPracticeRepository implements PracticeRepository {
     if (stored && stored.userId === userId) {
       return stored;
     }
-    return { ...SEED_DAILY_GOAL, userId };
+    return metaDoDia(userId);
   }
 
   public async saveDailyGoal(goal: DailyGoal): Promise<DailyGoal> {
@@ -267,7 +274,7 @@ export class PersistentPracticeRepository implements PracticeRepository {
     _period: string = 'WEEKLY',
     league: RankingLeague = RankingLeague.CONSERVATORIO
   ): Promise<RankingLeaderboardEntry[]> {
-    const list = this.storage.get<RankingLeaderboardEntry[]>(this.STORAGE_KEYS.LEADERBOARD) || SEED_LEADERBOARD;
+    const list = this.storage.get<RankingLeaderboardEntry[]>(this.STORAGE_KEYS.LEADERBOARD) || RANKING_INICIAL;
     return list.filter((l) => l.league === league || !league);
   }
 }

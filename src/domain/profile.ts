@@ -390,6 +390,33 @@ export interface ProfileAchievementItem {
   verificationUrl?: string;
 }
 
+/**
+ * Recital, masterclass, conferência — o que o músico apresentou em público.
+ *
+ * Este tipo nasceu porque a aba de eventos do perfil trazia três apresentações
+ * FIXAS no código: um recital de cravo, um simpósio na USP e um concerto no
+ * Theatro Municipal. Todo perfil da plataforma exibia essa carreira, incluindo
+ * o de quem tinha acabado de criar a conta.
+ *
+ * Agora a aba lê daqui. Quem não apresentou nada ainda vê que não apresentou
+ * nada — que é a informação certa, e a que deixa o registro dele valer alguma
+ * coisa quando existir.
+ */
+export interface ProfileEventItem {
+  id: EntityId;
+  title: string;
+  /** Recital, masterclass, conferência, concerto de câmara. */
+  kind: string;
+  /** Papel exercido: solista, continuísta, palestrante, regente. */
+  role: string;
+  /** Data em ISO, para poder ordenar e comparar com hoje. */
+  date: ISOTimestamp;
+  venue: string;
+  description: string;
+  /** Programa, gravação ou página do evento. */
+  referenceUrl?: string;
+}
+
 export interface ProfileRecordingItem {
   id: EntityId;
   title: string;
@@ -477,6 +504,7 @@ export interface UnifiedProfileRecord {
   recordingsList?: ProfileRecordingItem[];
   scoresList?: ProfileScoreItem[];
   projectsList?: ProfileProjectItem[];
+  eventsList?: ProfileEventItem[];
   connectionsList?: ProfileConnectionItem[];
 
   // Lenses

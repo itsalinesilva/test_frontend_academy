@@ -135,12 +135,12 @@ export const CourseCurriculumScreen: React.FC = () => {
             ) : (
               <>
                 {/* Sem matricula a grade fica VISIVEL — e ela que sustenta a
-                    decisao de se matricular (wireframes/01 §4). */}
+                    decisão de se matricular (wireframes/01 §4). */}
                 <LockedState
                   id="curriculum-locked"
-                  title="Conteudo bloqueado"
-                  description="A grade esta visivel, mas as licoes exigem matricula."
-                  requirementText="Matricule-se para liberar licoes e avaliacao."
+                  title="Conteúdo bloqueado"
+                  description="A grade está visível, mas as lições exigem matrícula."
+                  requirementText="Matricule-se para liberar as lições e a avaliação."
                 />
                 <Button variant="primary" size="sm" className="w-full" onClick={() => course && navigate(`/academy/course/${course.id}`)}>
                   Ver a disciplina

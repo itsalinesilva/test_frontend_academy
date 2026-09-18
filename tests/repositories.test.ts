@@ -1,17 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { PersistentUserRepository } from '../src/repositories/user.repository';
-import { PersistentCourseRepository } from '../src/repositories/course.repository';
 import { MemoryStorageAdapter } from '../src/infrastructure/storage/storage-adapter';
 import { UserRole } from '../src/domain/types';
 
 describe('Persistent Repositories & Seeds', () => {
   let userRepo: PersistentUserRepository;
-  let courseRepo: PersistentCourseRepository;
 
   beforeEach(() => {
     const memStorage = new MemoryStorageAdapter();
     userRepo = new PersistentUserRepository(memStorage);
-    courseRepo = new PersistentCourseRepository(memStorage);
   });
 
   /**
@@ -45,34 +42,15 @@ describe('Persistent Repositories & Seeds', () => {
   });
 
   /**
-   * NOTA DE CORREÇÃO DE TESTE — este caso exigia que a proveniência do curso
-   * citasse "University of Edinburgh". Era a citação de fonte externa
-   * transformada em requisito. A plataforma transmite conteúdo autoral e não
-   * menciona obra de referência alguma, então a asserção foi invertida.
+   * Os dois casos que ficavam aqui exercitavam `course.repository.ts`: um
+   * catálogo fabricado, paralelo ao real, que NENHUMA tela consumia. Ele foi
+   * apagado, e com ele a única razão de os casos existirem.
+   *
+   * O que eles cobriam de útil passou para arquivos onde o alvo é o catálogo
+   * de verdade: a ausência de citação de fonte está em
+   * `tests/integridade-do-academy.test.ts` e no verificador
+   * `scripts/verify-no-citations.mjs`; o vaivém do progresso está em
+   * `tests/persistencia-e-isolamento.test.ts`, contra o repositório que a
+   * plataforma realmente usa.
    */
-  it('NÃO expõe citação de fonte externa nos cursos publicados', async () => {
-    const courses = await courseRepo.listPublishedCourses();
-    expect(courses.length).toBeGreaterThan(0);
-
-    const serializado = JSON.stringify(courses);
-    for (const proibido of ['Edinburgh', 'Grout', 'IMSLP', 'Bohumil', 'Piston', 'Kostka']) {
-      expect(serializado).not.toContain(proibido);
-    }
-  });
-
-  it('persiste e recupera progresso do usuário no curso', async () => {
-    const progress = await courseRepo.saveUserProgress({
-      userId: 'usr_test_1',
-      courseId: 'crs_fomt_01',
-      enrolledAt: new Date().toISOString(),
-      completedLessonIds: ['les_fomt_101_1'],
-      progressPercentage: 25,
-    });
-    expect(progress.progressPercentage).toBe(25);
-
-    const retrieved = await courseRepo.getUserProgress('usr_test_1', 'crs_fomt_01');
-    expect(retrieved).not.toBeNull();
-    expect(retrieved?.completedLessonIds).toContain('les_fomt_101_1');
-    expect(retrieved?.progressPercentage).toBe(25);
-  });
 });

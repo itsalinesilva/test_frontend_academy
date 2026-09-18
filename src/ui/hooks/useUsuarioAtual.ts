@@ -20,6 +20,7 @@ import { authService } from '../../services/application/auth.service';
  */
 export function useUsuarioAtual() {
   const [userId, setUserId] = useState<string | null>(null);
+  const [nome, setNome] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
@@ -27,10 +28,14 @@ export function useUsuarioAtual() {
     authService
       .getActiveSession()
       .then((sessao) => {
-        if (ativo) setUserId(sessao?.user.id ?? null);
+        if (!ativo) return;
+        setUserId(sessao?.user.id ?? null);
+        setNome(sessao?.user.name ?? null);
       })
       .catch(() => {
-        if (ativo) setUserId(null);
+        if (!ativo) return;
+        setUserId(null);
+        setNome(null);
       })
       .finally(() => {
         if (ativo) setCarregando(false);
@@ -40,5 +45,13 @@ export function useUsuarioAtual() {
     };
   }, []);
 
-  return { userId, carregando, autenticado: userId !== null };
+  /**
+   * `nome` sai junto porque o que o aluno cria leva o nome dele.
+   *
+   * Uma sala de aula, uma avaliação de curso e um item de portfólio precisam
+   * registrar a autoria no momento em que nascem. Sem isso, cada tela voltaria
+   * a buscar a sessão por conta própria — que é exatamente o padrão que fez
+   * dezessete telas gravarem tudo no perfil errado.
+   */
+  return { userId, nome, carregando, autenticado: userId !== null };
 }

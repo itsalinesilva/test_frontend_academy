@@ -396,7 +396,7 @@ export const OnboardingScreen: React.FC = () => {
                   id="onboarding-name-input"
                   type="text"
                   required
-                  placeholder="Ex: Frédéric Chopin ou Clara Schumann"
+                  placeholder="Como seu nome deve aparecer nos certificados"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   className="w-full text-xs p-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-anil-800"

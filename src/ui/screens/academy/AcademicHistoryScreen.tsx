@@ -57,12 +57,12 @@ export const AcademicHistoryScreen: React.FC = () => {
       density="operational"
       asideLabel="Resumo do registro"
       state={isLoading ? 'loading' : historyEntries.length === 0 ? 'empty' : 'content'}
-      loadingMessage="Carregando o livro de registro academico..."
+      loadingMessage="Carregando o livro de registro acadêmico…"
       emptyProps={{
-        title: 'Seu historico ainda esta vazio',
+        title: 'Seu histórico ainda está vazio',
         description:
-          'Cada licao integralizada, avaliacao realizada e certificado emitido e registrado aqui de forma auditavel.',
-        actionLabel: 'Ir ao catalogo',
+          'Cada lição concluída, avaliação realizada e certificado emitido fica registrado aqui de forma auditável.',
+        actionLabel: 'Ir ao catálogo',
         onAction: () => navigate('/academy/catalog'),
       }}
     >

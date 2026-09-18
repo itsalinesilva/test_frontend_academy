@@ -289,10 +289,10 @@ export const ProfileOverviewScreen: React.FC = () => {
           },
         }}
         emptyProps={{
-          title: viewedUserId ? 'Perfil indisponivel' : 'Entre para ver seu perfil',
+          title: viewedUserId ? 'Perfil indisponível' : 'Entre para ver seu perfil',
           description: viewedUserId
-            ? 'Este perfil nao existe ou seu autor o mantem privado.'
-            : 'Seu perfil profissional reune formacao, pratica, producoes e credenciais.',
+            ? 'Este perfil não existe ou seu autor o mantém privado.'
+            : 'Seu perfil profissional reúne formação, prática, produções e credenciais.',
           actionLabel: viewedUserId ? 'Ver a rede' : 'Entrar',
           onAction: () => navigate(viewedUserId ? '/profile/network' : '/auth/login'),
         }}
