@@ -42,3 +42,6 @@ Desktop.ini
 npm-debug.log*
 yarn-error.log*
 *.log
+
+# Executaveis nunca entram no repositorio: nada em public/ e servido como binario.
+*.exe
