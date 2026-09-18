@@ -468,6 +468,7 @@ export const ExerciseSessionScreen: React.FC = () => {
 
           <input
             type="range"
+            aria-label="Andamento do metrônomo, em batidas por minuto"
             min="40"
             max="200"
             value={bpm}

@@ -87,7 +87,7 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
               </p>
             </div>
           </div>
-          <button type="button" onClick={onClose} className="text-stone-400 hover:text-stone-700 p-1">
+          <button type="button" aria-label="Fechar" onClick={onClose} className="text-stone-400 hover:text-stone-700 p-1">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -95,10 +95,10 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="sm:col-span-2 space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="publish-portfolio-modal-titulo-do-artefato-obra">
                 Título do Artefato / Obra *
               </label>
-              <input
+              <input id="publish-portfolio-modal-titulo-do-artefato-obra"
                 type="text"
                 required
                 placeholder="Ex: J.S. Bach - Prelúdio e Fuga em Dó Menor BWV 847"
@@ -109,8 +109,8 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">Categoria *</label>
-              <select
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="publish-portfolio-modal-categoria">Categoria *</label>
+              <select id="publish-portfolio-modal-categoria"
                 value={category}
                 onChange={(e) => setCategory(e.target.value as PortfolioItemCategory)}
                 className="w-full text-sm p-2 rounded border border-stone-300 bg-white"
@@ -128,10 +128,10 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="publish-portfolio-modal-seu-papel-no-projeto">
                 Seu Papel no Projeto *
               </label>
-              <input
+              <input id="publish-portfolio-modal-seu-papel-no-projeto"
                 type="text"
                 required
                 placeholder="Ex: Cravista Solo, Compositora, Editora Notacional"
@@ -142,10 +142,10 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="publish-portfolio-modal-referencia-da-obra-catalogo">
                 Referência da Obra / Catálogo
               </label>
-              <input
+              <input id="publish-portfolio-modal-referencia-da-obra-catalogo"
                 type="text"
                 placeholder="Ex: J.S. Bach - BWV 847 / Beethoven Op. 13"
                 value={workReferences}
@@ -156,10 +156,10 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-stone-700 block">
+            <label className="text-xs font-semibold text-stone-700 block" htmlFor="publish-portfolio-modal-contexto-do-artefato-onde-e-como-foi-rea">
               Contexto do Artefato (Onde e como foi realizado?)
             </label>
-            <textarea
+            <textarea id="publish-portfolio-modal-contexto-do-artefato-onde-e-como-foi-rea"
               rows={2}
               placeholder="Ex: Gravado na Capela de Santa Cecília com acústica natural para recital de formatura."
               value={context}
@@ -169,10 +169,10 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-stone-700 block">
+            <label className="text-xs font-semibold text-stone-700 block" htmlFor="publish-portfolio-modal-objetivo-proposta-musical">
               Objetivo & Proposta Musical
             </label>
-            <input
+            <input id="publish-portfolio-modal-objetivo-proposta-musical"
               type="text"
               placeholder="Ex: Demonstrar execução polifônica em andamento andante com ornamentação francesa."
               value={objective}
@@ -183,10 +183,10 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="publish-portfolio-modal-habilidades-separadas-por-virgula">
                 Habilidades (separadas por vírgula)
               </label>
-              <input
+              <input id="publish-portfolio-modal-habilidades-separadas-por-virgula"
                 type="text"
                 value={skillsInput}
                 onChange={(e) => setSkillsInput(e.target.value)}
@@ -195,10 +195,10 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="publish-portfolio-modal-instrumentos-empregados">
                 Instrumentos Empregados
               </label>
-              <input
+              <input id="publish-portfolio-modal-instrumentos-empregados"
                 type="text"
                 value={instrumentsInput}
                 onChange={(e) => setInstrumentsInput(e.target.value)}
@@ -209,10 +209,10 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="publish-portfolio-modal-notas-do-processo-tecnico-metodologico">
                 Notas do Processo Técnico / Metodológico
               </label>
-              <textarea
+              <textarea id="publish-portfolio-modal-notas-do-processo-tecnico-metodologico"
                 rows={2}
                 placeholder="Ex: Microfonação estéreo, edição sem compressão, estudo prévio de partituras…"
                 value={processNotes}
@@ -222,10 +222,10 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="publish-portfolio-modal-sintese-do-resultado-obtido">
                 Síntese do Resultado Obtido
               </label>
-              <textarea
+              <textarea id="publish-portfolio-modal-sintese-do-resultado-obtido"
                 rows={2}
                 placeholder="Ex: Registro com equilíbrio tímbrico e separação clara de vozes polifônicas."
                 value={resultSummary}
@@ -236,10 +236,10 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-stone-700 block">
+            <label className="text-xs font-semibold text-stone-700 block" htmlFor="publish-portfolio-modal-url-do-arquivo-artefato-audio-musicxml-v">
               URL do Arquivo / Artefato (Áudio, MusicXML, Vídeo)
             </label>
-            <input
+            <input id="publish-portfolio-modal-url-do-arquivo-artefato-audio-musicxml-v"
               type="text"
               placeholder="https://storage.academia.mus.br/artefatos/minha_obra.mp3"
               value={artifactUrl}
@@ -282,8 +282,8 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-stone-100">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">Visibilidade do Item</label>
-              <select
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="publish-portfolio-modal-visibilidade-do-item">Visibilidade do Item</label>
+              <select id="publish-portfolio-modal-visibilidade-do-item"
                 value={visibility}
                 onChange={(e) => setVisibility(e.target.value as VisibilityLevel)}
                 className="w-full text-sm p-2 rounded border border-stone-300 bg-white font-medium"

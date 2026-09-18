@@ -228,6 +228,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             ref={inputRef}
             id="command-palette-input"
             type="text"
+            aria-label="Buscar comando ou tela"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -254,6 +255,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 <div
                   key={item.id}
                   id={`cmd-item-${item.id}`}
+                  role="option"
+                  aria-selected={isSelected}
                   onClick={() => item.action()}
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={clsx(

@@ -56,14 +56,16 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
 
   return (
     <div id={`${id}-wrapper`} ref={containerRef} className={twMerge(clsx('relative inline-block text-left', className))}>
-      <div
+      <button
+        type="button"
         id={`${id}-trigger-box`}
         onClick={() => setIsOpen(!isOpen)}
         aria-haspopup="true"
         aria-expanded={isOpen}
+        className="cursor-pointer"
       >
         {trigger}
-      </div>
+      </button>
 
       {isOpen && (
         <div

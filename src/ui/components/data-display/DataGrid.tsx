@@ -114,6 +114,7 @@ export function DataGrid<T extends { id: string }>({
         <div className="p-3 border-b border-stone-200 bg-stone-50/50 flex items-center gap-2">
           <SearchIcon className="w-4 h-4 text-stone-400" />
           <input
+        aria-label="Filtrar dados"
             type="search"
             value={searchQuery}
             onChange={(e) => {
@@ -185,7 +186,14 @@ export function DataGrid<T extends { id: string }>({
                 return (
                   <tr
                     key={row.id}
+                    tabIndex={onRowClick ? 0 : undefined}
                     onClick={() => onRowClick && onRowClick(row)}
+                    onKeyDown={(e) => {
+                      if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
+                        e.preventDefault();
+                        onRowClick(row);
+                      }
+                    }}
                     className={clsx(
                       'transition-colors',
                       isSelected ? 'bg-red-50/50' : 'hover:bg-stone-50/70',
@@ -194,6 +202,7 @@ export function DataGrid<T extends { id: string }>({
                   >
                     {selectable && (
                       <td
+                        role="presentation"
                         className="px-3 py-3 text-center"
                         onClick={(e) => e.stopPropagation()}
                       >

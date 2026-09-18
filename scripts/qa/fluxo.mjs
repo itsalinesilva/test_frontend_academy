@@ -344,13 +344,37 @@ export function checarDadosDentroDaTela() {
 export function checarNomeAcessivel() {
   const achados = [];
   for (const { arquivo, codigo: conteudo } of interfaces()) {
-    // <button ...>  ... </button> sem texto e sem aria-label
     for (const m of conteudo.matchAll(/<button\b([\s\S]{0,400}?)<\/button>/g)) {
       const bloco = m[0];
       if (/aria-label|aria-labelledby|title=/.test(bloco)) continue;
-      // texto visível: qualquer coisa entre > e < que não seja só espaço/JSX
-      const semTags = bloco.replace(/<[^>]*>/g, ' ').replace(/\{[^}]*\}/g, ' ');
-      if (/[A-Za-zÀ-ÿ]{3,}/.test(semTags)) continue;
+
+      /**
+       * O miolo do botão, sem os atributos da própria etiqueta de abertura.
+       *
+       * Isso importa: `className="… p-1 …"` está cheio de letras, e contá-las
+       * como rótulo daria o botão por nomeado sempre.
+       */
+      const miolo = bloco.replace(/^<button\b[^>]*>/, '').replace(/<\/button>$/, '');
+
+      // texto literal entre as etiquetas
+      const soTexto = miolo.replace(/<[^>]*>/g, ' ').replace(/\{[\s\S]*?\}/g, ' ');
+      if (/[A-Za-zÀ-ÿ]{2,}/.test(soTexto)) continue;
+
+      /**
+       * Rótulo vindo de expressão não dá para julgar daqui.
+       *
+       * `{actionLabel}`, `{item.label}` e `{enviando ? 'Salvando' : 'Enviar'}`
+       * produzem texto em tempo de execução. Acusá-los enchia o relatório de
+       * botões perfeitamente nomeados — e a responsabilidade, nesses casos, é
+       * de quem passa a propriedade, não deste componente.
+       *
+       * O que sobra, e é o defeito de verdade, é o botão cujo miolo são só
+       * ícones: `<button><X className="w-5 h-5" /></button>`.
+       */
+      const expressoes = miolo.match(/\{[\s\S]*?\}/g) ?? [];
+      const soIcones = expressoes.every((e) => /^\{\s*<[A-Z]/.test(e));
+      if (expressoes.length > 0 && !soIcones) continue;
+
       achados.push({
         arquivo,
         linha: conteudo.slice(0, m.index).split('\n').length,
@@ -373,11 +397,38 @@ export function checarNomeAcessivel() {
  *   - `{...props}` repassado, que pode carregar o rótulo de quem usa — aí a
  *     responsabilidade é de quem chama, e é ali que se cobra.
  */
+/**
+ * Os atributos de uma etiqueta JSX, do nome até o `>` que a fecha de verdade.
+ *
+ * Ler até o primeiro `>` não serve: `onChange={(e) => …}` tem um `>` dentro
+ * da seta. Isso cortava a leitura antes do `aria-label` que vinha depois, e o
+ * pente fino acusava campos perfeitamente rotulados — inclusive um que dizia
+ * `aria-label="Selecionar todas as linhas"` três linhas abaixo.
+ *
+ * Aqui o `>` só conta fora de aspas e fora de `{}`.
+ */
+function atributosDaEtiqueta(texto, inicio) {
+  let chaves = 0;
+  let aspas = null;
+  for (let i = inicio; i < texto.length; i++) {
+    const c = texto[i];
+    if (aspas) {
+      if (c === aspas) aspas = null;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === '`') aspas = c;
+    else if (c === '{') chaves++;
+    else if (c === '}') chaves--;
+    else if (c === '>' && chaves === 0) return texto.slice(inicio, i);
+  }
+  return texto.slice(inicio, inicio + 400);
+}
+
 export function checarRotuloDeCampo() {
   const achados = [];
   for (const { arquivo, codigo: conteudo } of interfaces()) {
-    for (const m of conteudo.matchAll(/<(input|textarea|select)\b([^>]*?)\/?>/g)) {
-      const attrs = m[2];
+    for (const m of conteudo.matchAll(/<(input|textarea|select)\b/g)) {
+      const attrs = atributosDaEtiqueta(conteudo, m.index + m[0].length);
       if (/type=["']hidden["']/.test(attrs)) continue;
       if (/aria-label|aria-labelledby/.test(attrs)) continue;
       if (/\{\.\.\./.test(attrs)) continue;

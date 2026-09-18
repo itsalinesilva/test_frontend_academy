@@ -60,6 +60,7 @@ export const Dialog: React.FC<DialogProps> = ({
   return (
     <div
       id={`${id}-backdrop`}
+      role="presentation"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-in fade-in duration-150"
       onClick={(e) => {
         if (e.target === e.currentTarget) {

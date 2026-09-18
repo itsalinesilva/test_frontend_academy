@@ -153,6 +153,7 @@ export const ScoreScreen: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-stone-700">Clave:</span>
               <select
+        aria-label="Clave"
                 value={clef}
                 onChange={(e) => setClef(e.target.value as 'treble' | 'bass')}
                 className="bg-stone-50 border border-stone-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-anil-800"
@@ -165,6 +166,7 @@ export const ScoreScreen: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-stone-700">Armadura:</span>
               <select
+        aria-label="Armadura"
                 value={keySignature}
                 onChange={(e) => setKeySignature(e.target.value)}
                 className="bg-stone-50 border border-stone-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-anil-800"
@@ -179,6 +181,7 @@ export const ScoreScreen: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-stone-700">Fórmula:</span>
               <select
+        aria-label="Fórmula"
                 value={timeSignature}
                 onChange={(e) => setTimeSignature(e.target.value)}
                 className="bg-stone-50 border border-stone-300 rounded px-2 py-1 text-xs font-mono focus:ring-1 focus:ring-anil-800"
@@ -193,6 +196,7 @@ export const ScoreScreen: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-stone-700">Tempo:</span>
               <input
+        aria-label="Tempo"
                 type="number"
                 min="40"
                 max="240"

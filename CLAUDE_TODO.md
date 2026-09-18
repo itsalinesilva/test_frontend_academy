@@ -323,9 +323,8 @@ Consequência: se o KV cair ou for desligado, o produto continua inteiro para ca
 > item foi estimado, e nenhum foi dado por fechado porque a tela existe.
 > Substitui a lista de 2026-09-17, que era parcial.
 >
-> **Estado medido agora:** 83 rotas · 81 telas · 0 órfãs · **0 bloqueios** no
-> pente fino · 129 correções abertas · 488 testes passando · tsc e eslint
-> limpos.
+> **Estado medido agora:** 83 rotas · 81 telas · 0 órfãs · **0 bloqueios e 0
+> correções** no pente fino · 488 testes passando · tsc e eslint limpos.
 
 ### O que já foi fechado neste levantamento
 
@@ -359,25 +358,33 @@ apareceram quando o pente fino passou a procurá-los.
 
 ---
 
-### A — Acessibilidade · 129 correções, com teto travado na suíte
+### A — Acessibilidade ✅ **as 129 correções foram feitas**
 
-`tests/pente-fino.test.ts` impede que estes números subam. Baixá-los é o que
-registra progresso.
+| # | Item | Era | Agora |
+| :--- | :--- | ---: | ---: |
+| A.1 | Campo de formulário sem rótulo acessível | 94 | **0** |
+| A.2 | Elemento clicável que o teclado não alcança | 22 | **0** |
+| A.3 | Botão só com ícone e sem `aria-label` | 13 | **0** |
 
-| # | Item | Qtde | Estado |
-| :--- | :--- | ---: | :---: |
-| A.1 | Campo de formulário sem rótulo acessível | 94 | ⬜ |
-| A.2 | Elemento clicável que o teclado não alcança (`div`/`span`/`tr` com `onClick`) | 22 | ⬜ |
-| A.3 | Botão só com ícone e sem `aria-label` | 13 | ⬜ |
+Como foi feito, e por que a distinção importa:
 
-**Concentração de A.1** — atacar por aqui resolve metade:
-`EditHeaderModal` 14 · `PublishPortfolioModal` 12 · `BookletEditorScreen` 9 ·
-`EditProfileScreen` 8 · `TeacherRoomModal` 6 · `OnboardingScreen` 5.
+- **Rótulo por vínculo, não por proximidade.** O padrão da base era
+  `<label>Texto</label>` seguido do campo como IRMÃO. Parece rótulo e não é:
+  clicar no texto não põe foco no campo, e o leitor de tela anuncia "caixa de
+  edição" sem dizer de quê. 44 pares ganharam `htmlFor`/`id`.
+- **Texto ao lado virou nome acessível.** `<span>Clave:</span>` antes de um
+  seletor é o rótulo — 23 campos ganharam `aria-label` a partir dele, ou do
+  `placeholder` quando ele descrevia o campo. Placeholder de FORMATO
+  (`https://…`) foi excluído de propósito: ele diz como digitar, não o quê.
+- **Clicável virou botão.** Alternativa de prova, lição da grade, resultado de
+  busca e cartão de navegação eram `<div onClick>` — que não recebe foco e não
+  responde a Enter. Quem navega por teclado **não conseguia responder a prova**.
+- **Controle de valor ganhou teclado.** A régua da linha do tempo é um
+  `slider` com setas; a nota do piano roll e a linha de tabela respondem a
+  Enter. O fundo dos diálogos recebeu `role="presentation"`, porque fechar
+  clicando fora é atalho de mouse e o caminho garantido é a tecla Esc.
 
-**Concentração de A.2** — os componentes de sobreposição (`Dialog`, `Drawer`,
-`DropdownMenu`, `NotificationsPopover`, `CommandPalette`) usam `div` com
-`onClick` para fechar ao clicar fora. Corrigir os cinco fecha 5 dos 22 e é o
-padrão que as telas copiam.
+Os tetos em `tests/pente-fino.test.ts` foram baixados a zero.
 
 ---
 
@@ -469,8 +476,9 @@ pendência, não nota de rodapé.
 ### Ordem sugerida
 
 1. **G.1** — destrava C.3 e o cadastro real; tudo o mais depende disso para ser verificável de verdade.
-2. **A.1 nos seis arquivos concentrados** — 54 das 94 correções em seis lugares.
-3. **F.2** — uma passada no navegador de verdade, tela a tela. É a classe de defeito que nenhum teste daqui alcança, e foi ela que produziu o pior erro do projeto até agora.
-4. **B.2** — as 8 telas públicas do Academy são as que o visitante mais vê.
-5. **E.1** — revisão do texto, capítulo a capítulo.
-6. Só então **Practice** (comando 5-6).
+2. **F.2** — uma passada no navegador de verdade, tela a tela. É a classe de defeito que nenhum teste daqui alcança, e foi ela que produziu o pior erro do projeto até agora.
+3. **B.2** — as 8 telas públicas do Academy são as que o visitante mais vê.
+4. **E.1** — revisão do texto, capítulo a capítulo.
+5. Só então **Practice** (comando 5-6).
+
+~~2. A.1 nos seis arquivos concentrados~~ — feito.

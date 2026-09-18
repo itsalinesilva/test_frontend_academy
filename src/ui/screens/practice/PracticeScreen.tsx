@@ -405,6 +405,7 @@ export const PracticeScreen: React.FC = () => {
                 </button>
                 <input
                   type="range"
+                  aria-label="Andamento do metrônomo, em batidas por minuto"
                   min="40"
                   max="220"
                   value={metronomeBpm}

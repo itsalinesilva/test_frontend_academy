@@ -215,6 +215,7 @@ export const CategoryDetailScreen: React.FC = () => {
 
           <div className="w-full sm:w-64">
             <input
+        aria-label="Filtrar nesta categoria"
               type="text"
               placeholder="Filtrar nesta categoria..."
               value={searchQuery}

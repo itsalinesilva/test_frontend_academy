@@ -38,8 +38,17 @@ export const MediaCard: React.FC<MediaCardProps> = ({
       {/* Media Visual / Waveform Banner */}
       <div
         id={`${id}-media-banner`}
+        role="button"
+        tabIndex={0}
+        aria-label={isPlaying ? 'Pausar' : 'Reproduzir'}
         className="relative h-28 bg-stone-900 flex items-center justify-center overflow-hidden cursor-pointer group"
         onClick={onTogglePlay}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onTogglePlay?.();
+          }
+        }}
       >
         {/* Subtle decorative waveform graphic */}
         <div className="absolute inset-0 flex items-center justify-center gap-1 opacity-25" aria-hidden="true">

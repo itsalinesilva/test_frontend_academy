@@ -651,12 +651,12 @@ export const DesignSystemCatalog: React.FC = () => {
               >
                 <div className="space-y-4 text-xs">
                   <div>
-                    <label className="font-semibold text-stone-800 block mb-1">Volume da Trilha (Ganho)</label>
-                    <input type="range" min="0" max="100" defaultValue="80" className="w-full accent-anil-800" />
+                    <label className="font-semibold text-stone-800 block mb-1" htmlFor="design-system-catalog-volume-da-trilha-ganho">Volume da Trilha (Ganho)</label>
+                    <input id="design-system-catalog-volume-da-trilha-ganho" type="range" min="0" max="100" defaultValue="80" className="w-full accent-anil-800" />
                   </div>
                   <div>
-                    <label className="font-semibold text-stone-800 block mb-1">Panorâmica Estéreo (Pan)</label>
-                    <input type="range" min="-50" max="50" defaultValue="0" className="w-full accent-anil-800" />
+                    <label className="font-semibold text-stone-800 block mb-1" htmlFor="design-system-catalog-panoramica-estereo-pan">Panorâmica Estéreo (Pan)</label>
+                    <input id="design-system-catalog-panoramica-estereo-pan" type="range" min="-50" max="50" defaultValue="0" className="w-full accent-anil-800" />
                   </div>
                 </div>
               </Drawer>
@@ -865,7 +865,14 @@ export const DesignSystemCatalog: React.FC = () => {
                         <span>Filtro Cutoff (Low-pass)</span>
                         <span className="font-mono">2400 Hz</span>
                       </div>
-                      <input type="range" min="200" max="8000" defaultValue="2400" className="w-full accent-anil-800" />
+                      <input
+                        type="range"
+                        aria-label="Frequência de corte do filtro, em hertz"
+                        min="200"
+                        max="8000"
+                        defaultValue="2400"
+                        className="w-full accent-anil-800"
+                      />
                     </div>
                   </div>
                 </ToolPanel>

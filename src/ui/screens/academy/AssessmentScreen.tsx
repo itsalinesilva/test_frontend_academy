@@ -161,11 +161,13 @@ export const AssessmentScreen: React.FC = () => {
                 const isSelected = answers[currentQuestion.id] === opt.id;
 
                 return (
-                  <div
+                  <button
                     key={opt.id}
+                    type="button"
                     id={`opt-${opt.id}`}
+                    aria-pressed={isSelected}
                     onClick={() => handleSelectOption(currentQuestion.id, opt.id)}
-                    className={`p-4 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                    className={`w-full p-4 rounded-xl border text-left flex items-center justify-between cursor-pointer transition-all ${
                       isSelected
                         ? 'border-anil-800 bg-red-50/30 text-anil-950 font-medium'
                         : 'border-stone-200 hover:border-stone-400 bg-white'
@@ -189,7 +191,7 @@ export const AssessmentScreen: React.FC = () => {
                     {isSelected && (
                       <CheckCircle2 className="w-5 h-5 text-anil-800 shrink-0" />
                     )}
-                  </div>
+                  </button>
                 );
               })}
             </div>

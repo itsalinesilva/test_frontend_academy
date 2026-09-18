@@ -65,6 +65,7 @@ export const Drawer: React.FC<DrawerProps> = ({
   return (
     <div
       id={`${id}-backdrop`}
+      role="presentation"
       className="fixed inset-0 z-50 bg-stone-900/50 backdrop-blur-xs transition-opacity duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) {

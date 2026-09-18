@@ -93,11 +93,12 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
           notifications.slice(0, 4).map((item) => {
             const IconComp = item.icon;
             return (
-              <div
+              <button
                 key={item.id}
+                type="button"
                 onClick={() => handleNotificationClick(item.link)}
                 className={clsx(
-                  'p-3 hover:bg-stone-50 cursor-pointer transition-colors flex items-start gap-3',
+                  'w-full p-3 text-left hover:bg-stone-50 cursor-pointer transition-colors flex items-start gap-3',
                   item.unread && 'bg-red-50/20'
                 )}
               >
@@ -122,7 +123,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
                     <Clock className="w-2.5 h-2.5" /> {item.time}
                   </span>
                 </div>
-              </div>
+              </button>
             );
           })
         )}

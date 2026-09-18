@@ -129,10 +129,10 @@ export const EditProfileScreen: React.FC = () => {
         <form onSubmit={handleSubmit}>
           <Card variant="default" padding="lg" className="space-y-4">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-nome-de-exibicao-academico">
                 Nome de Exibição Acadêmico *
               </label>
-              <input
+              <input id="edit-profile-screen-nome-de-exibicao-academico"
                 type="text"
                 required
                 value={name}
@@ -143,10 +143,10 @@ export const EditProfileScreen: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-stone-700 block">
+                <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-titulo-musical-ou-academico">
                   Título Musical ou Acadêmico
                 </label>
-                <input
+                <input id="edit-profile-screen-titulo-musical-ou-academico"
                   type="text"
                   value={title}
                   placeholder="Ex: Pianista, Pesquisador, Mestre"
@@ -156,10 +156,10 @@ export const EditProfileScreen: React.FC = () => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-stone-700 block">
+                <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-nivel-de-formacao">
                   Nível de Formação
                 </label>
-                <select
+                <select id="edit-profile-screen-nivel-de-formacao"
                   value={experienceLevel}
                   onChange={(e) => setExperienceLevel(e.target.value as any)}
                   className="w-full text-sm p-2.5 rounded border border-stone-300 bg-white"
@@ -173,10 +173,10 @@ export const EditProfileScreen: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-linha-de-pesquisa-headline">
                 Linha de Pesquisa / Headline
               </label>
-              <input
+              <input id="edit-profile-screen-linha-de-pesquisa-headline"
                 type="text"
                 value={headline}
                 placeholder="Ex: Contraponto Barroco e Prática Pianística"
@@ -186,10 +186,10 @@ export const EditProfileScreen: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-biografia-academica">
                 Biografia Acadêmica
               </label>
-              <textarea
+              <textarea id="edit-profile-screen-biografia-academica"
                 rows={3}
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
@@ -198,10 +198,10 @@ export const EditProfileScreen: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-instrumentos-separados-por-virgula">
                 Instrumentos (separados por vírgula)
               </label>
-              <input
+              <input id="edit-profile-screen-instrumentos-separados-por-virgula"
                 type="text"
                 value={instrumentsInput}
                 placeholder="Ex: Piano Clássico, Cravo, Violino"
@@ -211,10 +211,10 @@ export const EditProfileScreen: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-areas-de-interesse-separadas-por-virgula">
                 Áreas de Interesse (separadas por vírgula)
               </label>
-              <input
+              <input id="edit-profile-screen-areas-de-interesse-separadas-por-virgula"
                 type="text"
                 value={interestsInput}
                 placeholder="Ex: Harmonia Funcional, Fuga, Solfejo"
@@ -224,10 +224,10 @@ export const EditProfileScreen: React.FC = () => {
             </div>
 
             <div className="space-y-1 pt-2 border-t border-stone-100">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-privacidade-visibilidade-do-perfil">
                 Privacidade & Visibilidade do Perfil
               </label>
-              <select
+              <select id="edit-profile-screen-privacidade-visibilidade-do-perfil"
                 value={visibility}
                 onChange={(e) => setVisibility(e.target.value as any)}
                 className="w-full text-sm p-2.5 rounded border border-stone-300 bg-white"

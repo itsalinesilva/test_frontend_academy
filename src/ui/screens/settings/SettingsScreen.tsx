@@ -115,10 +115,10 @@ export const SettingsScreen: React.FC = () => {
 
               <div className="space-y-3 text-xs">
                 <div className="space-y-1">
-                  <label className="font-semibold text-stone-700 block">
+                  <label className="font-semibold text-stone-700 block" htmlFor="settings-screen-dispositivo-de-entrada-do-microfone">
                     Dispositivo de Entrada do Microfone
                   </label>
-                  <select
+                  <select id="settings-screen-dispositivo-de-entrada-do-microfone"
                     value={inputDevice}
                     onChange={(e) => setInputDevice(e.target.value)}
                     className="w-full p-2 rounded border border-stone-300 bg-white"
@@ -130,10 +130,10 @@ export const SettingsScreen: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="font-semibold text-stone-700 block">
+                    <label className="font-semibold text-stone-700 block" htmlFor="settings-screen-taxa-de-amostragem-sample-rate">
                       Taxa de Amostragem (Sample Rate)
                     </label>
-                    <select
+                    <select id="settings-screen-taxa-de-amostragem-sample-rate"
                       value={sampleRate}
                       onChange={(e) => setSampleRate(e.target.value)}
                       className="w-full p-2 rounded border border-stone-300 bg-white font-mono"
@@ -145,10 +145,10 @@ export const SettingsScreen: React.FC = () => {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-semibold text-stone-700 block">
+                    <label className="font-semibold text-stone-700 block" htmlFor="settings-screen-tamanho-do-buffer-de-latencia">
                       Tamanho do Buffer de Latência
                     </label>
-                    <select
+                    <select id="settings-screen-tamanho-do-buffer-de-latencia"
                       value={bufferSize}
                       onChange={(e) => setBufferSize(e.target.value)}
                       className="w-full p-2 rounded border border-stone-300 bg-white font-mono"

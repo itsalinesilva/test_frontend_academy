@@ -277,11 +277,13 @@ export const AcademyQuizScreen: React.FC = () => {
                     }
 
                     return (
-                      <div
+                      <button
                         key={opt.id}
+                        type="button"
                         id={`quiz-option-${opt.id}`}
+                        aria-pressed={isSelected}
                         onClick={() => handleSelectOption(q.id, opt.id)}
-                        className={`p-3.5 rounded-lg border text-xs flex items-center justify-between cursor-pointer transition-all ${optionStyle}`}
+                        className={`w-full p-3.5 rounded-lg border text-xs text-left flex items-center justify-between cursor-pointer transition-all ${optionStyle}`}
                       >
                         <div className="flex items-center gap-3">
                           <span
@@ -302,7 +304,7 @@ export const AcademyQuizScreen: React.FC = () => {
                         {result && isWrongAnswer && (
                           <XCircle className="w-4 h-4 text-red-600 shrink-0" />
                         )}
-                      </div>
+                      </button>
                     );
                   })}
                 </div>

@@ -70,18 +70,21 @@ describe('o que bloqueia publicar fica em zero', () => {
   }
 });
 
-describe('a dívida de acessibilidade é contada, e só diminui', () => {
+describe('acessibilidade', () => {
   /**
-   * Estes tetos são o estado real de hoje, medido — não uma meta.
+   * Estes tetos começaram em 13, 94, 0 e 22 — a dívida real medida quando o
+   * pente fino passou a procurá-la. Hoje são todos zero: as 129 correções
+   * foram feitas.
    *
-   * Cada um deles é uma linha aberta em `CLAUDE_TODO.md`. Baixar o número
-   * aqui é o que registra o progresso; subir é o que a suíte impede.
+   * Continuam escritos como teto, e não como igualdade a zero, porque é a
+   * forma que registra o caminho: se voltar a subir, a suíte diz de quanto
+   * para quanto, e em qual arquivo.
    */
   const TETO: Record<string, number> = {
-    'todo botão tem nome acessível': 13,
-    'todo campo tem rótulo': 94,
+    'todo botão tem nome acessível': 0,
+    'todo campo tem rótulo': 0,
     'toda imagem tem alt': 0,
-    'todo clicável alcançável pelo teclado': 22,
+    'todo clicável alcançável pelo teclado': 0,
   };
 
   for (const [nome, teto] of Object.entries(TETO)) {

@@ -107,6 +107,8 @@ export const MixerChannel: React.FC<MixerChannelProps> = ({
       <div className="grid grid-cols-2 gap-1 pt-1 border-t border-stone-800">
         <button
           type="button"
+          aria-label={isMuted ? 'Reativar o som deste canal' : 'Silenciar este canal'}
+          aria-pressed={isMuted}
           onClick={onToggleMute}
           className={clsx(
             'py-1 text-[10px] font-bold rounded cursor-pointer transition-colors',
@@ -120,6 +122,8 @@ export const MixerChannel: React.FC<MixerChannelProps> = ({
 
         <button
           type="button"
+          aria-label={isSolo ? 'Sair do modo solo' : 'Ouvir só este canal'}
+          aria-pressed={isSolo}
           onClick={onToggleSolo}
           className={clsx(
             'py-1 text-[10px] font-bold rounded cursor-pointer transition-colors',

@@ -198,13 +198,16 @@ export const ActivityScreen: React.FC = () => {
               }
 
               return (
-                <div
+                <button
                   key={opt.id}
+                  type="button"
                   id={`activity-option-${opt.id}`}
+                  aria-pressed={selectedOptionId === opt.id}
+                  disabled={isSubmitted}
                   onClick={() => {
                     if (!isSubmitted) setSelectedOptionId(opt.id);
                   }}
-                  className={`p-4 border rounded-xl flex items-center justify-between cursor-pointer transition-all ${borderClass}`}
+                  className={`w-full p-4 border rounded-xl text-left flex items-center justify-between cursor-pointer transition-all ${borderClass}`}
                 >
                   <div className="flex items-center gap-3">
                     <span className="w-7 h-7 rounded-full bg-stone-100 border border-stone-300 flex items-center justify-center text-xs font-mono font-bold text-stone-700 shrink-0">
@@ -221,7 +224,7 @@ export const ActivityScreen: React.FC = () => {
                   {isSubmitted && isSelected && !isCorrectOpt && (
                     <XCircle className="w-5 h-5 text-red-700 shrink-0" />
                   )}
-                </div>
+                </button>
               );
             })}
           </div>

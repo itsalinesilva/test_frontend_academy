@@ -387,6 +387,7 @@ export const BookletEditorScreen: React.FC = () => {
                         <span className="font-mono text-xs text-stone-400">{capitulo.numero}</span>
                         <input
                           type="text"
+                          aria-label={`Título do capítulo ${capitulo.numero}`}
                           value={capitulo.titulo}
                           onChange={(e) => alterarCapitulo(capitulo.id, { titulo: e.target.value })}
                           className="flex-1 rounded border border-transparent px-1 py-0.5 font-serif text-sm font-bold text-stone-900 hover:border-stone-200 focus:border-stone-400 focus:outline-none"
@@ -490,6 +491,7 @@ const EditorDeQuestao: React.FC<{
         <GripVertical className="mt-1 h-3.5 w-3.5 shrink-0 text-stone-300" />
         <span className="mt-1 font-mono text-[10px] text-stone-400">{indice}</span>
         <textarea
+        aria-label="Enunciado da questão"
           value={questao.enunciado}
           onChange={(e) => onChange({ enunciado: e.target.value })}
           placeholder="Enunciado da questão"
@@ -562,6 +564,7 @@ const EditorDeQuestao: React.FC<{
               />
               <input
                 type="text"
+                aria-label={`Texto da alternativa ${a.id}`}
                 value={a.texto}
                 onChange={(e) => onAlternativa(a.id, e.target.value)}
                 placeholder={`Alternativa ${a.id}`}
@@ -572,6 +575,7 @@ const EditorDeQuestao: React.FC<{
         </ul>
       ) : (
         <input
+        aria-label="Resposta aceita"
           type="text"
           value={questao.resposta}
           onChange={(e) => onChange({ resposta: e.target.value })}
@@ -581,6 +585,7 @@ const EditorDeQuestao: React.FC<{
       )}
 
       <textarea
+        aria-label="Por que a resposta é essa — o aluno lê isto depois de responder"
         value={questao.explicacao}
         onChange={(e) => onChange({ explicacao: e.target.value })}
         placeholder="Por que a resposta é essa — o aluno lê isto depois de responder"

@@ -168,16 +168,17 @@ export const ProgramDetailScreen: React.FC = () => {
                       </span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {pathCourses.map((c) => (
-                          <div
+                          <button
                             key={c.id}
+                            type="button"
                             onClick={() => navigate(`/academy/course/${c.id}`)}
-                            className="p-2.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-md flex items-center justify-between cursor-pointer transition-colors"
+                            className="w-full p-2.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-md text-left flex items-center justify-between cursor-pointer transition-colors"
                           >
                             <span className="text-xs font-serif font-semibold text-stone-900 line-clamp-1">
                               {c.title}
                             </span>
                             <ArrowRight className="w-3.5 h-3.5 text-stone-400 shrink-0 ml-1" />
-                          </div>
+                          </button>
                         ))}
                       </div>
                     </div>

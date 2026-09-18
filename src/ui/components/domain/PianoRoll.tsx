@@ -97,7 +97,16 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
           return (
             <div
               key={note.id}
+              role={onNoteClick ? 'button' : undefined}
+              tabIndex={onNoteClick ? 0 : undefined}
+              aria-label={`Nota ${getPitchLabel(note.pitch)}, velocidade ${note.velocity}`}
               onClick={() => onNoteClick && onNoteClick(note)}
+              onKeyDown={(e) => {
+                if (onNoteClick && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  onNoteClick(note);
+                }
+              }}
               style={{
                 top: `calc(${pitchIndex * 20}px + 1px)`,
                 left: `${leftPercent}%`,

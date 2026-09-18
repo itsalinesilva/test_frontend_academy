@@ -152,23 +152,25 @@ evitar: alguém lê "0 bloqueios" e conclui "está pronto".
 
 ---
 
-## A dívida, e por que ela não bloqueia
+## A dívida, e como ela é contada
 
-`tests/pente-fino.test.ts` trava as verificações bloqueantes em **zero** e as
-de acessibilidade num **teto medido**:
+`tests/pente-fino.test.ts` trava cada verificação num **teto medido**, e o
+teto só desce.
 
-| Verificação | Teto hoje |
-|---|---|
-| todo botão tem nome acessível | 13 |
-| todo campo tem rótulo | 94 |
-| toda imagem tem alt | 0 |
-| todo clicável alcançável pelo teclado | 22 |
+| Verificação | No levantamento | Hoje |
+|---|---:|---:|
+| todo botão tem nome acessível | 13 | **0** |
+| todo campo tem rótulo | 94 | **0** |
+| toda imagem tem alt | 0 | **0** |
+| todo clicável alcançável pelo teclado | 22 | **0** |
 
-O teto é o estado real, não uma meta. Baixá-lo registra progresso; subi-lo
-quebra a suíte. Travar em zero hoje transformaria a suíte numa mentira — que é
-o problema que este trabalho inteiro existe para corrigir.
+O teto começou sendo o estado real, não uma meta — travá-lo em zero antes de
+as correções existirem transformaria a suíte numa mentira, que é o problema
+que este trabalho inteiro existe para corrigir. As 129 correções foram feitas,
+e por isso os tetos são zero agora.
 
-Cada linha da tabela é um item aberto em `CLAUDE_TODO.md`.
+Continuam escritos como teto porque é a forma que registra o caminho: se um
+número voltar a subir, a suíte diz de quanto para quanto, e em qual arquivo.
 
 ---
 

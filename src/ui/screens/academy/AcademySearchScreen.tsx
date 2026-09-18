@@ -82,6 +82,7 @@ export const AcademySearchScreen: React.FC = () => {
             <input
               id="academy-main-search-input"
               type="text"
+              aria-label="Buscar um conceito musical"
               placeholder="Digite um conceito, nota, escala, regra ou professor (ex: oitava, tríade, Schumann, Fux)…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}

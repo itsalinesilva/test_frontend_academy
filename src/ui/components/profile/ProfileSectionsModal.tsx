@@ -76,6 +76,7 @@ export const ProfileSectionsModal: React.FC<ProfileSectionsModalProps> = ({
           </div>
           <button
             type="button"
+            aria-label="Fechar"
             onClick={onClose}
             className="text-stone-400 hover:text-stone-700 p-1"
           >
@@ -141,6 +142,7 @@ export const ProfileSectionsModal: React.FC<ProfileSectionsModalProps> = ({
               {/* Controls */}
               <div className="flex items-center gap-2">
                 <select
+                  aria-label={`Quem vê a seção ${section.label}`}
                   value={section.visibility}
                   onChange={(e) => toggleVisibility(idx, e.target.value as VisibilityLevel)}
                   className="text-xs p-1.5 rounded border border-stone-300 bg-white font-medium"

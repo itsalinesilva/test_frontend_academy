@@ -54,7 +54,24 @@ export const Timeline: React.FC<TimelineProps> = ({
       {/* Metric Ruler */}
       <div
         id={`${id}-ruler`}
+        role={onSeek ? 'slider' : undefined}
+        tabIndex={onSeek ? 0 : undefined}
+        aria-label="Posição na linha do tempo, em compassos"
+        aria-valuemin={1}
+        aria-valuemax={totalMeasures}
+        aria-valuenow={Math.round(currentMeasure * 10) / 10}
         onClick={handleRulerClick}
+        onKeyDown={(e) => {
+          if (!onSeek) return;
+          const passo = e.shiftKey ? 4 : 1;
+          if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            onSeek(Math.min(totalMeasures, currentMeasure + passo));
+          } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            onSeek(Math.max(1, currentMeasure - passo));
+          }
+        }}
         className="h-7 relative flex items-end cursor-pointer bg-stone-900/60 overflow-hidden"
       >
         {/* Playhead Needle */}

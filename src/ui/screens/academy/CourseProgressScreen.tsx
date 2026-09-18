@@ -300,10 +300,11 @@ export const CourseProgressScreen: React.FC = () => {
                     {lessons.map((les) => {
                       const isLesDone = completedLessonIds.includes(les.id);
                       return (
-                        <div
+                        <button
                           key={les.id}
+                          type="button"
                           onClick={() => navigate(`/academy/lesson/${les.id}`)}
-                          className="p-3 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg flex items-center justify-between cursor-pointer transition-colors text-xs"
+                          className="w-full p-3 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg text-left flex items-center justify-between cursor-pointer transition-colors text-xs"
                         >
                           <div className="flex items-center gap-2.5">
                             <span
@@ -327,7 +328,7 @@ export const CourseProgressScreen: React.FC = () => {
                             )}
                             <ArrowRight className="w-3 h-3 ml-1" />
                           </span>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>

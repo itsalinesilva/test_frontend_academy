@@ -104,6 +104,7 @@ export const DawProjectScreen: React.FC = () => {
             <div className="bg-stone-950 px-3 py-1 rounded border border-stone-800 flex items-center gap-2">
               <span className="text-stone-400">BPM:</span>
               <input
+        aria-label="BPM"
                 type="number"
                 value={tempo}
                 onChange={(e) => setTempo(Number(e.target.value))}
@@ -160,6 +161,7 @@ export const DawProjectScreen: React.FC = () => {
                 <div className="flex items-center gap-2 text-[11px] text-stone-500 font-mono">
                   <span>VOL:</span>
                   <input
+        aria-label="VOL"
                     type="range"
                     min={0}
                     max={100}

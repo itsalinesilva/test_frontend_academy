@@ -87,6 +87,7 @@ export const AcademySearchResultsScreen: React.FC = () => {
           <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 rounded-lg px-3 py-2">
             <Search className="w-4 h-4 text-stone-400 shrink-0" />
             <input
+        aria-label="Refinar termo de busca"
               type="text"
               placeholder="Refinar termo de busca..."
               value={searchQuery}
@@ -109,6 +110,7 @@ export const AcademySearchResultsScreen: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="font-mono uppercase text-stone-500 font-semibold">Cátedra:</span>
               <select
+        aria-label="Cátedra"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="bg-stone-50 border border-stone-200 rounded px-2.5 py-1 text-xs text-stone-800"
@@ -126,6 +128,7 @@ export const AcademySearchResultsScreen: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="font-mono uppercase text-stone-500 font-semibold">Nível:</span>
               <select
+        aria-label="Nível"
                 value={selectedLevel}
                 onChange={(e) => setSelectedLevel(e.target.value)}
                 className="bg-stone-50 border border-stone-200 rounded px-2.5 py-1 text-xs text-stone-800"
@@ -141,6 +144,7 @@ export const AcademySearchResultsScreen: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="font-mono uppercase text-stone-500 font-semibold">Ordenar:</span>
               <select
+        aria-label="Ordenar"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'relevance' | 'workload' | 'name')}
                 className="bg-stone-50 border border-stone-200 rounded px-2.5 py-1 text-xs text-stone-800"

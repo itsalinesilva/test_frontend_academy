@@ -296,9 +296,10 @@ export const PracticeHomeScreen: React.FC = () => {
         {/* Quick Gamification Counters */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 shrink-0 lg:w-72">
           {/* Streak */}
-          <div
+          <button
+            type="button"
             onClick={() => router.navigate('/practice/streak')}
-            className="cursor-pointer bg-stone-800/80 hover:bg-stone-800 p-3 rounded-xl border border-stone-700 flex items-center gap-3 transition-colors"
+            className="w-full text-left cursor-pointer bg-stone-800/80 hover:bg-stone-800 p-3 rounded-xl border border-stone-700 flex items-center gap-3 transition-colors"
           >
             <div className="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
               <Flame className="w-5 h-5 fill-amber-400" />
@@ -309,12 +310,13 @@ export const PracticeHomeScreen: React.FC = () => {
                 {streak?.currentStreakDays || 0} Dias
               </span>
             </div>
-          </div>
+          </button>
 
           {/* Daily Goal */}
-          <div
+          <button
+            type="button"
             onClick={() => router.navigate('/practice/daily-goal')}
-            className="cursor-pointer bg-stone-800/80 hover:bg-stone-800 p-3 rounded-xl border border-stone-700 flex items-center gap-3 transition-colors"
+            className="w-full text-left cursor-pointer bg-stone-800/80 hover:bg-stone-800 p-3 rounded-xl border border-stone-700 flex items-center gap-3 transition-colors"
           >
             <div className="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
               <Target className="w-5 h-5" />
@@ -331,12 +333,13 @@ export const PracticeHomeScreen: React.FC = () => {
                 />
               </div>
             </div>
-          </div>
+          </button>
 
           {/* League */}
-          <div
+          <button
+            type="button"
             onClick={() => router.navigate('/practice/ranking')}
-            className="cursor-pointer bg-stone-800/80 hover:bg-stone-800 p-3 rounded-xl border border-stone-700 flex items-center gap-3 transition-colors col-span-2 sm:col-span-1"
+            className="w-full text-left cursor-pointer bg-stone-800/80 hover:bg-stone-800 p-3 rounded-xl border border-stone-700 flex items-center gap-3 transition-colors col-span-2 sm:col-span-1"
           >
             <div className="w-10 h-10 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
               <Trophy className="w-5 h-5" />
@@ -347,7 +350,7 @@ export const PracticeHomeScreen: React.FC = () => {
                 Conservatório (#{leaderboard.find((l) => l.userId === currentUserId)?.rankPosition || 3})
               </span>
             </div>
-          </div>
+          </button>
         </div>
       </div>
 

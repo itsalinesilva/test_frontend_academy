@@ -57,6 +57,7 @@ export const SearchScreen: React.FC = () => {
           <input
             id="omnisearch-input"
             type="text"
+            aria-label="Buscar em toda a plataforma"
             placeholder="Buscar por compositor, título de obra, lição, sala ou termo teórico…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -97,10 +98,11 @@ export const SearchScreen: React.FC = () => {
             {sampleResults.map((item) => {
               const IconComp = item.icon;
               return (
-                <div
+                <button
                   key={item.id}
+                  type="button"
                   onClick={() => navigate(item.link)}
-                  className="p-3.5 hover:bg-stone-50 cursor-pointer transition-colors flex items-center justify-between gap-3"
+                  className="w-full p-3.5 text-left hover:bg-stone-50 cursor-pointer transition-colors flex items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded bg-stone-100 text-stone-700">
@@ -116,7 +118,7 @@ export const SearchScreen: React.FC = () => {
                   </div>
 
                   <ArrowRight className="w-4 h-4 text-stone-400" />
-                </div>
+                </button>
               );
             })}
           </div>

@@ -787,6 +787,7 @@ export const OnboardingScreen: React.FC = () => {
                 </div>
                 <input
                   type="checkbox"
+                  aria-label="Receber avisos de novas lições e correções"
                   checked={notificationsEnabled}
                   onChange={(e) => setNotificationsEnabled(e.target.checked)}
                   className="w-4 h-4 text-anil-800 rounded border-stone-300"
@@ -815,10 +816,10 @@ export const OnboardingScreen: React.FC = () => {
 
                 <Card variant="default" padding="lg" className="space-y-4 border-amber-200 bg-amber-50/20">
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-stone-800 block">
+                    <label className="text-xs font-semibold text-stone-800 block" htmlFor="onboarding-screen-nome-do-responsavel-legal-pai-mae-ou-tut">
                       Nome do Responsável Legal (Pai, Mãe ou Tutor) *
                     </label>
-                    <input
+                    <input id="onboarding-screen-nome-do-responsavel-legal-pai-mae-ou-tut"
                       type="text"
                       required
                       placeholder="Ex: Leopold Mozart"
@@ -829,10 +830,10 @@ export const OnboardingScreen: React.FC = () => {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-stone-800 block">
+                    <label className="text-xs font-semibold text-stone-800 block" htmlFor="onboarding-screen-e-mail-do-responsavel">
                       E-mail do Responsável *
                     </label>
-                    <input
+                    <input id="onboarding-screen-e-mail-do-responsavel"
                       type="email"
                       required
                       placeholder="responsavel@familia.mus.br"
@@ -843,10 +844,10 @@ export const OnboardingScreen: React.FC = () => {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-stone-800 block">
+                    <label className="text-xs font-semibold text-stone-800 block" htmlFor="onboarding-screen-telefone-do-responsavel-opcional">
                       Telefone do Responsável (Opcional)
                     </label>
-                    <input
+                    <input id="onboarding-screen-telefone-do-responsavel-opcional"
                       type="tel"
                       placeholder="+55 (11) 99999-9999"
                       value={guardianPhone}
@@ -856,10 +857,10 @@ export const OnboardingScreen: React.FC = () => {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-stone-800 block">
+                    <label className="text-xs font-semibold text-stone-800 block" htmlFor="onboarding-screen-limite-de-tempo-diario-de-tela">
                       Limite de Tempo Diário de Tela
                     </label>
-                    <select
+                    <select id="onboarding-screen-limite-de-tempo-diario-de-tela"
                       value={screenTimeMinutes}
                       onChange={(e) => setScreenTimeMinutes(Number(e.target.value))}
                       className="w-full text-xs p-2.5 rounded-lg border border-stone-300 bg-white"
