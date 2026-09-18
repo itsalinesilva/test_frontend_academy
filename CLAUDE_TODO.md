@@ -479,6 +479,26 @@ pendência, não nota de rodapé.
 
 ---
 
+### P — Practice · levantamento de 2026-09-18
+
+Medido, não estimado: `repo`, `usuário` e `alert` contados arquivo a arquivo.
+
+**O Practice não era um vazio — era quase tudo real.** 15 das 16 telas já
+liam do repositório e conheciam o usuário logado. Nenhuma tinha botão falso.
+
+| # | Item | Estado |
+| :--- | :--- | :---: |
+| P.1 | `/practice/trainer` com três questões fixas, e sessão abrindo com **40 XP e 7 dias de ofensiva que ninguém fez**. Nada era gravado | ✅ corrigido |
+| P.2 | Domínio `treino-de-intervalos` — questões **geradas da teoria**, um só lugar para o Practice e o laboratório do Studio | ✅ |
+| P.3 | 18 casos garantindo que a geração é musicalmente correta. **Um deles pegou defeito real no gerador**: sementes sequenciais davam sempre a mesma raiz | ✅ |
+| P.4 | Unificar o laboratório de intervalos do Studio com o mesmo domínio — hoje ele tem a própria lista | ⬜ |
+| P.5 | A aba de ritmo do trainer: o metrônomo toca, mas não mede nem grava a execução | ⬜ |
+| P.6 | A aba de acordes está declarada no seletor e não existe | ⬜ |
+| P.7 | Ligar a tentativa gravada à ofensiva, à meta do dia e ao domínio de habilidade — hoje grava, mas não alimenta os três | ⬜ |
+| P.8 | Ranking: o repositório existe e devolve lista vazia. Falta decidir **se a liga entra agora** ou depois de haver turma | ⛔ decisão sua |
+
+---
+
 ### H — Verificações que ainda não existem
 
 Cada linha é um antipadrão de `73_ANTIPADROES.md` sem vigilância automática.
@@ -500,7 +520,7 @@ Está escrito em vez de dar impressão de cobertura.
 2. **F.2** — uma passada no navegador de verdade, tela a tela, **agora com login real do Google funcionando**. É a classe de defeito que nenhum teste daqui alcança, e foi ela que produziu o pior erro do projeto.
 3. **B.2** — as 8 telas públicas do Academy são as que o visitante mais vê.
 4. **E.1** — revisão do texto, capítulo a capítulo.
-5. **Practice** (comando 5-6).
+5. **Practice** (comando 5-6) — **iniciado**. Ver o levantamento abaixo: 15 das 16 telas já liam dado real; a que faltava foi corrigida.
 6. Só depois de o produto estar pronto: a seção **I**, de I.2 em diante.
 
 ~~A.1 nos seis arquivos concentrados~~ — feito. ~~G.1 OAuth Client ID~~ — feito.

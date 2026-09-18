@@ -5,6 +5,14 @@ import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
+import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { practiceRepository } from '../../../repositories/practice.repository';
+import {
+  gerarRodada,
+  acertou,
+  QuestaoDeIntervalo,
+  Intervalo,
+} from '../../../domain/treino-de-intervalos';
 import { CirculationBar } from '../../components/navigation/CirculationBar';
 import {
   Target,
@@ -21,115 +29,141 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
-interface IntervalQuestion {
-  id: string;
-  name: string;
-  firstNote: string;
-  secondNote: string;
-  firstFreq: number;
-  secondFreq: number;
-  correctAnswer: string;
-  options: string[];
-  explanation: string;
-}
-
-const SAMPLE_INTERVALS: IntervalQuestion[] = [
-  {
-    id: 'int-1',
-    name: 'Dó4 para Mi4',
-    firstNote: 'C4',
-    secondNote: 'E4',
-    firstFreq: 261.63,
-    secondFreq: 329.63,
-    correctAnswer: '3ª Maior (Terça Maior)',
-    options: ['2ª Maior', '3ª Maior (Terça Maior)', '4ª Justa', '5ª Justa'],
-    explanation: 'A distância entre Dó e Mi equivale a 2 tons inteiros (4 semitons), caracterizando a Terça Maior.',
-  },
-  {
-    id: 'int-2',
-    name: 'Dó4 para Sol4',
-    firstNote: 'C4',
-    secondNote: 'G4',
-    firstFreq: 261.63,
-    secondFreq: 392.00,
-    correctAnswer: '5ª Justa (Quinta Justa)',
-    options: ['4ª Justa', '5ª Diminuta', '5ª Justa (Quinta Justa)', '6ª Menor'],
-    explanation: 'A quinta justa possui 7 semitons e é a base da consonância acústica e do ciclo de quintas.',
-  },
-  {
-    id: 'int-3',
-    name: 'Dó4 para Fá4',
-    firstNote: 'C4',
-    secondNote: 'F4',
-    firstFreq: 261.63,
-    secondFreq: 349.23,
-    correctAnswer: '4ª Justa (Quarta Justa)',
-    options: ['3ª Maior', '4ª Justa (Quarta Justa)', 'Trítono', '5ª Justa'],
-    explanation: 'A quarta justa compreende 5 semitons, sendo o intervalo de inversão da quinta justa.',
-  },
-];
+/**
+ * Treino de intervalos.
+ *
+ * O QUE HAVIA AQUI
+ * ----------------
+ * Tres questoes escritas neste arquivo — Do-Mi, Do-Sol, Do-Fa — sempre as
+ * mesmas, sempre na mesma ordem, sempre a partir de Do. O aluno esgotava o
+ * "treino" em trinta segundos e passava a reconhecer a POSICAO da resposta,
+ * nao o intervalo.
+ *
+ * E a sessao abria com `sessionXp = 40` e `sessionStreak = 7`: quarenta
+ * pontos e uma semana de ofensiva que ninguem tinha feito. Nada era gravado
+ * em lugar nenhum — fechar a aba apagava tudo.
+ *
+ * O QUE HA AGORA
+ * --------------
+ * As questoes sao GERADAS a partir da teoria, em `domain/treino-de-intervalos`
+ * — o mesmo dominio que o laboratorio do Studio usa, porque dois lugares para
+ * corrigir o mesmo erro de teoria e um lugar que fica errado.
+ *
+ * Gerar nao e fabricar: um intervalo e uma relacao entre duas alturas, e a
+ * segunda sai por calculo da primeira. A mesma terca maior a partir de sete
+ * raizes diferentes sao sete exercicios legitimos — e e assim que se estuda
+ * percepcao, justamente para o ouvido nao decorar a altura absoluta.
+ *
+ * A tentativa e gravada em nome de quem esta logado, e os contadores da
+ * sessao comecam em zero.
+ */
+const QUESTOES_POR_RODADA = 10;
 
 export const PracticeScreen: React.FC = () => {
   const { navigate } = useRouter();
+  const { userId } = useUsuarioAtual();
   const [activeTab, setActiveTab] = useState<'intervals' | 'rhythm' | 'chords'>('intervals');
 
-  // Exercise loop state
+  const [rodada, setRodada] = useState<QuestaoDeIntervalo[]>(() =>
+    gerarRodada(QUESTOES_POR_RODADA)
+  );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<Intervalo | null>(null);
   const [feedback, setFeedback] = useState<{ isCorrect: boolean; text: string } | null>(null);
-  const [sessionXp, setSessionXp] = useState(40);
-  const [sessionStreak] = useState(7);
+
+  /**
+   * Zero, e zero de proposito.
+   *
+   * O que a pessoa ganhou nesta sessao e o que ela ganhou nesta sessao. A
+   * ofensiva vem do repositorio, porque e historico — e quem nunca praticou
+   * ve zero, que e a informacao correta.
+   */
+  const [sessionXp, setSessionXp] = useState(0);
+  const [sessionStreak, setSessionStreak] = useState(0);
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [correctAttempts, setCorrectAttempts] = useState(0);
+
+  React.useEffect(() => {
+    if (!userId) return;
+    practiceRepository
+      .getStreak(userId)
+      .then((s) => setSessionStreak(s.currentStreakDays))
+      .catch(() => setSessionStreak(0));
+  }, [userId]);
 
   // Metronome state for rhythm practice
   const [metronomeBpm, setMetronomeBpm] = useState(80);
   const [isMetronomeActive, setIsMetronomeActive] = useState(false);
   const metronomeTimerRef = React.useRef<number | null>(null);
 
-  const currentQ = SAMPLE_INTERVALS[currentQuestionIndex];
+  const currentQ = rodada[currentQuestionIndex];
 
-  // Play auditory reference for current interval
   const playIntervalAudio = () => {
-    webAudioSynth.playTone(currentQ.firstFreq, 0.6, 'triangle');
+    webAudioSynth.playTone(currentQ.raizHz, 0.6, 'triangle');
     setTimeout(() => {
-      webAudioSynth.playTone(currentQ.secondFreq, 0.8, 'triangle');
+      webAudioSynth.playTone(currentQ.segundaHz, 0.8, 'triangle');
     }, 700);
   };
 
   const playHarmonicInterval = () => {
-    webAudioSynth.playChord([currentQ.firstFreq, currentQ.secondFreq], 1.2);
+    webAudioSynth.playChord([currentQ.raizHz, currentQ.segundaHz], 1.2);
   };
 
-  const handleAnswer = (option: string) => {
-    if (selectedAnswer) return; // Prevent multi-clicks
+  /**
+   * Responder grava a tentativa.
+   *
+   * Sem isto, o treino nao alimenta a ofensiva, a meta do dia nem o dominio
+   * de habilidade — e o aluno pratica uma hora para o produto nao registrar
+   * nada. Quando nao ha sessao, o treino continua funcionando; so nao grava
+   * em nome de ninguem.
+   */
+  const handleAnswer = async (option: Intervalo) => {
+    if (selectedAnswer) return;
     setSelectedAnswer(option);
     setTotalAttempts((prev) => prev + 1);
 
-    const isCorrect = option === currentQ.correctAnswer;
+    const isCorrect = acertou(currentQ, option);
+    const xp = isCorrect ? 25 : 0;
+
     if (isCorrect) {
       setCorrectAttempts((prev) => prev + 1);
-      setSessionXp((prev) => prev + 25);
-      setFeedback({
-        isCorrect: true,
-        text: `Correto! ${currentQ.explanation}`,
-      });
-      // Harmonic celebratory chord
-      webAudioSynth.playChord([261.63, 329.63, 392.00, 523.25], 0.8);
+      setSessionXp((prev) => prev + xp);
+      setFeedback({ isCorrect: true, text: `Correto. ${currentQ.intervalo.explicacao}` });
+      webAudioSynth.playChord([261.63, 329.63, 392.0, 523.25], 0.8);
     } else {
       setFeedback({
         isCorrect: false,
-        text: `Incorreto. A resposta certa é: ${currentQ.correctAnswer}. ${currentQ.explanation}`,
+        text: `Era ${currentQ.intervalo.nome}. ${currentQ.intervalo.explicacao}`,
       });
-      // Soft minor resolution
       webAudioSynth.playTone(220, 0.5, 'sawtooth');
+    }
+
+    if (!userId) return;
+    try {
+      await practiceRepository.saveAttempt({
+        id: `att_${currentQ.id}_${Date.now()}`,
+        userId,
+        exerciseId: 'treino_intervalos',
+        sessionId: `ses_intervalos_${userId}`,
+        submittedAt: new Date().toISOString(),
+        isCorrect,
+        scoreEarned: isCorrect ? 1000 : 0,
+        xpEarned: xp,
+      } as never);
+    } catch {
+      // Gravar a tentativa nao pode interromper o treino.
     }
   };
 
   const handleNextExercise = () => {
     setSelectedAnswer(null);
     setFeedback(null);
-    setCurrentQuestionIndex((prev) => (prev + 1) % SAMPLE_INTERVALS.length);
+    setCurrentQuestionIndex((prev) => {
+      const proximo = prev + 1;
+      if (proximo < rodada.length) return proximo;
+      setRodada(gerarRodada(QUESTOES_POR_RODADA));
+      return 0;
+    });
   };
 
   // Metronome click loop
@@ -184,7 +218,10 @@ export const PracticeScreen: React.FC = () => {
         title: 'Nenhum exercício pendente',
         description: 'Parabéns! Sua meta diária de percepção e treino rítmico foi concluída com êxito.',
         actionLabel: 'Reiniciar Prática',
-        onAction: () => setCurrentQuestionIndex(0),
+        onAction: () => {
+          setRodada(gerarRodada(QUESTOES_POR_RODADA));
+          setCurrentQuestionIndex(0);
+        },
       }}
     >
       <div className="space-y-6">
@@ -271,7 +308,7 @@ export const PracticeScreen: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-100">
               <div>
                 <span className="text-[10px] font-mono uppercase tracking-wider text-anil-800 bg-red-50 px-2 py-0.5 rounded border border-red-200">
-                  Exercício {currentQuestionIndex + 1} de {SAMPLE_INTERVALS.length}
+                  Exercício {currentQuestionIndex + 1} de {rodada.length}
                 </span>
                 <h3 className="text-lg font-serif font-bold text-stone-900 mt-1">
                   Identifique o Intervalo Melódico e Harmônico
@@ -302,12 +339,18 @@ export const PracticeScreen: React.FC = () => {
             <div className="p-6 bg-stone-50 border border-stone-200 rounded-xl text-center space-y-2">
               <p className="text-xs text-stone-500 font-mono">Pauta Auditiva (Tons Sintetizados em Tempo Real)</p>
               <div className="flex items-center justify-center gap-6 py-2">
+                {/*
+                  A raiz aparece; a segunda nota NAO.
+                  Mostrar as duas entregaria a resposta — bastaria contar os
+                  semitons e nao havia treino nenhum. A altura de partida
+                  ajuda a se situar; a distancia e o que se identifica.
+                */}
                 <div className="p-3 bg-white rounded-lg border border-stone-300 shadow-2xs font-mono font-bold text-lg text-stone-900">
-                  {currentQ.firstNote} ({Math.round(currentQ.firstFreq)} Hz)
+                  {currentQ.raiz} ({Math.round(currentQ.raizHz)} Hz)
                 </div>
-                <span className="text-stone-400 font-serif text-xl">→</span>
-                <div className="p-3 bg-white rounded-lg border border-stone-300 shadow-2xs font-mono font-bold text-lg text-stone-900">
-                  {currentQ.secondNote} ({Math.round(currentQ.secondFreq)} Hz)
+                <span className="text-stone-400 font-serif text-xl" aria-hidden="true">→</span>
+                <div className="p-3 bg-stone-100 rounded-lg border border-dashed border-stone-300 font-mono font-bold text-lg text-stone-400">
+                  ?
                 </div>
               </div>
               <p className="text-xs text-stone-600">
@@ -317,9 +360,9 @@ export const PracticeScreen: React.FC = () => {
 
             {/* Answer Options */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {currentQ.options.map((opt) => {
-                const isSelected = selectedAnswer === opt;
-                const isCorrect = opt === currentQ.correctAnswer;
+              {currentQ.alternativas.map((opt) => {
+                const isSelected = selectedAnswer?.semitons === opt.semitons;
+                const isCorrect = opt.semitons === currentQ.intervalo.semitons;
 
                 let btnStyle = 'border-stone-200 bg-white text-stone-800 hover:border-stone-400';
                 if (selectedAnswer) {
@@ -334,7 +377,7 @@ export const PracticeScreen: React.FC = () => {
 
                 return (
                   <button
-                    key={opt}
+                    key={opt.semitons}
                     type="button"
                     onClick={() => handleAnswer(opt)}
                     disabled={selectedAnswer !== null}
@@ -343,7 +386,7 @@ export const PracticeScreen: React.FC = () => {
                       btnStyle
                     )}
                   >
-                    <span>{opt}</span>
+                    <span>{opt.nome}</span>
                     {selectedAnswer && isCorrect && <CheckCircle2 className="w-5 h-5 text-emerald-600" />}
                     {selectedAnswer && isSelected && !isCorrect && <XCircle className="w-5 h-5 text-red-600" />}
                   </button>
