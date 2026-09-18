@@ -41,6 +41,8 @@ export const XP = {
   EXERCICIO_ERRADO: 5,
   RODADA_CONCLUIDA: 20,
   MISSAO_DIARIA: 50,
+  /** Missão que pede sessão inteira sem erro, ou a volta em outro período. */
+  MISSAO_DIARIA_MAIOR: 75,
   META_DO_DIA: 30,
 
   // Atlas — exploração

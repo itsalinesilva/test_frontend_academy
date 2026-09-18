@@ -845,17 +845,17 @@ que **ainda não existe**. Depende de I.2.
 >
 > | # | Item | Estado |
 > | :--- | :--- | :---: |
-> | T-40 | Formulário de matrícula no percurso, com as cinco opções explicadas | ⬜ |
+> | T-40 | Formulário de matrícula no percurso, com as cinco opções explicadas | ✅ `FormularioDeMatricula.tsx` |
 > | T-41 | Sondagem para quem vem de fora — autodidata e formado fora | ⬜ |
 > | T-42 | Lições do Practice marcadas por faixa de material | ⬜ |
 > | T-43 | Percurso de quem está cursando **acompanha** o curso, sem se adiantar | ⬜ |
 
 | # | Item | Origem | Estado |
 | :--- | :--- | :--- | :---: |
-| T-19 | **Caminho visual com nós** — seção, unidade, nó ativo, requisito explícito | Duolingo B2 | ⬜ |
+| T-19 | **Caminho visual com nós** — seção, unidade, nó ativo, requisito explícito | Duolingo B2 | ✅ `CaminhoDoPercurso.tsx` |
 | T-20 | **Prática dentro do curso**, ao fim da grade, com cadeado que diz o motivo | Astra A7 | ⬜ |
 | T-21 | XP declarado **antes** — `+10` no botão | Duolingo B7 | ⬜ |
-| T-22 | Exercício: barra, vidas, etiqueta de tipo, **atalho numérico**, pular sem punição | Duolingo B8 | ⬜ |
+| T-22 | Exercício: barra, vidas, etiqueta de tipo, **atalho numérico**, pular sem punição | Duolingo B8 | ✅ `TelaDoExercicio.tsx` |
 
 **A anatomia da lição, mapeada da saga de capturas (paridade §B9–B10).** O
 laço já existe em `domain/exercicio-musical.ts`, com 29 casos. Falta a tela.
@@ -864,19 +864,21 @@ laço já existe em `domain/exercicio-musical.ts`, com 29 casos. Falta a tela.
 | :--- | :--- | :--- | :---: |
 | T-44 | **Sete tipos de exercício** traduzidos para música — reconhecer notação, identificar de ouvido, seguir o padrão, escrever na pauta, combinar pares, ditado, função harmônica | §B10.2 | ✅ domínio · ⬜ telas |
 | T-45 | **Quatro tipos além da referência** — tocar, cantar, bater o ritmo, apontar no braço. Medidos pelo microfone | nosso | ✅ domínio · ⬜ telas |
-| T-46 | **O erro volta na mesma lição**, com a etiqueta "corrija o erro de antes" | §B9.5 | ✅ domínio · ⬜ tela |
-| T-47 | A alternativa **soa** ao ser tocada | §B9.3 | ⬜ |
-| T-48 | Dois botões de escuta: normal e **meia velocidade** | §B9.3 | ⬜ |
+| T-46 | **O erro volta na mesma lição**, com a etiqueta "corrija o erro de antes" | §B9.5 | ✅ |
+| T-47 | A alternativa **soa** ao ser tocada | §B9.3 | ✅ |
+| T-48 | Dois botões de escuta: normal e **meia velocidade** | §B9.3 | ✅ |
 | T-49 | **Ouvir voz a voz** de uma cadência; comparar a sua execução com a referência; **transpor** o mesmo exercício | nosso | ⬜ |
-| T-50 | Combo aceso a partir de 5 seguidos, com a barra mudando de cor | §B9.4 | ✅ domínio · ⬜ tela |
-| T-51 | `MUITO FÁCIL` / `MUITO DIFÍCIL` / reportar no rodapé do acerto | §B9.4 | ⬜ |
-| T-52 | **Som de acerto e erro musicalmente coerente** — tríade no tom, segunda menor, combo subindo a escala, cadência ao fim | §B10.5 | ⬜ |
-| T-53 | Encerramento em etapas, **uma conquista por tela** | §B9.6 | ⬜ |
-| T-54 | **Meta de ofensiva** escolhida pela pessoa: 7 / 14 / 30 dias | §B9.6 | ⬜ |
-| T-55 | `REVISAR LIÇÃO` ao fim | §B9.6 | ⬜ |
+| T-50 | Combo aceso a partir de 5 seguidos, com a barra mudando de cor | §B9.4 | ✅ |
+| T-51 | `MUITO FÁCIL` / `MUITO DIFÍCIL` / reportar no rodapé do acerto | §B9.4 | ✅ tela · ⬜ **falta onde gravar** o veredito |
+| T-52 | **Som de acerto e erro musicalmente coerente** — tríade no tom, segunda menor, combo subindo a escala, cadência ao fim | §B10.5 | ✅ tríade e segunda menor · ⬜ combo subindo, cadência ao fim |
+| T-53 | Encerramento em etapas, **uma conquista por tela** | §B9.6 | ✅ `TelaDeEncerramento.tsx` |
+| T-54 | **Meta de ofensiva** escolhida pela pessoa: 7 / 14 / 30 dias | §B9.6 | ✅ tela · ⬜ **falta persistir** a escolha |
+| T-55 | `REVISAR LIÇÃO` ao fim | §B9.6 | ✅ |
 | T-56 | Ao sair, **o mapa já atualizado** — nó concluído, seguinte aberto, sem recarregar | §B9.7 | ⬜ |
-| T-57 | Avisar que o progresso se perde ao sair da lição pelo `✕` | §B9.1 | ⬜ |
-| T-23 | Percurso ancorado no Atlas: era → região → ilha → obra → exercício | pedido | ⬜ |
+| T-57 | Avisar que o progresso se perde ao sair da lição pelo `✕` | §B9.1 | ✅ |
+| T-23 | Percurso ancorado no Atlas: era → região → **tribo** → obra → exercício | pedido | ⬜ — o percurso existe pela gramática; falta o recorte pelo Atlas |
+| T-58 | **Ligar as telas às rotas** — hoje `TelaDoExercicio`, `TelaDeEncerramento`, `CaminhoDoPercurso` e `TelaDaLiga` existem e são testadas, mas nenhuma rota as abre | — | ⬜ |
+| T-59 | **Onde guardar o que as telas produzem** — veredito de dificuldade (T-51), meta de ofensiva (T-54), nós concluídos do percurso. Sem repositório, os botões existem e a informação se perde ao recarregar | — | ⬜ |
 | P.5 | Aba de ritmo: o metrônomo toca, mas **não mede nem grava** | — | ⬜ |
 | P.6 | Aba de acordes está declarada no seletor e **não existe** | — | ⬜ |
 
@@ -892,9 +894,9 @@ laço já existe em `domain/exercicio-musical.ts`, com 29 casos. Falta a tela.
 
 | # | Item | Origem | Estado |
 | :--- | :--- | :--- | :---: |
-| T-24 | Tela de ligas com **esqueleto** quando não há participante — a mecânica já existe em `domain/liga.ts` | Duolingo B6 | ⬜ |
-| T-25 | Ligas por recorte: plataforma, curso, tribo, era | pedido | ✅ no domínio · ⬜ na tela |
-| T-26 | Missões diárias com prazo e desafio do mês | Duolingo B5 | ⬜ |
+| T-24 | Tela de ligas com **esqueleto** quando não há participante — a mecânica já existe em `domain/liga.ts` | Duolingo B6 | ✅ `TelaDaLiga.tsx` |
+| T-25 | Ligas por recorte: plataforma, curso, tribo, era | pedido | ✅ |
+| T-26 | Missões diárias com prazo e desafio do mês | Duolingo B5 | ✅ `missoes.ts` + `PainelDeMissoes.tsx` · ⬜ falta a **atividade do dia** real alimentando o progresso |
 | T-27 | **Réguas do perfil** — ativa em destaque, demais esmaecidas e expansíveis | pedido | ⬜ |
 | T-28 | Perfil: pontuação total, semanal, posição, `N de 44` com bloqueados visíveis | Astra A6 | ⬜ |
 | T-29 | Ofensiva com semana visível e clubes | A2 + B4 | ⬜ |

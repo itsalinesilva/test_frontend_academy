@@ -101,6 +101,7 @@ Uma progressão só, sem tabela nova a cada faixa: sair do nível 1 custa 100, d
 | Exercício errado | 5 | — | ✅ | `XP.EXERCICIO_ERRADO` — e gera débito |
 | Rodada de 10 concluída | 20 | — | — | `XP.RODADA_CONCLUIDA` · `xpDaLicao` |
 | Missão diária cumprida | 50 | — | — | `XP.MISSAO_DIARIA` — ver §4 |
+| Missão diária de maior esforço | 75 | — | — | `XP.MISSAO_DIARIA_MAIOR` — ver §4 |
 | Meta do dia cumprida | 30 | — | — | `XP.META_DO_DIA` · `DailyGoal` |
 | Unidade do percurso concluída | 150 | — | — | ⏳ `UNIDADE_CONCLUIDA` |
 | Obra de repertório avaliada | 200 | conforme avaliação | ✅ | ⏳ `REPERTORIO_EXECUTADO` |
@@ -181,6 +182,12 @@ Três por dia, sorteadas de uma lista fixa, com prazo até a virada.
 | Visita ao Atlas | Abrir uma obra que nunca abriu | 50 |
 | Leitura do dia | Uma lição concluída | 50 |
 | Constância | Praticar em dois períodos do dia | 75 |
+
+As de 75 são as que pedem uma sessão inteira sem tropeço, ou a volta em outro
+período do dia — esforço de outra ordem que os 10 XP do aquecimento. Os dois
+valores estão na tabela de §2 como `XP.MISSAO_DIARIA` e
+`XP.MISSAO_DIARIA_MAIOR`; enquanto §4 tinha 75 e §2 só previa 50, o próprio
+documento se contradizia, e foi `checarValorForaDaTabela` que apontou.
 
 **Desafio do mês:** um só, de longo curso — por exemplo, 20 lições no mês.
 Rende emblema, não XP.
