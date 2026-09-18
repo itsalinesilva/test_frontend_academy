@@ -48,7 +48,12 @@ cada uma se perde.
 
 ## 2 · Tabela de contagem
 
-**Esta é a autoridade.** Valor que não está aqui não é atribuído.
+**Esta é a autoridade sobre VALOR.** Valor que não está aqui não é atribuído.
+
+O que se ganha por **acumular** — marcos, emblemas, carimbos, passaporte — está
+em `78_RECOMPENSAS_E_PASSAPORTE.md`. A divisão é dura: aqui mora quanto vale um
+evento; lá, o que se recebe por ter juntado muitos. Quem misturar os dois
+acabará com emblema pagando XP fora desta tabela.
 
 A coluna **Onde** nomeia o símbolo do código que dispara o evento, e o `⏳`
 marca o que **ainda não existe**. A distinção não é cosmética: uma tabela que

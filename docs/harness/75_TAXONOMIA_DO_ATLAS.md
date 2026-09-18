@@ -230,6 +230,14 @@ duração.
 | Tipo da peça | **Gênero** | Estilo, forma |
 | Sequência de estudo dentro de um curso | **Trilha** | Caminho, path |
 | Sequência de exercícios | **Percurso** | Trilha |
+| A área de prática inteira | **Laboratório** | Practice, treino |
+| Um assunto do Laboratório | **Seção** | Módulo, tópico, área |
+| A profundidade do pedido | **Nível** | Dificuldade, tier |
+| O histórico de conquistas | **Passaporte** | Troféus, galeria |
+
+> **Laboratório substitui Practice** a partir de 18/09. O nome novo e a
+> estrutura de seções e níveis estão em `77_LABORATORIO_E_NIVEIS.md`, que é a
+> autoridade sobre eles. As recompensas e o passaporte, em `78`.
 
 ---
 

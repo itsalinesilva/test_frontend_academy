@@ -8,6 +8,128 @@
 
 ---
 
+# A ORDEM
+
+> **Esta seção manda.** O detalhe por área continua abaixo, como referência e
+> histórico, mas a sequência de trabalho é esta. Ela foi ordenada por
+> dependência real: cada fase destrava a seguinte, e fazer fora de ordem
+> significa construir sobre o que ainda não existe.
+>
+> As fases novas vêm de `77_LABORATORIO_E_NIVEIS.md`, `78_RECOMPENSAS_E_PASSAPORTE.md`
+> e `79_FERRAMENTAS_DO_LABORATORIO.md`, escritos em 18/09.
+
+## Fase A — o Laboratório existe mas ninguém alcança
+
+Oito telas prontas e testadas, nenhuma com rota. É o item mais barato e o de
+maior efeito: sem ele, todo o resto é código que ninguém roda.
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| A-1 | **Rotas para as oito telas** — exercício, encerramento, percurso, liga, matrícula, missões, réguas, ofensiva | ⬜ |
+| A-2 | **Persistência do que elas produzem** — nós concluídos, meta de ofensiva, veredito de dificuldade. `practice-path.repository.ts` já existe e não é chamado por ninguém | ⬜ |
+| A-3 | **Gerador de exercícios** a partir das 21 dimensões. Sem ele o percurso tem forma e não tem conteúdo | ⬜ |
+| A-4 | Contêiner que costura percurso → lição → encerramento → mapa atualizado | ⬜ |
+
+## Fase B — o acervo está vazio, e é isso que trava o Laboratório
+
+Medido em 18/09: **0 compositores**, **0 obras no Atlas**, 3 regiões, 4
+partituras executáveis. "Escolher uma obra e jogar no simulador" não tem hoje
+o que escolher.
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| B-1 | **Compositores por era** — `HistoricalMaster` existe como tipo, sem um único registro | ⬜ |
+| B-2 | **Obras** com áudio e, onde couber, partitura executável | ⬜ |
+| B-3 | **Regiões** além das três de hoje | ⬜ |
+| B-4 | **Mundos** = era × região, navegáveis | ⬜ |
+| B-5 | Ligar as 33 faixas do player e as 4 partituras ao Atlas | ⬜ |
+
+## Fase C — seções e níveis
+
+Estrutura definida em `77`. Hoje o percurso deriva da gramática; falta a camada
+de seção e de nível.
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| C-1 | **Seção = competência do capítulo**, derivada do sumário e nunca escrita à parte | ⬜ |
+| C-2 | **Níveis 0–4** como recorte da gramática — reconhecer, nomear, aplicar, ouvir, executar | ⬜ |
+| C-3 | **Quadro geral da seção** com todos os níveis à vista, inclusive os fechados | ⬜ |
+| C-4 | **Densidade sem arredondamento** — e um teste que falhe se alguém fixar em dez | ⬜ |
+| C-5 | Ordenação pela numeração do capítulo, entre e dentro de seções | ⬜ |
+
+## Fase D — recompensas e passaporte
+
+Catálogo em `78`. Nada aqui entra antes de a Fase B existir: marco sobre
+contador que não se mede é marco falso.
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| D-1 | **Catálogo de contadores** — só o que a plataforma mede de verdade | ⬜ |
+| D-2 | **Tempo de simulador**, em minutos, somado por sessão. A métrica que falta e a mais reveladora | ⬜ |
+| D-3 | **Réguas ascendentes** — 5, 10, 25, 50, 100 — com multiplicador de XP | ⬜ |
+| D-4 | **Emblemas** e **carimbos**, com carimbo de compositor que soma em vez de duplicar | ⬜ |
+| D-5 | **Tela do passaporte** — vazia mostra a forma, nunca carimbo de exemplo | ⬜ |
+| D-6 | **Admin**: ligar, desligar, editar e criar marco sobre contador existente | ⬜ |
+| D-7 | A pessoa escolhe o que expõe no perfil; esconder não apaga do passaporte | ⬜ |
+| D-8 | Ranking por obra e por tour — não zeram, e é contra eles que se refaz a obra | ⬜ |
+
+## Fase E — ferramentas do Laboratório
+
+Ordem de `79 §7`: da que destrava mais para a que destrava menos.
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| E-1 | **Teste de microfone** — destrava 4 tipos de exercício e todos os simuladores | ⬜ |
+| E-2 | **Metrônomo que mede** — grava a batida, devolve desvio em ms por tempo (era `P.5`) | ⬜ |
+| E-3 | **Afinador** — cents com sinal, referência ajustável, temperamento | ⬜ |
+| E-4 | **Caderno: escrever e tocar** — base em biblioteca aberta madura, áudio pelo motor único | ⬜ |
+| E-5 | **Caderno: pastas, salvar, baixar** em MusicXML e MIDI | ⬜ |
+| E-6 | **Remover a fachada** de `ScoreEditorScreen` — botão morto e promessa de MusicXML/MIDI que não existe | ⬜ |
+| E-7 | Escrever partitura a partir de uma obra do Atlas e comparar com a referência | ⬜ |
+
+## Fase F — o nome
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| F-1 | **"Practice" fora de todo texto de interface** — o nome é Laboratório | ⬜ |
+| F-2 | Rotas `/practice/*` → `/laboratorio/*`, com redirecionamento para não quebrar link | ⬜ |
+| F-3 | Verificação que falhe se "Practice" voltar a aparecer em tela | ⬜ |
+
+## Fase G — o que o admin ainda não consegue editar
+
+Levantado em 18/09, respondendo à sua pergunta direta.
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| G-1 | **Editar as 174 questões** — a camada editorial cobre bloco e título de seção, e deixa questão de fora | ⬜ |
+| G-2 | **Criar lição nova** a partir das estruturas existentes — não há função de criação em lugar nenhum | ⬜ |
+| G-3 | Editar os tipos de bloco que o `BlockEditor` não cobre — hoje só MARKDOWN, CALLOUT, CHECKPOINT e SLIDES | ⬜ |
+| G-4 | Editar simulados e provas | ⬜ |
+
+## Fase H — qualidade do ferramental
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| H-1 | `checkDeadButton` não vê handler dentro de objeto de props — `onAction: () => {}` passou batido em `ScoreEditorScreen` | ⬜ |
+| H-2 | Verificações de `78 §8`: marco só sobre contador medido, XP de marco = base × multiplicador, carimbo sem duplicata | ⬜ |
+| H-3 | Verificação de densidade: falhar se seção for arredondada para número redondo | ⬜ |
+
+## Fase I — infraestrutura e publicação
+
+Continua como está na seção **I** mais abaixo, sem mudança: domínio, GitHub,
+Cloudflare, OAuth de produção, subdomínio de admin, escopo `drive.file`,
+cliente Android, e-mail institucional. Depende de você em vários pontos.
+
+---
+
+# DETALHE POR ÁREA — referência e histórico
+
+> O que está abaixo é o levantamento original, por área. Continua valendo como
+> detalhe e como memória do que já foi fechado; a **ordem** de trabalho é a de
+> cima.
+
+---
+
 ## BLOCO 0 — EMERGÊNCIA DE SEGURANÇA ✅ **CONCLUÍDO** (2026-09-16)
 > Verificado por execução: 5 vetores de ataque recusados, 37/37 testes passando, bundle sem segredos.
 

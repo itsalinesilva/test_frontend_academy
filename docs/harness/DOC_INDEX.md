@@ -76,6 +76,9 @@
 74. `73_ANTIPADROES.md` — o que já foi construído errado aqui, e não pode voltar
 75. `74_RITUAL_DE_QUALIDADE.md` — com que frequência se verifica, e o roteiro manual
 76. `75_TAXONOMIA_DO_ATLAS.md` — catálogo único: era, região, mundo, tribo, liga
+77. `77_LABORATORIO_E_NIVEIS.md` — **o nome Laboratório**, seção como disciplina, nível como profundidade, densidade e quadro geral
+78. `78_RECOMPENSAS_E_PASSAPORTE.md` — réguas ascendentes, emblemas, carimbos, credenciais, o passaporte
+79. `79_FERRAMENTAS_DO_LABORATORIO.md` — metrônomo, afinador, teste de microfone, caderno de partituras
 77. `76_ECONOMIA_DE_PROGRESSO.md` — onde e como se conta XP, score, ofensiva, débito, emblema
 76. `HARNESS_CLAUDE.md` — contrato do agente conversacional
 77. `HARNESS_AI_STUDIO.md` — padrões de engenharia para geração assistida
