@@ -3,10 +3,11 @@ import { CourseLevel } from '../domain/types';
 import {
   CAPITULOS_OCIDENTAL,
   COMPETENCIAS_OCIDENTAL,
-  CARGA_OCIDENTAL,
 } from './ocidental/capitulos';
 import { BLOCOS_OCID_01_10 } from './ocidental/blocos-01-10';
 import { BLOCOS_OCID_11_20 } from './ocidental/blocos-11-20';
+import { LIVRETO_OCIDENTAL } from './seed-booklet-ocidental';
+import { calcularCargaDaLicao, horasDoCurso } from '../domain/carga-horaria';
 
 /**
  * Curso de História da Música Ocidental — conteúdo autoral do Conservatório.
@@ -29,6 +30,28 @@ const AGORA = '2026-09-17T00:00:00.000Z';
 
 const idModulo = (n: number) => `mod_ocid_${String(n).padStart(2, '0')}`;
 const idLicao = (n: number) => `les_ocid_${String(n).padStart(2, '0')}`;
+
+const BLOCOS: Record<number, LessonBlock[]> = {
+  ...BLOCOS_OCID_01_10,
+  ...BLOCOS_OCID_11_20,
+};
+
+/**
+ * Carga medida, não escolhida: texto a 160 palavras por minuto, mais o tempo
+ * de cada exemplo sonoro e de cada questão do livreto.
+ */
+const QUESTOES_POR_CAPITULO = new Map(
+  LIVRETO_OCIDENTAL.capitulos.map((c) => [c.numero, c.questoes])
+);
+
+const MINUTOS_POR_CAPITULO = new Map(
+  CAPITULOS_OCIDENTAL.map((c) => [
+    c.numero,
+    calcularCargaDaLicao(BLOCOS[c.numero] ?? [], QUESTOES_POR_CAPITULO.get(c.numero) ?? []).total,
+  ])
+);
+
+const CARGA_OCIDENTAL = horasDoCurso([...MINUTOS_POR_CAPITULO.values()]);
 
 export const CURSO_OCIDENTAL: AcademyCourse = {
   id: 'crs_historia_ocidental',
@@ -87,11 +110,6 @@ export const MODULOS_OCIDENTAL: AcademyModule[] = CAPITULOS_OCIDENTAL.map((c) =>
   updatedAt: AGORA,
 }));
 
-const BLOCOS: Record<number, LessonBlock[]> = {
-  ...BLOCOS_OCID_01_10,
-  ...BLOCOS_OCID_11_20,
-};
-
 export const LICOES_OCIDENTAL: AcademyLesson[] = CAPITULOS_OCIDENTAL.map((c) => {
   const id = idLicao(c.numero);
   const blocos = BLOCOS[c.numero] ?? [];
@@ -101,7 +119,7 @@ export const LICOES_OCIDENTAL: AcademyLesson[] = CAPITULOS_OCIDENTAL.map((c) => 
     courseId: CURSO_OCIDENTAL.id,
     order: 1,
     canonicalContentId: `canon_ocid_${c.numero}`,
-    durationMinutes: c.minutos,
+    durationMinutes: MINUTOS_POR_CAPITULO.get(c.numero) ?? 30,
     objectives: c.objetivos,
     skills: [c.competencia],
     activityIds: [],

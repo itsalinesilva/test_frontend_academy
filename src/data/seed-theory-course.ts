@@ -3,13 +3,14 @@ import { CourseLevel } from '../domain/types';
 import {
   CAPITULOS_TEORIA,
   COMPETENCIAS_TEORIA,
-  CARGA_HORARIA,
   TOTAL_DE_CAPITULOS,
 } from './theory/capitulos';
 import { BLOCOS_01_15 } from './theory/blocos-01-15';
 import { BLOCOS_16_30 } from './theory/blocos-16-30';
 import { BLOCOS_31_44 } from './theory/blocos-31-44';
 import { BLOCOS_45_58 } from './theory/blocos-45-58';
+import { LIVRETO_TEORIA } from './seed-booklet-theory';
+import { calcularCargaDaLicao, horasDoCurso } from '../domain/carga-horaria';
 
 /**
  * Curso de Teoria da Música — conteúdo autoral do Conservatório Muscicapa.
@@ -44,6 +45,38 @@ const AGORA = '2026-09-17T00:00:00.000Z';
 
 const idModulo = (n: number) => `mod_teoria_${String(n).padStart(2, '0')}`;
 const idLicao = (n: number) => `les_teoria_${String(n).padStart(2, '0')}`;
+
+/** Blocos de todos os capítulos, reunidos dos quatro arquivos de conteúdo. */
+const BLOCOS: Record<number, LessonBlock[]> = {
+  ...BLOCOS_01_15,
+  ...BLOCOS_16_30,
+  ...BLOCOS_31_44,
+  ...BLOCOS_45_58,
+};
+
+/**
+ * A carga de cada capítulo é MEDIDA, não escolhida.
+ *
+ * Conta-se o texto que o aluno lê (a 160 palavras por minuto, que é leitura de
+ * estudo e não leitura corrente), o tempo de cada laboratório e o tempo de
+ * cada questão do livreto — três a cinco minutos conforme o tamanho dela.
+ *
+ * Antes, cada capítulo declarava um número escolhido à mão. Um curso que
+ * anuncia trinta e cinco horas sem ter contado nada está afirmando ao aluno
+ * algo que não verificou.
+ */
+const QUESTOES_POR_CAPITULO = new Map(
+  LIVRETO_TEORIA.capitulos.map((c) => [c.numero, c.questoes])
+);
+
+const MINUTOS_POR_CAPITULO = new Map(
+  CAPITULOS_TEORIA.map((c) => [
+    c.numero,
+    calcularCargaDaLicao(BLOCOS[c.numero] ?? [], QUESTOES_POR_CAPITULO.get(c.numero) ?? []).total,
+  ])
+);
+
+const CARGA_HORARIA = horasDoCurso([...MINUTOS_POR_CAPITULO.values()]);
 
 // ---------------------------------------------------------------------------
 // Curso
@@ -119,14 +152,6 @@ export const MODULOS_TEORIA: AcademyModule[] = CAPITULOS_TEORIA.map((c) => ({
 // Lições
 // ---------------------------------------------------------------------------
 
-/** Blocos de todos os capítulos, reunidos dos quatro arquivos de conteúdo. */
-const BLOCOS: Record<number, LessonBlock[]> = {
-  ...BLOCOS_01_15,
-  ...BLOCOS_16_30,
-  ...BLOCOS_31_44,
-  ...BLOCOS_45_58,
-};
-
 export const LICOES_TEORIA: AcademyLesson[] = CAPITULOS_TEORIA.map((c) => {
   const id = idLicao(c.numero);
   const blocos = BLOCOS[c.numero] ?? [];
@@ -136,7 +161,7 @@ export const LICOES_TEORIA: AcademyLesson[] = CAPITULOS_TEORIA.map((c) => {
     courseId: CURSO_TEORIA.id,
     order: 1,
     canonicalContentId: `canon_teoria_${c.numero}`,
-    durationMinutes: c.minutos,
+    durationMinutes: MINUTOS_POR_CAPITULO.get(c.numero) ?? 30,
     objectives: c.objetivos,
     skills: [c.competencia, ...(c.competenciasAdicionais ?? [])],
     activityIds: [],

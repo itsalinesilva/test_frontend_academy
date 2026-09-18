@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Search, X } from 'lucide-react';
-import { clsx } from 'clsx';
 import { useRouter } from '../../navigation/router';
 
 export interface HeaderSearchProps {
@@ -10,11 +9,27 @@ export interface HeaderSearchProps {
 /**
  * Busca do header: uma lupa, e só.
  *
- * Fechada, ocupa o espaço de um ícone. Clicada, o campo cresce para a
- * esquerda e recebe foco. Sem rótulo, sem placeholder longo, sem caixa
- * permanente ocupando o header — a lupa já diz o que é.
+ * Fechada, ocupa o espaço de um ícone. Clicada, o campo aparece à direita dela
+ * e recebe foco. Sem rótulo, sem placeholder longo, sem caixa permanente
+ * ocupando o header — a lupa já diz o que é.
  *
- * Fecha no Escape, ao perder o foco vazia, e ao submeter.
+ * DOIS DEFEITOS QUE ISTO CORRIGE
+ * ------------------------------
+ * **Cor.** O componente nasceu num header escuro: ícone claro, texto digitado
+ * branco. Quando o header passou a ser branco, o ícone clareava até sumir no
+ * hover e o que se digitava ficava branco sobre branco.
+ *
+ * **Recorte.** O campo era um `<input>` sempre montado dentro de um container
+ * com `overflow-hidden` que animava de 32px para 176px. Dar foco a um elemento
+ * dentro de um container recortado faz o navegador rolá-lo para dentro da
+ * vista — e como o container tinha 32px no instante do foco, ele ganhava
+ * `scrollLeft` e nunca voltava. O texto existia no DOM e ficava fora da área
+ * visível. jsdom não faz layout nem rolagem, então nenhum teste de valor
+ * pegaria isso.
+ *
+ * Agora o campo só é **montado** quando aberto, e não há recorte: não existe
+ * container clipado para rolar, e não existe estado intermediário em que o
+ * foco cai num elemento de 32px de largura.
  */
 export const HeaderSearch: React.FC<HeaderSearchProps> = ({ id = 'header-search' }) => {
   const { navigate } = useRouter();
@@ -44,54 +59,55 @@ export const HeaderSearch: React.FC<HeaderSearchProps> = ({ id = 'header-search'
 
   return (
     <form id={id} onSubmit={submeter} className="flex items-center" role="search">
-      <div
-        className={clsx(
-          'flex items-center overflow-hidden rounded-md transition-all duration-200 ease-out',
-          aberta ? 'w-44 bg-white/10 sm:w-56' : 'w-8 bg-transparent'
-        )}
-      >
+      {!aberta ? (
         <button
-          type={aberta ? 'submit' : 'button'}
-          onClick={() => {
-            if (!aberta) setAberta(true);
-          }}
-          aria-label={aberta ? 'Buscar' : 'Abrir busca'}
-          className="shrink-0 rounded-md p-1.5 text-stone-300 transition-colors hover:text-white focus:outline-none focus-visible:ring-1 focus-visible:ring-ouro-400"
+          type="button"
+          onClick={() => setAberta(true)}
+          aria-label="Abrir busca"
+          aria-expanded={false}
+          className="rounded-md p-2 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-900 focus:outline-none focus-visible:ring-1 focus-visible:ring-anil-700"
         >
           <Search className="h-4 w-4" />
         </button>
-
-        <input
-          ref={campo}
-          type="search"
-          value={termo}
-          onChange={(e) => setTermo(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') fechar();
-          }}
-          onBlur={() => {
-            if (!termo.trim()) setAberta(false);
-          }}
-          aria-label="Buscar na plataforma"
-          tabIndex={aberta ? 0 : -1}
-          className={clsx(
-            'min-w-0 flex-1 bg-transparent py-1.5 pr-1 text-xs text-white outline-none',
-            'placeholder:text-stone-500 [&::-webkit-search-cancel-button]:appearance-none',
-            !aberta && 'pointer-events-none'
-          )}
-        />
-
-        {aberta && termo && (
+      ) : (
+        <div className="flex w-44 items-center gap-1 rounded-md bg-stone-100 px-1 ring-1 ring-stone-300 focus-within:ring-2 focus-within:ring-anil-700 sm:w-64">
           <button
-            type="button"
-            onClick={fechar}
-            aria-label="Limpar busca"
-            className="shrink-0 p-1.5 text-stone-400 transition-colors hover:text-white"
+            type="submit"
+            aria-label="Buscar"
+            className="shrink-0 rounded p-1.5 text-stone-500 transition-colors hover:text-stone-900 focus:outline-none focus-visible:ring-1 focus-visible:ring-anil-700"
           >
-            <X className="h-3.5 w-3.5" />
+            <Search className="h-4 w-4" />
           </button>
-        )}
-      </div>
+
+          <input
+            ref={campo}
+            type="search"
+            value={termo}
+            onChange={(e) => setTermo(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') fechar();
+            }}
+            onBlur={() => {
+              if (!termo.trim()) setAberta(false);
+            }}
+            aria-label="Buscar na plataforma"
+            placeholder="Buscar"
+            className="min-w-0 flex-1 bg-transparent py-1.5 text-sm text-stone-900 outline-none placeholder:text-stone-400 [&::-webkit-search-cancel-button]:appearance-none"
+          />
+
+          {termo && (
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={fechar}
+              aria-label="Limpar busca"
+              className="shrink-0 rounded p-1.5 text-stone-400 transition-colors hover:text-stone-900"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      )}
     </form>
   );
 };

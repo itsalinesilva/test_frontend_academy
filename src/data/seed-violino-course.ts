@@ -1,7 +1,9 @@
 import { AcademyCourse, AcademyModule, AcademyLesson } from '../domain/academy';
 import { CourseLevel } from '../domain/types';
-import { CAPITULOS_VIOLINO, COMPETENCIAS_VIOLINO, CARGA_VIOLINO } from './violino/capitulos';
+import { CAPITULOS_VIOLINO, COMPETENCIAS_VIOLINO } from './violino/capitulos';
 import { BLOCOS_VIOLINO } from './violino/blocos';
+import { LIVRETO_VIOLINO } from './seed-booklet-violino';
+import { calcularCargaDaLicao, horasDoCurso } from '../domain/carga-horaria';
 
 /**
  * Curso de Violino — conteúdo autoral do Conservatório.
@@ -25,6 +27,23 @@ const AGORA = '2026-09-17T00:00:00.000Z';
 
 const idModulo = (n: number) => `mod_vln_${String(n).padStart(2, '0')}`;
 const idLicao = (n: number) => `les_vln_${String(n).padStart(2, '0')}`;
+
+/** Carga medida: texto a 160 palavras por minuto, mais laboratórios e questões. */
+const QUESTOES_POR_CAPITULO = new Map(
+  LIVRETO_VIOLINO.capitulos.map((c) => [c.numero, c.questoes])
+);
+
+const MINUTOS_POR_CAPITULO = new Map(
+  CAPITULOS_VIOLINO.map((c) => [
+    c.numero,
+    calcularCargaDaLicao(
+      BLOCOS_VIOLINO[c.numero] ?? [],
+      QUESTOES_POR_CAPITULO.get(c.numero) ?? []
+    ).total,
+  ])
+);
+
+const CARGA_VIOLINO = horasDoCurso([...MINUTOS_POR_CAPITULO.values()]);
 
 export const CURSO_VIOLINO: AcademyCourse = {
   id: 'crs_violino',
@@ -100,7 +119,7 @@ export const LICOES_VIOLINO: AcademyLesson[] = CAPITULOS_VIOLINO.map((c) => {
     courseId: CURSO_VIOLINO.id,
     order: 1,
     canonicalContentId: `canon_vln_${c.numero}`,
-    durationMinutes: c.minutos,
+    durationMinutes: MINUTOS_POR_CAPITULO.get(c.numero) ?? 30,
     objectives: c.objetivos,
     skills: [c.competencia],
     activityIds: [],

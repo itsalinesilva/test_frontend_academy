@@ -3,6 +3,7 @@ import { LIVRETO_TEORIA } from './seed-booklet-theory';
 import { LIVRETO_OCIDENTAL } from './seed-booklet-ocidental';
 import { LIVRETO_BRASIL } from './seed-booklet-brasil';
 import { LIVRETO_VIOLINO } from './seed-booklet-violino';
+import { LIVRETO_POPULAR } from './seed-booklet-popular';
 
 /**
  * Livretos de fábrica.
@@ -17,6 +18,7 @@ export const LIVRETOS_PADRAO: Livreto[] = [
   LIVRETO_OCIDENTAL,
   LIVRETO_BRASIL,
   LIVRETO_VIOLINO,
+  LIVRETO_POPULAR,
 ];
 
 /**
@@ -35,6 +37,7 @@ const SEMENTE_POR_CURSO: Record<string, number> = {
   crs_historia_ocidental: 2,
   crs_historia_brasil: 3,
   crs_violino: 4,
+  crs_historia_social_popular: 5,
 };
 
 /** Quantidade de questões da prova, por curso. Proporcional ao livreto. */

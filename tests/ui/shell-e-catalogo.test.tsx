@@ -74,11 +74,12 @@ describe('o shell tem um header, e um só', () => {
     expect(existsSync(resolve(raiz, 'src/ui/components/layout/NavMenu.tsx'))).toBe(false);
   });
 
-  it('a busca do header é uma lupa que expande, sem rótulo escrito', () => {
+  it('a busca do header é uma lupa, sem rótulo ocupando a barra', () => {
+    // O comportamento tem testes próprios em `header-search.test.tsx`.
     const busca = ler('src/ui/components/layout/HeaderSearch.tsx');
     expect(busca).toContain('Search');
+    expect(busca).toContain("aria-label=\"Abrir busca\"");
     expect(busca).not.toContain('Buscar...');
-    expect(busca).not.toContain('placeholder="Buscar');
   });
 });
 
@@ -114,9 +115,10 @@ describe('o catálogo só contém o que existe', () => {
     }
   });
 
-  it('os quatro cursos do plano estão publicados', () => {
+  it('os cinco cursos do plano estão publicados', () => {
     const titulos = SEED_COURSES.map((c) => c.title).sort();
     expect(titulos).toEqual([
+      'História Social da Música Popular Brasileira',
       'História da Música Brasileira',
       'História da Música Ocidental',
       'Teoria da Música',

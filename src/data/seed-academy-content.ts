@@ -2,6 +2,7 @@ import { CURSO_TEORIA, MODULOS_TEORIA, LICOES_TEORIA } from './seed-theory-cours
 import { CURSO_OCIDENTAL, MODULOS_OCIDENTAL, LICOES_OCIDENTAL } from './seed-ocidental-course';
 import { CURSO_BRASIL, MODULOS_BRASIL, LICOES_BRASIL } from './seed-brasil-course';
 import { CURSO_VIOLINO, MODULOS_VIOLINO, LICOES_VIOLINO } from './seed-violino-course';
+import { CURSO_POPULAR, MODULOS_POPULAR, LICOES_POPULAR } from './seed-popular-course';
 import {
   Program,
   LearningPath,
@@ -69,10 +70,14 @@ export const SEED_CATEGORIES: AcademyCategory[] = [
       'A música ocidental da Antiguidade ao século XX, e a formação da música brasileira das matrizes ao presente.',
     iconName: 'BookOpen',
     color: 'border-ouro-600 text-ouro-700 bg-ouro-50',
-    courseCount: 2,
-    featuredCourseIds: [CURSO_OCIDENTAL.id, CURSO_BRASIL.id],
+    courseCount: 3,
+    featuredCourseIds: [CURSO_OCIDENTAL.id, CURSO_BRASIL.id, CURSO_POPULAR.id],
     skills: Array.from(
-      new Set([...CURSO_OCIDENTAL.competencies, ...CURSO_BRASIL.competencies])
+      new Set([
+        ...CURSO_OCIDENTAL.competencies,
+        ...CURSO_BRASIL.competencies,
+        ...CURSO_POPULAR.competencies,
+      ])
     ),
   },
   {
@@ -97,6 +102,7 @@ export const SEED_COURSES: AcademyCourse[] = [
   CURSO_TEORIA,
   CURSO_OCIDENTAL,
   CURSO_BRASIL,
+  CURSO_POPULAR,
   CURSO_VIOLINO,
 ];
 
@@ -114,45 +120,28 @@ function carga(ids: string[]): number {
   );
 }
 
-const IDS_HISTORIA = [CURSO_OCIDENTAL.id, CURSO_BRASIL.id];
-const IDS_INSTRUMENTISTA = [CURSO_TEORIA.id, CURSO_VIOLINO.id];
-const IDS_FORMACAO = [CURSO_TEORIA.id, CURSO_OCIDENTAL.id, CURSO_BRASIL.id, CURSO_VIOLINO.id];
+/**
+ * Um programa é uma combinação de cursos numa ordem que faz sentido cursar.
+ *
+ * Ele NUNCA é entidade solta: referencia cursos que existem, e sua carga
+ * horária é a soma medida da carga deles — não um número escolhido.
+ */
+const IDS_VIOLINISTA = [CURSO_TEORIA.id, CURSO_VIOLINO.id];
+const IDS_HISTORIA_BR = [CURSO_BRASIL.id, CURSO_POPULAR.id];
+const IDS_FORMACAO = SEED_COURSES.map((c) => c.id);
 
 export const SEED_PROGRAMS: Program[] = [
   {
-    id: 'prg_historia_da_musica',
-    slug: 'programa-historia-da-musica',
-    title: 'História da Música',
-    subtitle: 'A tradição ocidental e a formação brasileira, na mesma linha do tempo.',
-    description:
-      'Reúne os dois cursos de história. O percurso ocidental dá o sistema de referência; o ' +
-      'percurso brasileiro mostra o que acontece quando esse sistema encontra outras matrizes. ' +
-      'Cursar os dois na sequência é o que permite ler a música brasileira sem tomá-la como ' +
-      'desvio nem como exotismo.',
-    workloadHours: carga(IDS_HISTORIA),
-    estimatedMonths: 6,
-    pathIds: ['pth_historia_ocidental', 'pth_historia_brasil'],
-    prerequisites: [],
-    competencies: Array.from(
-      new Set([...CURSO_OCIDENTAL.competencies, ...CURSO_BRASIL.competencies])
-    ),
-    targetAudience: 'Estudantes de música, professores e ouvintes que querem contexto.',
-    certificateTitle: 'Certificado do Programa de História da Música',
-    isPublished: true,
-    createdAt: AGORA,
-    updatedAt: AGORA,
-  },
-  {
-    id: 'prg_instrumentista',
-    slug: 'programa-instrumentista',
-    title: 'Instrumentista — Violino',
+    id: 'prg_musico_violinista',
+    slug: 'programa-musico-violinista',
+    title: 'Músico Violinista',
     subtitle: 'A teoria que o instrumento exige, e o instrumento que a teoria explica.',
     description:
       'Teoria da Música e Violino cursados em paralelo. A teoria deixa de ser abstrata quando ' +
       'cada intervalo tem um dedo correspondente, e a técnica deixa de ser mecânica quando se ' +
       'entende o que se está tocando. É a combinação que a plataforma recomenda a quem começa ' +
       'num instrumento.',
-    workloadHours: carga(IDS_INSTRUMENTISTA),
+    workloadHours: carga(IDS_VIOLINISTA),
     estimatedMonths: 8,
     pathIds: ['pth_teoria', 'pth_violino'],
     prerequisites: [],
@@ -160,7 +149,30 @@ export const SEED_PROGRAMS: Program[] = [
       new Set([...CURSO_TEORIA.competencies, ...CURSO_VIOLINO.competencies])
     ),
     targetAudience: 'Quem está começando no violino, com ou sem leitura prévia.',
-    certificateTitle: 'Certificado do Programa de Instrumentista — Violino',
+    certificateTitle: 'Certificado do Programa Músico Violinista',
+    isPublished: true,
+    createdAt: AGORA,
+    updatedAt: AGORA,
+  },
+  {
+    id: 'prg_historia_da_musica_brasileira',
+    slug: 'programa-historia-da-musica-brasileira',
+    title: 'História da Música Brasileira',
+    subtitle: 'O que se compôs, e depois quem compôs, para quem e em que condições.',
+    description:
+      'O primeiro curso percorre a formação da música brasileira das matrizes ao presente. O ' +
+      'segundo é a extensão dele: volta pelo mesmo terreno perguntando outra coisa — quem fazia ' +
+      'música, de que vivia, quem pagava, e o que aconteceu quando a canção virou mercadoria. ' +
+      'Cursados na sequência, o segundo relê o primeiro.',
+    workloadHours: carga(IDS_HISTORIA_BR),
+    estimatedMonths: 7,
+    pathIds: ['pth_historia_brasil', 'pth_historia_popular'],
+    prerequisites: [],
+    competencies: Array.from(
+      new Set([...CURSO_BRASIL.competencies, ...CURSO_POPULAR.competencies])
+    ),
+    targetAudience: 'Estudantes de música, professores e quem quer entender a música do país.',
+    certificateTitle: 'Certificado do Programa de História da Música Brasileira',
     isPublished: true,
     createdAt: AGORA,
     updatedAt: AGORA,
@@ -169,18 +181,21 @@ export const SEED_PROGRAMS: Program[] = [
     id: 'prg_formacao_completa',
     slug: 'programa-formacao-completa',
     title: 'Formação Completa',
-    subtitle: 'Os quatro cursos do Conservatório, na ordem em que se sustentam.',
+    subtitle: 'Os cinco cursos do Conservatório, na ordem em que se sustentam.',
     description:
-      'Teoria, as duas histórias e o instrumento. É o percurso integral do que o Conservatório ' +
-      'publica hoje — a gramática, o contexto e a prática. Cursado inteiro, cobre o que se ' +
-      'espera de uma formação musical de base.',
+      'Teoria, as três histórias e o instrumento. É o percurso integral do que o Conservatório ' +
+      'publica hoje — a gramática, o contexto e a prática.',
     workloadHours: carga(IDS_FORMACAO),
-    estimatedMonths: 14,
-    pathIds: ['pth_teoria', 'pth_historia_ocidental', 'pth_historia_brasil', 'pth_violino'],
+    estimatedMonths: 18,
+    pathIds: [
+      'pth_teoria',
+      'pth_historia_ocidental',
+      'pth_historia_brasil',
+      'pth_historia_popular',
+      'pth_violino',
+    ],
     prerequisites: [],
-    competencies: Array.from(
-      new Set(SEED_COURSES.flatMap((c) => c.competencies))
-    ),
+    competencies: Array.from(new Set(SEED_COURSES.flatMap((c) => c.competencies))),
     targetAudience: 'Quem quer formação musical de base completa.',
     certificateTitle: 'Certificado do Programa de Formação Completa',
     isPublished: true,
@@ -193,59 +208,53 @@ export const SEED_PROGRAMS: Program[] = [
 // Trilhas — um curso cada, na ordem do programa
 // ---------------------------------------------------------------------------
 
+/** Uma trilha é a presença de um curso dentro de um programa. */
+function trilha(
+  id: string,
+  programId: string,
+  order: number,
+  curso: AcademyCourse,
+  level: CourseLevel
+): LearningPath {
+  return {
+    id,
+    programId,
+    order,
+    slug: `trilha-${curso.slug}`,
+    title: curso.title,
+    subtitle: curso.subtitle,
+    description: curso.description,
+    courseIds: [curso.id],
+    workloadHours: curso.workloadHours,
+    level,
+    skills: curso.competencies,
+  };
+}
+
 export const SEED_PATHS: LearningPath[] = [
-  {
-    id: 'pth_teoria',
-    programId: 'prg_instrumentista',
-    order: 1,
-    slug: 'trilha-teoria',
-    title: CURSO_TEORIA.title,
-    subtitle: CURSO_TEORIA.subtitle,
-    description: CURSO_TEORIA.description,
-    courseIds: [CURSO_TEORIA.id],
-    workloadHours: CURSO_TEORIA.workloadHours,
-    level: CourseLevel.FUNDAMENTAL,
-    skills: CURSO_TEORIA.competencies,
-  },
-  {
-    id: 'pth_historia_ocidental',
-    programId: 'prg_historia_da_musica',
-    order: 1,
-    slug: 'trilha-historia-ocidental',
-    title: CURSO_OCIDENTAL.title,
-    subtitle: CURSO_OCIDENTAL.subtitle,
-    description: CURSO_OCIDENTAL.description,
-    courseIds: [CURSO_OCIDENTAL.id],
-    workloadHours: CURSO_OCIDENTAL.workloadHours,
-    level: CourseLevel.INTERMEDIARIO,
-    skills: CURSO_OCIDENTAL.competencies,
-  },
-  {
-    id: 'pth_historia_brasil',
-    programId: 'prg_historia_da_musica',
-    order: 2,
-    slug: 'trilha-historia-brasil',
-    title: CURSO_BRASIL.title,
-    subtitle: CURSO_BRASIL.subtitle,
-    description: CURSO_BRASIL.description,
-    courseIds: [CURSO_BRASIL.id],
-    workloadHours: CURSO_BRASIL.workloadHours,
-    level: CourseLevel.INTERMEDIARIO,
-    skills: CURSO_BRASIL.competencies,
-  },
-  {
-    id: 'pth_violino',
-    programId: 'prg_instrumentista',
-    order: 2,
-    slug: 'trilha-violino',
-    title: CURSO_VIOLINO.title,
-    subtitle: CURSO_VIOLINO.subtitle,
-    description: CURSO_VIOLINO.description,
-    courseIds: [CURSO_VIOLINO.id],
-    workloadHours: CURSO_VIOLINO.workloadHours,
-    level: CourseLevel.FUNDAMENTAL,
-    skills: CURSO_VIOLINO.competencies,
-  },
+  trilha('pth_teoria', 'prg_musico_violinista', 1, CURSO_TEORIA, CourseLevel.FUNDAMENTAL),
+  trilha('pth_violino', 'prg_musico_violinista', 2, CURSO_VIOLINO, CourseLevel.FUNDAMENTAL),
+  trilha(
+    'pth_historia_brasil',
+    'prg_historia_da_musica_brasileira',
+    1,
+    CURSO_BRASIL,
+    CourseLevel.INTERMEDIARIO
+  ),
+  trilha(
+    'pth_historia_popular',
+    'prg_historia_da_musica_brasileira',
+    2,
+    CURSO_POPULAR,
+    CourseLevel.INTERMEDIARIO
+  ),
+  trilha(
+    'pth_historia_ocidental',
+    'prg_formacao_completa',
+    1,
+    CURSO_OCIDENTAL,
+    CourseLevel.INTERMEDIARIO
+  ),
 ];
 
 // ---------------------------------------------------------------------------
@@ -256,6 +265,7 @@ export const SEED_MODULES: AcademyModule[] = [
   ...MODULOS_TEORIA,
   ...MODULOS_OCIDENTAL,
   ...MODULOS_BRASIL,
+  ...MODULOS_POPULAR,
   ...MODULOS_VIOLINO,
 ];
 
@@ -263,6 +273,7 @@ export const SEED_LESSONS: AcademyLesson[] = [
   ...LICOES_TEORIA,
   ...LICOES_OCIDENTAL,
   ...LICOES_BRASIL,
+  ...LICOES_POPULAR,
   ...LICOES_VIOLINO,
 ];
 

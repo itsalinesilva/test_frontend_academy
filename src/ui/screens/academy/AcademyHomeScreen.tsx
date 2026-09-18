@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { CourseCard } from '../../components/domain/CourseCard';
+import { ProgramCard } from '../../components/domain/ProgramCard';
 import { LessonCard } from '../../components/domain/LessonCard';
 import { Carrossel } from '../../components/layout/Carrossel';
 import { ProgressRing } from '../../components/data-display/ProgressRing';
@@ -9,6 +10,7 @@ import { academyService } from '../../../services/application/academy.service';
 import { authService } from '../../../services/application/auth.service';
 import {
   Program,
+  LearningPath,
   AcademyCourse,
   AcademyModule,
   AcademyLesson,
@@ -39,6 +41,7 @@ export const AcademyHomeScreen: React.FC = () => {
   const { navigate } = useRouter();
 
   const [programas, setProgramas] = useState<Program[]>([]);
+  const [trilhas, setTrilhas] = useState<LearningPath[]>([]);
   const [cursos, setCursos] = useState<AcademyCourse[]>([]);
   const [disciplinasPorCurso, setDisciplinasPorCurso] = useState<Record<string, AcademyModule[]>>({});
   const [matriculas, setMatriculas] = useState<UserAcademyProgress[]>([]);
@@ -54,13 +57,15 @@ export const AcademyHomeScreen: React.FC = () => {
         const sessao = await authService.getActiveSession();
         const userId = sessao?.user.id;
 
-        const [progs, crss, mats] = await Promise.all([
+        const [progs, trls, crss, mats] = await Promise.all([
           academyService.getPrograms(),
+          academyService.getPaths(),
           academyService.getCourses(),
           userId ? academyService.listUserEnrollments(userId) : Promise.resolve([]),
         ]);
 
         setProgramas(progs);
+        setTrilhas(trls);
         setCursos(crss);
         setMatriculas(mats);
 
@@ -139,6 +144,28 @@ export const AcademyHomeScreen: React.FC = () => {
     return r;
   }, [termo, cursos, programas, disciplinasPorCurso]);
 
+  /**
+   * Os cursos de um programa, na ordem das trilhas.
+   *
+   * Um programa não lista cursos diretamente: lista trilhas, e cada trilha
+   * aponta para o curso. Resolver aqui mantém o cartão burro e a estrutura
+   * intacta.
+   */
+  const cursosDoPrograma = (p: Program) =>
+    p.pathIds
+      .map((id) => trilhas.find((t) => t.id === id))
+      .filter((t): t is LearningPath => Boolean(t))
+      .sort((a, b) => a.order - b.order)
+      .flatMap((t) => t.courseIds)
+      .map((cid) => cursos.find((c) => c.id === cid))
+      .filter((c): c is AcademyCourse => Boolean(c))
+      .map((c) => ({
+        id: c.id,
+        titulo: c.title,
+        disciplinas: c.moduleIds.length,
+        horas: c.workloadHours,
+      }));
+
   const cartaoDoCurso = (c: AcademyCourse) => {
     const m = matriculaPorCurso.get(c.id);
     return (
@@ -182,40 +209,16 @@ export const AcademyHomeScreen: React.FC = () => {
       {programas.length > 0 ? (
         <Carrossel id="carrossel-programas" label="Programas" porPagina={3}>
           {programas.map((p) => (
-            <article
+            <ProgramCard
               key={p.id}
               id={`program-card-${p.id}`}
-              className="group flex w-full flex-col rounded-xl bg-white/60 p-4 transition-colors hover:bg-white"
-            >
-              <div className="flex items-start gap-3">
-                <button
-                  type="button"
-                  onClick={() => navigate(`/academy/program/${p.id}`)}
-                  className="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-anil-700"
-                >
-                  <p className="font-mono text-[10px] uppercase tracking-wider text-stone-400">
-                    Programa
-                  </p>
-                  <h3 className="mt-0.5 font-serif text-base font-semibold leading-snug text-stone-900">
-                    {p.title}
-                  </h3>
-                  <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-stone-600">
-                    {p.subtitle}
-                  </p>
-                  <p className="mt-2 text-[11px] text-stone-500">
-                    {p.workloadHours} h · {p.pathIds.length} cursos
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate(`/academy/program/${p.id}`)}
-                  aria-label={`Abrir ${p.title}`}
-                  className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-600 transition-colors hover:bg-anil-800 hover:text-white"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            </article>
+              title={p.title}
+              description={p.subtitle || p.description}
+              durationHours={p.workloadHours}
+              cursos={cursosDoPrograma(p)}
+              onActionClick={() => navigate(`/academy/program/${p.id}`)}
+              onCourseClick={(cid) => navigate(`/academy/course/${cid}`)}
+            />
           ))}
         </Carrossel>
       ) : (

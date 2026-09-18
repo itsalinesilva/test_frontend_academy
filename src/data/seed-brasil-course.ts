@@ -1,8 +1,10 @@
 import { AcademyCourse, AcademyModule, AcademyLesson, LessonBlock } from '../domain/academy';
 import { CourseLevel } from '../domain/types';
-import { CAPITULOS_BRASIL, COMPETENCIAS_BRASIL, CARGA_BRASIL } from './brasil/capitulos';
+import { CAPITULOS_BRASIL, COMPETENCIAS_BRASIL } from './brasil/capitulos';
 import { BLOCOS_BR_01_09 } from './brasil/blocos-01-09';
 import { BLOCOS_BR_10_18 } from './brasil/blocos-10-18';
+import { LIVRETO_BRASIL } from './seed-booklet-brasil';
+import { calcularCargaDaLicao, horasDoCurso } from '../domain/carga-horaria';
 
 /**
  * Curso de História da Música Brasileira — conteúdo autoral do Conservatório.
@@ -22,6 +24,28 @@ const AGORA = '2026-09-17T00:00:00.000Z';
 
 const idModulo = (n: number) => `mod_bras_${String(n).padStart(2, '0')}`;
 const idLicao = (n: number) => `les_bras_${String(n).padStart(2, '0')}`;
+
+const BLOCOS: Record<number, LessonBlock[]> = {
+  ...BLOCOS_BR_01_09,
+  ...BLOCOS_BR_10_18,
+};
+
+/**
+ * Carga medida, não escolhida: texto a 160 palavras por minuto, mais o tempo
+ * de cada exemplo sonoro e de cada questão do livreto.
+ */
+const QUESTOES_POR_CAPITULO = new Map(
+  LIVRETO_BRASIL.capitulos.map((c) => [c.numero, c.questoes])
+);
+
+const MINUTOS_POR_CAPITULO = new Map(
+  CAPITULOS_BRASIL.map((c) => [
+    c.numero,
+    calcularCargaDaLicao(BLOCOS[c.numero] ?? [], QUESTOES_POR_CAPITULO.get(c.numero) ?? []).total,
+  ])
+);
+
+const CARGA_BRASIL = horasDoCurso([...MINUTOS_POR_CAPITULO.values()]);
 
 export const CURSO_BRASIL: AcademyCourse = {
   id: 'crs_historia_brasil',
@@ -82,11 +106,6 @@ export const MODULOS_BRASIL: AcademyModule[] = CAPITULOS_BRASIL.map((c) => ({
   updatedAt: AGORA,
 }));
 
-const BLOCOS: Record<number, LessonBlock[]> = {
-  ...BLOCOS_BR_01_09,
-  ...BLOCOS_BR_10_18,
-};
-
 export const LICOES_BRASIL: AcademyLesson[] = CAPITULOS_BRASIL.map((c) => {
   const id = idLicao(c.numero);
   const blocos = BLOCOS[c.numero] ?? [];
@@ -96,7 +115,7 @@ export const LICOES_BRASIL: AcademyLesson[] = CAPITULOS_BRASIL.map((c) => {
     courseId: CURSO_BRASIL.id,
     order: 1,
     canonicalContentId: `canon_bras_${c.numero}`,
-    durationMinutes: c.minutos,
+    durationMinutes: MINUTOS_POR_CAPITULO.get(c.numero) ?? 30,
     objectives: c.objetivos,
     skills: [c.competencia],
     activityIds: [],
