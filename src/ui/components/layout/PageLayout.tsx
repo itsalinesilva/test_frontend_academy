@@ -33,7 +33,16 @@ import type { BreadcrumbEntry } from '../../navigation/router';
  *   5. orquestração dos 5 estados — hoje 0/72 telas cumprem o DoD.
  */
 
-export type PageForm = 'focus' | 'catalog' | 'detail' | 'workspace';
+/**
+ * As formas canônicas de página.
+ *
+ * `course` (E) foi acrescentada quando a área de curso precisou de um sumário
+ * lateral fixo que acompanha a leitura — coisa que nenhuma das outras quatro
+ * oferece. `catalog` põe filtros à esquerda mas rola junto com a página;
+ * `workspace` tem painel fixo mas é escuro e de altura travada, para
+ * instrumento. A área de curso é clara, rola no conteúdo e mantém o sumário.
+ */
+export type PageForm = 'focus' | 'catalog' | 'detail' | 'workspace' | 'course';
 export type PageDensity = 'editorial' | 'catalog' | 'operational' | 'instrument';
 export type PageState = 'loading' | 'content' | 'empty' | 'error' | 'locked';
 
@@ -285,6 +294,38 @@ const PageLayoutRoot: React.FC<PageLayoutProps> = ({
             {slots.transport}
           </footer>
         )}
+      </div>
+    );
+  }
+
+  // ---------------------------------------------------------- COURSE (E) ---
+  if (form === 'course') {
+    return (
+      <div id={id} data-page-form="course" className={clsx('flex min-h-[calc(100vh-3.5rem)]', className)}>
+        {slots.panel && (
+          <aside
+            aria-label="Conteúdo do curso"
+            className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-72 shrink-0 lg:block"
+          >
+            {slots.panel}
+          </aside>
+        )}
+
+        <main
+          id="main"
+          tabIndex={-1}
+          className={clsx('min-w-0 flex-1 focus:outline-none', DENSITY_CLASS[density])}
+        >
+          <div className="mx-auto flex max-w-6xl flex-col gap-6 p-4 sm:p-6 xl:flex-row">
+            <div className="min-w-0 flex-1">{mainContent}</div>
+
+            {slots.aside && (
+              <aside aria-label={asideLabel} className="w-full shrink-0 space-y-5 xl:w-64">
+                {slots.aside}
+              </aside>
+            )}
+          </div>
+        </main>
       </div>
     );
   }

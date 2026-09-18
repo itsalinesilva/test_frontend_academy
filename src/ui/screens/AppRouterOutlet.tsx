@@ -13,15 +13,16 @@ import { AcademyCatalogScreen } from './academy/AcademyCatalogScreen';
 import { AcademySearchScreen } from './academy/AcademySearchScreen';
 import { ProgramDetailScreen } from './academy/ProgramDetailScreen';
 import { PathDetailScreen } from './academy/PathDetailScreen';
-import { CourseDetailScreen } from './academy/CourseDetailScreen';
+import { CoursePresentationScreen } from './academy/CoursePresentationScreen';
+import { CourseLearnScreen } from './academy/CourseLearnScreen';
+import { LessonTheaterScreen } from './academy/LessonTheaterScreen';
+import { MeuAprendizadoScreen } from './academy/MeuAprendizadoScreen';
 import { ModuleDetailScreen } from './academy/ModuleDetailScreen';
-import { LessonReaderScreen } from './academy/LessonReaderScreen';
 import { ActivityScreen } from './academy/ActivityScreen';
 import { AssessmentScreen } from './academy/AssessmentScreen';
 import { AssessmentResultScreen } from './academy/AssessmentResultScreen';
 import { CourseCompletionScreen } from './academy/CourseCompletionScreen';
 import { CertificateScreen } from './academy/CertificateScreen';
-import { MyLearningScreen } from './academy/MyLearningScreen';
 import { AcademicHistoryScreen } from './academy/AcademicHistoryScreen';
 import { CategoryDetailScreen } from './academy/CategoryDetailScreen';
 import { CourseCurriculumScreen } from './academy/CourseCurriculumScreen';
@@ -250,6 +251,12 @@ export const AppRouterOutlet: React.FC = () => {
   if (currentPath === '/academy') {
     return <AcademyHomeScreen />;
   }
+  if (
+    currentPath === '/academy/meu-aprendizado' ||
+    currentPath === '/academy/my-learning'
+  ) {
+    return <MeuAprendizadoScreen />;
+  }
   if (currentPath === '/academy/catalog') {
     return <AcademyCatalogScreen />;
   }
@@ -277,14 +284,20 @@ export const AppRouterOutlet: React.FC = () => {
   if (currentPath.includes('/progress')) {
     return <CourseProgressScreen />;
   }
+  // Dentro do curso: menu lateral fixo, conteudo ao centro, calendario a direita.
+  if (currentPath.startsWith('/academy/course/') && currentPath.endsWith('/aprender')) {
+    return <CourseLearnScreen />;
+  }
+  // Apresentacao do curso: hero, metricas, secoes, disciplinas, avaliacoes.
   if (currentPath.startsWith('/academy/course/')) {
-    return <CourseDetailScreen />;
+    return <CoursePresentationScreen />;
   }
   if (currentPath.includes('/interactive')) {
     return <InteractiveLessonScreen />;
   }
+  // A licao abre em tela-teatro, com o menu da disciplina a esquerda.
   if (currentPath.startsWith('/academy/lesson/')) {
-    return <LessonReaderScreen />;
+    return <LessonTheaterScreen />;
   }
   if (currentPath.startsWith('/academy/activity/')) {
     return <ActivityScreen />;
@@ -303,9 +316,6 @@ export const AppRouterOutlet: React.FC = () => {
   }
   if (currentPath.startsWith('/academy/certificate/')) {
     return <CertificateScreen />;
-  }
-  if (currentPath === '/academy/my-learning') {
-    return <MyLearningScreen />;
   }
   if (currentPath === '/academy/history') {
     return <AcademicHistoryScreen />;

@@ -32,6 +32,9 @@ export const AppShell: React.FC<AppShellProps> = ({
   children,
 }) => {
   const { currentPath, navigate } = useRouter();
+
+  const telaDeLarguraTotal =
+    /^\/academy\/course\//.test(currentPath) || /^\/academy\/lesson\//.test(currentPath);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
@@ -82,13 +85,25 @@ export const AppShell: React.FC<AppShellProps> = ({
       />
 
       {/* 3. Main Application Work Area */}
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 focus:outline-none"
-      >
-        {children}
-      </main>
+      {/*
+        Telas de largura total.
+
+        A area de curso e a apresentacao do curso trazem a propria estrutura —
+        menu lateral fixo, hero sangrando ate a borda, trilho a direita. Elas
+        declaram seu proprio <main>, e envolve-las no container centrado com
+        padding quebraria o layout e criaria dois landmarks main.
+      */}
+      {telaDeLarguraTotal ? (
+        <div className="flex-1">{children}</div>
+      ) : (
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 focus:outline-none"
+        >
+          {children}
+        </main>
+      )}
 
       {/* 4. Global Persistent Audio Player */}
       <GlobalPlayer

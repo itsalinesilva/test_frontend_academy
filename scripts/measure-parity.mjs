@@ -33,7 +33,12 @@ const EXPECTED = {
   InteractiveLessonScreen: ['C', 'EDITORIAL'], ActivityScreen: ['A', 'EDITORIAL'],
   AcademyQuizScreen: ['A', 'EDITORIAL'], AssessmentScreen: ['A', 'EDITORIAL'],
   AssessmentResultScreen: ['A', 'EDITORIAL'], CourseCompletionScreen: ['A', 'EDITORIAL'],
-  CertificateScreen: ['A', 'EDITORIAL'], MyLearningScreen: ['B', 'CATALOG'],
+  CertificateScreen: ['A', 'EDITORIAL'],
+  // Area de curso: forma E, com sumario lateral fixo. A apresentacao do curso
+  // sangra ate a borda no hero e traz a propria barra de secoes, por isso fica
+  // fora das formas — e a unica tela do Academy nessa condicao.
+  CourseLearnScreen: ['E', 'EDITORIAL'], LessonTheaterScreen: ['E', 'EDITORIAL'],
+  MeuAprendizadoScreen: ['B', 'CATALOG'],
   AcademicHistoryScreen: ['B', 'OPERATIONAL'], AcademicProfileScreen: ['B', 'OPERATIONAL'],
   // PRACTICE
   PracticeHomeScreen: ['C', 'CATALOG'], SkillTreeScreen: ['C', 'CATALOG'],
@@ -109,8 +114,8 @@ for (const f of screens) {
   const usesPageLayout = src.includes('<PageLayout');
   // Uma tela pode declarar mais de uma forma: retornos antecipados de
   // "nao encontrado" usam `focus`. A forma da tela e a mais estrutural.
-  const RANK = { focus: 0, catalog: 1, workspace: 2, detail: 3 };
-  const declared = [...src.matchAll(/form="(focus|catalog|detail|workspace)"/g)].map((m) => m[1]);
+  const RANK = { focus: 0, catalog: 1, workspace: 2, detail: 3, course: 4 };
+  const declared = [...src.matchAll(/form="(focus|catalog|detail|workspace|course)"/g)].map((m) => m[1]);
   const declaredForm = declared.sort((x, y) => RANK[y] - RANK[x])[0];
   const hasSticky = usesPageLayout ? declaredForm !== "focus" : src.includes("sticky");
   const cols = usesPageLayout && src.includes('<PageLayout.Aside')
@@ -122,7 +127,7 @@ for (const f of screens) {
   const hasDrawer = /<Drawer\b/.test(src);
 
   // Forma detectada
-  const FORM_LETTER = { focus: 'A', catalog: 'B', detail: 'C', workspace: 'D' };
+  const FORM_LETTER = { focus: 'A', catalog: 'B', detail: 'C', workspace: 'D', course: 'E' };
   let actualForm = declaredForm ? FORM_LETTER[declaredForm] : 'A';
   if (!declaredForm) {
     if (/100dvh|h-screen|min-h-screen/.test(src) && /toolbar|transport|inspector|Panel/i.test(src)) actualForm = 'D';

@@ -50,22 +50,28 @@ describe('o shell tem um header, e um só', () => {
     expect(header.match(/Conservatório Muscicapa/g) ?? []).toHaveLength(1);
   });
 
-  it('as rotas ficam fechadas atrás de um chevron, não expostas em barra', () => {
-    const menu = ler('src/ui/components/layout/NavMenu.tsx');
+  it('a navbar tem cinco elementos: marca, Explorar, Meu aprendizado, lupa e avatar', () => {
+    // O que não é um desses cinco vive dentro de Explorar ou dentro da tela.
+    const header = lerCodigo('src/ui/components/layout/Header.tsx');
+    expect(header).toContain('header-brand');
+    expect(header).toContain('ExplorarMenu');
+    expect(header).toContain('Meu aprendizado');
+    expect(header).toContain('HeaderSearch');
+    expect(header).toContain('header-profile-btn');
+  });
+
+  it('Explorar abre um painel em colunas, na largura da página', () => {
+    const menu = lerCodigo('src/ui/components/layout/ExplorarMenu.tsx');
     expect(menu).toContain('ChevronDown');
     expect(menu).toContain('onMouseEnter');
     expect(menu).toContain('aria-expanded');
+    expect(menu).toContain('inset-x-0');
+    // colunas por assunto, não uma lista corrida de rotas
+    expect(menu).toMatch(/grid-cols-\d/);
   });
 
-  it('o menu desce como faixa horizontal, na largura do header', () => {
-    // Não é uma coluna suspensa: a faixa acompanha o header porque é a
-    // continuação dele. `inset-x-0` a estica; `flex` põe os itens lado a lado.
-    const menu = lerCodigo('src/ui/components/layout/NavMenu.tsx');
-    expect(menu).toContain('inset-x-0');
-    expect(menu).toContain('top-12');
-    // a faixa é uma linha: flex sem direção de coluna, rolando na horizontal
-    expect(menu).toMatch(/className="[^"]*\bflex\b[^"]*overflow-x-auto[^"]*"/);
-    expect(menu).not.toContain('flex-col');
+  it('o menu lateral antigo foi substituído pelo Explorar', () => {
+    expect(existsSync(resolve(raiz, 'src/ui/components/layout/NavMenu.tsx'))).toBe(false);
   });
 
   it('a busca do header é uma lupa que expande, sem rótulo escrito', () => {

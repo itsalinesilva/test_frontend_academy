@@ -159,15 +159,50 @@ Programas: História da Música (33 h), Instrumentista — Violino (47 h),
 Formação Completa (80 h). Nenhum aponta para trilha ou curso inexistente, e a
 carga de cada um é a soma real dos cursos que reúne.
 
+## As telas que foram refeitas contra os prints
+
+A auditoria anterior declarava paridade de sistema sem que as telas tivessem
+sido construídas contra a referência. Foi corrigido: estas foram refeitas
+comparando tela a tela.
+
+| Tela | O que passou a existir |
+|---|---|
+| **Navbar** | Cinco elementos: marca, **Explorar** (painel em colunas com tudo), **Meu aprendizado**, lupa, avatar. Nada mais exposto. |
+| **Apresentação do curso** | Hero sangrando até a borda com CTA; cartão de métricas montado sobre ele (disciplinas · avaliações · nível · ritmo); barra de seções que gruda no topo com título e CTA ao rolar; **Sobre**, **Resultados**, **Disciplinas** (lista expansível com duração por disciplina) e **Avaliações**. |
+| **Dentro do curso** | Menu lateral fixo com módulos, estado de cada item e recursos; centro com os módulos e seus itens (tipo, duração, visto ou não); **calendário de frequência** à direita. |
+| **A lição** | Tela-teatro: menu lateral da disciplina à esquerda, conteúdo ao centro em coluna de leitura, navegação anterior/próxima no rodapé. O menu fecha e o texto ocupa a tela. |
+| **Meu aprendizado** | Quatro abas: **Em andamento**, **Concluído**, **Competências**, **Certificados**. |
+
+O calendário substituiu a fileira de bolinhas de sequência: mostra o mês
+inteiro, dá para ver o padrão e onde houve interrupção. Dia futuro aparece
+apagado, sem marca de falta — ele ainda não chegou.
+
+### O que ficou de fora, e por quê
+
+**Avaliações de alunos** — a estrutura existe (`src/domain/reviews.ts`), a
+seção existe, e está vazia. Nota de curso sem aluno é propaganda. Um teste
+impede que qualquer seed crie avaliação.
+
+**Depoimentos em carrossel** — não construídos. Seriam pessoas reais dizendo
+coisas reais, e não há nenhuma ainda.
+
+**Vídeo** — continua sem existir. É a maior diferença que resta.
+
 ## Paridade de tela, medida
 
 `npm run measure:parity` compara cada tela com a forma canônica do
 `PageLayout` e com os componentes que ela deveria usar.
 
+O `PageLayout` ganhou uma quinta forma — **E, área de curso**: sumário lateral
+fixo, conteúdo ao centro, trilho opcional à direita. Ela foi acrescentada
+porque nenhuma das quatro anteriores servia: `catalog` põe filtros à esquerda
+mas rola junto com a página, e `workspace` é escuro e de altura travada, para
+instrumento.
+
 | Módulo | Média | Módulo | Média |
 |---|---:|---|---:|
 | Profile | 92 | Kids | 50 |
-| **Academy** | **89** | Settings | 50 |
+| **Academy** | **85** | Settings | 50 |
 | Auth | 84 | Rooms | 46 |
 | Practice | 79 | Worlds | 43 |
 | NotFound | 77 | Violin | 42 |
@@ -177,9 +212,14 @@ carga de cada um é a soma real dos cursos que reúne.
 | Search | 7 | Community | 6 |
 | Score | 4 | | |
 
-O Academy está em 89, com todas as 22 telas em FULL. Os módulos abaixo de 50
-— Score, Community, Search, Notifications, Studio, Help, Admin, Credentials —
-ainda não receberam o tratamento que o Academy recebeu.
+O Academy caiu de 89 para 85, e a queda é honesta: as telas novas ainda não
+usam toda a orquestração de estados do `PageLayout`, e a apresentação do curso
+fica **fora das formas** de propósito — hero sangrando e barra de seções
+própria não cabem em nenhuma delas. É a única tela do Academy nessa condição,
+e está registrada como exceção no medidor.
+
+Os módulos abaixo de 50 — Score, Community, Search, Notifications, Studio,
+Help, Admin, Credentials — ainda não receberam nenhum tratamento.
 
 **Duas lacunas de conteúdo:**
 
