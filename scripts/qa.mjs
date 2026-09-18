@@ -28,6 +28,7 @@ import {
   checarVazamentoNoConsole,
   checarInjecaoDeHtml,
   checarEncerramentoDeSessao,
+  checarSegredoVersionado,
 } from './qa/seguranca.mjs';
 import {
   checarDestinosDeNavegacao,
@@ -77,6 +78,7 @@ const SECOES = [
       relatar('nenhum dado pessoal vai ao console', checarVazamentoNoConsole(), G.BLOQUEIA),
       relatar('nenhuma injeção de HTML sem sanitização', checarInjecaoDeHtml(), G.BLOQUEIA),
       relatar('encerrar sessão apaga a sessão local', checarEncerramentoDeSessao(), G.BLOQUEIA),
+      relatar('nenhum segredo de credencial versionado', checarSegredoVersionado(), G.BLOQUEIA),
     ],
   },
   {

@@ -235,3 +235,38 @@ export function checarEncerramentoDeSessao() {
   }
   return achados;
 }
+
+/**
+ * Segredo de credencial versionado.
+ *
+ * Esta arquitetura **não precisa** de chave secreta de cliente: o servidor
+ * verifica a assinatura do ID token contra as chaves públicas do Google. Uma
+ * `GOCSPX-…` aparecendo no repositório é, portanto, sempre uma das duas
+ * coisas — segredo colado por engano, ou fluxo de autenticação errado.
+ *
+ * As duas merecem parar o build. O Client ID, esse, é público por natureza e
+ * vive em `VITE_GOOGLE_OAUTH_CLIENT_ID`; não é acusado aqui.
+ */
+export function checarSegredoVersionado() {
+  const PADROES = [
+    [/GOCSPX-[\w-]{10,}/, 'chave secreta de cliente do Google'],
+    [/-----BEGIN [A-Z ]*PRIVATE KEY-----/, 'chave privada'],
+    [/AIza[\w-]{30,}/, 'chave de API do Google'],
+    [/sk-[A-Za-z0-9]{20,}/, 'chave de API'],
+  ];
+
+  const achados = [];
+  for (const { arquivo, conteudo } of fontes()) {
+    for (const [re, o_que] of PADROES) {
+      const m = conteudo.match(re);
+      if (m) {
+        achados.push({
+          arquivo,
+          linha: conteudo.slice(0, m.index).split('\n').length,
+          detalhe: `${o_que} no código — isto nunca entra no repositório`,
+        });
+      }
+    }
+  }
+  return achados;
+}

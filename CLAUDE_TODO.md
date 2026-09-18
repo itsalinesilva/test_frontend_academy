@@ -418,7 +418,7 @@ promete o que não pode cumprir.
 | :--- | :--- | :---: |
 | C.1 | Progresso, avaliação e frequência sobrevivem ao recarregar — 13 casos em `tests/persistencia-e-isolamento.test.ts` | ✅ |
 | C.2 | Dado de um aluno não chega ao outro no mesmo dispositivo | ✅ |
-| C.3 | **Cópia de segurança em JSON no Drive da pessoa** — nunca executada de ponta a ponta. Exige conta Google real. **É a única coisa que impede perda total ao limpar o navegador.** | ⛔ depende de G.1 |
+| C.3 | **Cópia de segurança em JSON no Drive da pessoa** — nunca executada de ponta a ponta. **É a única coisa que impede perda total ao limpar o navegador.** | ⛔ depende de **I.7** (escopo `drive.file`) |
 | C.4 | Restaurar a partir do backup — o caminho inverso não existe | ⬜ |
 | C.5 | **Edição do conteúdo pelo admin** — camada editorial, correção na própria leitura, sobrevive à publicação, e o livro da biblioteca sai com ela. 17 casos em `tests/edicao-editorial.test.ts` | ✅ |
 | C.6 | Livreto — exercícios, simulados e provas gravam e voltam. Coberto no mesmo arquivo | ✅ |
@@ -473,7 +473,7 @@ pendência, não nota de rodapé.
 
 | # | Item | Estado |
 | :--- | :--- | :---: |
-| G.1 | Criar o **OAuth Client ID** no Google Cloud e preencher `.env.local` / Cloudflare. Sem isso ninguém cria conta em produção, e C.3 fica bloqueado. | ⛔ |
+| G.1 | ~~Criar o OAuth Client ID~~ — **feito em 18/09/2026.** Login real do Google funcionando em `localhost:3000`. O que resta de infraestrutura virou a seção **I**, com cronologia própria | ✅ |
 | G.2 | O seed do perfil da fundadora é um currículo fabricado (percentil 99,8 · 420 h · posts com 215 apoios) e vai a produção com seu nome. Esvaziar? | ⛔ |
 | G.3 | `OAuthCallbackScreen` ficou órfã de propósito (o login usa janela, não redirecionamento). Remover? | ⛔ |
 
@@ -496,10 +496,216 @@ Está escrito em vez de dar impressão de cobertura.
 
 ### Ordem sugerida
 
-1. **G.1** — destrava C.3 e o cadastro real; tudo o mais depende disso para ser verificável de verdade.
-2. **F.2** — uma passada no navegador de verdade, tela a tela. É a classe de defeito que nenhum teste daqui alcança, e foi ela que produziu o pior erro do projeto até agora.
+1. **I.0** — apagar a chave secreta do cliente. Dois minutos, e nada no projeto a usa.
+2. **F.2** — uma passada no navegador de verdade, tela a tela, **agora com login real do Google funcionando**. É a classe de defeito que nenhum teste daqui alcança, e foi ela que produziu o pior erro do projeto.
 3. **B.2** — as 8 telas públicas do Academy são as que o visitante mais vê.
 4. **E.1** — revisão do texto, capítulo a capítulo.
-5. Só então **Practice** (comando 5-6).
+5. **Practice** (comando 5-6).
+6. Só depois de o produto estar pronto: a seção **I**, de I.2 em diante.
 
-~~2. A.1 nos seis arquivos concentrados~~ — feito.
+~~A.1 nos seis arquivos concentrados~~ — feito. ~~G.1 OAuth Client ID~~ — feito.
+
+---
+
+## INFRAESTRUTURA E IDENTIDADE — cronologia até a publicação
+
+> **Decisão registrada:** o projeto é terminado **primeiro**; domínio e
+> servidor vêm depois. Esta seção existe para que "depois" tenha uma ordem
+> escrita, e para que nada dela seja descoberto tarde.
+>
+> Atualizado em 2026-09-18, quando o primeiro Client ID OAuth foi criado.
+
+### Estado de hoje
+
+| Item | Estado |
+| :--- | :---: |
+| Client ID OAuth (Web) criado no Google Cloud | ✅ 18/09/2026 |
+| `.env.local` configurado — login real funcionando em `localhost:3000` | ✅ |
+| `ADMIN_ALLOWLIST` com os dois e-mails institucionais | ✅ |
+| Chaves HMAC de sessão e auditoria geradas para desenvolvimento | ✅ |
+| Domínio registrado | ⬜ |
+| Cloudflare Pages configurado | ⬜ |
+| Repositório no GitHub conectado ao Cloudflare | ⬜ |
+| Origens de produção autorizadas no OAuth | ⬜ |
+| Publicação da tela de consentimento (sai de "usuários de teste") | ⬜ |
+| Client ID Android | ⬜ |
+
+> **A chave secreta do cliente não foi usada, e não será.** Esta arquitetura
+> verifica a assinatura do ID token contra as chaves públicas do Google
+> (JWKS). Chave secreta serve ao fluxo de código de autorização, que o projeto
+> não usa. Ver `I.0`.
+
+---
+
+### I · Identidade e publicação — **nesta ordem**
+
+#### I.0 · Apagar a chave secreta do cliente ⬜ **agora**
+
+A `GOCSPX-…` foi gerada junto com o Client ID e colada em conversa. Como
+**nada no projeto a usa**, o caminho limpo é apagá-la:
+
+> Google Cloud Console → APIs e Serviços → Credenciais → o cliente OAuth →
+> **Chaves secretas do cliente** → apagar.
+
+Isso não afeta o login. Se algum dia um fluxo de servidor precisar de uma,
+gera-se outra, e ela vive **só** como variável de ambiente do Cloudflare.
+
+O pente fino passou a barrar `GOCSPX-…` no repositório — verificação
+`nenhum segredo de credencial versionado`.
+
+#### I.1 · Terminar o produto ⬜ **antes de tudo o que segue**
+
+Enquanto o desenvolvimento roda em `localhost:3000`, que já está autorizado,
+nada abaixo é necessário. Antecipar domínio só cria configuração para
+refazer.
+
+#### I.2 · Registrar o domínio ⬜
+
+`conservatoriomuscicapa.com.br` ou `.com`. **Decisão pendente.**
+
+Consequência técnica: a escolha define as origens do OAuth, o certificado, e
+o endereço que vai impresso no certificado do aluno e na verificação pública
+de credencial — `/credential/<código>` é uma rota pública, e é o endereço
+que um empregador vai abrir.
+
+#### I.3 · Conectar o repositório ao Cloudflare Pages ⬜
+
+Depende de: I.2.
+
+- [ ] Repositório no GitHub (hoje o projeto é local)
+- [ ] Cloudflare Pages ligado ao repositório, publicação a partir do git
+- [ ] Comando de build `npm run build` — que já encadeia `tsc`, verificação de
+      segredos, de citações e o pente fino, e **falha a publicação** se algum
+      acusar
+- [ ] Variáveis de ambiente no painel, **com chaves HMAC novas** — as de
+      `.env.local` são de desenvolvimento e não vão para produção
+- [ ] `ALLOWED_ORIGIN` apontando para o domínio, sem curinga
+
+#### I.4 · Autorizar as origens de produção no OAuth ⬜
+
+Depende de: I.2, I.3.
+
+No cliente OAuth já criado, acrescentar em **Origens JavaScript autorizadas**:
+
+```
+https://conservatoriomuscicapa.com.br
+https://www.conservatoriomuscicapa.com.br
+https://<projeto>.pages.dev          ← a prévia do Cloudflare
+```
+
+Manter `http://localhost:3000` para o desenvolvimento continuar funcionando.
+
+> Origem errada ou faltando dá erro **na hora do login**, e é o modo de falha
+> mais comum de publicação com OAuth. Conferir os dois percursos — domínio e
+> prévia — antes de anunciar qualquer coisa.
+
+#### I.5 · Publicar a tela de consentimento ⬜
+
+Depende de: I.2, I.4.
+
+Hoje o acesso é **restrito a usuários de teste** — só os e-mails listados
+conseguem entrar. Para qualquer pessoa se matricular, a tela de consentimento
+precisa sair do modo de teste.
+
+- [ ] Logotipo, nome e domínio verificado
+- [ ] Política de privacidade e termos publicados em endereços do domínio
+- [ ] Escopos pedidos: **apenas** os mínimos. Ver `I.7`
+- [ ] Verificação do Google, se os escopos exigirem
+
+#### I.6 · Subdomínio da administração ⬜ **decisão sua**
+
+Você levantou a pergunta certa, e a resposta tem duas partes.
+
+**O que o nome NÃO faz.** Trocar `/admin` por um caminho incomum não é
+controle de segurança. Quem procura painel administrativo usa lista de
+caminhos, e um nome diferente só atrasa. O que de fato protege já está no
+lugar: a allowlist é **variável de ambiente do servidor**, a sessão é
+assinada, e allowlist vazia significa nenhum administrador. Nome nenhum
+substitui isso, e nome nenhum enfraquece isso.
+
+**O que um subdomínio separado FAZ, e é real:**
+
+| Ganho | Por quê |
+| :--- | :--- |
+| **Cloudflare Access na frente** | Uma política de acesso fecha o subdomínio **antes** de a aplicação carregar. Quem não passar nem vê a tela — e isso é controle de verdade, não obscuridade |
+| **Origem separada** | Sessão e armazenamento do painel não compartilham origem com a área do aluno. Uma falha de um lado não alcança o outro |
+| **Registro separado** | Dá para ver, no painel do Cloudflare, quem tentou chegar à administração |
+| **Regra de firewall própria** | Limite de tentativas e restrição por país, só ali |
+
+**Recomendação.** `fundador.conservatoriomuscicapa.com.br`, **com Cloudflare
+Access exigindo o seu e-mail do Google**. O nome diferente é ganho marginal;
+o Access é o que muda o jogo. E você continua entrando com o mesmo e-mail
+Google de sempre — o Access pede a conta antes, a aplicação confere a
+allowlist depois. Duas barreiras independentes.
+
+Depende de: I.2, I.3. **Tarefa de implementação, depois da decisão:**
+
+- [ ] Subdomínio apontado para o mesmo projeto do Pages
+- [ ] Política do Cloudflare Access com os dois e-mails institucionais
+- [ ] Origem do subdomínio autorizada no OAuth
+- [ ] **A rota `/admin` continua existindo na aplicação** — o subdomínio é
+      camada adicional, e a autoridade de sessão continua sendo a garantia
+- [ ] Verificar que a área do aluno **não** responde no subdomínio, e
+      vice-versa
+
+#### I.7 · Escopos e a cópia no Drive ⬜
+
+Depende de: I.5. **Bloqueia `C.3` e `C.4`.**
+
+A cópia de segurança em JSON no Drive da pessoa exige escopo além do perfil
+básico. O escopo correto é **`drive.file`** — dá acesso somente aos arquivos
+que a própria aplicação criou, e não à biblioteca inteira de quem usa.
+
+- [ ] Acrescentar `drive.file` aos escopos
+- [ ] Verificar se aciona verificação do Google e quanto tempo leva
+- [ ] Implementar gravação e **restauração** (`C.4`)
+- [ ] Testar de ponta a ponta, com conta real
+
+> É a única defesa contra perda total quando alguém limpa o navegador, e o
+> item que mais tempo ficou sem verificação.
+
+#### I.8 · Client ID Android ⬜ **futuro**
+
+Depende de: I.5, e da decisão sobre o aplicativo nativo (`F.1` de mobile).
+
+O cliente Web **não serve** para Android: o Google exige um cliente de tipo
+próprio, com o nome do pacote e a impressão SHA-1 do certificado de
+assinatura.
+
+- [ ] Decidir: aplicativo nativo, ou site instalável (PWA)?
+      **Um site instalável não precisa de cliente Android** — usa o mesmo
+      cliente Web. Isso pode eliminar este item inteiro
+- [ ] Se nativo: cliente OAuth do tipo Android, com pacote e SHA-1
+- [ ] SHA-1 de depuração **e** de publicação — são diferentes, e esquecer o
+      segundo quebra o login só na loja
+- [ ] Mesma tela de consentimento; o `aud` do token passa a ter dois valores
+      válidos, e a verificação no servidor precisa aceitar os dois
+
+#### I.9 · Domínio de e-mail institucional ⬜
+
+Hoje a Central de Ajuda aponta para `suporte@conservatoriomuscicapa.com.br`,
+que **ainda não existe**. Depende de I.2.
+
+---
+
+### Ordem executável
+
+```
+  I.0  apagar a chave secreta              agora, 2 minutos
+  I.1  terminar o produto                  o resto do TODO
+   ↓
+  I.2  registrar o domínio                 decisão sua
+  I.3  GitHub + Cloudflare Pages
+  I.4  origens de produção no OAuth
+  I.5  publicar a tela de consentimento
+   ↓
+  I.6  subdomínio + Access                 decisão sua
+  I.7  escopo do Drive → destrava C.3, C.4
+   ↓
+  I.8  Android — só se for aplicativo nativo
+  I.9  e-mail institucional
+```
+
+> **Nada de I.2 em diante é necessário para terminar o produto.** O
+> desenvolvimento roda em `localhost:3000`, que já está autorizado, com login
+> real do Google funcionando desde 18/09/2026.
