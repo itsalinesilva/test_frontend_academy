@@ -45,9 +45,14 @@ depender de alguém lembrar.
 A última linha é a que importa mais:
 
 ```
-bloqueios 0 · a corrigir 129
-não coberto por máquina: docs/harness/QUALIDADE.md
+rotas 83 · telas 81 · distinguem visitante 42
+bloqueios 0 · a corrigir 0
+não coberto por máquina: docs/harness/72_PENTE_FINO_QUALIDADE.md
 ```
+
+A terceira linha é deliberada: ela aponta para a seção deste documento que
+lista o que nenhuma verificação alcança. Sem ela, "0 bloqueios" se leria como
+"está pronto".
 
 ---
 
@@ -101,8 +106,9 @@ vazando em interface em português.
 ### Usabilidade
 
 Nome acessível em botão só com ícone, rótulo em campo de formulário, `alt` em
-imagem, alcance por teclado em elemento clicável. Todas em aviso, com teto
-travado na suíte — ver a seção de dívida.
+imagem, alcance por teclado em elemento clicável. Estão em aviso, e não em
+falha, porque a dívida foi grande e contada antes de ser paga — hoje as quatro
+estão em zero, com o teto travado na suíte. Ver a seção de dívida.
 
 ---
 
