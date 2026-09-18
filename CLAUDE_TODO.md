@@ -897,9 +897,9 @@ laço já existe em `domain/exercicio-musical.ts`, com 29 casos. Falta a tela.
 | T-24 | Tela de ligas com **esqueleto** quando não há participante — a mecânica já existe em `domain/liga.ts` | Duolingo B6 | ✅ `TelaDaLiga.tsx` |
 | T-25 | Ligas por recorte: plataforma, curso, tribo, era | pedido | ✅ |
 | T-26 | Missões diárias com prazo e desafio do mês | Duolingo B5 | ✅ `missoes.ts` + `PainelDeMissoes.tsx` · ⬜ falta a **atividade do dia** real alimentando o progresso |
-| T-27 | **Réguas do perfil** — ativa em destaque, demais esmaecidas e expansíveis | pedido | ⬜ |
-| T-28 | Perfil: pontuação total, semanal, posição, `N de 44` com bloqueados visíveis | Astra A6 | ⬜ |
-| T-29 | Ofensiva com semana visível e clubes | A2 + B4 | ⬜ |
+| T-27 | **Réguas do perfil** — ativa em destaque, demais esmaecidas e expansíveis | pedido | ✅ `ReguasDoPerfil.tsx` |
+| T-28 | Perfil: pontuação total, semanal, posição, `N de M` com bloqueados visíveis | Astra A6 | ✅ componente · ⬜ falta a lista real de emblemas |
+| T-29 | Ofensiva com semana visível e clubes | A2 + B4 | ✅ `PainelDaOfensiva.tsx` + `CLUBES_DE_OFENSIVA` |
 | P.8 | Decidir **se a liga entra agora** ou depois de haver turma | — | ⛔ **decisão sua** |
 
 **Testes:** `tests/ui/ligas-e-missoes.test.tsx`

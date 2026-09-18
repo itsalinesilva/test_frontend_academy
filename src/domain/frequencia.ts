@@ -167,3 +167,47 @@ export const NOMES_DOS_MESES = [
 ];
 
 export const INICIAIS_DA_SEMANA = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+
+// ---------------------------------------------------------------------------
+// Clubes de ofensiva
+// ---------------------------------------------------------------------------
+
+/**
+ * Clube — o reconhecimento de constância sustentada.
+ *
+ * Os requisitos são os de `76_ECONOMIA_DE_PROGRESSO.md` §3, e a razão de
+ * existirem em degraus tão distantes é que constância se mede em meses, não
+ * em sessões. Um clube a cada três dias transformaria a ofensiva numa
+ * máquina de notificação.
+ */
+export interface ClubeDeOfensiva {
+  id: string;
+  nome: string;
+  diasExigidos: number;
+}
+
+export const CLUBES_DE_OFENSIVA: readonly ClubeDeOfensiva[] = [
+  { id: 'aprendiz_constante', nome: 'Aprendiz Constante', diasExigidos: 7 },
+  { id: 'estudante_de_rotina', nome: 'Estudante de Rotina', diasExigidos: 30 },
+  { id: 'disciplina_do_conservatorio', nome: 'Disciplina do Conservatório', diasExigidos: 100 },
+  { id: 'ano_de_estudo', nome: 'Ano de Estudo', diasExigidos: 365 },
+] as const;
+
+/**
+ * O clube que vem a seguir, e quanto falta.
+ *
+ * `null` quando todos foram alcançados — e aí a tela não deve inventar um
+ * quinto degrau para ter o que mostrar.
+ */
+export function proximoClube(
+  diasSeguidos: number
+): { clube: ClubeDeOfensiva; faltam: number } | null {
+  const proximo = CLUBES_DE_OFENSIVA.find((c) => c.diasExigidos > diasSeguidos);
+  if (!proximo) return null;
+  return { clube: proximo, faltam: proximo.diasExigidos - diasSeguidos };
+}
+
+/** Os clubes já alcançados, do mais recente ao mais antigo. */
+export function clubesAlcancados(diasSeguidos: number): ClubeDeOfensiva[] {
+  return CLUBES_DE_OFENSIVA.filter((c) => c.diasExigidos <= diasSeguidos).reverse();
+}
