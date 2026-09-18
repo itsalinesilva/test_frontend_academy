@@ -15,6 +15,7 @@ import {
   AcademicCertificateRecord,
   AcademicHistoryEntry,
 } from '../domain/academy';
+import { aplicarEdicoes, aplicarEdicoesEmLote, EdicaoEditorial } from '../domain/edicao-editorial';
 import {
   SEED_CATEGORIES,
   SEED_PROGRAMS,
@@ -46,7 +47,9 @@ export interface AcademyRepository {
   findModuleById(id: string): Promise<AcademyModule | null>;
 
   // Lessons
+  listLessons(): Promise<AcademyLesson[]>;
   listLessonsByModule(moduleId: string): Promise<AcademyLesson[]>;
+  listLessonsByCourse(courseId: string): Promise<AcademyLesson[]>;
   findLessonById(id: string): Promise<AcademyLesson | null>;
 
   // Activities, Quizzes & Assessments
@@ -225,16 +228,46 @@ export class PersistentAcademyRepository implements AcademyRepository {
   // -------------------------------------------------------------------------
   // Lessons
   // -------------------------------------------------------------------------
+  /**
+   * Lições publicadas, JÁ COM a camada editorial aplicada.
+   *
+   * Toda leitura passa por aqui, e é de propósito: se a aplicação da camada
+   * ficasse a cargo de quem chama, bastaria uma tela esquecer de aplicá-la
+   * para o aluno ler o texto errado que alguém já corrigiu — e para o livro
+   * da biblioteca divergir da lição, sem ninguém saber qual dos dois vale.
+   *
+   * A chave editorial NÃO está em `conteudoPublicado()`. Publicar uma versão
+   * nova do catálogo não apaga correção de texto.
+   */
+  private edicoes(): EdicaoEditorial[] {
+    return this.storage.get<EdicaoEditorial[]>('amd_academy_editorial_v1') ?? [];
+  }
+
+  private licoesPublicadas(): AcademyLesson[] {
+    return this.storage.get<AcademyLesson[]>(this.STORAGE_KEYS.LESSONS) || SEED_LESSONS;
+  }
+
+  public async listLessons(): Promise<AcademyLesson[]> {
+    return aplicarEdicoesEmLote(this.licoesPublicadas(), this.edicoes());
+  }
+
   public async listLessonsByModule(moduleId: string): Promise<AcademyLesson[]> {
-    const list = this.storage.get<AcademyLesson[]>(this.STORAGE_KEYS.LESSONS) || SEED_LESSONS;
-    return list
-      .filter((l) => l.moduleId === moduleId)
-      .sort((a, b) => a.order - b.order);
+    return aplicarEdicoesEmLote(
+      this.licoesPublicadas().filter((l) => l.moduleId === moduleId),
+      this.edicoes()
+    ).sort((a, b) => a.order - b.order);
+  }
+
+  public async listLessonsByCourse(courseId: string): Promise<AcademyLesson[]> {
+    return aplicarEdicoesEmLote(
+      this.licoesPublicadas().filter((l) => l.courseId === courseId),
+      this.edicoes()
+    ).sort((a, b) => a.order - b.order);
   }
 
   public async findLessonById(id: string): Promise<AcademyLesson | null> {
-    const list = this.storage.get<AcademyLesson[]>(this.STORAGE_KEYS.LESSONS) || SEED_LESSONS;
-    return list.find((l) => l.id === id) || null;
+    const licao = this.licoesPublicadas().find((l) => l.id === id);
+    return licao ? aplicarEdicoes(licao, this.edicoes()) : null;
   }
 
   // -------------------------------------------------------------------------

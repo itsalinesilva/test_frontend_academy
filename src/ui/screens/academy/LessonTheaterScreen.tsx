@@ -4,6 +4,10 @@ import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter, useRouteParams } from '../../navigation/router';
 import { CursoSidebar } from '../../components/academy/CursoSidebar';
 import { LessonBlockRenderer } from '../../components/academy/LessonBlocks';
+import { EdicaoDoBloco } from '../../components/academy/EdicaoDoBloco';
+import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { editorialRepository } from '../../../repositories/editorial.repository';
+import { EdicaoEditorial, idDaEdicao } from '../../../domain/edicao-editorial';
 import { academyService } from '../../../services/application/academy.service';
 import { authService } from '../../../services/application/auth.service';
 import {
@@ -35,6 +39,49 @@ export const LessonTheaterScreen: React.FC = () => {
   const [carregando, setCarregando] = useState(true);
   const [menuAberto, setMenuAberto] = useState(true);
   const [salvando, setSalvando] = useState(false);
+
+  /**
+   * Correção de conteúdo, feita na própria leitura.
+   *
+   * Quem revisa encontra o erro LENDO. Obrigá-lo a sair da lição, achar o
+   * capítulo numa lista e achar o bloco dentro dele é fricção que faz a
+   * correção não acontecer — e é chance de corrigir o parágrafo errado.
+   *
+   * `ehAdmin` vem da sessão assinada pelo servidor. Não há decisão de
+   * privilégio nesta tela.
+   */
+  const { ehAdmin, nome: nomeDoEditor } = useUsuarioAtual();
+  const [edicoes, setEdicoes] = useState<EdicaoEditorial[]>([]);
+
+  const recarregarEdicoes = React.useCallback(async () => {
+    if (!lessonId) return;
+    setEdicoes(await editorialRepository.daLicao(lessonId));
+  }, [lessonId]);
+
+  useEffect(() => {
+    recarregarEdicoes().catch(() => setEdicoes([]));
+  }, [recarregarEdicoes]);
+
+  /**
+   * Depois de salvar, a lição é relida do repositório.
+   *
+   * É o que garante que o que aparece na tela seja o resultado da camada
+   * aplicada — e não o rascunho que o editor tinha em mãos. Se os dois
+   * divergissem, o editor veria a correção e o aluno não.
+   */
+  const salvarCorrecao = async (edicao: EdicaoEditorial) => {
+    await editorialRepository.salvar(edicao);
+    await recarregarEdicoes();
+    const atualizada = await academyService.getLesson(lessonId);
+    if (atualizada) setLicao(atualizada);
+  };
+
+  const reverterCorrecao = async (id: string) => {
+    await editorialRepository.reverter(id);
+    await recarregarEdicoes();
+    const atualizada = await academyService.getLesson(lessonId);
+    if (atualizada) setLicao(atualizada);
+  };
 
   useEffect(() => {
     let vivo = true;
@@ -198,9 +245,37 @@ export const LessonTheaterScreen: React.FC = () => {
           <div className="space-y-6">
             {conteudo.sections.map((s) => (
               <section key={s.id} className="space-y-6">
-                {(s.blocks ?? []).map((b) => (
-                  <LessonBlockRenderer key={b.id} block={b} />
-                ))}
+                {(s.blocks ?? []).map((b) => {
+                  const renderizado = <LessonBlockRenderer key={b.id} block={b} />;
+                  if (!ehAdmin) return renderizado;
+
+                  const alvo = {
+                    tipo: 'BLOCO' as const,
+                    variante: 'TRADITIONAL' as const,
+                    secaoId: s.id,
+                    blocoId: b.id,
+                  };
+                  const id = idDaEdicao(licao.id, alvo);
+                  const edicao = edicoes.find((e) => e.id === id);
+
+                  return (
+                    <EdicaoDoBloco
+                      key={b.id}
+                      licaoId={licao.id}
+                      alvo={alvo}
+                      bloco={b}
+                      publicado={
+                        edicao && typeof edicao.anterior !== 'string' ? edicao.anterior : b
+                      }
+                      editado={Boolean(edicao)}
+                      editadaPor={nomeDoEditor ?? 'Edição do Conservatório'}
+                      onSalvar={salvarCorrecao}
+                      onReverter={reverterCorrecao}
+                    >
+                      {renderizado}
+                    </EdicaoDoBloco>
+                  );
+                })}
               </section>
             ))}
           </div>

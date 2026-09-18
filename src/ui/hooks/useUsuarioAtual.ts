@@ -21,6 +21,7 @@ import { authService } from '../../services/application/auth.service';
 export function useUsuarioAtual() {
   const [userId, setUserId] = useState<string | null>(null);
   const [nome, setNome] = useState<string | null>(null);
+  const [ehAdmin, setEhAdmin] = useState(false);
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
@@ -31,11 +32,20 @@ export function useUsuarioAtual() {
         if (!ativo) return;
         setUserId(sessao?.user.id ?? null);
         setNome(sessao?.user.name ?? null);
+        /**
+         * `isAdmin` vem da SESSÃO, que o servidor assinou a partir da
+         * allowlist em variável de ambiente. Nunca de `user.primaryRole`,
+         * nunca de comparação de e-mail no cliente — foi assim que a
+         * auditoria S-02 encontrou a plataforma, e é a conclusão que não
+         * pode voltar: quem edita o localStorage viraria administrador.
+         */
+        setEhAdmin(sessao?.isAdmin === true);
       })
       .catch(() => {
         if (!ativo) return;
         setUserId(null);
         setNome(null);
+        setEhAdmin(false);
       })
       .finally(() => {
         if (ativo) setCarregando(false);
@@ -53,5 +63,5 @@ export function useUsuarioAtual() {
    * a buscar a sessão por conta própria — que é exatamente o padrão que fez
    * dezessete telas gravarem tudo no perfil errado.
    */
-  return { userId, nome, carregando, autenticado: userId !== null };
+  return { userId, nome, ehAdmin, carregando, autenticado: userId !== null };
 }
