@@ -340,11 +340,14 @@ import { LIVRETO_TEORIA } from '../src/data/seed-booklet-theory';
 import { CURSO_TEORIA, MODULOS_TEORIA, LICOES_TEORIA, CAPITULOS_TEORIA } from '../src/data/seed-theory-course';
 
 describe('Curso de Teoria — integridade do conteúdo', () => {
-  it('dezesseis capítulos, dezesseis módulos, dezesseis lições', () => {
-    expect(CAPITULOS_TEORIA).toHaveLength(16);
-    expect(MODULOS_TEORIA).toHaveLength(16);
-    expect(LICOES_TEORIA).toHaveLength(16);
-    expect(CURSO_TEORIA.moduleIds).toHaveLength(16);
+  // O curso cobre o escopo inteiro da teoria elementar, nao um recorte dele.
+  // Quando eram dezesseis capitulos, ficavam de fora transporte, modulacao,
+  // modos liturgicos, instrumentos transpositores e acordes de nona.
+  it('cinquenta e oito capítulos, e um módulo e uma lição para cada', () => {
+    expect(CAPITULOS_TEORIA).toHaveLength(58);
+    expect(MODULOS_TEORIA).toHaveLength(58);
+    expect(LICOES_TEORIA).toHaveLength(58);
+    expect(CURSO_TEORIA.moduleIds).toHaveLength(58);
   });
 
   it('cada módulo declarado no curso existe de fato', () => {

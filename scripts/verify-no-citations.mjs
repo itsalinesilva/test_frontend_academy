@@ -24,7 +24,11 @@ import { join, extname } from 'node:path';
  * de estudo interno veio.
  */
 const PROIBIDOS = [
+  // As grafias aportuguesadas tambem contam. Uma faixa do player chegou a
+  // trazer "Catedra de Teoria de Edimburgo" e passou por esta verificacao,
+  // porque so a grafia inglesa estava listada.
   'Edinburgh',
+  'Edimburgo',
   'Bohumil',
   'Musimed',
   'Grout',

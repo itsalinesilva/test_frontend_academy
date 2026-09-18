@@ -311,3 +311,41 @@ Consequência: se o KV cair ou for desligado, o produto continua inteiro para ca
 | 4.9 | **O seed da fundadora e um curriculo fabricado** (percentil 99,8; 420h; posts com 215 upvotes) e vai para producao com o nome real dela. Esvaziar e decisao de produto | §14 | ⬜ **decisao da Aline** |
 | 4.10 | `PortfolioScreen`: `alert()` fingindo exportar PDF trocado por exportacao real em JSON (o mesmo formato do backup no Drive) | §14 | ✅ |
 | 4.11 | Estados de pagina em Profile: media **2,5 de 5** por tela (era 0). Nenhuma tela com zero | DoD | ✅ |
+
+
+---
+
+## Pendências abertas em 2026-09-17
+
+### Conteúdo (o maior bloco)
+- [ ] **Curso de História da Música Ocidental** — fonte extraída (765 páginas,
+      camada de texto limpa). Curso não redigido.
+- [ ] **Curso de História da Música Brasileira** — fonte extraída por OCR
+      (281 páginas). Curso não redigido.
+- [ ] **Curso de Violino** — explicação do instrumento, postura e todo o
+      conteúdo textual dos livros, seguido do board de prática só com obras
+      de domínio público, organizado pelos 4 níveis.
+- [ ] **Programas** — aparecem sozinhos quando o segundo curso entrar.
+- [ ] **Prova final de Teoria** — política declarada, questões não redigidas.
+- [ ] **Livreto de Teoria** — cobre 16 capítulos; precisa cobrir os 58.
+      Faltam questões para `tonalidade` e `transposicao`.
+- [ ] **Laboratórios** — 17 dos 58 capítulos ainda não têm bloco sonoro
+      (capítulos de notação e vocabulário: 6, 7, 8, 20, 27, 28, 30, 33, 34,
+      36, 37, 38, 47, 48, 49, 57, 58).
+
+### Sistema — lacunas de paridade (ver `docs/PARIDADE_COURSERA.md`)
+- [ ] Vídeo na lição (só existe `VIDEO_PLACEHOLDER`)
+- [ ] Prazos e cronograma pessoal do aluno
+- [ ] Boletim consolidado (as notas existem, a tela não)
+- [ ] Fórum ancorado em curso/lição
+- [ ] Limite de tentativas e cooldown em prova
+- [ ] Revisão por pares
+- [ ] Certificado de conclusão de programa (gatilho)
+- [ ] Analytics de engajamento por curso
+
+### Interface
+- [ ] `ExerciseSessionScreen`, `PracticeScreen`, `ImmediateFeedbackScreen`
+      ainda não usam a forma D (workspace) do `PageLayout`
+- [ ] Revisar as demais telas com o mesmo critério aplicado ao Academy:
+      sem card decorativo, sem botão com frase onde cabe um ícone, sem
+      legenda que repete o que o elemento já diz

@@ -520,3 +520,67 @@ Especificação completa em `docs/backend_specs/21.1 §11`.
 5. Não inventar dados para uma tela parecer pronta.
 6. Ao final de cada missão: atualizar `CLAUDE_STATE.md`, `CLAUDE_AUDIT.md`, `CLAUDE_TODO.md`.
 7. Referência de mercado = **clone de estrutura e experiência**; identidade, conteúdo e dados = **próprios**.
+
+---
+
+## Sessão de 2026-09-17 — Teoria completa, shell enxugado, catálogo purgado
+
+| Verificação | Comando | Resultado |
+| :--- | :--- | :--- |
+| Typecheck estrito | `tsc --noEmit` | ✅ 0 erros |
+| Lint | `eslint src tests` | ✅ 0 erros, 19 warnings (`no-explicit-any`, preexistentes) |
+| Testes | `vitest run` | ✅ **331/331** (20 arquivos) |
+| Build | `npm run build` | ✅ inclui `verify:secrets` e `verify:citations` |
+
+### Curso de Teoria — de 16 para 58 capítulos
+
+| Métrica | Antes | Agora |
+| :--- | ---: | ---: |
+| Capítulos | 16 | **58** |
+| Módulos | 16 | **58** |
+| Lições | 16 | **58** |
+| Blocos de conteúdo | 91 | **340** |
+| Checkpoints | 16 | **58** (um por capítulo, verificado) |
+| Laboratórios/áudio | — | 64 blocos em 41 capítulos |
+
+Cobertura conferida por script: nenhum capítulo sem blocos, nenhum id de bloco
+duplicado, nenhum capítulo sem checkpoint.
+
+Os 17 capítulos que antes não existiam: modulação, transporte, teoria alemã dos
+compassos, transposição dos modos litúrgicos, abreviaturas, termos especiais,
+escala geral, nomenclatura das notas, acordes a quatro vozes, acordes de sétima
+e suas alterações e inversões, acordes de nona, outros acordes, origem e
+enarmonia dos acordes, instrumentos transpositores e notação moderna.
+
+### Shell — de três menus para um
+
+Removidos: a barra branca de pilares (`Navigation.tsx`, apagado), a sub-barra
+rotulada "Sub-rotas", a segunda marca ("Academia Musical"), e a tela de raiz
+(`OverviewScreen.tsx`, apagada) que repetia o menu pela terceira vez.
+
+Novos: `NavMenu` (rotas atrás de um chevron, abre por proximidade),
+`HeaderSearch` (uma lupa que expande), `Carrossel` (paginado).
+
+A raiz `/` agora abre o Academy.
+
+### Catálogo — fabricação removida
+
+`seed-academy-content.ts` continha três cursos que nunca existiram
+(`crs_fomt_01`, `crs_fomt_02`, `crs_contraponto_01`), com ementas, módulos,
+lições, provas e questionários escritos por inteiro, atribuídos a uma docente
+morta em 1896, com foto de banco de imagens e autor `usr_founder_1`. Sobre eles
+havia dois programas e três trilhas igualmente inventados.
+
+Tudo removido. Resta o que é real: o curso de Teoria.
+
+### Player
+
+5 faixas → **31**, todas de domínio público ou material teórico próprio
+(`seed-player-repertoire.ts`). Removida a faixa assinada por uma cátedra
+estrangeira — violação da regra de não citar fontes.
+
+### Paridade com o Coursera
+
+Auditoria completa em `docs/PARIDADE_COURSERA.md`. Sete lacunas reais de
+sistema, sendo vídeo a mais visível; três lacunas de conteúdo (os outros três
+cursos ainda não foram escritos).

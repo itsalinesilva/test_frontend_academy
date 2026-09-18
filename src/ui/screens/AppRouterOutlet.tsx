@@ -81,7 +81,6 @@ import { KidsGuardianScreen } from './kids/KidsGuardianScreen';
 import { EditProfileScreen } from './profile/EditProfileScreen';
 
 // Core & Utilities
-import { OverviewScreen } from './overview/OverviewScreen';
 import { LoginScreen } from './auth/LoginScreen';
 import { RegisterScreen } from './auth/RegisterScreen';
 import { RecoveryScreen } from './auth/RecoveryScreen';
@@ -228,9 +227,14 @@ export const AppRouterOutlet: React.FC = () => {
     );
   }
 
-  // Root / Overview
-  if (currentPath === '/' || currentPath === '/overview') {
-    return <OverviewScreen />;
+  // Raiz: a plataforma abre no Academy.
+  //
+  // Havia aqui uma tela de "visao geral" que repetia o menu do header pela
+  // terceira vez e enchia o resto de cards decorativos com botoes que nao
+  // levavam a lugar nenhum. Foi removida: quem entra quer estudar, e o
+  // Academy e onde se estuda.
+  if (currentPath === '/' || currentPath === '' || currentPath === '/overview') {
+    return <AcademyHomeScreen />;
   }
 
   // Design System
@@ -507,11 +511,6 @@ export const AppRouterOutlet: React.FC = () => {
   }
   if (currentPath === '/admin/audit') {
     return <AdminAuditScreen />;
-  }
-
-  // Root canonical overview
-  if (currentPath === '/' || currentPath === '') {
-    return <OverviewScreen />;
   }
 
   // Explicit 404 Not Found State

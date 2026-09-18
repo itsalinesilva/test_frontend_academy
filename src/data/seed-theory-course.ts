@@ -1,31 +1,37 @@
 import { AcademyCourse, AcademyModule, AcademyLesson, LessonBlock } from '../domain/academy';
 import { CourseLevel } from '../domain/types';
+import {
+  CAPITULOS_TEORIA,
+  COMPETENCIAS_TEORIA,
+  CARGA_HORARIA,
+  TOTAL_DE_CAPITULOS,
+} from './theory/capitulos';
+import { BLOCOS_01_15 } from './theory/blocos-01-15';
+import { BLOCOS_16_30 } from './theory/blocos-16-30';
+import { BLOCOS_31_44 } from './theory/blocos-31-44';
+import { BLOCOS_45_58 } from './theory/blocos-45-58';
 
 /**
  * Curso de Teoria da Música — conteúdo autoral do Conservatório Muscicapa.
  *
- * SOBRE A ORIGEM
- * --------------
- * A SEQUÊNCIA dos dezesseis capítulos foi determinada estudando a progressão
- * consolidada do campo: som → notação → duração → alturas → intervalos →
- * escalas → armaduras → métrica → andamento → subdivisões → acordes →
- * cifragem.
+ * COBERTURA
+ * ---------
+ * Cinquenta e oito capítulos. A lista não foi encurtada: ela percorre o
+ * escopo inteiro da teoria elementar, tópico a tópico, na ordem em que os
+ * conceitos se sustentam uns nos outros. Um curso que pula transporte,
+ * modos litúrgicos, instrumentos transpositores ou acordes de nona não é
+ * um curso de teoria — é uma seleção de teoria.
  *
- * Essa ordem não é invenção nem cópia: é a ordem em que os conceitos se
- * sustentam uns nos outros. Não se ensina intervalo antes de altura, nem
- * acorde antes de intervalo, e qualquer curso sério chega à mesma sequência
- * porque a matéria a impõe.
- *
- * O TEXTO é escrito aqui, em linguagem própria. Nenhuma obra é citada, e
- * nenhuma expressão de terceiro é reproduzida — fatos e ideias não são
+ * O TEXTO é escrito aqui, em linguagem própria. Nenhuma obra é citada e
+ * nenhuma expressão de terceiro é reproduzida: fatos e ideias não são
  * protegidos; expressão é.
  *
- * SOBRE A FORMA
- * -------------
- * Cada lição alterna leitura curta com laboratório que USA o motor de teoria
- * de verdade: o aluno ouve o intervalo, monta o acorde, vê a escala na pauta.
- * Ler sobre uma terça maior e ouvir uma terça maior são duas coisas
- * diferentes, e a segunda é a que fica.
+ * FORMA
+ * -----
+ * Cada capítulo alterna leitura curta com laboratório que aciona o motor de
+ * teoria de verdade — o aluno ouve o intervalo, monta o acorde, vê a escala
+ * na pauta — e fecha com um checkpoint. Ler sobre uma terça maior e ouvir
+ * uma terça maior são duas coisas diferentes, e a segunda é a que fica.
  */
 
 const AUTOR = {
@@ -36,6 +42,9 @@ const AUTOR = {
 
 const AGORA = '2026-09-17T00:00:00.000Z';
 
+const idModulo = (n: number) => `mod_teoria_${String(n).padStart(2, '0')}`;
+const idLicao = (n: number) => `les_teoria_${String(n).padStart(2, '0')}`;
+
 // ---------------------------------------------------------------------------
 // Curso
 // ---------------------------------------------------------------------------
@@ -45,286 +54,63 @@ export const CURSO_TEORIA: AcademyCourse = {
   slug: 'teoria-da-musica-fundamentos',
   categoryId: 'cat_teoria',
   categoryName: 'Teoria Musical',
-  title: 'Teoria da Música — Fundamentos',
-  subtitle: 'Do som à cifra: os doze degraus da gramática musical.',
+  title: 'Teoria da Música',
+  subtitle: 'Do fenômeno do som à notação contemporânea, sem pular tópico.',
   description:
-    'O percurso completo da teoria elementar, na ordem em que os conceitos se sustentam. ' +
-    'Começa no fenômeno físico do som e termina na leitura de uma cifra — passando por notação, ' +
-    'duração, intervalos, escalas, armaduras, métrica e acordes. Cada capítulo alterna leitura ' +
-    'curta com laboratório sonoro: você ouve o que acabou de ler antes de seguir adiante.',
+    'O percurso completo da teoria musical elementar, em cinquenta e oito capítulos, na ordem ' +
+    'em que os conceitos se sustentam. Começa na física do som e termina na notação do século XX — ' +
+    'passando por notação, valores, alturas, intervalos, escalas, compasso, métrica, tonalidade, ' +
+    'modulação, modos, ornamentos, harmonia e transposição. Cada capítulo alterna leitura curta ' +
+    'com laboratório sonoro: você ouve o que acabou de ler antes de seguir adiante.',
   level: CourseLevel.FUNDAMENTAL,
-  workloadHours: 80,
+  workloadHours: CARGA_HORARIA,
   ...AUTOR,
   authorBio:
     'A cátedra de teoria reúne o material didático escrito e revisado internamente pelo Conservatório.',
   objectives: [
-    'Ler e escrever notação musical em clave de sol e de fá, com fluência.',
+    'Ler e escrever notação musical nas sete claves, com fluência nas duas mais usadas.',
     'Identificar intervalos de ouvido e no papel, pelo número e pela qualidade.',
-    'Construir escalas maiores e menores em qualquer tonalidade, e reconhecer a armadura.',
-    'Compreender compasso, métrica e as subdivisões que geram síncope e contratempo.',
-    'Montar tríades e tétrades, reconhecer inversões e ler cifragem.',
+    'Construir escalas maiores, menores, modais e artificiais em qualquer altura.',
+    'Compreender compasso, métrica, quiálteras e as subdivisões que geram síncope e contratempo.',
+    'Montar tríades, tétrades e acordes de nona, reconhecer inversões e ler cifragem.',
+    'Reconhecer e executar os ornamentos conforme a convenção do período.',
+    'Transportar e escrever para instrumentos transpositores.',
   ],
-  competencies: [
-    'notacao',
-    'duracao',
-    'alturas',
-    'intervalos',
-    'escalas',
-    'armaduras',
-    'metrica',
-    'andamento',
-    'subdivisao',
-    'acordes',
-    'cifragem',
-    'escalas-especiais',
-    'funcoes',
-    'ornamentos',
-    'fraseado',
-  ],
+  competencies: COMPETENCIAS_TEORIA,
   skills: ['leitura', 'percepcao', 'harmonia'],
   prerequisites: [],
   materials: [],
   curriculumSummary:
-    '16 capítulos · 16 lições interativas com laboratório sonoro · livreto de exercícios ao fim de cada capítulo · simulado geral · prova final.',
+    `${TOTAL_DE_CAPITULOS} capítulos · ${TOTAL_DE_CAPITULOS} lições com laboratório sonoro · ` +
+    'livreto de exercícios ao fim de cada capítulo · simulado geral · prova final.',
   assessmentPolicy:
-    'Cada capítulo termina com exercícios de fixação. O simulado reúne todas as questões do curso, na ordem estudada. A prova final cobre as mesmas competências com questões próprias.',
+    'Cada capítulo termina com exercícios de fixação. O simulado reúne todas as questões do curso, ' +
+    'na ordem estudada. A prova final cobre as mesmas competências com questões próprias.',
   certificatePolicy:
-    'Certificado de curso livre emitido ao concluir os dezesseis capítulos com 70% de acerto na prova final.',
+    `Certificado de curso livre emitido ao concluir os ${TOTAL_DE_CAPITULOS} capítulos com 70% de acerto na prova final.`,
   certificateInfo: {
-    title: 'Certificado em Teoria da Música — Fundamentos',
+    title: 'Certificado em Teoria da Música',
     accreditation: 'Curso livre de qualificação profissional. Certificação própria.',
-    criteria: 'Conclusão dos dezesseis capítulos e 70% de acerto na prova final.',
+    criteria: `Conclusão dos ${TOTAL_DE_CAPITULOS} capítulos e 70% de acerto na prova final.`,
   },
-  moduleIds: Array.from({ length: 16 }, (_, i) => `mod_teoria_${String(i + 1).padStart(2, '0')}`),
+  moduleIds: CAPITULOS_TEORIA.map((c) => idModulo(c.numero)),
   isPublished: true,
   createdAt: AGORA,
   updatedAt: AGORA,
 };
 
 // ---------------------------------------------------------------------------
-// Capítulos
+// Módulos — um por capítulo
 // ---------------------------------------------------------------------------
 
-interface DefinicaoCapitulo {
-  numero: number;
-  titulo: string;
-  descricao: string;
-  objetivos: string[];
-  competencia: string;
-  minutos: number;
-}
-
-export const CAPITULOS_TEORIA: DefinicaoCapitulo[] = [
-  {
-    numero: 1,
-    titulo: 'O som e suas quatro propriedades',
-    descricao:
-      'Antes de qualquer símbolo: o que é um som, e quais das suas propriedades a música organiza.',
-    objetivos: [
-      'Distinguir altura, duração, intensidade e timbre num mesmo som.',
-      'Explicar por que a altura depende da frequência e não do volume.',
-      'Reconhecer a série harmônica como origem do timbre.',
-    ],
-    competencia: 'fundamentos',
-    minutos: 25,
-  },
-  {
-    numero: 2,
-    titulo: 'A pauta, as claves e os nomes das notas',
-    descricao: 'O sistema de escrita: onde a nota mora no papel e o que a clave decide.',
-    objetivos: [
-      'Ler notas em clave de sol e em clave de fá.',
-      'Explicar por que existem claves diferentes.',
-      'Usar linhas suplementares sem perder a referência.',
-    ],
-    competencia: 'notacao',
-    minutos: 35,
-  },
-  {
-    numero: 3,
-    titulo: 'Figuras, pausas e a divisão do tempo',
-    descricao: 'A duração escrita: a proporção entre as figuras e o que o ponto de aumento faz.',
-    objetivos: [
-      'Relacionar as figuras entre si pela proporção de dois para um.',
-      'Aplicar ponto de aumento e ligadura de valor.',
-      'Ler pausas com a mesma precisão com que se leem notas.',
-    ],
-    competencia: 'duracao',
-    minutos: 35,
-  },
-  {
-    numero: 4,
-    titulo: 'Tom, semitom e os acidentes',
-    descricao:
-      'A menor distância do sistema, e os cinco sinais que alteram a altura de uma nota escrita.',
-    objetivos: [
-      'Medir distâncias em tons e semitons sobre o teclado.',
-      'Aplicar sustenido, bemol, bequadro, dobrado sustenido e dobrado bemol.',
-      'Reconhecer enarmonia e explicar por que duas grafias soam igual.',
-    ],
-    competencia: 'alturas',
-    minutos: 35,
-  },
-  {
-    numero: 5,
-    titulo: 'Intervalos: número e qualidade',
-    descricao:
-      'A distância entre duas notas — contada de um jeito e qualificada de outro, e por que são dois passos.',
-    objetivos: [
-      'Classificar um intervalo pelo número e pela qualidade.',
-      'Inverter um intervalo e prever o resultado.',
-      'Distinguir consonância de dissonância de ouvido.',
-    ],
-    competencia: 'intervalos',
-    minutos: 45,
-  },
-  {
-    numero: 6,
-    titulo: 'Escalas maiores e menores',
-    descricao: 'A sequência de tons e semitons que define um modo, e as três formas da menor.',
-    objetivos: [
-      'Construir a escala maior em qualquer tonalidade pelo padrão de tons e semitons.',
-      'Distinguir menor natural, harmônica e melódica.',
-      'Identificar o grau de uma nota dentro da escala.',
-    ],
-    competencia: 'escalas',
-    minutos: 45,
-  },
-  {
-    numero: 7,
-    titulo: 'Armaduras de clave e tonalidades',
-    descricao:
-      'Por que os acidentes migram para o começo da pauta, e como o ciclo das quintas os organiza.',
-    objetivos: [
-      'Determinar a tonalidade a partir da armadura.',
-      'Escrever a armadura de qualquer tonalidade maior ou menor.',
-      'Relacionar cada tonalidade maior à sua relativa menor.',
-    ],
-    competencia: 'armaduras',
-    minutos: 45,
-  },
-  {
-    numero: 8,
-    titulo: 'Compasso, métrica e acentuação',
-    descricao: 'Como o tempo se agrupa, e o que a fórmula de compasso realmente informa.',
-    objetivos: [
-      'Ler a fórmula de compasso e deduzir a unidade de tempo.',
-      'Distinguir compasso simples de composto.',
-      'Identificar o tempo forte e a acentuação natural.',
-    ],
-    competencia: 'metrica',
-    minutos: 40,
-  },
-  {
-    numero: 9,
-    titulo: 'Andamento, dinâmica e agógica',
-    descricao: 'As indicações que não estão nas notas: velocidade, intensidade e flexão do tempo.',
-    objetivos: [
-      'Interpretar indicações de andamento e relacioná-las ao metrônomo.',
-      'Aplicar a escala de dinâmica, do pianíssimo ao fortíssimo.',
-      'Reconhecer as indicações de mudança gradual de tempo.',
-    ],
-    competencia: 'andamento',
-    minutos: 30,
-  },
-  {
-    numero: 10,
-    titulo: 'Quiálteras, síncope e contratempo',
-    descricao: 'Quando a subdivisão contraria o compasso — e o efeito rítmico que disso resulta.',
-    objetivos: [
-      'Executar quiálteras contra a subdivisão natural.',
-      'Distinguir síncope de contratempo pela posição do ataque.',
-      'Explicar por que a síncope desloca o acento.',
-    ],
-    competencia: 'subdivisao',
-    minutos: 40,
-  },
-  {
-    numero: 11,
-    titulo: 'Acordes: tríades e inversões',
-    descricao: 'Três notas empilhadas em terças, e o que muda quando o baixo troca.',
-    objetivos: [
-      'Construir as quatro qualidades de tríade.',
-      'Identificar a inversão pelo baixo.',
-      'Reconhecer as tríades sobre os graus da escala maior.',
-    ],
-    competencia: 'acordes',
-    minutos: 45,
-  },
-  {
-    numero: 12,
-    titulo: 'Cifragem e leitura harmônica',
-    descricao: 'O sistema de símbolos que descreve um acorde sem escrevê-lo nota a nota.',
-    objetivos: [
-      'Ler e escrever cifras de tríades e tétrades.',
-      'Interpretar a indicação de baixo invertido.',
-      'Converter uma cifra em notas concretas ao teclado.',
-    ],
-    competencia: 'cifragem',
-    minutos: 45,
-  },
-  {
-    numero: 13,
-    titulo: 'Escalas cromática, pentatônica e os modos',
-    descricao:
-      'O que existe além de maior e menor — e por que essas outras escalas soam como soam.',
-    objetivos: [
-      'Construir a escala cromática e explicar sua função de passagem.',
-      'Reconhecer a pentatônica e o motivo de ela não ter semitons.',
-      'Identificar os sete modos a partir dos graus da escala maior.',
-    ],
-    competencia: 'escalas-especiais',
-    minutos: 40,
-  },
-  {
-    numero: 14,
-    titulo: 'Graus, funções e cadências',
-    descricao:
-      'Os nomes dos graus não são etiquetas: descrevem o que cada um faz dentro da tonalidade.',
-    objetivos: [
-      'Nomear os sete graus e descrever a função de cada um.',
-      'Distinguir as funções de tônica, dominante e subdominante.',
-      'Reconhecer as cadências perfeita, plagal, interrompida e suspensiva.',
-    ],
-    competencia: 'funcoes',
-    minutos: 45,
-  },
-  {
-    numero: 15,
-    titulo: 'Ornamentos',
-    descricao:
-      'Os sinais que acrescentam notas à melodia sem alterar a duração escrita.',
-    objetivos: [
-      'Executar apojatura, mordente, trinado e grupeto.',
-      'Distinguir ornamento de nota real.',
-      'Ler a notação abreviada de cada um.',
-    ],
-    competencia: 'ornamentos',
-    minutos: 35,
-  },
-  {
-    numero: 16,
-    titulo: 'Articulação, fraseado e forma',
-    descricao:
-      'Como as notas se ligam entre si, e como se agrupam em unidades de sentido.',
-    objetivos: [
-      'Aplicar legato, staccato e acentuação.',
-      'Delimitar motivo, frase e período.',
-      'Reconhecer a estrutura de pergunta e resposta na frase musical.',
-    ],
-    competencia: 'fraseado',
-    minutos: 40,
-  },
-];
-
 export const MODULOS_TEORIA: AcademyModule[] = CAPITULOS_TEORIA.map((c) => ({
-  id: `mod_teoria_${String(c.numero).padStart(2, '0')}`,
+  id: idModulo(c.numero),
   courseId: CURSO_TEORIA.id,
   order: c.numero,
-  title: `Capítulo ${c.numero} — ${c.titulo}`,
+  title: `${c.romano}. ${c.titulo}`,
   description: c.descricao,
   objectives: c.objetivos,
-  lessonIds: [`les_teoria_${String(c.numero).padStart(2, '0')}`],
+  lessonIds: [idLicao(c.numero)],
   createdAt: AGORA,
   updatedAt: AGORA,
 }));
@@ -333,884 +119,26 @@ export const MODULOS_TEORIA: AcademyModule[] = CAPITULOS_TEORIA.map((c) => ({
 // Lições
 // ---------------------------------------------------------------------------
 
-/** Blocos de cada lição, por número de capítulo. */
+/** Blocos de todos os capítulos, reunidos dos quatro arquivos de conteúdo. */
 const BLOCOS: Record<number, LessonBlock[]> = {
-  1: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c1_intro',
-      markdown:
-        'Um som é uma perturbação do ar que chega ao ouvido. A música não organiza qualquer perturbação: organiza **quatro propriedades** que todo som tem ao mesmo tempo.\n\n' +
-        '**Altura** é o quão grave ou agudo o som é. Depende da **frequência** — quantas vezes por segundo a fonte vibra. Mais vibrações, som mais agudo.\n\n' +
-        '**Duração** é quanto tempo o som permanece.\n\n' +
-        '**Intensidade** é o quão forte ou fraco ele soa. Depende da **amplitude** da vibração, não da frequência: um som pode ser grave e altíssimo, ou agudo e quase inaudível.\n\n' +
-        '**Timbre** é o que distingue um violino de uma flauta tocando a mesma nota, com a mesma força, pelo mesmo tempo.',
-    },
-    {
-      kind: 'CALLOUT',
-      id: 'c1_call',
-      type: 'warning',
-      title: 'A confusão mais comum',
-      text:
-        'Altura e intensidade são propriedades independentes. Dizer que uma nota é "alta" é ambíguo em português — pode significar aguda ou forte. Em música, "alta" quer dizer aguda. Para intensidade, diz-se forte e fraco.',
-    },
-    {
-      kind: 'AUDIO_EXAMPLE',
-      id: 'c1_audio_altura',
-      title: 'A mesma duração, alturas diferentes',
-      description: 'Três sons de duração idêntica. O que muda é só a frequência.',
-      notes: ['C3', 'C4', 'C5'],
-      playMode: 'SEQUENCE',
-      bpm: 60,
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c1_serie',
-      markdown:
-        '## De onde vem o timbre\n\n' +
-        'Quando uma corda vibra, ela não produz uma frequência só. Produz a **fundamental** — a que se ouve como a nota — e, junto, uma série de frequências mais agudas em proporções simples: o dobro, o triplo, o quádruplo. São os **harmônicos**.\n\n' +
-        'A intensidade relativa de cada harmônico é o que produz o timbre. Um violino e uma flauta tocando lá 440 emitem a mesma fundamental; o que difere é a receita de harmônicos que acompanha.',
-    },
-    {
-      kind: 'AUDIO_EXAMPLE',
-      id: 'c1_audio_serie',
-      title: 'Os primeiros harmônicos de dó',
-      description:
-        'Fundamental, oitava, quinta e oitava seguinte — as proporções 1:2:3:4, ouvidas em sequência e depois juntas.',
-      notes: ['C3', 'C4', 'G4', 'C5'],
-      playMode: 'SEQUENCE',
-      bpm: 50,
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c1_temperamento',
-      markdown:
-        '## O diapasão e o temperamento\n\n' +
-        'Para que músicos toquem juntos é preciso um ponto de partida combinado. O **diapasão** é essa referência: hoje, o lá4 a 440 Hz. Não é um valor natural — foi convencionado, e variou bastante ao longo da história.\n\n' +
-        'Já o **temperamento igual** é a decisão de dividir a oitava em doze semitons exatamente iguais. A acústica pura não produz isso: os intervalos naturais, derivados da série harmônica, não fecham a oitava quando empilhados. O temperamento abre mão de uma pureza mínima em cada intervalo para que todas as tonalidades soem igualmente utilizáveis — e é o que permite modular sem reafinar o instrumento.',
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c1_check',
-      question: 'Dois sons têm a mesma frequência, mas um é muito mais forte. O que difere entre eles?',
-      options: ['A altura', 'A intensidade', 'O timbre', 'A duração'],
-      correctIndex: 1,
-      explanation:
-        'A frequência determina a altura — se ela é a mesma, a altura é a mesma. A diferença de força é intensidade, que depende da amplitude da vibração.',
-    },
-  ],
-
-  2: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c2_intro',
-      markdown:
-        'A **pauta** — ou pentagrama — são cinco linhas e quatro espaços. Cada linha e cada espaço é uma posição de altura: quanto mais acima, mais agudo.\n\n' +
-        'Só que cinco linhas não dizem nada sozinhas. É a **clave**, no início da pauta, que fixa uma nota de referência — e todas as outras se posicionam a partir dela.',
-    },
-    {
-      kind: 'STAFF',
-      id: 'c2_staff',
-      title: 'Clave de sol: as notas nas linhas',
-      notes: ['E4', 'G4', 'B4', 'D5', 'F5'],
-      clef: 'treble',
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c2_claves',
-      markdown:
-        '## Por que mais de uma clave\n\n' +
-        'Se houvesse uma clave só, instrumentos graves viveriam abaixo da pauta e agudos acima dela — escritos em linhas suplementares intermináveis, ilegíveis.\n\n' +
-        'A **clave de sol** fixa o sol4 na segunda linha e serve a vozes e instrumentos agudos. A **clave de fá** fixa o fá3 na quarta linha e serve aos graves. A mesma posição na pauta significa notas diferentes conforme a clave — é isso que a clave decide.',
-    },
-    {
-      kind: 'KEYBOARD',
-      id: 'c2_teclado',
-      title: 'As notas naturais, do dó3 ao dó5',
-      highlightNotes: ['C4'],
-      octaves: 2,
-      startOctave: 3,
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c2_anatomia',
-      markdown:
-        '## A anatomia da nota escrita\n\n' +
-        'A **cabeça** define a altura pela posição na pauta. A **haste** sobe à direita quando a nota está abaixo da terceira linha e desce à esquerda quando está acima — a regra existe para a haste não invadir o espaço do sistema vizinho. O **colchete** encurta a duração: um colchete faz a colcheia, dois fazem a semicolcheia.\n\n' +
-        '**Linhas suplementares** estendem a pauta momentaneamente, acima ou abaixo, para notas fora das cinco linhas.\n\n' +
-        'Além das claves de sol e fá existe a **clave de dó**, que fixa o dó4 na linha onde for colocada — na terceira, serve à viola; na quarta, ao registro agudo do violoncelo e do fagote.',
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c2_check',
-      question: 'Uma nota escrita na segunda linha da pauta. Que nota é?',
-      options: [
-        'Sol, sempre',
-        'Depende da clave',
-        'Mi, sempre',
-        'Depende da armadura',
-      ],
-      correctIndex: 1,
-      explanation:
-        'A posição na pauta só ganha nome depois que a clave fixa a referência. Na clave de sol, a segunda linha é sol4; na clave de fá, é si2.',
-    },
-  ],
-
-  3: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c3_intro',
-      markdown:
-        'As figuras não têm duração fixa em segundos. Têm duração **relativa**: cada figura vale o dobro da seguinte.\n\n' +
-        '| Figura | Vale |\n|---|---|\n| semibreve | 2 mínimas |\n| mínima | 2 semínimas |\n| semínima | 2 colcheias |\n| colcheia | 2 semicolcheias |\n\n' +
-        'Quanto tempo dura uma semínima em segundos? Depende do andamento — e é só isso que o andamento decide.',
-    },
-    {
-      kind: 'CALLOUT',
-      id: 'c3_call',
-      type: 'tip',
-      title: 'O ponto de aumento',
-      text:
-        'Um ponto à direita da figura acrescenta METADE do valor dela. Semínima pontuada = semínima + colcheia. Não é uma regra arbitrária: é a única forma de escrever uma duração de três subdivisões sem inventar uma figura nova.',
-    },
-    {
-      kind: 'AUDIO_EXAMPLE',
-      id: 'c3_audio',
-      title: 'Semínimas e colcheias sobre o mesmo pulso',
-      description: 'Quatro semínimas, depois oito colcheias. O pulso não muda; a subdivisão dobra.',
-      notes: ['C4', 'C4', 'C4', 'C4', 'C4', 'C4', 'C4', 'C4'],
-      playMode: 'SEQUENCE',
-      bpm: 100,
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c3_check',
-      question: 'Quantas semicolcheias cabem numa mínima?',
-      options: ['4', '8', '16', '2'],
-      correctIndex: 1,
-      explanation:
-        'Mínima = 2 semínimas = 4 colcheias = 8 semicolcheias. Cada degrau da tabela dobra a quantidade.',
-    },
-  ],
-
-  4: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c4_intro',
-      markdown:
-        'O **semitom** é a menor distância do sistema temperado: de uma tecla à tecla imediatamente vizinha, branca ou preta. Dois semitons formam um **tom**.\n\n' +
-        'Entre as sete notas naturais, a distância é de um tom — exceto entre **mi e fá** e entre **si e dó**, onde é de um semitom. É por isso que o teclado não tem tecla preta nesses dois pontos.',
-    },
-    {
-      kind: 'KEYBOARD',
-      id: 'c4_teclado',
-      title: 'Onde faltam as teclas pretas',
-      highlightNotes: ['E4', 'F4', 'B4', 'C5'],
-      octaves: 2,
-      startOctave: 4,
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c4_acidentes',
-      markdown:
-        '## Os cinco acidentes\n\n' +
-        '**Sustenido (♯)** sobe um semitom. **Bemol (♭)** desce um semitom. **Bequadro (♮)** cancela o acidente anterior. **Dobrado sustenido (𝄪)** sobe um tom; **dobrado bemol (𝄫)** desce um tom.\n\n' +
-        'Duas grafias podem soar idêntico: fá♯ e sol♭ são a mesma tecla. Chama-se **enarmonia**. A escolha entre as duas não é indiferente — ela informa a função da nota dentro da tonalidade.',
-    },
-    {
-      kind: 'INTERVAL_LAB',
-      id: 'c4_lab_semitom',
-      title: 'Mi–fá: um semitom',
-      lowerNote: 'E4',
-      upperNote: 'F4',
-      prompt: 'Ouça e peça a análise. Esta é a menor distância do sistema.',
-    },
-    {
-      kind: 'INTERVAL_LAB',
-      id: 'c4_lab_tom',
-      title: 'Dó–ré: um tom',
-      lowerNote: 'C4',
-      upperNote: 'D4',
-      prompt: 'O dobro da distância anterior. Compare o quanto soa mais aberto.',
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c4_check',
-      question: 'Quantos semitons há entre mi e fá?',
-      options: ['Dois', 'Um', 'Três', 'Nenhum'],
-      correctIndex: 1,
-      explanation:
-        'Mi e fá são vizinhos imediatos: um semitom. O mesmo vale para si e dó. Nos demais pares de notas naturais vizinhas, a distância é de um tom.',
-    },
-  ],
-
-  5: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c5_intro',
-      markdown:
-        'Um **intervalo** é a distância entre duas notas. Classificá-lo exige **dois passos**, e confundi-los é a origem de quase todo erro.\n\n' +
-        '**Primeiro, o número.** Conta-se quantos nomes de nota há entre as duas, incluindo as duas pontas. De dó a mi: dó, ré, mi — três nomes, é uma **terça**. O número ignora acidentes.\n\n' +
-        '**Depois, a qualidade.** Aí sim os acidentes contam. Dó–mi tem 4 semitons: terça **maior**. Dó–mi♭ tem 3: terça **menor**. As duas são terças; a qualidade é que difere.',
-    },
-    {
-      kind: 'CALLOUT',
-      id: 'c5_call',
-      type: 'info',
-      title: 'Por que dois sistemas',
-      text:
-        'O número diz o lugar na escala; a qualidade diz o tamanho exato. Uma terça sempre ocupa três graus, seja maior ou menor — e é isso que a mantém reconhecível como terça, na melodia e no acorde.',
-    },
-    {
-      kind: 'INTERVAL_LAB',
-      id: 'c5_lab_3m',
-      title: 'Terça maior',
-      lowerNote: 'C4',
-      upperNote: 'E4',
-      prompt: 'Ouça ANTES de pedir a análise. Nomear sem ouvir treina o olho, não o ouvido.',
-    },
-    {
-      kind: 'INTERVAL_LAB',
-      id: 'c5_lab_3men',
-      title: 'Terça menor — o mesmo número, outra qualidade',
-      lowerNote: 'C4',
-      upperNote: 'Eb4',
-      prompt: 'Três graus, como a anterior. Um semitom a menos muda o caráter inteiro.',
-    },
-    {
-      kind: 'INTERVAL_LAB',
-      id: 'c5_lab_5j',
-      title: 'Quinta justa',
-      lowerNote: 'C4',
-      upperNote: 'G4',
-      prompt: 'A consonância mais estável depois da oitava — a base do acorde.',
-    },
-    {
-      kind: 'INTERVAL_LAB',
-      id: 'c5_lab_7m',
-      title: 'Sétima maior — a dissonância aguda',
-      lowerNote: 'C4',
-      upperNote: 'B4',
-      prompt: 'Compare com a oitava: falta um semitom, e o efeito é de tensão.',
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c5_inversao',
-      markdown:
-        '## Inversão\n\n' +
-        'Inverter um intervalo é subir a nota grave uma oitava — ou baixar a aguda. O resultado obedece a duas regras fixas:\n\n' +
-        '- **os números somam nove**: terça inverte em sexta, quinta em quarta, segunda em sétima;\n' +
-        '- **a qualidade troca**: maior vira menor, aumentado vira diminuto. Justo continua justo.',
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c5_simples_composto',
-      markdown:
-        '## Simples e composto\n\n' +
-        'Um intervalo é **simples** quando cabe dentro de uma oitava, e **composto** quando a ultrapassa.\n\n' +
-        'A nona é a segunda mais uma oitava; a décima é a terça; a décima primeira, a quarta. Para reduzir um composto ao simples correspondente, subtraia sete. A qualidade não muda: uma nona maior é uma segunda maior deslocada de oitava.',
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c5_check',
-      question: 'Qual é a inversão de uma terça maior?',
-      options: ['Sexta maior', 'Sexta menor', 'Terça menor', 'Quinta justa'],
-      correctIndex: 1,
-      explanation:
-        'Os números somam nove: 9 − 3 = 6, é uma sexta. E a qualidade troca: maior vira menor. Portanto, sexta menor.',
-    },
-  ],
-
-  6: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c6_intro',
-      markdown:
-        'Uma **escala** é uma sequência ordenada de notas dentro de uma oitava. O que define o caráter dela não são as notas: é o **padrão de tons e semitons** entre elas.\n\n' +
-        'A escala maior tem sempre o mesmo padrão, comece onde começar:\n\n' +
-        '**T · T · st · T · T · T · st**\n\n' +
-        'Os semitons caem entre o 3º e o 4º grau, e entre o 7º e o 8º. É daí que vem o som de escala maior — e é por isso que, ao transpor, os acidentes aparecem: eles existem para preservar o padrão.',
-    },
-    {
-      kind: 'SCALE_LAB',
-      id: 'c6_lab_do',
-      title: 'Dó maior — nenhum acidente',
-      tonic: 'C4',
-      mode: 'MAJOR',
-    },
-    {
-      kind: 'SCALE_LAB',
-      id: 'c6_lab_sol',
-      title: 'Sol maior — repare de onde vem o fá sustenido',
-      tonic: 'G4',
-      mode: 'MAJOR',
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c6_menores',
-      markdown:
-        '## As três menores\n\n' +
-        'A **menor natural** tem semitons entre 2–3 e 5–6. Soa modal, sem tração para a tônica.\n\n' +
-        'A **menor harmônica** sobe o 7º grau um semitom, criando a sensível — a nota que puxa para a tônica. O preço é um intervalo de segunda aumentada entre o 6º e o 7º, que é difícil de cantar.\n\n' +
-        'A **menor melódica** resolve isso subindo também o 6º grau na subida, e desfazendo as duas alterações na descida. É a única escala que muda conforme a direção.',
-    },
-    {
-      kind: 'SCALE_LAB',
-      id: 'c6_lab_menor',
-      title: 'Lá menor natural',
-      tonic: 'A4',
-      mode: 'NATURAL_MINOR',
-    },
-    {
-      kind: 'SCALE_LAB',
-      id: 'c6_lab_harmonica',
-      title: 'Lá menor harmônica — ouça o salto entre o 6º e o 7º grau',
-      tonic: 'A4',
-      mode: 'HARMONIC_MINOR',
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c6_check',
-      question: 'Onde ficam os semitons na escala maior?',
-      options: [
-        'Entre 2–3 e 5–6',
-        'Entre 3–4 e 7–8',
-        'Entre 1–2 e 4–5',
-        'Não há semitons na escala maior',
-      ],
-      correctIndex: 1,
-      explanation:
-        'O padrão é T–T–st–T–T–T–st: os semitons caem entre o 3º e o 4º grau e entre o 7º e o 8º. É esse desenho que faz a escala soar maior.',
-    },
-  ],
-
-  7: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c7_intro',
-      markdown:
-        'Se a escala de sol maior precisa de fá♯ para manter o padrão, escrever o sustenido em cada fá da peça seria repetitivo e sujeito a erro. A solução é a **armadura**: os acidentes migram para o início da pauta e valem para a peça inteira.\n\n' +
-        'A ordem em que eles aparecem não é livre. Os sustenidos entram sempre nesta sequência: **fá, dó, sol, ré, lá, mi, si**. Os bemóis, exatamente na ordem inversa: **si, mi, lá, ré, sol, dó, fá**.',
-    },
-    {
-      kind: 'CALLOUT',
-      id: 'c7_call',
-      type: 'tip',
-      title: 'Como ler a armadura de cabeça',
-      text:
-        'Com sustenidos: o ÚLTIMO sustenido é a sensível — a tônica está um semitom acima dele. Com bemóis: o PENÚLTIMO bemol é a própria tônica. Com um bemol só, é fá maior; não há penúltimo, e vale decorar.',
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c7_relativas',
-      markdown:
-        '## Relativas\n\n' +
-        'Cada armadura serve a **duas** tonalidades: uma maior e uma menor. A menor relativa começa no 6º grau da maior — uma terça menor abaixo.\n\n' +
-        'Dó maior e lá menor dividem a armadura vazia. Sol maior e mi menor dividem o fá♯. As notas são as mesmas; o que muda é qual delas funciona como centro de repouso.',
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c7_check',
-      question: 'Uma armadura com dois sustenidos, fá♯ e dó♯. Que tonalidade maior é?',
-      options: ['Sol maior', 'Ré maior', 'Lá maior', 'Si maior'],
-      correctIndex: 1,
-      explanation:
-        'O último sustenido é dó♯, que funciona como sensível. Um semitom acima de dó♯ é ré: a tonalidade é ré maior. A relativa menor é si menor.',
-    },
-  ],
-
-  8: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c8_intro',
-      markdown:
-        'O pulso da música se agrupa em unidades regulares chamadas **compassos**, separados por barras verticais. A **fórmula de compasso**, no início da peça, informa esse agrupamento com dois números.\n\n' +
-        'Em compasso **simples**, o número de cima diz quantos tempos há no compasso, e o de baixo diz que figura vale um tempo — 4 para semínima, 8 para colcheia, 2 para mínima.\n\n' +
-        'Em 4/4: quatro tempos, cada um valendo uma semínima.',
-    },
-    {
-      kind: 'CALLOUT',
-      id: 'c8_call',
-      type: 'warning',
-      title: 'Compasso composto engana',
-      text:
-        'Em 6/8, o número de cima NÃO significa seis tempos. Compassos compostos subdividem cada tempo em três, e 6/8 tem DOIS tempos, cada um valendo uma semínima pontuada. Ler 6/8 como seis tempos é o erro mais comum de iniciante.',
-    },
-    {
-      kind: 'AUDIO_EXAMPLE',
-      id: 'c8_audio',
-      title: 'O mesmo número de colcheias, agrupado de dois jeitos',
-      description:
-        'Primeiro em 3/4 — três tempos de duas colcheias. Depois em 6/8 — dois tempos de três. A acentuação muda tudo.',
-      notes: ['C4', 'G4', 'C4', 'G4', 'C4', 'G4'],
-      playMode: 'SEQUENCE',
-      bpm: 120,
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c8_anacruse',
-      markdown:
-        '## Anacruse\n\n' +
-        'Nem toda peça começa no tempo forte. Quando ela começa antes — num tempo fraco que impulsiona para o primeiro tempo forte — esse trecho inicial incompleto chama-se **anacruse**.\n\n' +
-        'O compasso da anacruse e o último compasso da peça costumam se completar: se a anacruse tem um tempo, o compasso final tem um a menos. É uma convenção de escrita, e ver isso ajuda a identificar onde a frase realmente começa.',
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c8_check',
-      question: 'Quantos tempos tem um compasso 6/8?',
-      options: ['Seis', 'Três', 'Dois', 'Oito'],
-      correctIndex: 2,
-      explanation:
-        '6/8 é composto: os seis colcheias agrupam-se em dois tempos de três. A unidade de tempo é a semínima pontuada, não a colcheia.',
-    },
-  ],
-
-  9: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c9_intro',
-      markdown:
-        'As figuras dizem a duração relativa; o **andamento** converte isso em tempo real. A indicação pode ser um termo — *largo*, *adagio*, *andante*, *allegro*, *presto* — ou um número de batidas por minuto.\n\n' +
-        'Os termos são faixas, não pontos: *andante* é uma região de velocidade, e dois intérpretes razoáveis discordam dentro dela. O metrônomo é preciso; o termo é expressivo. Partituras modernas costumam trazer os dois.',
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c9_dinamica',
-      markdown:
-        '## Dinâmica\n\n' +
-        'A intensidade também se escreve, numa escala relativa: **pp** (pianíssimo), **p** (piano), **mp**, **mf**, **f** (forte), **ff** (fortíssimo).\n\n' +
-        'Relativa é a palavra que importa: um *forte* de quarteto de cordas e um *forte* de orquestra sinfônica não têm o mesmo volume. A indicação diz a posição dentro da obra, não um número de decibéis.\n\n' +
-        '**Crescendo** e **diminuendo** indicam mudança gradual — e, como toda mudança gradual, precisam de um ponto de partida e um de chegada para significarem algo.',
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c9_check',
-      question: 'Uma peça indica ♩ = 60. O que isso significa?',
-      options: [
-        'Sessenta compassos por minuto',
-        'Sessenta semínimas por minuto, uma por segundo',
-        'Sessenta notas no total',
-        'Sessenta segundos de duração',
-      ],
-      correctIndex: 1,
-      explanation:
-        'A indicação metronômica diz quantas vezes por minuto a figura indicada ocorre. ♩ = 60 são sessenta semínimas por minuto — exatamente uma por segundo.',
-    },
-  ],
-
-  10: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c10_intro',
-      markdown:
-        'A subdivisão natural de um compasso simples é binária: cada tempo se divide em dois. A **quiáltera** contraria isso — encaixa um número diferente de notas no mesmo espaço.\n\n' +
-        'A mais comum é a **tercina**: três notas no tempo de duas. Escreve-se com um 3 sobre o grupo. Existem também quintinas, seitinas, e assim por diante.',
-    },
-    {
-      kind: 'AUDIO_EXAMPLE',
-      id: 'c10_audio_tercina',
-      title: 'Colcheias e depois tercinas',
-      description: 'O mesmo tempo, dividido em dois e depois em três.',
-      notes: ['C4', 'C4', 'C4', 'C4', 'E4', 'E4', 'E4', 'E4', 'E4', 'E4'],
-      playMode: 'SEQUENCE',
-      bpm: 90,
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c10_sincope',
-      markdown:
-        '## Síncope e contratempo\n\n' +
-        'Os dois deslocam o acento para fora do tempo forte, e a diferença está no que acontece **no** tempo forte.\n\n' +
-        'Na **síncope**, o som começa num tempo fraco e **prolonga-se** sobre o forte. O acento cai onde não se esperava porque a nota já estava soando.\n\n' +
-        'No **contratempo**, o tempo forte é **silêncio** — há uma pausa — e o som entra no fraco. O acento se desloca porque o forte foi deixado vazio.',
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c10_check',
-      question: 'O tempo forte está em silêncio e a nota entra no tempo fraco. Isso é:',
-      options: ['Síncope', 'Contratempo', 'Quiáltera', 'Ligadura'],
-      correctIndex: 1,
-      explanation:
-        'Contratempo: o tempo forte é ocupado por pausa. Na síncope, ao contrário, o som já está soando quando o tempo forte chega — ele se prolonga sobre o forte.',
-    },
-  ],
-
-  11: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c11_intro',
-      markdown:
-        'Uma **tríade** são três notas empilhadas em terças: **fundamental**, **terça** e **quinta**. As combinações possíveis de terça maior e menor produzem quatro qualidades:\n\n' +
-        '| Tríade | Terça | Quinta |\n|---|---|---|\n| maior | maior | justa |\n| menor | menor | justa |\n| diminuta | menor | diminuta |\n| aumentada | maior | aumentada |',
-    },
-    {
-      kind: 'CHORD_LAB',
-      id: 'c11_lab_maior',
-      title: 'Dó maior',
-      notes: ['C4', 'E4', 'G4'],
-      prompt: 'Terça maior embaixo, menor em cima. Quinta justa entre os extremos.',
-    },
-    {
-      kind: 'CHORD_LAB',
-      id: 'c11_lab_menor',
-      title: 'Dó menor — uma nota de diferença',
-      notes: ['C4', 'Eb4', 'G4'],
-      prompt: 'Só a terça desceu um semitom. Compare o efeito com o anterior.',
-    },
-    {
-      kind: 'CHORD_LAB',
-      id: 'c11_lab_dim',
-      title: 'Dó diminuto',
-      notes: ['C4', 'Eb4', 'Gb4'],
-      prompt: 'Duas terças menores empilhadas. A quinta encolheu, e o acorde pede resolução.',
-    },
-    {
-      kind: 'CHORD_LAB',
-      id: 'c11_lab_aum',
-      title: 'Dó aumentado',
-      notes: ['C4', 'E4', 'G#4'],
-      prompt: 'Duas terças maiores. Simétrico, e por isso sem repouso.',
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c11_inversoes',
-      markdown:
-        '## Inversões\n\n' +
-        'A inversão é decidida por uma coisa só: **qual nota está no baixo**.\n\n' +
-        '- fundamental no baixo → **estado fundamental**\n' +
-        '- terça no baixo → **primeira inversão**\n' +
-        '- quinta no baixo → **segunda inversão**\n\n' +
-        'O acorde continua sendo o mesmo — as três notas não mudaram. O que muda é a sonoridade e a função no encadeamento: uma segunda inversão soa instável e raramente serve de repouso.',
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c11_check',
-      question: 'Um acorde com as notas dó, mi e sol, tendo mi no baixo. Que acorde é, e em que posição?',
-      options: [
-        'Mi menor, estado fundamental',
-        'Dó maior, primeira inversão',
-        'Dó maior, segunda inversão',
-        'Mi diminuto, primeira inversão',
-      ],
-      correctIndex: 1,
-      explanation:
-        'As notas dó, mi e sol formam a tríade de dó maior, independentemente da ordem. Com a terça (mi) no baixo, está em primeira inversão.',
-    },
-  ],
-
-  12: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c12_intro',
-      markdown:
-        'A **cifra** descreve um acorde por um símbolo, em vez de escrevê-lo nota a nota. Nasceu da prática — quem acompanha precisa saber a harmonia, não a disposição exata das vozes.\n\n' +
-        'A letra indica a fundamental: **C** é dó, **D** é ré, e assim por diante, seguindo a nomenclatura de letras.\n\n' +
-        'O que vem depois qualifica:\n\n' +
-        '- **C** — tríade maior\n' +
-        '- **Cm** — tríade menor\n' +
-        '- **C°** — diminuta\n' +
-        '- **C+** — aumentada\n' +
-        '- **C7** — com sétima menor\n' +
-        '- **CM7** — com sétima maior',
-    },
-    {
-      kind: 'CALLOUT',
-      id: 'c12_call',
-      type: 'info',
-      title: 'A barra indica o baixo',
-      text:
-        'C/E significa acorde de dó maior com mi no baixo — a primeira inversão. O que vem depois da barra é sempre a nota do baixo, não outro acorde.',
-    },
-    {
-      kind: 'CHORD_LAB',
-      id: 'c12_lab_c7',
-      title: 'C7 — sétima menor',
-      notes: ['C4', 'E4', 'G4', 'Bb4'],
-      prompt: 'O acorde que pede resolução. É ele que conduz a harmonia tonal.',
-    },
-    {
-      kind: 'CHORD_LAB',
-      id: 'c12_lab_cm7',
-      title: 'CM7 — sétima maior',
-      notes: ['C4', 'E4', 'G4', 'B4'],
-      prompt: 'Um semitom acima da anterior, e o caráter muda de tensão para repouso.',
-    },
-    {
-      kind: 'CHORD_LAB',
-      id: 'c12_lab_dm7',
-      title: 'Dm7 — o segundo grau',
-      notes: ['D4', 'F4', 'A4', 'C5'],
-      prompt: 'Tríade menor com sétima menor. O acorde que costuma preceder o C7.',
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c12_arpejo',
-      markdown:
-        '## Arpejo, e o parente antigo da cifra\n\n' +
-        'Tocar as notas de um acorde em sequência, e não simultaneamente, é **arpejar**. O acorde continua o mesmo: muda a apresentação, não a harmonia.\n\n' +
-        'A cifra alfabética tem um antepassado: o **baixo cifrado**, usado nos séculos XVII e XVIII. Ali, escrevia-se apenas a linha do baixo, com números indicando os intervalos a construir acima dela. O princípio é idêntico ao da cifra moderna — descrever a harmonia sem fixar a disposição das vozes —, e muda apenas a referência: o baixo cifrado parte do baixo, a cifra parte da fundamental.',
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c12_check',
-      question: 'A cifra G/B pede quais notas, e com o quê no baixo?',
-      options: [
-        'Sol maior com si no baixo',
-        'Sol e si, dois acordes seguidos',
-        'Si menor com sol no baixo',
-        'Sol com sétima em si',
-      ],
-      correctIndex: 0,
-      explanation:
-        'A letra antes da barra é o acorde: sol maior, ou seja, sol–si–ré. O que vem depois da barra é a nota do baixo: si. É a primeira inversão de sol maior.',
-    },
-  ],
-
-  13: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c13_intro',
-      markdown:
-        'Maior e menor não esgotam o assunto. Há escalas construídas com outros princípios, e cada uma soa diferente porque a distribuição dos semitons é outra.\n\n' +
-        'A **escala cromática** usa os doze semitons da oitava, sem exceção. Como todos os passos são iguais, ela não tem tônica — nenhuma nota se destaca como centro. Por isso não se escreve música nela: usa-se como **passagem**, ligando duas notas estruturais.',
-    },
-    {
-      kind: 'SCALE_LAB',
-      id: 'c13_lab_cromatica',
-      title: 'Escala de dó maior, para comparar',
-      tonic: 'C4',
-      mode: 'MAJOR',
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c13_pentatonica',
-      markdown:
-        '## A pentatônica e a ausência de atrito\n\n' +
-        'A **pentatônica maior** tem cinco notas: os graus 1, 2, 3, 5 e 6 da escala maior. O que ela deixa de fora são exatamente o 4º e o 7º graus — as duas notas que formam os semitons.\n\n' +
-        'Sem semitons, não há atrito: qualquer combinação de notas soa aceitável. É por isso que a pentatônica aparece em tradições musicais de todos os continentes, independentemente umas das outras, e é por isso que é a primeira escala ensinada a crianças.',
-    },
-    {
-      kind: 'AUDIO_EXAMPLE',
-      id: 'c13_audio_penta',
-      title: 'Pentatônica de dó',
-      description: 'Dó, ré, mi, sol, lá. Repare que nenhum par soa áspero.',
-      notes: ['C4', 'D4', 'E4', 'G4', 'A4', 'C5'],
-      playMode: 'SEQUENCE',
-      bpm: 90,
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c13_modos',
-      markdown:
-        '## Os modos\n\n' +
-        'Toque as notas de dó maior começando e terminando em ré, e o resultado não soa a dó maior: soa a outra coisa. As notas são as mesmas; o que mudou foi qual delas funciona como repouso — e, com isso, onde os semitons caem em relação a ela.\n\n' +
-        'Cada grau da escala maior gera um modo:\n\n' +
-        '| Grau | Modo | Marca |\n|---|---|---|\n' +
-        '| I | jônio | é a própria maior |\n' +
-        '| II | dórico | menor com sexta maior |\n' +
-        '| III | frígio | menor com segunda menor |\n' +
-        '| IV | lídio | maior com quarta aumentada |\n' +
-        '| V | mixolídio | maior com sétima menor |\n' +
-        '| VI | eólio | é a menor natural |\n' +
-        '| VII | lócrio | quinta diminuta — instável |',
-    },
-    {
-      kind: 'CALLOUT',
-      id: 'c13_call',
-      type: 'tip',
-      title: 'Como ouvir um modo',
-      text:
-        'Toque a nota do modo no baixo e sustente-a enquanto percorre a escala por cima. Sem esse apoio, o ouvido reinterpreta tudo como a escala maior de origem — e a diferença desaparece.',
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c13_check',
-      question: 'Por que a pentatônica maior não produz dissonâncias ásperas?',
-      options: [
-        'Porque tem menos notas',
-        'Porque não contém semitons',
-        'Porque não tem tônica',
-        'Porque usa só notas naturais',
-      ],
-      correctIndex: 1,
-      explanation:
-        'Ela omite o 4º e o 7º graus, que são justamente as notas que formam os dois semitons da escala maior. Sem semitons, não há o atrito que produz dissonância áspera.',
-    },
-  ],
-
-  14: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c14_intro',
-      markdown:
-        'Os graus da escala têm nome, e os nomes descrevem **função** — o que cada um faz dentro da tonalidade, não apenas onde fica.\n\n' +
-        '| Grau | Nome | O que faz |\n|---|---|---|\n' +
-        '| I | tônica | repouso; para onde tudo converge |\n' +
-        '| II | supertônica | prepara a dominante |\n' +
-        '| III | mediante | entre tônica e dominante |\n' +
-        '| IV | subdominante | afasta-se da tônica |\n' +
-        '| V | dominante | tensão máxima; puxa de volta |\n' +
-        '| VI | superdominante | substitui a tônica |\n' +
-        '| VII | sensível | a um semitom da tônica |',
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c14_funcoes',
-      markdown:
-        '## Três funções, sete graus\n\n' +
-        'Os sete graus se agrupam em três funções:\n\n' +
-        '- **Tônica** (I, VI, III) — repouso.\n' +
-        '- **Subdominante** (IV, II) — afastamento.\n' +
-        '- **Dominante** (V, VII) — tensão que exige resolução.\n\n' +
-        'A dominante deve sua força à **sensível**: o sétimo grau, a um semitom da tônica. Esse semitom é uma distância que o ouvido percebe como incompleta, e é ele que produz a sensação de que a música precisa voltar.',
-    },
-    {
-      kind: 'CHORD_LAB',
-      id: 'c14_lab_dominante',
-      title: 'A dominante de dó maior',
-      notes: ['G4', 'B4', 'D5'],
-      prompt: 'O si é a sensível. Ouça a vontade que ele tem de subir ao dó.',
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c14_cadencias',
-      markdown:
-        '## Cadências\n\n' +
-        'A **cadência** é a fórmula que encerra uma frase. Quatro são correntes:\n\n' +
-        '- **Perfeita** (V → I) — conclusão plena. É o ponto final.\n' +
-        '- **Plagal** (IV → I) — conclusão suave, sem a tensão da sensível. É o "amém" dos hinos.\n' +
-        '- **Interrompida** (V → VI) — prepara o repouso e entrega outra coisa. Prolonga a frase.\n' +
-        '- **Suspensiva** (termina no V) — para na tensão. É a vírgula.',
-    },
-    {
-      kind: 'AUDIO_EXAMPLE',
-      id: 'c14_audio_cadencia',
-      title: 'Cadência perfeita em dó',
-      description: 'A dominante resolvendo na tônica — a conclusão mais comum da música tonal.',
-      notes: ['G4', 'B4', 'D5', 'C4', 'E4', 'G4'],
-      playMode: 'SEQUENCE',
-      bpm: 60,
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c14_check',
-      question: 'Uma frase termina com a progressão V → VI. Que cadência é?',
-      options: ['Perfeita', 'Plagal', 'Interrompida', 'Suspensiva'],
-      correctIndex: 2,
-      explanation:
-        'A dominante prepara a tônica, mas entrega o sexto grau. A expectativa é criada e não cumprida — daí o nome interrompida, e daí o efeito de prolongar a frase.',
-    },
-  ],
-
-  15: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c15_intro',
-      markdown:
-        'Os **ornamentos** acrescentam notas à melodia sem que elas apareçam como figuras de duração própria. São escritos em notação abreviada — um sinal ou uma nota pequena — e o intérprete os desdobra na execução.\n\n' +
-        'Isso não é economia de espaço: é indicação de **hierarquia**. A nota ornamentada é a real; as acrescentadas são decoração dela, e devem soar como tal.',
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c15_quatro',
-      markdown:
-        '## Os quatro mais frequentes\n\n' +
-        '**Apojatura** — uma nota vizinha que toma parte da duração da nota principal, resolvendo nela. Escreve-se como nota pequena antes. Não é acréscimo: ela ocupa tempo da nota real.\n\n' +
-        '**Mordente** — alternância rápida com a nota vizinha e retorno imediato: principal, vizinha, principal. Superior ou inferior, conforme a direção.\n\n' +
-        '**Trinado** — alternância rápida e continuada com a nota superior, por toda a duração da figura.\n\n' +
-        '**Grupeto** — um giro em torno da nota principal: superior, principal, inferior, principal.',
-    },
-    {
-      kind: 'AUDIO_EXAMPLE',
-      id: 'c15_audio_mordente',
-      title: 'Mordente superior sobre lá',
-      description: 'Lá, si, lá — rápido, e de volta. A nota real é o lá.',
-      notes: ['A4', 'B4', 'A4'],
-      playMode: 'SEQUENCE',
-      bpm: 160,
-    },
-    {
-      kind: 'CALLOUT',
-      id: 'c15_call',
-      type: 'historical',
-      title: 'Por que a execução varia',
-      text:
-        'A notação de ornamentos nunca foi inteiramente padronizada, e o mesmo sinal foi executado de formas diferentes conforme a época e a região. Quem toca repertório antigo precisa saber a convenção do período — e é por isso que edições sérias trazem nota sobre o assunto.',
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c15_check',
-      question: 'O que distingue a apojatura dos demais ornamentos?',
-      options: [
-        'É executada mais rápido',
-        'Toma parte da duração da nota principal',
-        'Só aparece em música antiga',
-        'Usa a nota inferior',
-      ],
-      correctIndex: 1,
-      explanation:
-        'A apojatura ocupa tempo da nota principal, encurtando-a — os outros ornamentos cabem dentro da duração dela sem reduzi-la.',
-    },
-  ],
-
-  16: [
-    {
-      kind: 'MARKDOWN',
-      id: 'c16_intro',
-      markdown:
-        'A **articulação** indica como cada nota se liga à seguinte. Duas notas com as mesmas alturas e durações soam completamente diferentes conforme sejam ligadas ou destacadas.\n\n' +
-        '**Legato** — ligadas, sem interrupção entre elas. Indicado por uma linha curva sobre o grupo.\n\n' +
-        '**Staccato** — destacadas, cada uma encurtada. Indicado por um ponto sobre ou sob a nota.\n\n' +
-        '**Acento** — atacada com mais ênfase. Indicado por um sinal angular.',
-    },
-    {
-      kind: 'CALLOUT',
-      id: 'c16_call',
-      type: 'warning',
-      title: 'Duas linhas curvas diferentes',
-      text:
-        'A ligadura de EXPRESSÃO liga notas de alturas diferentes e pede legato. A ligadura de VALOR liga duas notas de mesma altura e soma as durações — não se toca a segunda. O desenho é o mesmo; o que decide é se as alturas são iguais.',
-    },
-    {
-      kind: 'MARKDOWN',
-      id: 'c16_frase',
-      markdown:
-        '## Motivo, frase, período\n\n' +
-        'A música se organiza em unidades de sentido, como a linguagem.\n\n' +
-        'O **motivo** é a menor célula reconhecível — poucas notas com fisionomia própria, que reaparecem transformadas ao longo da peça.\n\n' +
-        'A **frase** é a unidade que se ouve como completa ou incompleta. Costuma ter quatro compassos, e termina numa cadência.\n\n' +
-        'O **período** reúne duas frases numa relação de **pergunta e resposta**: a primeira termina em cadência suspensiva — para no ar — e a segunda em cadência perfeita, concluindo. É a estrutura mais comum da música tonal, e ouvi-la é o que permite prever para onde a peça vai.',
-    },
-    {
-      kind: 'CHECKPOINT',
-      id: 'c16_check',
-      question:
-        'Duas notas de mesma altura unidas por uma linha curva. O que isso indica?',
-      options: [
-        'Legato entre elas',
-        'Somar as durações e tocar uma só',
-        'Staccato na segunda',
-        'Acentuar a primeira',
-      ],
-      correctIndex: 1,
-      explanation:
-        'Alturas iguais caracterizam a ligadura de valor: as durações se somam e a segunda nota não é atacada. Entre alturas diferentes, a mesma curva significaria legato.',
-    },
-  ],
+  ...BLOCOS_01_15,
+  ...BLOCOS_16_30,
+  ...BLOCOS_31_44,
+  ...BLOCOS_45_58,
 };
 
 export const LICOES_TEORIA: AcademyLesson[] = CAPITULOS_TEORIA.map((c) => {
-  const id = `les_teoria_${String(c.numero).padStart(2, '0')}`;
+  const id = idLicao(c.numero);
   const blocos = BLOCOS[c.numero] ?? [];
   return {
     id,
-    moduleId: `mod_teoria_${String(c.numero).padStart(2, '0')}`,
+    moduleId: idModulo(c.numero),
     courseId: CURSO_TEORIA.id,
     order: 1,
     canonicalContentId: `canon_teoria_${c.numero}`,
     durationMinutes: c.minutos,
     objectives: c.objetivos,
-    skills: [c.competencia],
+    skills: [c.competencia, ...(c.competenciasAdicionais ?? [])],
     activityIds: [],
     variants: {
       TRADITIONAL: {
@@ -1234,3 +162,5 @@ export const LICOES_TEORIA: AcademyLesson[] = CAPITULOS_TEORIA.map((c) => {
     updatedAt: AGORA,
   };
 });
+
+export { CAPITULOS_TEORIA, TOTAL_DE_CAPITULOS };

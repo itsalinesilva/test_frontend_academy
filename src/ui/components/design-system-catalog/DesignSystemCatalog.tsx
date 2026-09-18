@@ -77,11 +77,14 @@ export const DesignSystemCatalog: React.FC = () => {
   const [isMediaPlaying, setIsMediaPlaying] = useState(false);
 
   // Sample table data
+  // A coluna de proveniencia citava uma catedra estrangeira em todas as linhas.
+  // Trocada pelo capitulo do proprio curso onde o intervalo e ensinado, que e
+  // a proveniencia que a plataforma de fato tem.
   const sampleTableData = [
-    { id: '1', interval: 'Segunda Maior (M2)', semitones: 2, ratio: '9:8', frequencyC4: '293.66 Hz', provenance: 'Edimburgo L1' },
-    { id: '2', interval: 'Terça Maior (M3)', semitones: 4, ratio: '5:4', frequencyC4: '329.63 Hz', provenance: 'Edimburgo L2' },
-    { id: '3', interval: 'Quinta Justa (P5)', semitones: 7, ratio: '3:2', frequencyC4: '392.00 Hz', provenance: 'Edimburgo L3' },
-    { id: '4', interval: 'Oitava Justa (P8)', semitones: 12, ratio: '2:1', frequencyC4: '523.25 Hz', provenance: 'Edimburgo L4' },
+    { id: '1', interval: 'Segunda Maior (M2)', semitones: 2, ratio: '9:8', frequencyC4: '293.66 Hz', provenance: 'Teoria, cap. X' },
+    { id: '2', interval: 'Terça Maior (M3)', semitones: 4, ratio: '5:4', frequencyC4: '329.63 Hz', provenance: 'Teoria, cap. X' },
+    { id: '3', interval: 'Quinta Justa (P5)', semitones: 7, ratio: '3:2', frequencyC4: '392.00 Hz', provenance: 'Teoria, cap. XVII' },
+    { id: '4', interval: 'Oitava Justa (P8)', semitones: 12, ratio: '2:1', frequencyC4: '523.25 Hz', provenance: 'Teoria, cap. XVII' },
   ];
 
   return (

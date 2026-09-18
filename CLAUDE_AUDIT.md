@@ -396,3 +396,50 @@ como se fosse real, num perfil que leva o nome verdadeiro da fundadora.
 
 Esvaziar tudo isso deixaria o Profile honesto e praticamente vazio. **Essa
 escolha é do produto, não minha**, então não a tomei. Registrada como TODO 4.9.
+
+
+---
+
+## 2026-09-17 — Fabricação encontrada no catálogo do Academy
+
+**Gravidade: alta.** Reincidência do mesmo padrão já corrigido em `usr_founder_1`.
+
+`src/data/seed-academy-content.ts` (1.505 linhas) publicava como catálogo real:
+
+| Achado | Detalhe |
+| :--- | :--- |
+| 3 cursos inexistentes | `crs_fomt_01`, `crs_fomt_02`, `crs_contraponto_01` — com ementa, objetivos, carga horária e política de certificação completas |
+| Docente inventado | "Profa. Dra. Clara Schumann", pianista morta em 1896, listada como docente ativa com biografia escrita |
+| Foto de banco de imagens | `images.unsplash.com/photo-1544005313...` como avatar da docente |
+| Autor fantasma | `authorId: 'usr_founder_1'` — o mesmo seed já removido em sessão anterior, ressurgido aqui |
+| 2 programas inventados | "Programa Integrado de Fundamentos", "Programa de Contraponto Polifônico" |
+| 3 trilhas inventadas | apontando para os cursos inexistentes |
+| Módulos, lições, atividades, provas e questionários | escritos por inteiro para conteúdo que não existe |
+| Categorias com contagem falsa | `courseCount: 2` contando cursos inexistentes |
+
+**Como foi encontrado:** a usuária inspecionou a tela e disse não reconhecer
+nada do que via — "não sei de onde saiu essas trilhas formativas graduadas...
+um monte de merda que eu não criei". Estava certa: não criou.
+
+**Correção:** arquivo reescrito. Restou o curso de Teoria, que é real.
+Programas e trilhas ficaram vazios, com texto explicando que se preenchem
+quando houver um segundo curso.
+
+**Guarda:** `tests/ui/shell-e-catalogo.test.tsx` passa a falhar se qualquer
+curso do catálogo tiver `authorId: 'usr_founder_1'`, docente que não seja o
+Conservatório, avatar de banco de imagens, ou id no padrão dos fabricados.
+
+---
+
+## 2026-09-17 — Citação proibida no player
+
+`GlobalPlayer.tsx` trazia uma faixa com `composer: 'Cátedra de Teoria de
+Edimburgo'`. Violação direta da regra de não citar nenhuma fonte do
+framework knowledge.
+
+O `verify-no-citations.mjs` não pegou porque a grafia aportuguesada
+("Edimburgo") não estava na lista de 16 termos proibidos, que checava a
+grafia inglesa.
+
+**Correção:** repertório reescrito em `seed-player-repertoire.ts`; nenhum
+autor é fonte bibliográfica. Teste novo cobre a grafia em português.

@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { SkipLink } from '../a11y/SkipLink';
 import { Header } from './Header';
-import { Navigation } from './Navigation';
 import { User, UserRole } from '../../../domain/types';
 import { useRouter } from '../../navigation/router';
 import { GlobalPlayer } from '../player/GlobalPlayer';
 import { CommandPalette } from '../overlays/CommandPalette';
 import { CirculationBar } from '../navigation/CirculationBar';
 import {
-  Home,
   GraduationCap,
   Target,
   FileMusic,
@@ -69,12 +67,11 @@ export const AppShell: React.FC<AppShellProps> = ({
 
   // Mobile Bottom Navigation Bar: Primary Thumb-Friendly Pillars
   const mobileBottomItems = [
-    { label: 'Home', icon: Home, path: '/' },
     { label: 'Academy', icon: GraduationCap, path: '/academy' },
     { label: 'Practice', icon: Target, path: '/practice' },
     { label: 'Score', icon: FileMusic, path: '/score' },
     { label: 'Studio', icon: Sliders, path: '/studio' },
-    { label: 'Profile', icon: UserIcon, path: '/profile' },
+    { label: 'Perfil', icon: UserIcon, path: '/profile' },
   ];
 
   const handleNavigateFromDrawer = (path: string) => {
@@ -89,23 +86,16 @@ export const AppShell: React.FC<AppShellProps> = ({
     >
       <SkipLink targetId="main-content" />
 
-      {/* 1. Global Institutional Header */}
+      {/* Header unico: marca, rotas atras do chevron, acoes. Nao ha segunda barra. */}
       <Header
         currentUser={currentUser}
         onLoginClick={onLoginClick}
         onLogoutClick={onLogoutClick}
         onSwitchRole={onSwitchRole}
-        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         onTogglePlayer={() => setIsPlayerOpen((prev) => !prev)}
         isPlayerOpen={isPlayerOpen}
         onToggleMobileMenu={() => setIsMobileDrawerOpen(true)}
-      />
-
-      {/* 2. Primary Navigation & Contextual Sub-Bar */}
-      <Navigation
         showAdminTab={showAdminTab}
-        currentUserRole={currentUser?.primaryRole || UserRole.ALUNO}
-        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
       />
 
       {/* 3. Main Application Work Area */}
@@ -144,11 +134,9 @@ export const AppShell: React.FC<AppShellProps> = ({
           <div className="w-4/5 max-w-xs bg-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-left duration-200">
             <div className="p-4 border-b border-stone-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded bg-anil-800 text-white flex items-center justify-center font-serif text-xs font-bold">
-                  A
-                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-ouro-500" aria-hidden="true" />
                 <span className="font-serif font-bold text-sm text-stone-900">
-                  Academia Musical
+                  Conservatório Muscicapa
                 </span>
               </div>
               <button
@@ -162,19 +150,14 @@ export const AppShell: React.FC<AppShellProps> = ({
 
             {/* Drawer Links */}
             <div className="p-3 space-y-1">
-              <p className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-stone-400 font-bold">
-                Pilares da Academia
-              </p>
-
               {[
-                { label: 'Home (Início)', icon: Home, path: '/' },
-                { label: 'Academy (Disciplinas)', icon: GraduationCap, path: '/academy' },
-                { label: 'Practice (Treino & Ouvido)', icon: Target, path: '/practice' },
-                { label: 'Worlds (Atlas Musical)', icon: Compass, path: '/worlds' },
-                { label: 'Community (Fórum)', icon: Users, path: '/community' },
-                { label: 'Studio (DAW & Síntese)', icon: Sliders, path: '/studio' },
-                { label: 'Score (Partituras Urtext)', icon: FileMusic, path: '/score' },
-                { label: 'Profile (Meu Perfil)', icon: UserIcon, path: '/profile' },
+                { label: 'Academy', icon: GraduationCap, path: '/academy' },
+                { label: 'Practice', icon: Target, path: '/practice' },
+                { label: 'Score', icon: FileMusic, path: '/score' },
+                { label: 'Studio', icon: Sliders, path: '/studio' },
+                { label: 'Worlds', icon: Compass, path: '/worlds' },
+                { label: 'Community', icon: Users, path: '/community' },
+                { label: 'Perfil', icon: UserIcon, path: '/profile' },
               ].map((item) => {
                 const IconComp = item.icon;
                 const isActive = item.path === '/' ? currentPath === '/' : currentPath.startsWith(item.path);
@@ -209,7 +192,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                   )}
                 >
                   <BookOpen className="w-4 h-4 text-anil-800" />
-                  <span>Room (Salas do Professor)</span>
+                  <span>Salas</span>
                 </button>
               )}
 
@@ -225,7 +208,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                   )}
                 >
                   <Shield className="w-4 h-4 text-anil-800" />
-                  <span>Admin (Governança Soberana)</span>
+                  <span>Admin</span>
                 </button>
               )}
             </div>
