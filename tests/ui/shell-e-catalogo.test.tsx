@@ -57,6 +57,17 @@ describe('o shell tem um header, e um só', () => {
     expect(menu).toContain('aria-expanded');
   });
 
+  it('o menu desce como faixa horizontal, na largura do header', () => {
+    // Não é uma coluna suspensa: a faixa acompanha o header porque é a
+    // continuação dele. `inset-x-0` a estica; `flex` põe os itens lado a lado.
+    const menu = lerCodigo('src/ui/components/layout/NavMenu.tsx');
+    expect(menu).toContain('inset-x-0');
+    expect(menu).toContain('top-12');
+    // a faixa é uma linha: flex sem direção de coluna, rolando na horizontal
+    expect(menu).toMatch(/className="[^"]*\bflex\b[^"]*overflow-x-auto[^"]*"/);
+    expect(menu).not.toContain('flex-col');
+  });
+
   it('a busca do header é uma lupa que expande, sem rótulo escrito', () => {
     const busca = ler('src/ui/components/layout/HeaderSearch.tsx');
     expect(busca).toContain('Search');
@@ -97,12 +108,75 @@ describe('o catálogo só contém o que existe', () => {
     }
   });
 
-  it('programas são combinações de cursos, e não existem sem cursos que combinar', () => {
-    if (SEED_COURSES.length < 2) {
-      expect(SEED_PROGRAMS).toHaveLength(0);
-      expect(SEED_PATHS).toHaveLength(0);
-    } else {
-      for (const p of SEED_PROGRAMS) expect(p.pathIds.length).toBeGreaterThanOrEqual(1);
+  it('os quatro cursos do plano estão publicados', () => {
+    const titulos = SEED_COURSES.map((c) => c.title).sort();
+    expect(titulos).toEqual([
+      'História da Música Brasileira',
+      'História da Música Ocidental',
+      'Teoria da Música',
+      'Violino',
+    ]);
+  });
+
+  it('todo curso tem capítulos, e todo capítulo tem conteúdo', async () => {
+    const { SEED_MODULES, SEED_LESSONS } = await import('../../src/data/seed-academy-content');
+    for (const c of SEED_COURSES) {
+      const mods = SEED_MODULES.filter((m) => m.courseId === c.id);
+      const lics = SEED_LESSONS.filter((l) => l.courseId === c.id);
+
+      expect(mods.length, `${c.title} sem módulos`).toBeGreaterThan(0);
+      expect(lics.length, `${c.title}: módulos e lições não batem`).toBe(mods.length);
+      expect(c.moduleIds.length).toBe(mods.length);
+
+      for (const l of lics) {
+        const blocos = l.variants.TRADITIONAL.sections.flatMap((s2) => s2.blocks ?? []);
+        expect(blocos.length, `${l.id} sem blocos`).toBeGreaterThan(0);
+        expect(
+          blocos.some((b) => b.kind === 'CHECKPOINT'),
+          `${l.id} sem checkpoint`
+        ).toBe(true);
+      }
+    }
+  });
+
+  it('nenhum bloco tem id repetido em todo o catálogo', async () => {
+    const { SEED_LESSONS } = await import('../../src/data/seed-academy-content');
+    const ids = SEED_LESSONS.flatMap((l) =>
+      l.variants.TRADITIONAL.sections.flatMap((s2) => (s2.blocks ?? []).map((b) => b.id))
+    );
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('programas são combinações de cursos que existem, com carga somada', () => {
+    const porId = new Map(SEED_COURSES.map((c) => [c.id, c]));
+    const trilhas = new Map(SEED_PATHS.map((p) => [p.id, p]));
+
+    expect(SEED_PROGRAMS.length).toBeGreaterThan(0);
+
+    for (const prog of SEED_PROGRAMS) {
+      expect(prog.pathIds.length).toBeGreaterThanOrEqual(2);
+
+      const cursos = prog.pathIds.flatMap((pid) => {
+        const t = trilhas.get(pid);
+        expect(t, `${prog.title} aponta para a trilha inexistente ${pid}`).toBeTruthy();
+        return t!.courseIds;
+      });
+
+      // A carga do programa é a soma real dos cursos, não um número escolhido.
+      const somada = cursos.reduce((a, cid) => {
+        const c = porId.get(cid);
+        expect(c, `trilha aponta para o curso inexistente ${cid}`).toBeTruthy();
+        return a + c!.workloadHours;
+      }, 0);
+
+      expect(prog.workloadHours).toBe(somada);
+    }
+  });
+
+  it('toda trilha aponta para um curso publicado', () => {
+    const ids = new Set(SEED_COURSES.map((c) => c.id));
+    for (const p of SEED_PATHS) {
+      for (const cid of p.courseIds) expect(ids.has(cid)).toBe(true);
     }
   });
 

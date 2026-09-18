@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { CourseCard } from '../../components/domain/CourseCard';
+import { LessonCard } from '../../components/domain/LessonCard';
 import { Carrossel } from '../../components/layout/Carrossel';
+import { ProgressRing } from '../../components/data-display/ProgressRing';
 import { useRouter } from '../../navigation/router';
 import { academyService } from '../../../services/application/academy.service';
 import { authService } from '../../../services/application/auth.service';
@@ -9,10 +11,10 @@ import {
   Program,
   AcademyCourse,
   AcademyModule,
+  AcademyLesson,
   UserAcademyProgress,
 } from '../../../domain/academy';
-import { Search, X, ChevronRight } from 'lucide-react';
-import { clsx } from 'clsx';
+import { Search, X, ChevronRight, CalendarDays, Award, Clock } from 'lucide-react';
 
 type Aba = 'geral' | 'cursos' | 'programas';
 
@@ -42,6 +44,7 @@ export const AcademyHomeScreen: React.FC = () => {
   const [matriculas, setMatriculas] = useState<UserAcademyProgress[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [falhou, setFalhou] = useState(false);
+  const [proximas, setProximas] = useState<AcademyLesson[]>([]);
   const [aba, setAba] = useState<Aba>('geral');
   const [filtro, setFiltro] = useState('');
 
@@ -70,6 +73,20 @@ export const AcademyHomeScreen: React.FC = () => {
           })
         );
         setDisciplinasPorCurso(mapa);
+
+        // Proximo passo: as licoes ainda nao concluidas do curso em andamento.
+        // Sem matricula, nao ha sugestao — e nao se fabrica uma.
+        const emCurso = mats.find((m) => m.progressPercentage < 100);
+        if (emCurso) {
+          const mods = mapa[emCurso.courseId] ?? [];
+          const porModulo = await Promise.all(mods.map((m) => academyService.getLessons(m.id)));
+          setProximas(
+            porModulo
+              .flat()
+              .filter((l) => !emCurso.completedLessonIds.includes(l.id))
+              .slice(0, 3)
+          );
+        }
       } catch {
         setFalhou(true);
       } finally {
@@ -83,6 +100,18 @@ export const AcademyHomeScreen: React.FC = () => {
   const matriculaPorCurso = useMemo(
     () => new Map(matriculas.map((m) => [m.courseId, m])),
     [matriculas]
+  );
+
+  const horasEstudadas = Math.round(
+    matriculas.reduce((a, m) => a + m.studyTimeMinutes, 0) / 60
+  );
+
+  const horasRestantes = Math.round(
+    matriculas.reduce((a, m) => {
+      const c = cursos.find((x) => x.id === m.courseId);
+      if (!c) return a;
+      return a + (c.workloadHours * (100 - m.progressPercentage)) / 100;
+    }, 0)
   );
 
   const termo = filtro.trim().toLowerCase();
@@ -212,55 +241,175 @@ export const AcademyHomeScreen: React.FC = () => {
         onRetry: () => window.location.reload(),
       }}
     >
+      <PageLayout.Tabs
+        id="academy-tabs"
+        activeTab={aba}
+        onChange={(t) => setAba(t as Aba)}
+        tabs={[
+          { id: 'geral', label: 'Visão geral' },
+          { id: 'cursos', label: 'Cursos', badge: cursos.length || undefined },
+          { id: 'programas', label: 'Programas', badge: programas.length || undefined },
+        ]}
+      />
+
+      {/* Trilho fixo: onde você está, o que vem a seguir, e o que isso rende.
+          Fica sempre visível, como a coluna da direita de um curso online. */}
+      <PageLayout.Aside>
+        <div className="space-y-4">
+          <section aria-labelledby="rail-progresso" className="space-y-3">
+            <h2
+              id="rail-progresso"
+              className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500"
+            >
+              Seu progresso
+            </h2>
+
+            {matriculas.length === 0 ? (
+              <p className="text-xs leading-relaxed text-stone-600">
+                Você ainda não se matriculou. Abra um curso e comece pelo primeiro capítulo —
+                o progresso passa a ser registrado a partir daí.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {matriculas.map((m) => {
+                  const c = cursos.find((x) => x.id === m.courseId);
+                  if (!c) return null;
+                  return (
+                    <button
+                      key={m.courseId}
+                      type="button"
+                      onClick={() => navigate(`/academy/course/${c.id}`)}
+                      className="flex w-full items-center gap-3 rounded-lg p-1 text-left transition-colors hover:bg-stone-100"
+                    >
+                      <ProgressRing
+                        id={`rail-ring-${c.id}`}
+                        value={m.progressPercentage}
+                        size={40}
+                        strokeWidth={3}
+                        showLabel
+                        colorVariant="brand"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-xs font-medium text-stone-900">
+                          {c.title}
+                        </span>
+                        <span className="block text-[11px] text-stone-500">
+                          {m.completedLessonIds.length} de {c.moduleIds.length} disciplinas
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          {proximas.length > 0 && (
+            <section aria-labelledby="rail-proximas" className="space-y-2 border-t border-stone-200 pt-4">
+              <h2
+                id="rail-proximas"
+                className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500"
+              >
+                Próximo passo
+              </h2>
+              <div className="space-y-1.5">
+                {proximas.map((l, i) => (
+                  <LessonCard
+                    key={l.id}
+                    id={`rail-licao-${l.id}`}
+                    orderIndex={i + 1}
+                    title={l.variants.TRADITIONAL.title}
+                    durationMinutes={l.durationMinutes}
+                    type="INTERACTIVE"
+                    status={i === 0 ? 'IN_PROGRESS' : 'NOT_STARTED'}
+                    onSelect={() => navigate(`/academy/lesson/${l.id}`)}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          <section aria-labelledby="rail-ritmo" className="space-y-2 border-t border-stone-200 pt-4">
+            <h2
+              id="rail-ritmo"
+              className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500"
+            >
+              Ritmo de estudo
+            </h2>
+
+            {matriculas.length === 0 ? (
+              <p className="text-xs leading-relaxed text-stone-600">
+                A contagem de horas começa na primeira disciplina concluída.
+              </p>
+            ) : (
+              <ul className="space-y-2 text-xs text-stone-700">
+                <li className="flex items-center gap-2">
+                  <Clock className="h-3.5 w-3.5 shrink-0 text-stone-400" aria-hidden="true" />
+                  <span>
+                    {horasEstudadas} h de estudo registradas
+                  </span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CalendarDays className="h-3.5 w-3.5 shrink-0 text-stone-400" aria-hidden="true" />
+                  <span>
+                    {horasRestantes > 0
+                      ? `${horasRestantes} h restantes para concluir o que você começou`
+                      : 'Você concluiu a carga horária das suas matrículas'}
+                  </span>
+                </li>
+              </ul>
+            )}
+          </section>
+
+          <section aria-labelledby="rail-certificacao" className="space-y-2 border-t border-stone-200 pt-4">
+            <h2
+              id="rail-certificacao"
+              className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500"
+            >
+              Certificação
+            </h2>
+            <p className="flex items-start gap-2 text-xs leading-relaxed text-stone-600">
+              <Award className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ouro-600" aria-hidden="true" />
+              <span>
+                Curso livre com certificação própria do Conservatório, com código de verificação
+                público. Ainda sem reconhecimento do MEC.
+              </span>
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/profile/portfolio')}
+              className="text-xs font-medium text-anil-700 underline-offset-2 hover:underline"
+            >
+              Ver meus certificados
+            </button>
+          </section>
+        </div>
+      </PageLayout.Aside>
+
       <PageLayout.Main>
         <div className="space-y-8">
           {/* Navegação da seção + filtro. Sem rótulo: a lupa e as abas se explicam. */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <nav aria-label="Seções do Academy" className="flex items-center gap-1">
-              {([
-                ['geral', 'Visão geral'],
-                ['cursos', 'Cursos'],
-                ['programas', 'Programas'],
-              ] as const).map(([id, rotulo]) => (
+          <div className="flex items-center justify-end">
+            <div className="flex w-full items-center gap-2 rounded-full bg-stone-100 px-3 py-1.5 sm:max-w-xs">
+              <Search className="h-3.5 w-3.5 shrink-0 text-stone-400" aria-hidden="true" />
+              <input
+                type="search"
+                value={filtro}
+                onChange={(e) => setFiltro(e.target.value)}
+                aria-label="Filtrar cursos, programas e disciplinas"
+                placeholder="filtrar"
+                className="min-w-0 flex-1 bg-transparent text-xs text-stone-900 outline-none placeholder:text-stone-400 [&::-webkit-search-cancel-button]:appearance-none"
+              />
+              {filtro && (
                 <button
-                  key={id}
                   type="button"
-                  onClick={() => setAba(id)}
-                  aria-current={aba === id ? 'page' : undefined}
-                  className={clsx(
-                    'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
-                    aba === id
-                      ? 'bg-stone-900 text-white'
-                      : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900'
-                  )}
+                  onClick={() => setFiltro('')}
+                  aria-label="Limpar filtro"
+                  className="shrink-0 text-stone-400 hover:text-stone-700"
                 >
-                  {rotulo}
+                  <X className="h-3.5 w-3.5" />
                 </button>
-              ))}
-            </nav>
-
-            <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:max-w-xs">
-              <div className="flex w-full items-center gap-2 rounded-full bg-stone-100 px-3 py-1.5">
-                <Search className="h-3.5 w-3.5 shrink-0 text-stone-400" aria-hidden="true" />
-                <input
-                  type="search"
-                  value={filtro}
-                  onChange={(e) => setFiltro(e.target.value)}
-                  aria-label="Filtrar cursos, programas e disciplinas"
-                  placeholder="filtrar"
-                  className="min-w-0 flex-1 bg-transparent text-xs text-stone-900 outline-none placeholder:text-stone-400 [&::-webkit-search-cancel-button]:appearance-none"
-                />
-                {filtro && (
-                  <button
-                    type="button"
-                    onClick={() => setFiltro('')}
-                    aria-label="Limpar filtro"
-                    className="shrink-0 text-stone-400 hover:text-stone-700"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                )}
-              </div>
+              )}
             </div>
           </div>
 

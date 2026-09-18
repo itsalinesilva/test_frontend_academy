@@ -14,7 +14,7 @@ Legenda: **✅ existe** · **◑ parcial** · **❌ não existe**
 | Catálogo de cursos | ✅ | `AcademyHomeScreen`, `AcademyCatalogScreen` |
 | Busca com filtros | ✅ | `academy.service.searchCatalog(query, {level, tag})`, `AcademySearchScreen` |
 | Filtro por disciplina dentro do curso | ✅ | Filtro do Academy: disciplina aparece sempre atrelada ao curso |
-| Categorias / áreas | ◑ | `AcademyCategory` existe; só há uma categoria real (Teoria) |
+| Categorias / áreas | ✅ | Três categorias reais: Teoria Musical, História da Música, Instrumento |
 | Nota e resenhas de alunos | ❌ | Não há `rating` nem `reviewCount` no domínio. **Decisão consciente**: nota de curso exige base de alunos; inventá-la seria dado falso |
 | Pré-visualização sem matrícula | ✅ | Catálogo é público; só o progresso exige sessão |
 
@@ -91,7 +91,7 @@ Legenda: **✅ existe** · **◑ parcial** · **❌ não existe**
 |---|---|---|
 | Agrupar cursos em programa | ✅ | `Program`, `ProgramDetailScreen` |
 | Certificado de programa | ◑ | `programTitle` existe no certificado; falta o gatilho de conclusão de programa |
-| **Programas povoados** | ❌ | Vazio por ora: com um curso publicado não há combinação a fazer |
+| **Programas povoados** | ✅ | Três programas: História da Música, Instrumentista — Violino, Formação Completa. A carga de cada um é a soma real dos cursos que ele reúne |
 
 ## 8. Comunidade e suporte
 
@@ -143,11 +143,47 @@ credenciais.
 6. **Revisão por pares** — não existe como fluxo de avaliação.
 7. **Multilíngue e offline** — não existem.
 
-**Três lacunas de conteúdo, não de sistema:**
+## O catálogo publicado
 
-- Três dos quatro cursos do plano ainda não foram escritos (História da Música
-  Ocidental, História da Música Brasileira, Violino). O material-fonte está
-  extraído; o curso não está redigido.
-- Sem um segundo curso, não há programa possível.
-- A prova final do curso de Teoria está declarada na política e ainda não foi
-  redigida.
+Medido no código em 17/09/2026:
+
+| Curso | Capítulos | Blocos | Checkpoints | Laboratórios | Carga |
+|---|---:|---:|---:|---:|---:|
+| Teoria da Música | 58 | 340 | 58 | 64 | 35 h |
+| História da Música Ocidental | 20 | 115 | 20 | 4 | 18 h |
+| História da Música Brasileira | 18 | 87 | 18 | 2 | 15 h |
+| Violino | 16 | 83 | 16 | 6 | 12 h |
+| **Total** | **112** | **625** | **112** | **76** | **80 h** |
+
+Programas: História da Música (33 h), Instrumentista — Violino (47 h),
+Formação Completa (80 h). Nenhum aponta para trilha ou curso inexistente, e a
+carga de cada um é a soma real dos cursos que reúne.
+
+## Paridade de tela, medida
+
+`npm run measure:parity` compara cada tela com a forma canônica do
+`PageLayout` e com os componentes que ela deveria usar.
+
+| Módulo | Média | Módulo | Média |
+|---|---:|---|---:|
+| Profile | 92 | Kids | 50 |
+| **Academy** | **89** | Settings | 50 |
+| Auth | 84 | Rooms | 46 |
+| Practice | 79 | Worlds | 43 |
+| NotFound | 77 | Violin | 42 |
+| Onboarding | 60 | Credentials | 31 |
+| Admin | 28 | Studio | 20 |
+| Help | 20 | Notifications | 11 |
+| Search | 7 | Community | 6 |
+| Score | 4 | | |
+
+O Academy está em 89, com todas as 22 telas em FULL. Os módulos abaixo de 50
+— Score, Community, Search, Notifications, Studio, Help, Admin, Credentials —
+ainda não receberam o tratamento que o Academy recebeu.
+
+**Duas lacunas de conteúdo:**
+
+- As provas finais dos quatro cursos estão declaradas na política e ainda não
+  foram redigidas.
+- O livreto de exercícios cobre 16 dos 58 capítulos de Teoria, e ainda não
+  existe para os outros três cursos.

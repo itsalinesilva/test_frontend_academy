@@ -24,31 +24,33 @@ export interface NavMenuProps {
 interface Destino {
   id: string;
   label: string;
-  hint: string;
   icon: React.ComponentType<{ className?: string }>;
   path: string;
 }
 
 const DESTINOS: Destino[] = [
-  { id: 'academy', label: 'Academy', hint: 'Cursos e programas', icon: GraduationCap, path: '/academy' },
-  { id: 'practice', label: 'Practice', hint: 'Treino medido', icon: Target, path: '/practice' },
-  { id: 'score', label: 'Score', hint: 'Partituras', icon: FileMusic, path: '/score' },
-  { id: 'studio', label: 'Studio', hint: 'Edição e síntese', icon: Sliders, path: '/studio' },
-  { id: 'worlds', label: 'Worlds', hint: 'Atlas de obras', icon: Compass, path: '/worlds' },
-  { id: 'community', label: 'Community', hint: 'Fórum', icon: Users, path: '/community' },
-  { id: 'profile', label: 'Perfil', hint: 'Sua conta', icon: UserIcon, path: '/profile' },
+  { id: 'academy', label: 'Academy', icon: GraduationCap, path: '/academy' },
+  { id: 'practice', label: 'Practice', icon: Target, path: '/practice' },
+  { id: 'score', label: 'Score', icon: FileMusic, path: '/score' },
+  { id: 'studio', label: 'Studio', icon: Sliders, path: '/studio' },
+  { id: 'worlds', label: 'Worlds', icon: Compass, path: '/worlds' },
+  { id: 'community', label: 'Community', icon: Users, path: '/community' },
+  { id: 'profile', label: 'Perfil', icon: UserIcon, path: '/profile' },
 ];
 
 /**
- * Menu de rotas fechado atrás de um chevron.
+ * Menu de rotas do header.
  *
- * Abre por proximidade — o ponteiro entrando na área do gatilho basta — e
- * também por clique e por teclado, porque hover sozinho não é acessível.
- * Fecha ao sair, no Escape e no clique fora.
+ * Fechado, é um chevron — o bastante para indicar que há algo ali, e alvo de
+ * toque no celular. Aberto, desce como **faixa horizontal** ocupando toda a
+ * largura do header, com os destinos lado a lado. Não é uma coluna suspensa:
+ * a faixa acompanha o header porque é a continuação dele.
  *
- * Existe um menu de navegação nesta aplicação, e é este. Não há barra de
- * pilares exposta nem sub-barra contextual: o que não está aqui, está
- * dentro da própria tela.
+ * Abre por proximidade do ponteiro, por clique e por foco de teclado. Fecha ao
+ * sair, no Escape e no clique fora.
+ *
+ * A faixa é posicionada em `top-12` fixo porque o header tem altura `h-12` e
+ * está grudado no topo — as duas medidas mudam juntas.
  */
 export const NavMenu: React.FC<NavMenuProps> = ({
   id = 'nav-menu',
@@ -67,10 +69,10 @@ export const NavMenu: React.FC<NavMenuProps> = ({
     }
   }, []);
 
-  /** Sair não fecha na hora: o ponteiro costuma cruzar a fresta entre gatilho e painel. */
+  /** Sair não fecha na hora: o ponteiro cruza a fresta entre o gatilho e a faixa. */
   const agendarFechamento = useCallback(() => {
     cancelarFechamento();
-    fechamento.current = window.setTimeout(() => setAberto(false), 180);
+    fechamento.current = window.setTimeout(() => setAberto(false), 200);
   }, [cancelarFechamento]);
 
   useEffect(() => cancelarFechamento, [cancelarFechamento]);
@@ -95,10 +97,10 @@ export const NavMenu: React.FC<NavMenuProps> = ({
 
   const destinos = [...DESTINOS];
   if (currentUserRole === UserRole.PROFESSOR || currentUserRole === UserRole.ADMIN) {
-    destinos.push({ id: 'rooms', label: 'Salas', hint: 'Suas turmas', icon: BookOpen, path: '/rooms' });
+    destinos.push({ id: 'rooms', label: 'Salas', icon: BookOpen, path: '/rooms' });
   }
   if (currentUserRole === UserRole.ADMIN || showAdminTab) {
-    destinos.push({ id: 'admin', label: 'Admin', hint: 'Governança', icon: Shield, path: '/admin' });
+    destinos.push({ id: 'admin', label: 'Admin', icon: Shield, path: '/admin' });
   }
 
   const ativo = destinos.find((d) => currentPath.startsWith(d.path));
@@ -112,7 +114,6 @@ export const NavMenu: React.FC<NavMenuProps> = ({
     <div
       id={id}
       ref={raiz}
-      className="relative"
       onMouseEnter={() => {
         cancelarFechamento();
         setAberto(true);
@@ -126,9 +127,10 @@ export const NavMenu: React.FC<NavMenuProps> = ({
         onFocus={() => setAberto(true)}
         aria-haspopup="menu"
         aria-expanded={aberto}
+        aria-controls={`${id}-bar`}
         aria-label="Abrir menu de navegação"
         className={clsx(
-          'inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
+          'inline-flex items-center gap-1 rounded-md px-1.5 py-1.5 text-xs font-medium transition-colors',
           'focus:outline-none focus-visible:ring-1 focus-visible:ring-ouro-400',
           aberto ? 'bg-white/10 text-white' : 'text-stone-300 hover:bg-white/5 hover:text-white'
         )}
@@ -139,13 +141,23 @@ export const NavMenu: React.FC<NavMenuProps> = ({
         />
       </button>
 
-      {aberto && (
-        <div
-          role="menu"
-          aria-label="Destinos"
-          id={`${id}-panel`}
-          className="absolute left-0 top-full z-50 mt-1 w-60 overflow-hidden rounded-lg border border-white/10 bg-anil-950/95 py-1 shadow-xl backdrop-blur-md"
-        >
+      {/* Faixa horizontal: desce colada ao header e ocupa a mesma largura. */}
+      <div
+        id={`${id}-bar`}
+        role="menu"
+        aria-label="Destinos"
+        aria-hidden={!aberto}
+        onMouseEnter={cancelarFechamento}
+        onMouseLeave={agendarFechamento}
+        className={clsx(
+          'fixed inset-x-0 top-12 z-40 border-b border-white/10 bg-anil-950/95 backdrop-blur-md',
+          'transition-[opacity,transform] duration-150 ease-out',
+          aberto
+            ? 'pointer-events-auto translate-y-0 opacity-100'
+            : 'pointer-events-none -translate-y-1 opacity-0'
+        )}
+      >
+        <div className="mx-auto flex max-w-7xl items-center gap-0.5 overflow-x-auto px-3 py-1.5 sm:px-6 lg:px-8">
           {destinos.map((d) => {
             const Icone = d.icon;
             const atual = d.id === ativo?.id;
@@ -154,30 +166,26 @@ export const NavMenu: React.FC<NavMenuProps> = ({
                 key={d.id}
                 type="button"
                 role="menuitem"
+                tabIndex={aberto ? 0 : -1}
                 onClick={() => ir(d.path)}
+                aria-current={atual ? 'page' : undefined}
                 className={clsx(
-                  'flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors',
-                  'focus:outline-none focus-visible:bg-white/10',
-                  atual ? 'bg-white/10' : 'hover:bg-white/5'
+                  'inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs transition-colors',
+                  'focus:outline-none focus-visible:ring-1 focus-visible:ring-ouro-400',
+                  atual
+                    ? 'bg-white/10 font-semibold text-white'
+                    : 'text-stone-300 hover:bg-white/5 hover:text-white'
                 )}
               >
-                <Icone className={clsx('h-4 w-4 shrink-0', atual ? 'text-ouro-400' : 'text-stone-400')} />
-                <span className="min-w-0">
-                  <span
-                    className={clsx(
-                      'block truncate text-xs font-medium',
-                      atual ? 'text-white' : 'text-stone-200'
-                    )}
-                  >
-                    {d.label}
-                  </span>
-                  <span className="block truncate text-[11px] text-stone-500">{d.hint}</span>
-                </span>
+                <Icone
+                  className={clsx('h-3.5 w-3.5 shrink-0', atual ? 'text-ouro-400' : 'text-stone-400')}
+                />
+                <span className="whitespace-nowrap">{d.label}</span>
               </button>
             );
           })}
         </div>
-      )}
+      </div>
     </div>
   );
 };

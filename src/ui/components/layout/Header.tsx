@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, UserRole } from '../../../domain/types';
-import { LogIn, Bell, Music2, Menu, CheckCircle2, BookOpen, MessageSquare } from 'lucide-react';
+import { LogIn, Bell, Music2 } from 'lucide-react';
 import { useRouter } from '../../navigation/router';
 import { NavMenu } from './NavMenu';
 import { HeaderSearch } from './HeaderSearch';
@@ -15,7 +15,6 @@ export interface HeaderProps {
   onSwitchRole?: (role: UserRole) => void;
   onTogglePlayer?: () => void;
   isPlayerOpen?: boolean;
-  onToggleMobileMenu?: () => void;
   showAdminTab?: boolean;
 }
 
@@ -37,42 +36,23 @@ export const Header: React.FC<HeaderProps> = ({
   onSwitchRole,
   onTogglePlayer,
   isPlayerOpen = false,
-  onToggleMobileMenu,
   showAdminTab = false,
 }) => {
   const { navigate } = useRouter();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
-  const [notifications, setNotifications] = useState<QuickNotification[]>([
-    {
-      id: 'notif-1',
-      title: 'Nova Lição Desbloqueada',
-      message: 'Módulo de Contraponto a 2 Vozes disponível na Cátedra de Bach.',
-      time: 'Há 12 min',
-      unread: true,
-      link: '/academy/course/contraponto-fundamental',
-      icon: BookOpen,
-    },
-    {
-      id: 'notif-2',
-      title: 'Resposta no Fórum',
-      message: 'Prof. Gabriel comentou sua análise da Sonata em Dó Maior.',
-      time: 'Há 1 hora',
-      unread: true,
-      link: '/community/topic/analise-sonata-k545',
-      icon: MessageSquare,
-    },
-    {
-      id: 'notif-3',
-      title: 'Avaliação Registrada no Portfólio',
-      message: 'Seu áudio do exercício de 3ª Maior recebeu pontuação 100%.',
-      time: 'Ontem',
-      unread: false,
-      link: '/profile/portfolio',
-      icon: CheckCircle2,
-    },
-  ]);
+  /**
+   * Avisos.
+   *
+   * A lista vinha com três avisos escritos à mão: um sobre um módulo de
+   * contraponto que não existe, outro assinado por um professor que não
+   * existe, e um terceiro sobre uma avaliação que ninguém fez. Eram cenário.
+   *
+   * Agora nasce vazia. Ela se preenche quando houver evento real — e o sino
+   * só ganha marca quando há algo de verdade para ler.
+   */
+  const [notifications, setNotifications] = useState<QuickNotification[]>([]);
 
   const handleLogin = () => {
     if (onLoginClick) onLoginClick();
@@ -91,18 +71,6 @@ export const Header: React.FC<HeaderProps> = ({
       className="sticky top-0 z-30 select-none border-b border-white/10 bg-anil-950 text-stone-100"
     >
       <div className="mx-auto flex h-12 max-w-7xl items-center gap-2 px-3 sm:px-6 lg:px-8">
-        {onToggleMobileMenu && (
-          <button
-            id="header-mobile-menu-btn"
-            type="button"
-            onClick={onToggleMobileMenu}
-            aria-label="Abrir menu de navegação"
-            className="shrink-0 rounded p-1.5 text-stone-300 hover:bg-white/5 hover:text-white lg:hidden"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-        )}
-
         {/* Marca — uma vez, e só aqui */}
         <button
           type="button"
@@ -119,14 +87,13 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
         </button>
 
-        {/* Rotas, fechadas atrás do chevron */}
-        <div className="hidden lg:block">
-          <NavMenu
-            id="header-nav-menu"
-            currentUserRole={currentUser?.primaryRole}
-            showAdminTab={showAdminTab}
-          />
-        </div>
+        {/* Rotas, fechadas atrás do chevron — inclusive no celular, onde o
+            chevron é o alvo de toque. */}
+        <NavMenu
+          id="header-nav-menu"
+          currentUserRole={currentUser?.primaryRole}
+          showAdminTab={showAdminTab}
+        />
 
         <div className="flex-1" />
 

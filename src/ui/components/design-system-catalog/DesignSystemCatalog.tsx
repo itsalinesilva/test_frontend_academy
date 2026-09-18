@@ -525,9 +525,9 @@ export const DesignSystemCatalog: React.FC = () => {
                 <Breadcrumbs
                   id="demo-breadcrumbs"
                   items={[
-                    { id: 'acad', label: 'Academia Musical', onClick: () => {} },
-                    { id: 'prog', label: 'Harmonia & Teoria', onClick: () => {} },
-                    { id: 'curr', label: 'Edimburgo: Palestra 3', isCurrent: true },
+                    { id: 'acad', label: 'Academy', onClick: () => {} },
+                    { id: 'prog', label: 'Teoria da Música', onClick: () => {} },
+                    { id: 'curr', label: 'X. Intervalos', isCurrent: true },
                   ]}
                 />
 
