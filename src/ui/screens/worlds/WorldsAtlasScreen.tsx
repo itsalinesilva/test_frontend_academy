@@ -1,166 +1,296 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
-import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
-import { Network, Calendar, ArrowRight, Music } from 'lucide-react';
+import { EmptyState } from '../../components/feedback/EmptyState';
+import { atlasRepository, FiltroDoAtlas } from '../../../repositories/atlas.repository';
+import { MusicalEra, AtlasWorkPlacement } from '../../../domain/gamification';
+import { Regiao, Genero } from '../../../data/seed-atlas';
+import { Network, Calendar, Globe2, Music, Library } from 'lucide-react';
+
+/**
+ * O Atlas.
+ *
+ * O QUE HAVIA AQUI
+ * ----------------
+ * Cinco eras escritas dentro deste arquivo, com contagem de obras inventada:
+ * "Barroco — 142 obras canônicas", numa plataforma que **não tem acervo de
+ * obras nenhum**. Abaixo, três obras também escritas aqui, cada uma com
+ * proveniência detalhada — autógrafo, primeira edição, acervo de museu —,
+ * como se o Conservatório as tivesse catalogado.
+ *
+ * E "Música Brasileira de Tradição" aparecia como **era**. Não é: é uma
+ * região, e ela atravessa várias eras. Ver
+ * `docs/harness/75_TAXONOMIA_DO_ATLAS.md`.
+ *
+ * O QUE HÁ AGORA
+ * --------------
+ * Os três eixos do catálogo, lidos do repositório:
+ *
+ *   ERA     quando   ·  oito recortes, os que os cursos de História ensinam
+ *   REGIÃO  onde     ·  eixo que faltava, e sem o qual "Brasil" virava era
+ *   ILHA    com quê  ·  instrumento, com currículo próprio
+ *
+ * A contagem de obras é **contada**. Enquanto o acervo estiver vazio, é zero
+ * — e a tela diz isso, em vez de inventar cento e quarenta e dois.
+ */
+const TODOS = 'todos';
 
 export const WorldsAtlasScreen: React.FC = () => {
   const { navigate } = useRouter();
-  const [selectedEra, setSelectedEra] = useState<string>('todos');
 
-  const eras = [
-    { id: 'barroco', name: 'Barroco (1600–1750)', worksCount: 142, highlight: 'J. S. Bach, G. F. Händel, A. Vivaldi' },
-    { id: 'classico', name: 'Classicismo (1750–1820)', worksCount: 98, highlight: 'W. A. Mozart, J. Haydn, L. v. Beethoven' },
-    { id: 'romantico', name: 'Romantismo (1820–1900)', worksCount: 185, highlight: 'F. Chopin, F. Liszt, J. Brahms' },
-    { id: 'moderno', name: 'Moderno & Século XX', worksCount: 76, highlight: 'I. Stravinsky, B. Bartók, C. Debussy' },
-    { id: 'brasil', name: 'Música Brasileira de Tradição', worksCount: 64, highlight: 'H. Villa-Lobos, C. Guarnieri, E. Nazareth' },
-  ];
+  const [eras, setEras] = useState<MusicalEra[] | null>(null);
+  const [regioes, setRegioes] = useState<Regiao[]>([]);
+  const [generos, setGeneros] = useState<Genero[]>([]);
+  const [obras, setObras] = useState<AtlasWorkPlacement[]>([]);
+  const [totalNoAcervo, setTotalNoAcervo] = useState(0);
 
-  const works = [
-    {
-      id: 'bwv-1001',
-      title: 'Sonata nº 1 em Sol menor para Violino Solo (BWV 1001)',
-      composer: 'Johann Sebastian Bach',
-      era: 'Barroco',
-      year: '1720',
-      instrument: 'Violino',
-      provenance: 'Autógrafo P 967, Staatsbibliothek zu Berlin.',
-    },
-    {
-      id: 'op-28-no-4',
-      title: 'Prelúdio em Mi menor, Op. 28 nº 4',
-      composer: 'Frédéric Chopin',
-      era: 'Romantismo',
-      year: '1839',
-      instrument: 'Piano',
-      provenance: 'Primeira edição francesa (M. Schlesinger, 1839).',
-    },
-    {
-      id: 'bachianas-no-5',
-      title: 'Bachianas Brasileiras nº 5: Ária (Cantilena)',
-      composer: 'Heitor Villa-Lobos',
-      era: 'Música Brasileira',
-      year: '1938',
-      instrument: 'Voz & 8 Violoncelos',
-      provenance: 'Acervo Museu Villa-Lobos / Max Eschig.',
-    },
-  ];
+  const [eraId, setEraId] = useState<string>(TODOS);
+  const [regiaoId, setRegiaoId] = useState<string>(TODOS);
+  const [generoId, setGeneroId] = useState<string>(TODOS);
+
+  useEffect(() => {
+    let vivo = true;
+    (async () => {
+      const [e, r, g, total] = await Promise.all([
+        atlasRepository.listarEras(),
+        atlasRepository.listarRegioes(),
+        atlasRepository.listarGeneros(),
+        atlasRepository.contarObras(),
+      ]);
+      if (!vivo) return;
+      setEras(e);
+      setRegioes(r);
+      setGeneros(g);
+      setTotalNoAcervo(total);
+    })().catch(() => {
+      if (vivo) setEras([]);
+    });
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
+  const filtro = useCallback((): FiltroDoAtlas => {
+    return {
+      eraId: eraId === TODOS ? undefined : eraId,
+      regiaoId: regiaoId === TODOS ? undefined : regiaoId,
+      generoId: generoId === TODOS ? undefined : generoId,
+    };
+  }, [eraId, regiaoId, generoId]);
+
+  useEffect(() => {
+    atlasRepository
+      .listarObras(filtro())
+      .then(setObras)
+      .catch(() => setObras([]));
+  }, [filtro]);
+
+  /**
+   * As eras que a região selecionada alcança.
+   *
+   * É o cruzamento dos eixos acontecendo na interface: escolher "Brasil"
+   * esconde a Antiguidade, porque não há repertório brasileiro nela — e
+   * mostrar um recorte vazio seria oferecer um caminho que não leva a nada.
+   */
+  const regiaoAtiva = regioes.find((r) => r.id === regiaoId);
+  const erasVisiveis = (eras ?? []).filter(
+    (e) => !regiaoAtiva || regiaoAtiva.eraIds.includes(e.id)
+  );
 
   return (
     <ScreenContainer
       id="worlds-atlas"
-      title="Atlas Musical & Mundos"
-      subtitle="Exploração cronológica, geográfica e musicológica do patrimônio musical da humanidade."
-      badgeLabel="Patrimônio Histórico"
+      title="Atlas"
+      subtitle="O mapa: quando, onde e com que instrumento a música foi feita."
+      badgeLabel={`${(eras ?? []).length} eras · ${regioes.length} regiões`}
       badgeVariant="neutral"
       primaryAction={{
-        label: 'Explorador em Grafo',
+        label: 'Ver o grafo de influências',
         icon: Network,
         onClick: () => navigate('/worlds/graph'),
       }}
-      emptyProps={{
-        title: 'Nenhuma obra localizada para este período',
-        description: 'Tente selecionar outra era cronológica ou restaurar a visualização completa.',
-        actionLabel: 'Ver Todas as Eras',
-        onAction: () => setSelectedEra('todos'),
-      }}
+      state={eras === null ? 'loading' : 'populated'}
+      loadingMessage="Abrindo o mapa…"
     >
       <div className="space-y-8">
-        {/* Eras Strip */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-anil-800" />
-              Eras Cronológicas & Estilos
-            </h2>
-            <span className="text-xs text-stone-500 font-mono">5 Eras Catalogadas</span>
-          </div>
+        <section className="space-y-3" aria-labelledby="eixo-tempo">
+          <h2
+            id="eixo-tempo"
+            className="flex items-center gap-2 font-serif text-base font-bold text-stone-900"
+          >
+            <Calendar className="h-4 w-4 text-anil-800" aria-hidden="true" />
+            Quando — eras
+          </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            {eras.map((era) => (
-              <Card
-                key={era.id}
-                id={`era-card-${era.id}`}
-                variant={selectedEra === era.id ? 'default' : 'muted'}
-                padding="md"
-                interactive
-                onClick={() => setSelectedEra(era.id)}
-                className={`cursor-pointer transition-all ${
-                  selectedEra === era.id ? 'ring-1 ring-anil-800 border-anil-800 bg-white' : ''
-                }`}
-              >
-                <div className="space-y-1">
-                  <span className="text-xs font-serif font-bold text-stone-900 block truncate">
-                    {era.name}
-                  </span>
-                  <p className="text-[11px] text-stone-500 font-mono">
-                    {era.worksCount} obras canônicas
-                  </p>
-                  <p className="text-[11px] text-stone-600 truncate mt-1">
-                    {era.highlight}
-                  </p>
-                </div>
-              </Card>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por era">
+            <BotaoDeFiltro ativo={eraId === TODOS} onClick={() => setEraId(TODOS)}>
+              Todas as eras
+            </BotaoDeFiltro>
+            {erasVisiveis.map((era) => (
+              <BotaoDeFiltro key={era.id} ativo={eraId === era.id} onClick={() => setEraId(era.id)}>
+                {era.name}
+              </BotaoDeFiltro>
             ))}
           </div>
-        </div>
 
-        {/* Featured Canonical Works */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-              <Music className="w-4 h-4 text-anil-800" />
-              Obras de Referência com Análise & Áudio
-            </h2>
-            <span className="text-xs text-stone-500 font-mono">Partituras + Proveniência</span>
-          </div>
+          {eraId !== TODOS && (
+            <DetalheDaEra era={erasVisiveis.find((e) => e.id === eraId)!} />
+          )}
+        </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {works.map((work) => (
-              <Card
-                key={work.id}
-                id={`work-card-${work.id}`}
-                variant="default"
-                padding="lg"
-                interactive
-                className="space-y-3 flex flex-col justify-between"
-                onClick={() => navigate(`/worlds/work/${work.id}`)}
+        <section className="space-y-3" aria-labelledby="eixo-lugar">
+          <h2
+            id="eixo-lugar"
+            className="flex items-center gap-2 font-serif text-base font-bold text-stone-900"
+          >
+            <Globe2 className="h-4 w-4 text-anil-800" aria-hidden="true" />
+            Onde — regiões
+          </h2>
+
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por região">
+            <BotaoDeFiltro
+              ativo={regiaoId === TODOS}
+              onClick={() => {
+                setRegiaoId(TODOS);
+                setEraId(TODOS);
+              }}
+            >
+              Todas as regiões
+            </BotaoDeFiltro>
+            {regioes.map((r) => (
+              <BotaoDeFiltro
+                key={r.id}
+                ativo={regiaoId === r.id}
+                onClick={() => {
+                  setRegiaoId(r.id);
+                  // a era escolhida pode não existir nesta região
+                  if (!r.eraIds.includes(eraId)) setEraId(TODOS);
+                }}
               >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="neutral" size="sm">{work.era}</Badge>
-                    <span className="text-xs text-stone-500 font-mono">{work.year}</span>
-                  </div>
-
-                  <h3 className="font-serif font-bold text-base text-stone-900 leading-snug">
-                    {work.title}
-                  </h3>
-                  <p className="text-xs font-medium text-stone-700">{work.composer}</p>
-                  <p className="text-xs text-stone-500 line-clamp-2 italic">
-                    {work.provenance}
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
-                  <span className="text-xs text-stone-500 font-mono">{work.instrument}</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/worlds/work/${work.id}`);
-                    }}
-                  >
-                    Estudar Obra <ArrowRight className="w-3 h-3 ml-1" />
-                  </Button>
-                </div>
-              </Card>
+                {r.name}
+              </BotaoDeFiltro>
             ))}
           </div>
-        </div>
+
+          {regiaoAtiva && (
+            <p className="text-xs leading-relaxed text-stone-600">{regiaoAtiva.description}</p>
+          )}
+        </section>
+
+        <section className="space-y-3" aria-labelledby="faceta-genero">
+          <h2
+            id="faceta-genero"
+            className="flex items-center gap-2 font-serif text-base font-bold text-stone-900"
+          >
+            <Music className="h-4 w-4 text-anil-800" aria-hidden="true" />
+            Gênero
+          </h2>
+
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por gênero">
+            <BotaoDeFiltro ativo={generoId === TODOS} onClick={() => setGeneroId(TODOS)}>
+              Todos
+            </BotaoDeFiltro>
+            {generos.map((g) => (
+              <BotaoDeFiltro
+                key={g.id}
+                ativo={generoId === g.id}
+                onClick={() => setGeneroId(g.id)}
+              >
+                {g.name}
+              </BotaoDeFiltro>
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-3" aria-labelledby="obras">
+          <div className="flex items-center justify-between">
+            <h2 id="obras" className="font-serif text-base font-bold text-stone-900">
+              Obras
+            </h2>
+            <span className="font-mono text-xs text-stone-500">
+              {obras.length} de {totalNoAcervo} no acervo
+            </span>
+          </div>
+
+          {obras.length === 0 ? (
+            <EmptyState
+              id="atlas-obras-vazio"
+              icon={<Library className="h-8 w-8 stroke-1" aria-hidden="true" />}
+              title={
+                totalNoAcervo === 0
+                  ? 'O acervo de obras ainda está vazio'
+                  : 'Nenhuma obra responde a este recorte'
+              }
+              description={
+                totalNoAcervo === 0
+                  ? 'O mapa acima é a taxonomia que os cursos de História ensinam — eras, regiões e gêneros. Catalogar uma obra exige decidir edição, proveniência e domínio público, e isso ainda não foi feito.'
+                  : 'Escolha outra era, região ou gênero para ver o que existe.'
+              }
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {obras.map((obra) => (
+                <Card key={obra.workId} variant="default" padding="lg" className="space-y-2">
+                  <Badge variant="neutral" size="sm">
+                    {eras?.find((e) => e.id === obra.eraId)?.name ?? obra.eraId}
+                  </Badge>
+                  <p className="font-serif text-sm font-bold text-stone-900">{obra.workId}</p>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </ScreenContainer>
   );
 };
+
+const BotaoDeFiltro: React.FC<{
+  ativo: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}> = ({ ativo, onClick, children }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-pressed={ativo}
+    className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+      ativo
+        ? 'border-anil-800 bg-anil-800 font-medium text-white'
+        : 'border-stone-300 bg-white text-stone-700 hover:bg-stone-50'
+    }`}
+  >
+    {children}
+  </button>
+);
+
+const DetalheDaEra: React.FC<{ era: MusicalEra }> = ({ era }) => (
+  <Card variant="muted" padding="lg" className="space-y-2">
+    <div className="flex flex-wrap items-baseline gap-2">
+      <h3 className="font-serif text-base font-bold text-stone-900">{era.name}</h3>
+      <span className="font-mono text-xs text-stone-500">{era.periodYears}</span>
+    </div>
+    <p className="text-xs leading-relaxed text-stone-700">{era.description}</p>
+
+    {era.keyCharacteristics.length > 0 && (
+      <div className="flex flex-wrap gap-1.5 pt-1">
+        {era.keyCharacteristics.map((c) => (
+          <span
+            key={c}
+            className="rounded border border-stone-200 bg-white px-2 py-0.5 font-mono text-[10px] text-stone-600"
+          >
+            {c}
+          </span>
+        ))}
+      </div>
+    )}
+
+    {era.famousSchools.length > 0 && (
+      <p className="border-t border-stone-200 pt-2 text-xs text-stone-600">
+        <span className="font-semibold">Escolas:</span> {era.famousSchools.join(' · ')}
+      </p>
+    )}
+  </Card>
+);

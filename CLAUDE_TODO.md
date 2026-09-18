@@ -494,8 +494,12 @@ liam do repositório e conheciam o usuário logado. Nenhuma tinha botão falso.
 | P.4 | Unificar o laboratório de intervalos do Studio com o mesmo domínio | ✅ |
 | P.5 | A aba de ritmo do trainer: o metrônomo toca, mas não mede nem grava a execução | ⬜ |
 | P.6 | A aba de acordes está declarada no seletor e não existe | ⬜ |
-| P.7 | Ligar a tentativa gravada à ofensiva, à meta do dia e ao domínio de habilidade — hoje grava, mas não alimenta os três | ⬜ |
+| P.7 | Ligar a tentativa gravada à ofensiva, à meta do dia e ao domínio de habilidade | ⬜ ver **T-15** |
 | P.8 | Ranking: o repositório existe e devolve lista vazia. Falta decidir **se a liga entra agora** ou depois de haver turma | ⛔ decisão sua |
+
+> **O Practice ganhou mapa.** O levantamento de paridade de 18/09 mostrou que
+> ele não é uma área solta: ancora-se no Atlas — era, região, ilha, obra. Ver
+> a seção **T**, que reorganiza P.5–P.8 dentro dessa estrutura.
 
 ---
 
@@ -729,3 +733,206 @@ que **ainda não existe**. Depende de I.2.
 > **Nada de I.2 em diante é necessário para terminar o produto.** O
 > desenvolvimento roda em `localhost:3000`, que já está autorizado, com login
 > real do Google funcionando desde 18/09/2026.
+
+---
+
+## T · ATLAS E PRACTICE — do mapeamento de paridade, 2026-09-18
+
+> **Origem:** `docs/paridade/VOL2_ASTRA_DUOLINGO.md`, mapeado captura por
+> captura. Taxonomia em `docs/harness/75_TAXONOMIA_DO_ATLAS.md`; contagem em
+> `docs/harness/76_ECONOMIA_DE_PROGRESSO.md`.
+>
+> **A ordem abaixo não é arbitrária.** Vocabulário antes de estrutura,
+> estrutura antes de tela, tela antes de competição. Construir fora de ordem
+> obriga a refazer: uma tela de liga feita antes de a contagem existir vai
+> exibir número que ninguém sabe de onde veio.
+
+### Estado encontrado
+
+| Achado | Onde |
+| :--- | :--- |
+| `MusicalWorld`, `InstrumentIsland`, `RankingLeague`, `CulturalPassport`, `WorldTour` existem no domínio e **nenhuma tela os consome** | `domain/gamification.ts` |
+| As 5 eras do Atlas estão escritas na tela, com **contagens de obra inventadas** — "142 obras canônicas" numa plataforma sem acervo | `WorldsAtlasScreen` |
+| Os 5 compositores do grafo estão escritos na tela | `MusicGraphScreen` |
+| **Região** e **Tribo** não existem | — |
+| O pente fino **não pegava** os dois primeiros: `worksCount` escapava do padrão `\bcount` | corrigido em 18/09 |
+
+---
+
+### T.1 · Vocabulário — **antes de qualquer código**
+
+| # | Item | Estado |
+| :--- | :--- | :---: |
+| T-1 | Rota `/worlds` → `/atlas`. O mapa não é um dos seus eixos | ⬜ |
+| T-2 | "Música Brasileira de Tradição" está listada como **era**; é **região** | ✅ |
+| T-4 | **Decidir Tribo × Ilha.** Proposta: ilha é lugar que se visita, tribo é gente a que se pertence. Um nome só também serve — o que não pode é os dois significando o mesmo | ⛔ **decisão sua** |
+
+**Testes:** `tests/taxonomia-do-atlas.test.ts`
+- nenhum termo do catálogo aparece com dois significados no código
+- toda rota do Atlas responde pelo nome catalogado
+
+---
+
+### T.2 · Domínio do Atlas — **iniciado em 18/09**
+
+> `tests/atlas.test.ts`, 16 casos. O que eles travam: a contagem é **contada**
+> (regressão de "142 obras canônicas"), "Brasil" é região e não era, nenhuma
+> era carrega contagem embutida, e ilha sem currículo não é simulada.
+
+| # | Item | Estado |
+| :--- | :--- | :---: |
+| T-3 | Criar `Regiao` ✅ · acrescentar `regiaoId` a `MusicalWorld` e `AtlasWorkPlacement` ⬜ | ◑ |
+| T-5 | Criar `Genero` como **faceta** de obra, não entidade | ✅ 16 gêneros |
+| T-10 | `atlas.repository` — eras, regiões, gêneros, ilhas, obras. Acervo **nasce vazio** | ✅ |
+| T-11 | Semear com o que existe: **8 eras** dos cursos de História, **3 regiões**, **16 gêneros**. Contagem de obras é contada | ✅ |
+
+**Testes:** `tests/atlas.test.ts`
+- uma obra se situa em era, região e ilha ao mesmo tempo
+- ilha `PLANNED` aparece no mapa e **não** é navegável
+- contagem de obras é **contada**, nunca declarada
+- repositório vazio devolve vazio — sem era de exemplo
+
+---
+
+### T.3 · Economia de progresso
+
+> **Antes das telas de liga e missão.** Elas exibem estes números.
+
+| # | Item | Estado |
+| :--- | :--- | :---: |
+| T-12 | `domain/economia-de-progresso.ts` — a tabela do §2 como código, fonte única | ⬜ |
+| T-13 | Catálogo dos **44 emblemas**. Enquanto não existir, a tela mostra os que existem — não 44 quadrados cinzas | ⬜ |
+| T-14 | `progresso.repository` — XP, score, débito, emblemas, passaporte | ⬜ |
+| T-15 | Ligar as tentativas já gravadas à ofensiva, meta e domínio de habilidade *(era P.7)* | ⬜ |
+| T-16 | **Índice de débito** — acumula, registra onde, quita com score, não subtrai | ⬜ |
+
+**Testes:** `tests/economia-de-progresso.test.ts` — os 15 casos `E-1…E-15` de
+`76_ECONOMIA_DE_PROGRESSO.md` §9. Os que mais importam:
+- **E-2** nenhum evento conta duas vezes
+- **E-4** conta nova começa em zero — regressão da semente fabricada
+- **E-11** sem participantes, classificação volta vazia
+- **E-14** publicar conteúdo não apaga XP, ofensiva nem emblema
+
+---
+
+### T.4 · Telas do Atlas
+
+| # | Item | Origem | Estado |
+| :--- | :--- | :--- | :---: |
+| T-6 | Reescrever `WorldsAtlasScreen` lendo do repositório, com os três eixos e a faceta de gênero | — | ✅ |
+| T-7 | Reescrever `MusicGraphScreen` lendo do repositório | — | ⬜ |
+| T-17 | Navegação por eixo: era, região, ilha, com filtro de gênero | pedido | ⬜ |
+| T-18 | Da obra, entrar no percurso de prática | Astra A7 | ⬜ |
+| T-9 | Conferir se o mapa do braço do violino corresponde ao Atlas | pedido | ⬜ |
+
+**Testes:** `tests/ui/atlas.test.tsx`
+- o filtro de era reduz a lista de obras
+- ilha fechada mostra o motivo, e não some
+- o mapa vazio diz que está vazio
+
+---
+
+### T.5 · Practice — caminho e percurso
+
+| # | Item | Origem | Estado |
+| :--- | :--- | :--- | :---: |
+| T-19 | **Caminho visual com nós** — seção, unidade, nó ativo, requisito explícito | Duolingo B2 | ⬜ |
+| T-20 | **Prática dentro do curso**, ao fim da grade, com cadeado que diz o motivo | Astra A7 | ⬜ |
+| T-21 | XP declarado **antes** — `+10` no botão | Duolingo B7 | ⬜ |
+| T-22 | Exercício: barra, vidas, etiqueta de tipo, **atalho numérico**, pular sem punição | Duolingo B8 | ⬜ |
+| T-23 | Percurso ancorado no Atlas: era → região → ilha → obra → exercício | pedido | ⬜ |
+| P.5 | Aba de ritmo: o metrônomo toca, mas **não mede nem grava** | — | ⬜ |
+| P.6 | Aba de acordes está declarada no seletor e **não existe** | — | ⬜ |
+
+**Testes:** `tests/fluxos-de-pratica.test.ts`
+- nó bloqueado diz **quanto falta**, e não só que está bloqueado
+- concluir o nó desbloqueia o seguinte, e **só** o seguinte
+- o percurso ancorado devolve exercícios **daquela** obra
+- atalho numérico seleciona a alternativa correspondente
+
+---
+
+### T.6 · Ligas, missões e perfil
+
+| # | Item | Origem | Estado |
+| :--- | :--- | :--- | :---: |
+| T-24 | Tela de ligas com **esqueleto** quando não há participante | Duolingo B6 | ⬜ |
+| T-25 | Ligas por recorte: plataforma, curso, tribo, era | pedido | ⬜ |
+| T-26 | Missões diárias com prazo e desafio do mês | Duolingo B5 | ⬜ |
+| T-27 | **Réguas do perfil** — ativa em destaque, demais esmaecidas e expansíveis | pedido | ⬜ |
+| T-28 | Perfil: pontuação total, semanal, posição, `N de 44` com bloqueados visíveis | Astra A6 | ⬜ |
+| T-29 | Ofensiva com semana visível e clubes | A2 + B4 | ⬜ |
+| P.8 | Decidir **se a liga entra agora** ou depois de haver turma | — | ⛔ **decisão sua** |
+
+**Testes:** `tests/ui/ligas-e-missoes.test.tsx`
+- sem participante, aparece esqueleto — **sem nome inventado**
+- trocar a régua reordena sem sair da tela
+- emblema bloqueado aparece, em cinza
+- missão cumprida não pode ser cumprida de novo no mesmo dia
+
+---
+
+### T.7 · Cadastro e apresentação
+
+| # | Item | Origem | Estado |
+| :--- | :--- | :--- | :---: |
+| T-30 | **Nível de partida** no cadastro | Duolingo B1 | ⬜ |
+| T-31 | **Ritmo de progressão** — passo a passo × livre, e refletido no perfil | Astra A4 | ⬜ |
+| T-32 | Escolher a trilha inicial | Astra A3 | ⬜ |
+| T-33 | Passagem de apresentação em etapas, com posição e **Skip** | Astra A2 | ⬜ |
+
+**Testes:** `tests/fluxos-de-cadastro.test.ts`
+- ritmo "passo a passo" **trava** a lição 7 antes da 6; "livre" não trava
+- mudar o ritmo no perfil muda o desbloqueio
+- pular a apresentação leva direto à escolha de trilha
+
+---
+
+### T.8 · Biblioteca e redação
+
+| # | Item | Origem | Estado |
+| :--- | :--- | :--- | :---: |
+| T-34 | **Versão pública da Biblioteca**, com aviso de que não há conteúdo publicado | pedido | ⬜ |
+| T-35 | Abas por disciplina e sub-filtro | Astra A9 | ⬜ |
+| T-36 | **Engine de redação no Admin** — artigo e livro em formato de publicação | pedido | ⬜ |
+| T-37 | **Marcador de lição** e a tela que os reúne, catalogados | Astra A8/A10 | ⬜ |
+
+**Testes:** `tests/biblioteca-publica.test.ts`
+- visitante vê a Biblioteca e o aviso de acervo vazio
+- artigo publicado no Admin aparece na Biblioteca
+- marcador salvo volta na lista, catalogado por curso
+
+---
+
+### T.9 · Kids
+
+| # | Item | Estado |
+| :--- | :--- | :---: |
+| T-38 | Forma Kids das capacidades `C1`–`C15`: **paridade total com o Duolingo, combinada ao Astra**, conforme decidido | ⬜ |
+| T-39 | Garantir que Kids **restringe alcance** e não empobrece conteúdo | ⬜ |
+
+---
+
+### Ordem executável
+
+```
+  T.1  vocabulário         ← T-4 depende de você
+  T.2  domínio do Atlas
+  T.3  economia            ← números antes das telas que os mostram
+   ↓
+  T.4  telas do Atlas
+  T.5  caminho do Practice
+   ↓
+  T.6  ligas e missões     ← P.8 depende de você
+  T.7  cadastro
+  T.8  biblioteca
+  T.9  Kids
+```
+
+### Decisões que dependem de você
+
+| # | Decisão |
+| :--- | :--- |
+| T-4 | **Tribo × Ilha** — dois conceitos, ou um nome só? |
+| P.8 | **Liga entra agora**, ou só quando houver turma? |
+| T-5 | Quais **gêneros** catalogar de início? |

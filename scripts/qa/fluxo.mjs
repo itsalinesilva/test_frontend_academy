@@ -316,8 +316,17 @@ export function checarDadosDentroDaTela() {
        * pessoa, data, contagem ou situação; configuração carrega rótulo e
        * ícone. Uma sala tem professor e número de alunos; uma aba tem título.
        */
+      /**
+       * O sinal pode estar em QUALQUER posição do nome do campo.
+       *
+       * `worksCount: 142` escapava, porque `\bcount` não casa dentro de
+       * `worksCount` — não há limite de palavra entre `works` e `count`. O
+       * resultado foi o Atlas passar batido com cinco eras e contagens de
+       * obra inventadas: "142 obras canônicas" numa plataforma que não tem
+       * acervo de obras nenhum.
+       */
       const CAMPO_DE_DADO =
-        /\b(author|autor|teacher|professor|host|actor|ator|owner|email|timestamp|date|data|createdAt|publishedAt|dueDate|enrolled|inscrit|membersCount|studentCount|count|status|severity|version|xp|score|nota|grade|price|preco)\s*:/i;
+        /\b\w*(author|autor|teacher|professor|host|actor|ator|owner|email|timestamp|date|enrolled|inscrit|count|contagem|total|status|severity|version|xp|score|nota|grade|price|preco)\w*\s*:/i;
       if (!CAMPO_DE_DADO.test(corpo)) continue;
       // um item que CARREGA a propria acao e um comando, nao um registro
       if (/[^A-Za-z]action:\s*\(/.test(corpo)) continue;
