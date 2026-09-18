@@ -134,3 +134,61 @@ export function checarValorForaDaTabela() {
   }
   return achados;
 }
+
+/** As constantes de `XP` no código, lidas do único módulo autorizado a declará-las. */
+function constantesDeXp() {
+  const src = readFileSync('src/domain/economia-de-progresso.ts', 'utf-8');
+  const bloco = src.split('export const XP = {')[1]?.split('} as const;')[0] ?? '';
+  const mapa = new Map();
+  for (const m of bloco.matchAll(/^\s*([A-Z_]+):\s*(\d+)\s*,/gm)) {
+    mapa.set(m[1], Number(m[2]));
+  }
+  return mapa;
+}
+
+/**
+ * Valor da tabela que diverge da constante do código.
+ *
+ * Existir não basta: `XP.EXERCICIO_ACERTADO` pode existir valendo 25 enquanto
+ * a tabela promete 40. Foi divergência silenciosa desse tipo que deixou o
+ * perfil anunciar 1920 de XP e nivel 12 a quem nunca praticou.
+ */
+export function checarValorDivergente() {
+  const constantes = constantesDeXp();
+  const achados = [];
+
+  if (constantes.size === 0) {
+    return [
+      {
+        arquivo: 'src/domain/economia-de-progresso.ts',
+        detalhe: 'nenhuma constante de XP encontrada — a verificação ficaria vazia',
+      },
+    ];
+  }
+
+  for (const r of linhasDaContagem()) {
+    const onde = r.colunas[r.colunas.length - 1];
+    const declarado = r.colunas[1].replace(/\*/g, '').trim();
+    if (!/^\d+$/.test(declarado)) continue;
+
+    for (const [, ref] of onde.matchAll(/`XP\.([A-Z_]+)`/g)) {
+      if (!constantes.has(ref)) {
+        achados.push({
+          arquivo: DOC,
+          linha: r.numero,
+          detalhe: `a tabela cita \`XP.${ref}\`, que não existe em economia-de-progresso.ts`,
+        });
+        continue;
+      }
+      const noCodigo = constantes.get(ref);
+      if (noCodigo !== Number(declarado)) {
+        achados.push({
+          arquivo: DOC,
+          linha: r.numero,
+          detalhe: `a tabela promete ${declarado} e \`XP.${ref}\` vale ${noCodigo}`,
+        });
+      }
+    }
+  }
+  return achados;
+}

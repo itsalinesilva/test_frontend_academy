@@ -567,3 +567,62 @@ export function checarAlcancePorTeclado() {
   }
   return achados;
 }
+
+/**
+ * Agregado inflado — a fabricação que nenhum nome falso denuncia.
+ *
+ * `checarDadoFabricado` procura Clara Schumann e usuário de mentira. Não
+ * alcança isto, que estava no perfil de prática:
+ *
+ * ```
+ *   const totalMinutes = results.reduce(…) + 125;
+ *   const totalSessions = results.length + 8;
+ *   const avgAcc = results.length > 0 ? média(…) : 86;
+ * ```
+ *
+ * Somar em cima do dado real é pior que preencher tela vazia: o enchimento
+ * fica indistinguível da medida, e ninguém o reconhece depois. E o `: 86` dá
+ * 86% de precisão a quem nunca tocou uma nota — ausência apresentada como
+ * desempenho.
+ *
+ * Só olha linha cujo destino é **medida relatada** — total, contagem, acurácia,
+ * score, XP, ofensiva, minutos, percentual. Sem esse filtro, dimensionar um
+ * `textarea` com `texto.split('\n').length + 2` seria acusado de fabricação, e
+ * o verificador viraria ruído que se aprende a ignorar.
+ *
+ * Limite conhecido: só vê literal numérico ao lado de `reduce`, `.length` ou
+ * `filter`. Enchimento vindo de constante nomeada passa, e está anotado em
+ * `72_PENTE_FINO_QUALIDADE.md`.
+ */
+const NOME_DE_MEDIDA =
+  /(total|count|contagem|quantid|acur|accuracy|precis|score|xp|streak|ofensiva|minut|hora|percent|media|média|avg|nivel|nível|level)/i;
+
+export function checarAgregadoInflado() {
+  const achados = [];
+
+  for (const { arquivo, codigo } of fontes()) {
+    if (arquivo.includes('.test.') || /\/(data|seed)/.test(arquivo)) continue;
+
+    for (const [i, linha] of codigo.split('\n').entries()) {
+      const destino = linha.match(/(?:const|let|var)\s+(\w+)\s*=|(\w+)\s*:/);
+      const nome = destino?.[1] ?? destino?.[2] ?? '';
+      if (!NOME_DE_MEDIDA.test(nome)) continue;
+
+      const anota = (detalhe) =>
+        achados.push({ arquivo, linha: i + 1, detalhe: `\`${nome}\` ${detalhe}` });
+
+      // 1. soma literal logo depois de uma contagem ou redução
+      const soma = linha.match(/(reduce\s*\([\s\S]*?\)|\.length|\.filter\([^)]*\)\.length)\s*\+\s*(\d+)/);
+      if (soma && Number(soma[2]) > 1) {
+        anota(`soma ${soma[2]} a um agregado real — o enchimento vira indistinguível da medida`);
+      }
+
+      // 2. ternário de lista vazia com número plausível no lugar do vazio
+      const vazio = linha.match(/\.length\s*[><=!]+\s*0\s*\?[\s\S]*?:\s*(\d+)\s*[;,)]/);
+      if (vazio && Number(vazio[1]) > 1) {
+        anota(`sem dado nenhum, devolve ${vazio[1]} — ausência apresentada como medida`);
+      }
+    }
+  }
+  return achados;
+}

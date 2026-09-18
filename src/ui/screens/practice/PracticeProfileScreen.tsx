@@ -14,6 +14,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { PracticeProfile } from '../../../domain/practice';
+import { CONCLUSOES_PARA_ENTRAR_NA_LIGA } from '../../../domain/economia-de-progresso';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
 import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
@@ -118,7 +119,12 @@ export const PracticeProfileScreen: React.FC = () => {
             <Activity className="w-3.5 h-3.5 text-red-600" /> Acurácia Global
           </span>
           <div className="font-mono text-2xl font-bold text-red-900">
-            {profile.overallAccuracyPercentage}%
+            {/* `null` e "ainda nao praticou", e nao zero por cento. */}
+            {profile.overallAccuracyPercentage === null ? (
+              <span className="text-base font-normal text-stone-400">sem medição ainda</span>
+            ) : (
+              `${profile.overallAccuracyPercentage}%`
+            )}
           </div>
         </Card>
 
@@ -136,7 +142,11 @@ export const PracticeProfileScreen: React.FC = () => {
             <Trophy className="w-3.5 h-3.5 text-purple-600" /> Liga Atual
           </span>
           <div className="font-serif text-lg font-bold text-purple-900 truncate">
-            {profile.currentLeague}
+            {profile.currentLeague ?? (
+              <span className="text-sm font-normal text-stone-400">
+                entra após {CONCLUSOES_PARA_ENTRAR_NA_LIGA} conclusões
+              </span>
+            )}
           </div>
         </Card>
       </div>
@@ -187,6 +197,13 @@ export const PracticeProfileScreen: React.FC = () => {
           </h2>
 
           <div className="space-y-3">
+            {/* Sem sessao nao ha preferencia: dizer isso e melhor que um grafico vazio. */}
+            {profile.preferredModalities.length === 0 && (
+              <p className="text-xs leading-relaxed text-stone-500">
+                Aparece assim que você praticar — é medido pelas sessões que você fizer,
+                não escolhido antes.
+              </p>
+            )}
             {profile.preferredModalities.map((item) => (
               <div key={item.modality} className="space-y-1">
                 <div className="flex justify-between text-xs font-mono">

@@ -309,7 +309,8 @@ export interface UserExperiencePoints {
   level: number;
   currentLevelXp: number;
   nextLevelXp: number;
-  lastEarnedAt: ISOTimestamp;
+  /** `null` enquanto nada foi ganho. */
+  lastEarnedAt: ISOTimestamp | null;
 }
 
 export interface RankingLeaderboardEntry {
@@ -325,14 +326,26 @@ export interface RankingLeaderboardEntry {
   computedAt: ISOTimestamp;
 }
 
+/**
+ * O retrato de quem pratica.
+ *
+ * Tres campos admitem ausencia, e isso e o contrato: este perfil ja anunciou
+ * 86% de precisao, liga Conservatorio e nivel 12 a uma conta recem-criada,
+ * porque o tipo obrigava a preencher tudo. Onde nao houve pratica nao ha
+ * numero — e a tela precisa poder dizer isso.
+ *
+ * O nome de quem pratica NAO mora aqui: o perfil de pratica nao e a
+ * identidade. Quem exibe o nome le da sessao.
+ */
 export interface PracticeProfile {
   userId: EntityId;
-  displayName: string;
   totalPracticeTimeMinutes: number;
   totalSessionsCount: number;
   totalAttemptsCount: number;
-  overallAccuracyPercentage: number;
-  currentLeague: RankingLeague;
+  /** `null` enquanto nao houve resultado — diferente de ter errado tudo. */
+  overallAccuracyPercentage: number | null;
+  /** `null` antes de `CONCLUSOES_PARA_ENTRAR_NA_LIGA` conclusoes (§6). */
+  currentLeague: RankingLeague | null;
   streak: StreakTracker;
   dailyGoal: DailyGoal;
   experience: UserExperiencePoints;

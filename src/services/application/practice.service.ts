@@ -28,6 +28,7 @@ import { PracticeRepository, practiceRepository } from '../../repositories/pract
 import { profileService, ProfileService } from './profile.service';
 import { analyticsService } from '../../infrastructure/telemetry/analytics-service';
 import { AnalyticsEventType } from '../../domain/analytics';
+import { nivelDe, CONCLUSOES_PARA_ENTRAR_NA_LIGA } from '../../domain/economia-de-progresso';
 
 export interface EvaluateAttemptInput {
   exerciseId: string;
@@ -589,12 +590,21 @@ export class PracticeService {
       this.repo.listMasteriesByUser(userId),
     ]);
 
-    const totalMinutes = results.reduce((sum, r) => sum + Math.round(r.durationSeconds / 60), 0) + 125;
-    const totalSessions = results.length + 8;
-    const totalAttempts = results.reduce((sum, r) => sum + r.notesAttempted, 0) + 74;
-    const avgAcc = results.length > 0
-      ? Math.round(results.reduce((sum, r) => sum + r.pitchAccuracy, 0) / results.length)
-      : 86;
+    /**
+     * Tudo aqui sai do que a pessoa fez, e nada mais.
+     *
+     * Este bloco somava `+ 125` minutos, `+ 8` sessoes e `+ 74` tentativas a
+     * numeros reais, e dava 86% de precisao a quem nao tinha resultado
+     * nenhum. Somar em cima do dado real e pior que preencher vazio: corrompe
+     * a medida, e nunca da para reconhecer o enchimento depois.
+     */
+    const totalMinutes = results.reduce((sum, r) => sum + Math.round(r.durationSeconds / 60), 0);
+    const totalSessions = results.length;
+    const totalAttempts = results.reduce((sum, r) => sum + r.notesAttempted, 0);
+    const avgAcc =
+      results.length > 0
+        ? Math.round(results.reduce((sum, r) => sum + r.pitchAccuracy, 0) / results.length)
+        : null;
 
     const count = {
       novato: masteries.filter((m) => m.level === 1).length,
@@ -604,37 +614,91 @@ export class PracticeService {
       virtuoso: masteries.filter((m) => m.level === 5).length,
     };
 
+    /**
+     * O XP sai do que foi creditado na hora, resultado por resultado.
+     *
+     * Recalcular hoje pela tabela de hoje reescreveria o passado a cada
+     * mudanca de valor — quem praticou em marco veria o numero mudar sozinho.
+     */
+    const somarXp = (lista: PracticeResult[]) =>
+      lista.reduce((sum, r) => sum + r.xpGained, 0);
+
+    const totalXp = somarXp(results);
+    const nivel = nivelDe(totalXp);
+    const xpDaSemana = somarXp(results.filter((r) => r.createdAt >= inicioDaSemana()));
+    const xpDoMes = somarXp(results.filter((r) => r.createdAt >= inicioDoMes()));
+
     return {
       userId,
-      displayName: 'Acadêmico de Música',
       totalPracticeTimeMinutes: totalMinutes,
       totalSessionsCount: totalSessions,
       totalAttemptsCount: totalAttempts,
+      /** `null` e "ainda nao praticou" — diferente de ter errado tudo. */
       overallAccuracyPercentage: avgAcc,
-      currentLeague: RankingLeague.CONSERVATORIO,
+      /** §6: entra-se na liga depois de tres conclusoes, e nao antes. */
+      currentLeague:
+        results.length >= CONCLUSOES_PARA_ENTRAR_NA_LIGA ? RankingLeague.BRONZE : null,
       streak,
       dailyGoal,
       experience: {
         id: `xp_${userId}`,
         userId,
-        totalXp: 1920,
-        weeklyXp: 480,
-        monthlyXp: 1920,
-        level: 12,
-        currentLevelXp: 120,
-        nextLevelXp: 500,
-        lastEarnedAt: new Date().toISOString(),
+        totalXp,
+        weeklyXp: xpDaSemana,
+        monthlyXp: xpDoMes,
+        level: nivel.nivel,
+        currentLevelXp: nivel.xpNoNivel,
+        nextLevelXp: nivel.xpDoNivel,
+        lastEarnedAt: results[results.length - 1]?.createdAt ?? null,
       },
       masteryCount: count,
-      preferredModalities: [
-        { modality: PracticeModality.KEYBOARD, percentage: 40 },
-        { modality: PracticeModality.EAR_TRAINING, percentage: 30 },
-        { modality: PracticeModality.RHYTHM, percentage: 20 },
-        { modality: PracticeModality.READING, percentage: 10 },
-      ],
+      /** A distribuicao sai das sessoes reais; sem sessao, nao ha distribuicao. */
+      preferredModalities: distribuicaoPorModalidade(results),
       recentResults: results.slice(-5).reverse(),
     };
   }
+}
+
+/**
+ * A semana comeca na segunda, no fuso do dispositivo.
+ *
+ * Mesmo criterio da ofensiva e da liga (§3 e §6). Usar UTC faria a semana
+ * virar no meio da noite de domingo para quem esta no Brasil.
+ */
+function inicioDaSemana(): string {
+  const hoje = new Date();
+  const diaDaSemana = (hoje.getDay() + 6) % 7; // segunda = 0
+  const segunda = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - diaDaSemana);
+  return segunda.toISOString();
+}
+
+function inicioDoMes(): string {
+  const hoje = new Date();
+  return new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString();
+}
+
+/**
+ * Em que a pessoa pratica, medido pelo que ela praticou.
+ *
+ * Devolve lista vazia quando nao ha sessao: sem pratica nao ha preferencia, e
+ * inventar uma distribuicao seria descrever alguem que nao existe.
+ */
+function distribuicaoPorModalidade(
+  results: PracticeResult[]
+): { modality: PracticeModality; percentage: number }[] {
+  if (results.length === 0) return [];
+
+  const porModalidade = new Map<PracticeModality, number>();
+  for (const r of results) {
+    porModalidade.set(r.modality, (porModalidade.get(r.modality) ?? 0) + 1);
+  }
+
+  return [...porModalidade.entries()]
+    .map(([modality, quantas]) => ({
+      modality,
+      percentage: Math.round((quantas / results.length) * 100),
+    }))
+    .sort((a, b) => b.percentage - a.percentage);
 }
 
 export const practiceService = new PracticeService();

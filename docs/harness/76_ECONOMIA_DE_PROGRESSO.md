@@ -60,29 +60,48 @@ símbolo sem `⏳` e falha se não o encontrar no código. Implementar um evento
 significa criar o símbolo **e** apagar o `⏳` da linha; esquecer a segunda
 metade não quebra nada, mas esquecer a primeira quebra a suíte.
 
+Os valores em si vivem em `src/domain/economia-de-progresso.ts`, na constante
+`XP` — **um** lugar no código autorizado a dizer quanto vale cada coisa. Onde a
+coluna **Onde** nomeia `XP.ALGUMA_COISA`, o verificador compara o número desta
+tabela com o número da constante e falha se divergirem. Foi essa divergência,
+sem ninguém para notá-la, que deixou o perfil anunciar 1920 de XP e nível 12 a
+quem nunca praticou.
+
+### 2.1 · Nível
+
+| Regra | Valor |
+|---|---|
+| Custo do nível `n` | **100 × n** de XP |
+| Nível inicial | 1, com 0 de XP |
+| Perde-se nível? | **Não.** Nível lê esforço acumulado, não mérito atual |
+
+Uma progressão só, sem tabela nova a cada faixa: sair do nível 1 custa 100, do
+2 custa 200, do 11 custa 1100. Quem tem 1920 de XP está no nível 6 — e não no
+12, como o perfil chegou a afirmar.
+
 ### Academy — estudo
 
 | Evento | XP | Score | Ofensiva | Onde é disparado |
 |---|---:|---:|:---:|---|
-| Lição concluída | 10 | — | ✅ | `academy.service.completeLesson` |
-| Checkpoint acertado na primeira | 5 | 5 | — | `LessonBlocks` → CHECKPOINT |
+| Lição concluída | 10 | — | ✅ | `XP.LICAO_CONCLUIDA` · `academy.service.completeLesson` |
+| Checkpoint acertado na primeira | 5 | 5 | — | `XP.CHECKPOINT_ACERTADO` · `LessonBlocks` |
 | Checkpoint acertado depois de errar | 5 | — | — | idem |
-| Atividade concluída | 15 | conforme acerto | ✅ | `saveActivityAttempt` |
-| Simulado concluído | 25 | conforme acerto | ✅ | `saveAssessmentSubmission` |
-| **Prova final aprovada** | 100 | conforme nota | ✅ | idem, `passed === true` |
-| Prova final reprovada | 25 | — | ✅ | esforço conta; acerto não |
-| Curso concluído | 250 | — | — | `course_completed` |
-| Certificado emitido | 50 | — | — | `saveCertificate` |
+| Atividade concluída | 15 | conforme acerto | ✅ | `XP.ATIVIDADE_CONCLUIDA` · `saveActivityAttempt` |
+| Simulado concluído | 25 | conforme acerto | ✅ | `XP.SIMULADO_CONCLUIDO` · `saveAssessmentSubmission` |
+| **Prova final aprovada** | 100 | conforme nota | ✅ | `XP.PROVA_APROVADA` |
+| Prova final reprovada | 25 | — | ✅ | `XP.PROVA_REPROVADA` — esforço conta; acerto não |
+| Curso concluído | 250 | — | — | `XP.CURSO_CONCLUIDO` · `course_completed` |
+| Certificado emitido | 50 | — | — | `XP.CERTIFICADO_EMITIDO` · `saveCertificate` |
 
 ### Practice — treino
 
 | Evento | XP | Score | Ofensiva | Onde |
 |---|---:|---:|:---:|---|
-| Exercício acertado | 25 | conforme medição | ✅ | `saveAttempt` |
-| Exercício errado | 5 | — | ✅ | idem — e gera débito |
-| Rodada de 10 concluída | 20 | — | — | fim da rodada |
-| Missão diária cumprida | 50 | — | — | ver §4 |
-| Meta do dia cumprida | 30 | — | — | `DailyGoal.isCompleted` |
+| Exercício acertado | 25 | conforme medição | ✅ | `XP.EXERCICIO_ACERTADO` · `saveAttempt` |
+| Exercício errado | 5 | — | ✅ | `XP.EXERCICIO_ERRADO` — e gera débito |
+| Rodada de 10 concluída | 20 | — | — | `XP.RODADA_CONCLUIDA` · `xpDaLicao` |
+| Missão diária cumprida | 50 | — | — | `XP.MISSAO_DIARIA` — ver §4 |
+| Meta do dia cumprida | 30 | — | — | `XP.META_DO_DIA` · `DailyGoal` |
 | Unidade do percurso concluída | 150 | — | — | ⏳ `UNIDADE_CONCLUIDA` |
 | Obra de repertório avaliada | 200 | conforme avaliação | ✅ | ⏳ `REPERTORIO_EXECUTADO` |
 
@@ -92,17 +111,17 @@ metade não quebra nada, mas esquecer a primeira quebra a suíte.
 |---|---:|---:|---|
 | Primeira visita a um mundo | 20 | — | ⏳ `MUNDO_VISITADO` |
 | Primeira visita a uma região | 20 | — | ⏳ `REGIAO_VISITADA` |
-| Obra analisada | 40 | conforme análise | `WORK_ANALYZED` |
-| Excursão concluída | 120 | — | `TOUR_COMPLETED` |
+| Obra analisada | 40 | conforme análise | `XP.OBRA_ANALISADA` · `WORK_ANALYZED` |
+| Excursão concluída | 120 | — | `XP.EXCURSAO_CONCLUIDA` · `TOUR_COMPLETED` |
 
 ### Comunidade
 
 | Evento | XP | Score | Onde |
 |---|---:|---:|---|
-| Tópico aberto | 10 | — | `forumRepository.salvarTopico` |
-| Resposta publicada | 5 | — | `salvarResposta` |
-| Resposta aceita como solução | 30 | 20 | `isAcceptedSolution` |
-| Avaliação de curso escrita | 15 | — | `reviewsRepository.salvar` |
+| Tópico aberto | 10 | — | `XP.TOPICO_ABERTO` · `forumRepository.salvarTopico` |
+| Resposta publicada | 5 | — | `XP.RESPOSTA_PUBLICADA` · `salvarResposta` |
+| Resposta aceita como solução | 30 | 20 | `XP.RESPOSTA_ACEITA` · `isAcceptedSolution` |
+| Avaliação de curso escrita | 15 | — | `XP.AVALIACAO_ESCRITA` · `reviewsRepository.salvar` |
 
 > **Nada de comunidade conta para a ofensiva.** Ofensiva é constância de
 > **estudo**; escrever no fórum todo dia não é praticar.

@@ -35,6 +35,7 @@ import {
   checarPromessaDeTitulacao,
   checarRessalvaDeCursoLivre,
   checarDadoFabricado,
+  checarAgregadoInflado,
   checarRepertorioLivre,
   checarBotaoFalso,
   checarSucessoSemEfeito,
@@ -50,6 +51,7 @@ import {
   checarSimboloDaContagem,
   checarVocabularioDaContagem,
   checarValorForaDaTabela,
+  checarValorDivergente,
 } from './qa/economia.mjs';
 
 /** A auditoria de rotas já existia; entra aqui em vez de virar comando à parte. */
@@ -92,6 +94,7 @@ const SECOES = [
       relatar('nenhuma promessa de titulação reconhecida', checarPromessaDeTitulacao(), G.BLOQUEIA),
       relatar('a ressalva de curso livre está escrita', checarRessalvaDeCursoLivre(), G.BLOQUEIA),
       relatar('nenhum dado fabricado no catálogo', checarDadoFabricado(), G.BLOQUEIA),
+      relatar('nenhum agregado inflado nem ausência disfarçada', checarAgregadoInflado(), G.BLOQUEIA),
       relatar('nenhum botão falso', checarBotaoFalso(), G.BLOQUEIA),
       relatar('nenhum sucesso anunciado sem efeito', checarSucessoSemEfeito(), G.BLOQUEIA),
       relatar('nenhum conjunto de dados escrito na tela', checarDadosDentroDaTela(), G.BLOQUEIA),
@@ -109,6 +112,7 @@ const SECOES = [
     checagens: [
       relatar('todo símbolo afirmado na contagem existe', checarSimboloDaContagem(), G.BLOQUEIA),
       relatar('nenhum XP atribuído fora da tabela', checarValorForaDaTabela(), G.BLOQUEIA),
+      relatar('a tabela e as constantes dizem o mesmo número', checarValorDivergente(), G.BLOQUEIA),
       relatar('o vocabulário do Atlas está certo na contagem', checarVocabularioDaContagem(), G.CORRIGIR),
     ],
   },
