@@ -13,7 +13,10 @@ import {
   AcademyLesson,
   UserAcademyProgress,
 } from '../../../domain/academy';
-import { RegistroDeEstudo } from '../../../domain/frequencia';
+import { RegistroDeEstudo, diaDe } from '../../../domain/frequencia';
+import { Estrelas, SeletorDeEstrelas } from '../../components/academy/Estrelas';
+import { reviewsRepository, montarAvaliacao } from '../../../repositories/reviews.repository';
+import { AvaliacaoDeCurso, Estrelas as NotaEstrelas } from '../../../domain/reviews';
 
 /**
  * A tela de dentro do curso.
@@ -35,6 +38,10 @@ export const CourseLearnScreen: React.FC = () => {
   const [licoesPorModulo, setLicoes] = useState<Record<string, AcademyLesson[]>>({});
   const [progresso, setProgresso] = useState<UserAcademyProgress | null>(null);
   const [frequencia, setFrequencia] = useState<RegistroDeEstudo[]>([]);
+  const [outrosCursos, setOutros] = useState<AcademyCourse[]>([]);
+  const [minhaAvaliacao, setMinhaAvaliacao] = useState<AvaliacaoDeCurso | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userNome, setUserNome] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [expandido, setExpandido] = useState<Set<string>>(new Set());
 
@@ -63,12 +70,23 @@ export const CourseLearnScreen: React.FC = () => {
       if (!vivo) return;
       setLicoes(mapa);
 
+      // Recomendações: os outros cursos publicados. Sem modelo de afinidade
+      // ainda, e por isso a seção não finge personalização que não existe.
+      const todos = await academyService.getCourses();
+      if (!vivo) return;
+      setOutros(todos.filter((x) => x.id !== c.id).slice(0, 3));
+
       const sessao = await authService.getActiveSession();
       if (sessao && vivo) {
+        setUserId(sessao.user.id);
+        setUserNome(sessao.user.name);
         setProgresso(await academyService.getUserProgress(sessao.user.id, c.id));
-        // A frequência ainda não tem repositório próprio; o calendário nasce
-        // vazio e se preenche conforme o registro de estudo for gravado.
-        setFrequencia([]);
+        setMinhaAvaliacao(await reviewsRepository.doUsuario(sessao.user.id, c.id));
+
+        // Abrir a tela do curso é atividade de estudo: marca o dia.
+        setFrequencia(
+          await reviewsRepository.registrarEstudo(sessao.user.id, diaDe(new Date()), 0)
+        );
       }
       if (vivo) setCarregando(false);
     };
@@ -104,6 +122,25 @@ export const CourseLearnScreen: React.FC = () => {
   const totalLicoes = Object.values(licoesPorModulo).flat().length;
   const concluido = totalLicoes > 0 && feitas.size >= totalLicoes;
 
+  /** Nota rápida a partir do trilho. O texto fica na página do curso. */
+  const avaliarRapido = async (n: NotaEstrelas) => {
+    if (!userId) {
+      navigate('/auth/login');
+      return;
+    }
+    const nova = montarAvaliacao({
+      userId,
+      courseId: curso.id,
+      autor: userNome,
+      anonima: minhaAvaliacao?.anonima ?? false,
+      estrelas: n,
+      comentario: minhaAvaliacao?.comentario ?? '',
+      concluiuOCurso: concluido,
+    });
+    await reviewsRepository.salvar(nova);
+    setMinhaAvaliacao(nova);
+  };
+
   const alternar = (id: string) =>
     setExpandido((prev) => {
       const n = new Set(prev);
@@ -138,21 +175,64 @@ export const CourseLearnScreen: React.FC = () => {
           <h2 className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
             Avaliar este curso
           </h2>
+
           {concluido ? (
-            <button
-              type="button"
-              onClick={() => navigate(`/academy/course/${curso.id}#avaliacoes`)}
-              className="mt-2 text-sm font-medium text-anil-700 underline-offset-2 hover:underline"
-            >
-              Deixar sua avaliação
-            </button>
+            <>
+              <div className="mt-2">
+                <SeletorDeEstrelas
+                  id="trilho-avaliar"
+                  valor={minhaAvaliacao?.estrelas ?? null}
+                  onChange={avaliarRapido}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate(`/academy/course/${curso.id}#avaliacoes`)}
+                className="mt-2 text-xs font-medium text-anil-700 underline-offset-2 hover:underline"
+              >
+                {minhaAvaliacao?.comentario
+                  ? 'Editar meu comentário'
+                  : 'Escrever um comentário'}
+              </button>
+            </>
           ) : (
-            <p className="mt-2 text-xs leading-relaxed text-stone-500">
-              A avaliação abre quando você concluir o curso — a nota descreve a experiência
-              inteira.
-            </p>
+            <>
+              <div className="mt-2 opacity-50">
+                <Estrelas valor={null} />
+              </div>
+              <p className="mt-2 text-xs leading-relaxed text-stone-500">
+                A avaliação abre ao concluir o curso — a nota descreve a experiência inteira.
+              </p>
+            </>
           )}
         </div>
+
+        {outrosCursos.length > 0 && (
+          <div className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
+            <h2 className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+              Outros cursos
+            </h2>
+            <ul className="mt-2 space-y-1">
+              {outrosCursos.map((o) => (
+                <li key={o.id}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/academy/course/${o.id}`)}
+                    className="w-full rounded-md px-2 py-1.5 text-left transition-colors hover:bg-stone-50"
+                  >
+                    <span className="block text-xs font-medium leading-snug text-stone-900">
+                      {o.title}
+                    </span>
+                    <span className="block text-[11px] text-stone-500">
+                      {o.moduleIds.length} disciplinas · {o.workloadHours} h
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
       </PageLayout.Aside>
 
       <PageLayout.Main>

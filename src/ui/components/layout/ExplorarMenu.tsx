@@ -60,38 +60,39 @@ export const ExplorarMenu: React.FC<ExplorarMenuProps> = ({
     };
   }, [aberto]);
 
+  /**
+   * As telas oficiais da plataforma, e só elas.
+   *
+   * Aqui não entra sub-rota. "Editor de partitura" fica dentro do Studio,
+   * "Simulador" fica dentro do Violino, "Biblioteca" fica dentro do Admin —
+   * são partes de uma tela, não destinos. Um menu de navegação que lista
+   * sub-rotas obriga a pessoa a ler o mapa inteiro para achar a sala.
+   */
   const grupos: Grupo[] = [
     {
-      titulo: 'Estudar',
+      titulo: 'Aprender',
       itens: [
-        { label: 'Cursos', hint: 'O catálogo completo', path: '/academy' },
-        { label: 'Programas', hint: 'Cursos combinados em percurso', path: '/academy?aba=programas' },
-        { label: 'Biblioteca', hint: 'Livros do Conservatório', path: '/admin/biblioteca' },
-      ],
-    },
-    {
-      titulo: 'Praticar',
-      itens: [
+        { label: 'Academy', hint: 'Cursos e programas', path: '/academy' },
         { label: 'Practice', hint: 'Treino com medição real', path: '/practice' },
-        { label: 'Violino', hint: 'Simulador e board por nível', path: '/violin/simulator' },
-        { label: 'Partituras', hint: 'Acervo de domínio público', path: '/score' },
       ],
     },
     {
-      titulo: 'Criar',
+      titulo: 'Tocar',
       itens: [
+        { label: 'Score', hint: 'Partituras', path: '/score' },
         { label: 'Studio', hint: 'Edição e síntese', path: '/studio' },
-        { label: 'Editor de partitura', hint: 'Escrever e salvar', path: '/studio/score' },
-        { label: 'Laboratório de voz', hint: 'Afinador e forma de onda', path: '/studio/voice-ear' },
       ],
     },
     {
       titulo: 'Descobrir',
       itens: [
-        { label: 'Atlas', hint: 'Obras por era e compositor', path: '/worlds' },
-        { label: 'Comunidade', hint: 'Fórum e eventos', path: '/community' },
-        { label: 'Rede', hint: 'Perfis do Conservatório', path: '/profile/network' },
+        { label: 'Worlds', hint: 'Atlas de obras', path: '/worlds' },
+        { label: 'Community', hint: 'Fórum e eventos', path: '/community' },
       ],
+    },
+    {
+      titulo: 'Sua conta',
+      itens: [{ label: 'Perfil', hint: 'Seus dados e portfólio', path: '/profile' }],
     },
   ];
 

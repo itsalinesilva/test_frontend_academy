@@ -25,37 +25,26 @@ import {
   resumirAvaliacoes,
   percentuais,
   nomeExibido,
-  Estrelas,
+  Estrelas as NotaEstrelas,
 } from '../../../domain/reviews';
+import { reviewsRepository, montarAvaliacao } from '../../../repositories/reviews.repository';
+import { Estrelas } from '../../components/academy/Estrelas';
+import { FormularioDeAvaliacao } from '../../components/academy/FormularioDeAvaliacao';
+import { CarrosselDeDepoimentos } from '../../components/academy/CarrosselDeDepoimentos';
+import { User } from '../../../domain/types';
 
-type Secao = 'sobre' | 'resultados' | 'disciplinas' | 'avaliacoes';
+type Secao = 'sobre' | 'resultados' | 'disciplinas' | 'depoimentos' | 'avaliacoes';
 
 const SECOES: { id: Secao; label: string }[] = [
   { id: 'sobre', label: 'Sobre' },
   { id: 'resultados', label: 'Resultados' },
   { id: 'disciplinas', label: 'Disciplinas' },
+  { id: 'depoimentos', label: 'Depoimentos' },
   { id: 'avaliacoes', label: 'Avaliações' },
 ];
 
-/** Estrelas preenchidas até `valor`. `null` desenha o contorno vazio. */
-const Estrelinhas: React.FC<{ valor: number | null; tamanho?: string }> = ({
-  valor,
-  tamanho = 'h-4 w-4',
-}) => (
-  <span className="inline-flex items-center gap-0.5" aria-hidden="true">
-    {[1, 2, 3, 4, 5].map((i) => (
-      <Star
-        key={i}
-        className={clsx(
-          tamanho,
-          valor !== null && i <= Math.round(valor)
-            ? 'fill-ouro-500 text-ouro-500'
-            : 'text-stone-300'
-        )}
-      />
-    ))}
-  </span>
-);
+/** Filtro da lista de avaliações. */
+type FiltroDeNota = 'todas' | '5' | '4' | '3' | '2' | '1';
 
 /**
  * A página de apresentação do curso.
@@ -77,7 +66,10 @@ export const CoursePresentationScreen: React.FC = () => {
   const [modulos, setModulos] = useState<AcademyModule[]>([]);
   const [licoesPorModulo, setLicoes] = useState<Record<string, AcademyLesson[]>>({});
   const [progresso, setProgresso] = useState<UserAcademyProgress | null>(null);
-  const [avaliacoes] = useState<AvaliacaoDeCurso[]>([]);
+  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoDeCurso[]>([]);
+  const [minhaAvaliacao, setMinhaAvaliacao] = useState<AvaliacaoDeCurso | null>(null);
+  const [usuario, setUsuario] = useState<User | null>(null);
+  const [filtroDeNota, setFiltroDeNota] = useState<FiltroDeNota>('todas');
   const [carregando, setCarregando] = useState(true);
   const [secao, setSecao] = useState<Secao>('sobre');
   const [expandida, setExpandida] = useState<string | null>(null);
@@ -108,9 +100,15 @@ export const CoursePresentationScreen: React.FC = () => {
       if (!vivo) return;
       setLicoes(mapa);
 
+      const avals = await reviewsRepository.listarPorCurso(c.id);
+      if (!vivo) return;
+      setAvaliacoes(avals);
+
       const sessao = await authService.getActiveSession();
       if (sessao && vivo) {
+        setUsuario(sessao.user);
         setProgresso(await academyService.getUserProgress(sessao.user.id, c.id));
+        setMinhaAvaliacao(await reviewsRepository.doUsuario(sessao.user.id, c.id));
       }
       if (vivo) setCarregando(false);
     };
@@ -174,6 +172,42 @@ export const CoursePresentationScreen: React.FC = () => {
   };
 
   const rotuloDoBotao = matriculado ? 'Continuar o curso' : 'Ir para o curso';
+
+  const concluiu = (progresso?.progressPercentage ?? 0) >= 100;
+
+  /** Depoimentos em destaque: as avaliações com texto mais substancial. */
+  const depoimentos = [...avaliacoes]
+    .filter((a) => a.comentario.length >= 80)
+    .sort((a, b) => b.estrelas - a.estrelas || b.comentario.length - a.comentario.length)
+    .slice(0, 6);
+
+  const listaFiltrada =
+    filtroDeNota === 'todas'
+      ? avaliacoes
+      : avaliacoes.filter((a) => String(a.estrelas) === filtroDeNota);
+
+  const enviarAvaliacao = async (dados: {
+    estrelas: NotaEstrelas;
+    comentario: string;
+    anonima: boolean;
+  }) => {
+    if (!usuario) {
+      navigate('/auth/login');
+      return;
+    }
+    const nova = montarAvaliacao({
+      userId: usuario.id,
+      courseId: curso.id,
+      autor: usuario.name,
+      anonima: dados.anonima,
+      estrelas: dados.estrelas,
+      comentario: dados.comentario,
+      concluiuOCurso: concluiu,
+    });
+    await reviewsRepository.salvar(nova);
+    setAvaliacoes(await reviewsRepository.listarPorCurso(curso.id));
+    setMinhaAvaliacao(nova);
+  };
 
   return (
     <div id="course-presentation" className="bg-white">
@@ -584,39 +618,48 @@ export const CoursePresentationScreen: React.FC = () => {
           </div>
         )}
 
-        {secao === 'avaliacoes' && (
-          <div className="max-w-3xl" id="avaliacoes">
-            <h2 className="font-serif text-xl font-semibold text-stone-900">
-              Avaliações de quem fez o curso
-            </h2>
+        {secao === 'depoimentos' && (
+          <div className="max-w-3xl">
+            <CarrosselDeDepoimentos
+              depoimentos={depoimentos}
+              titulo={`Quem fez ${curso.title}`}
+            />
+          </div>
+        )}
 
-            {resumo.total === 0 ? (
-              <div className="mt-6 rounded-xl bg-stone-50 p-6">
-                <Estrelinhas valor={null} tamanho="h-5 w-5" />
-                <p className="mt-3 text-sm leading-relaxed text-stone-700">
-                  Nenhuma avaliação ainda. Este curso acabou de ser publicado, e a nota aparece
-                  quando os primeiros alunos concluírem e avaliarem.
-                </p>
-                <p className="mt-2 text-xs leading-relaxed text-stone-500">
-                  O Conservatório não publica nota de curso sem aluno. Uma média inventada seria
-                  propaganda, não informação — e você não teria como saber a diferença.
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="mt-6 flex flex-wrap items-start gap-8">
+        {secao === 'avaliacoes' && (
+          <div className="max-w-3xl space-y-8" id="avaliacoes">
+            <section aria-labelledby="h-resumo-notas">
+              <h2 id="h-resumo-notas" className="font-serif text-xl font-semibold text-stone-900">
+                Avaliações de quem fez o curso
+              </h2>
+
+              {resumo.total === 0 ? (
+                <div className="mt-4 rounded-xl bg-stone-50 p-6">
+                  <Estrelas valor={null} tamanho="lg" />
+                  <p className="mt-3 text-sm leading-relaxed text-stone-700">
+                    Nenhuma avaliação ainda. A nota aparece quando os primeiros alunos concluírem
+                    o curso e avaliarem.
+                  </p>
+                  <p className="mt-2 text-xs leading-relaxed text-stone-500">
+                    O Conservatório não publica nota de curso sem aluno. Uma média inventada seria
+                    propaganda, e você não teria como saber a diferença.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-4 flex flex-wrap items-start gap-8">
                   <div>
-                    <p className="font-serif text-4xl font-bold text-stone-900">
+                    <p className="font-serif text-4xl font-bold tabular-nums text-stone-900">
                       {resumo.media?.toFixed(1)}
                     </p>
-                    <Estrelinhas valor={resumo.media} />
+                    <Estrelas valor={resumo.media} />
                     <p className="mt-1 text-xs text-stone-500">
                       {resumo.total} avaliaç{resumo.total > 1 ? 'ões' : 'ão'}
                     </p>
                   </div>
 
                   <dl className="min-w-[14rem] flex-1 space-y-1">
-                    {([5, 4, 3, 2, 1] as Estrelas[]).map((n) => (
+                    {([5, 4, 3, 2, 1] as NotaEstrelas[]).map((n) => (
                       <div key={n} className="flex items-center gap-2 text-xs">
                         <dt className="w-8 shrink-0 text-stone-500">{n}★</dt>
                         <dd className="flex flex-1 items-center gap-2">
@@ -626,7 +669,7 @@ export const CoursePresentationScreen: React.FC = () => {
                               style={{ width: `${pct[n]}%` }}
                             />
                           </span>
-                          <span className="w-8 shrink-0 tabular-nums text-stone-500">
+                          <span className="w-9 shrink-0 tabular-nums text-stone-500">
                             {pct[n]}%
                           </span>
                         </dd>
@@ -634,27 +677,104 @@ export const CoursePresentationScreen: React.FC = () => {
                     ))}
                   </dl>
                 </div>
+              )}
+            </section>
 
-                <ul className="mt-8 divide-y divide-stone-200 border-t border-stone-200">
-                  {avaliacoes.map((a) => (
-                    <li key={a.id} className="py-5">
-                      <div className="flex items-center gap-2">
-                        <Estrelinhas valor={a.estrelas} tamanho="h-3.5 w-3.5" />
-                        <span className="text-xs text-stone-500">
-                          {new Date(a.criadaEm).toLocaleDateString('pt-BR')}
-                        </span>
-                        {a.concluiuOCurso && (
-                          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
-                            concluiu o curso
+            <section aria-labelledby="h-avaliar">
+              <h2 id="h-avaliar" className="font-serif text-base font-semibold text-stone-900">
+                {minhaAvaliacao ? 'Sua avaliação' : 'Avaliar este curso'}
+              </h2>
+              <div className="mt-3">
+                {usuario ? (
+                  <FormularioDeAvaliacao
+                    concluiuOCurso={concluiu}
+                    jaAvaliou={Boolean(minhaAvaliacao)}
+                    valorInicial={
+                      minhaAvaliacao
+                        ? {
+                            estrelas: minhaAvaliacao.estrelas,
+                            comentario: minhaAvaliacao.comentario,
+                            anonima: minhaAvaliacao.anonima,
+                          }
+                        : undefined
+                    }
+                    onEnviar={enviarAvaliacao}
+                  />
+                ) : (
+                  <p className="text-sm text-stone-600">
+                    <button
+                      type="button"
+                      onClick={() => navigate('/auth/login')}
+                      className="font-medium text-anil-700 underline-offset-2 hover:underline"
+                    >
+                      Entre na sua conta
+                    </button>{' '}
+                    para avaliar cursos que você concluiu.
+                  </p>
+                )}
+              </div>
+            </section>
+
+            {resumo.total > 0 && (
+              <section aria-labelledby="h-lista-avaliacoes">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2
+                    id="h-lista-avaliacoes"
+                    className="font-serif text-base font-semibold text-stone-900"
+                  >
+                    O que os alunos escreveram
+                  </h2>
+
+                  <label className="flex items-center gap-2 text-xs text-stone-600">
+                    Filtrar
+                    <select
+                      value={filtroDeNota}
+                      onChange={(e) => setFiltroDeNota(e.target.value as FiltroDeNota)}
+                      className="rounded-md border border-stone-300 bg-white px-2 py-1 text-xs text-stone-900 outline-none focus:border-anil-700 focus:ring-1 focus:ring-anil-700"
+                    >
+                      <option value="todas">Todas as notas</option>
+                      {([5, 4, 3, 2, 1] as NotaEstrelas[]).map((n) => (
+                        <option key={n} value={String(n)}>
+                          {n} estrela{n > 1 ? 's' : ''} ({resumo.distribuicao[n]})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+
+                {listaFiltrada.length === 0 ? (
+                  <p className="mt-4 text-sm text-stone-600">
+                    Nenhuma avaliação com essa nota.
+                  </p>
+                ) : (
+                  <ul className="mt-4 divide-y divide-stone-200 border-t border-stone-200">
+                    {listaFiltrada.map((a) => (
+                      <li key={a.id} className="py-5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Estrelas valor={a.estrelas} tamanho="sm" />
+                          <span className="text-xs text-stone-500">
+                            {new Date(a.criadaEm).toLocaleDateString('pt-BR')}
                           </span>
-                        )}
-                      </div>
-                      <p className="mt-2 text-sm leading-relaxed text-stone-700">{a.comentario}</p>
-                      <p className="mt-1.5 text-xs text-stone-500">{nomeExibido(a)}</p>
-                    </li>
-                  ))}
-                </ul>
-              </>
+                          {a.concluiuOCurso && (
+                            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+                              concluiu o curso
+                            </span>
+                          )}
+                          {usuario && a.userId === usuario.id && (
+                            <span className="rounded-full bg-anil-50 px-2 py-0.5 text-[10px] font-medium text-anil-800">
+                              sua avaliação
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-2 text-sm leading-relaxed text-stone-700">
+                          {a.comentario}
+                        </p>
+                        <p className="mt-1.5 text-xs text-stone-500">{nomeExibido(a)}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
             )}
           </div>
         )}
