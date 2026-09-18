@@ -7,7 +7,8 @@ import { EmptyState } from '../../components/feedback/EmptyState';
 import { atlasRepository, FiltroDoAtlas } from '../../../repositories/atlas.repository';
 import { MusicalEra, AtlasWorkPlacement } from '../../../domain/gamification';
 import { Regiao, Genero } from '../../../data/seed-atlas';
-import { Network, Calendar, Globe2, Music, Library } from 'lucide-react';
+import { Tribo, StatusDaTribo } from '../../../domain/tribo';
+import { Network, Calendar, Globe2, Music, Library, Users } from 'lucide-react';
 
 /**
  * O Atlas.
@@ -30,7 +31,7 @@ import { Network, Calendar, Globe2, Music, Library } from 'lucide-react';
  *
  *   ERA     quando   ·  oito recortes, os que os cursos de História ensinam
  *   REGIÃO  onde     ·  eixo que faltava, e sem o qual "Brasil" virava era
- *   ILHA    com quê  ·  instrumento, com currículo próprio
+ *   TRIBO   com quem ·  a população nichada — violinistas, historiadores
  *
  * A contagem de obras é **contada**. Enquanto o acervo estiver vazio, é zero
  * — e a tela diz isso, em vez de inventar cento e quarenta e dois.
@@ -43,26 +44,30 @@ export const WorldsAtlasScreen: React.FC = () => {
   const [eras, setEras] = useState<MusicalEra[] | null>(null);
   const [regioes, setRegioes] = useState<Regiao[]>([]);
   const [generos, setGeneros] = useState<Genero[]>([]);
+  const [tribos, setTribos] = useState<Tribo[]>([]);
   const [obras, setObras] = useState<AtlasWorkPlacement[]>([]);
   const [totalNoAcervo, setTotalNoAcervo] = useState(0);
 
   const [eraId, setEraId] = useState<string>(TODOS);
   const [regiaoId, setRegiaoId] = useState<string>(TODOS);
   const [generoId, setGeneroId] = useState<string>(TODOS);
+  const [triboId, setTriboId] = useState<string>(TODOS);
 
   useEffect(() => {
     let vivo = true;
     (async () => {
-      const [e, r, g, total] = await Promise.all([
+      const [e, r, g, t, total] = await Promise.all([
         atlasRepository.listarEras(),
         atlasRepository.listarRegioes(),
         atlasRepository.listarGeneros(),
+        atlasRepository.listarTribos(),
         atlasRepository.contarObras(),
       ]);
       if (!vivo) return;
       setEras(e);
       setRegioes(r);
       setGeneros(g);
+      setTribos(t);
       setTotalNoAcervo(total);
     })().catch(() => {
       if (vivo) setEras([]);
@@ -77,8 +82,9 @@ export const WorldsAtlasScreen: React.FC = () => {
       eraId: eraId === TODOS ? undefined : eraId,
       regiaoId: regiaoId === TODOS ? undefined : regiaoId,
       generoId: generoId === TODOS ? undefined : generoId,
+      triboId: triboId === TODOS ? undefined : triboId,
     };
-  }, [eraId, regiaoId, generoId]);
+  }, [eraId, regiaoId, generoId, triboId]);
 
   useEffect(() => {
     atlasRepository
@@ -103,8 +109,8 @@ export const WorldsAtlasScreen: React.FC = () => {
     <ScreenContainer
       id="worlds-atlas"
       title="Atlas"
-      subtitle="O mapa: quando, onde e com que instrumento a música foi feita."
-      badgeLabel={`${(eras ?? []).length} eras · ${regioes.length} regiões`}
+      subtitle="O mapa: quando, onde e com quem a música foi feita."
+      badgeLabel={`${(eras ?? []).length} eras · ${regioes.length} regiões · ${tribos.length} tribos`}
       badgeVariant="neutral"
       primaryAction={{
         label: 'Ver o grafo de influências',
@@ -179,6 +185,46 @@ export const WorldsAtlasScreen: React.FC = () => {
           )}
         </section>
 
+        <section className="space-y-3" aria-labelledby="eixo-gente">
+          <h2
+            id="eixo-gente"
+            className="flex items-center gap-2 font-serif text-base font-bold text-stone-900"
+          >
+            <Users className="h-4 w-4 text-anil-800" aria-hidden="true" />
+            Com quem — tribos
+          </h2>
+
+          <p className="text-xs text-stone-600">
+            A população nichada de cada lugar e de cada tempo. Tribo é gente, e
+            não lugar — quem tem coordenada no mapa é o mundo.
+          </p>
+
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por tribo">
+            <BotaoDeFiltro ativo={triboId === TODOS} onClick={() => setTriboId(TODOS)}>
+              Todas as tribos
+            </BotaoDeFiltro>
+            {tribos.map((t) => {
+              const fechada = t.status === StatusDaTribo.ANUNCIADA;
+              return (
+                <BotaoDeFiltro
+                  key={t.id}
+                  ativo={triboId === t.id}
+                  desabilitado={fechada}
+                  titulo={fechada ? 'Aguardando corpus pedagógico' : t.description}
+                  onClick={() => setTriboId(t.id)}
+                >
+                  {t.name}
+                  {t.status !== StatusDaTribo.ABERTA && (
+                    <span className="ml-1.5 font-mono text-[10px] opacity-70">
+                      {fechada ? 'anunciada' : 'em preparo'}
+                    </span>
+                  )}
+                </BotaoDeFiltro>
+              );
+            })}
+          </div>
+        </section>
+
         <section className="space-y-3" aria-labelledby="faceta-genero">
           <h2
             id="faceta-genero"
@@ -250,16 +296,22 @@ export const WorldsAtlasScreen: React.FC = () => {
 const BotaoDeFiltro: React.FC<{
   ativo: boolean;
   onClick: () => void;
+  desabilitado?: boolean;
+  titulo?: string;
   children: React.ReactNode;
-}> = ({ ativo, onClick, children }) => (
+}> = ({ ativo, onClick, desabilitado, titulo, children }) => (
   <button
     type="button"
     onClick={onClick}
+    disabled={desabilitado}
+    title={titulo}
     aria-pressed={ativo}
     className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
       ativo
         ? 'border-anil-800 bg-anil-800 font-medium text-white'
-        : 'border-stone-300 bg-white text-stone-700 hover:bg-stone-50'
+        : desabilitado
+          ? 'cursor-not-allowed border-stone-200 bg-stone-50 text-stone-400'
+          : 'border-stone-300 bg-white text-stone-700 hover:bg-stone-50'
     }`}
   >
     {children}

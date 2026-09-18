@@ -495,7 +495,7 @@ liam do repositório e conheciam o usuário logado. Nenhuma tinha botão falso.
 | P.5 | A aba de ritmo do trainer: o metrônomo toca, mas não mede nem grava a execução | ⬜ |
 | P.6 | A aba de acordes está declarada no seletor e não existe | ⬜ |
 | P.7 | Ligar a tentativa gravada à ofensiva, à meta do dia e ao domínio de habilidade | ⬜ ver **T-15** |
-| P.8 | Ranking: o repositório existe e devolve lista vazia. Falta decidir **se a liga entra agora** ou depois de haver turma | ⛔ decisão sua |
+| P.8 | **Decidido: a liga se constrói agora, completa.** `domain/liga.ts` — apuração, subida, queda, fechamento de semana, quatro recortes. 26 casos. Zero participantes devolve zero linhas, e isso é a resposta certa | ✅ |
 
 > **O Practice ganhou mapa.** O levantamento de paridade de 18/09 mostrou que
 > ele não é uma área solta: ancora-se no Atlas — era, região, ilha, obra. Ver
@@ -765,7 +765,7 @@ que **ainda não existe**. Depende de I.2.
 | :--- | :--- | :---: |
 | T-1 | Rota `/worlds` → `/atlas`. O mapa não é um dos seus eixos | ⬜ |
 | T-2 | "Música Brasileira de Tradição" está listada como **era**; é **região** | ✅ |
-| T-4 | **Decidir Tribo × Ilha.** Proposta: ilha é lugar que se visita, tribo é gente a que se pertence. Um nome só também serve — o que não pode é os dois significando o mesmo | ⛔ **decisão sua** |
+| T-4 | **Decidido: ilha removida.** `InstrumentIsland` → `Tribo`, com natureza `INSTRUMENTO`/`DISCIPLINA`/`OFICIO`. Tribo é grupo nichado, não lugar — e por isso perdeu a coordenada de mapa e ganhou a tribo dos historiadores | ✅ |
 
 **Testes:** `tests/taxonomia-do-atlas.test.ts`
 - nenhum termo do catálogo aparece com dois significados no código
@@ -834,6 +834,22 @@ que **ainda não existe**. Depende de I.2.
 
 ### T.5 · Practice — caminho e percurso
 
+> **Decisão de 18/09:** as lições do Practice são **outras**, além das do
+> curso. O vínculo com o Academy existe e não é obrigatório: quem nunca fez o
+> curso de história pode praticar história. Cada matrícula declara o **ponto
+> de partida** — leigo, autodidata, cursando, cursado, formado fora —, e é ele
+> que decide qual faixa de material aparece: vocabulário, fundamento,
+> aplicação, avançado. Ver `domain/matricula-no-practice.ts`.
+>
+> Itens que isso abre:
+>
+> | # | Item | Estado |
+> | :--- | :--- | :---: |
+> | T-40 | Formulário de matrícula no percurso, com as cinco opções explicadas | ⬜ |
+> | T-41 | Sondagem para quem vem de fora — autodidata e formado fora | ⬜ |
+> | T-42 | Lições do Practice marcadas por faixa de material | ⬜ |
+> | T-43 | Percurso de quem está cursando **acompanha** o curso, sem se adiantar | ⬜ |
+
 | # | Item | Origem | Estado |
 | :--- | :--- | :--- | :---: |
 | T-19 | **Caminho visual com nós** — seção, unidade, nó ativo, requisito explícito | Duolingo B2 | ⬜ |
@@ -856,8 +872,8 @@ que **ainda não existe**. Depende de I.2.
 
 | # | Item | Origem | Estado |
 | :--- | :--- | :--- | :---: |
-| T-24 | Tela de ligas com **esqueleto** quando não há participante | Duolingo B6 | ⬜ |
-| T-25 | Ligas por recorte: plataforma, curso, tribo, era | pedido | ⬜ |
+| T-24 | Tela de ligas com **esqueleto** quando não há participante — a mecânica já existe em `domain/liga.ts` | Duolingo B6 | ⬜ |
+| T-25 | Ligas por recorte: plataforma, curso, tribo, era | pedido | ✅ no domínio · ⬜ na tela |
 | T-26 | Missões diárias com prazo e desafio do mês | Duolingo B5 | ⬜ |
 | T-27 | **Réguas do perfil** — ativa em destaque, demais esmaecidas e expansíveis | pedido | ⬜ |
 | T-28 | Perfil: pontuação total, semanal, posição, `N de 44` com bloqueados visíveis | Astra A6 | ⬜ |
@@ -876,8 +892,8 @@ que **ainda não existe**. Depende de I.2.
 
 | # | Item | Origem | Estado |
 | :--- | :--- | :--- | :---: |
-| T-30 | **Nível de partida** no cadastro | Duolingo B1 | ⬜ |
-| T-31 | **Ritmo de progressão** — passo a passo × livre, e refletido no perfil | Astra A4 | ⬜ |
+| T-30 | **Ponto de partida** — `domain/matricula-no-practice.ts`, cinco opções, cada uma abrindo faixa de material diferente. 17 casos | Duolingo B1 | ✅ no domínio · ⬜ na tela |
+| T-31 | **Ritmo** — passo a passo × livre, pergunta separada do ponto de partida | Astra A4 | ✅ no domínio · ⬜ na tela |
 | T-32 | Escolher a trilha inicial | Astra A3 | ⬜ |
 | T-33 | Passagem de apresentação em etapas, com posição e **Skip** | Astra A2 | ⬜ |
 
@@ -929,10 +945,17 @@ que **ainda não existe**. Depende de I.2.
   T.9  Kids
 ```
 
-### Decisões que dependem de você
+### Decisões tomadas em 18/09
 
 | # | Decisão |
 | :--- | :--- |
-| T-4 | **Tribo × Ilha** — dois conceitos, ou um nome só? |
-| P.8 | **Liga entra agora**, ou só quando houver turma? |
-| T-5 | Quais **gêneros** catalogar de início? |
+| T-4 | **Ilha removida. Tribo é o termo** — grupo nichado, não lugar. Violinistas, pianistas, **historiadores** |
+| P.8 | **A liga se constrói agora, completa.** O que não se cria é resultado falso |
+| T-5 | 16 gêneros de início. Ajustáveis |
+| T.5 | **Practice não depende do Academy.** Lições do curso são umas; as do Practice, outras. O vínculo existe e não é obrigatório — o aluno indica o ponto de partida na matrícula |
+
+### Ainda dependem de você
+
+| # | Decisão |
+| :--- | :--- |
+| — | Confirmar se os 16 gêneros cobrem o que você quer, ou cortar/acrescentar |

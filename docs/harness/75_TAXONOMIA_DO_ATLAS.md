@@ -13,7 +13,7 @@
 ## Por que isto vem antes de construir o Practice
 
 O Practice não é uma lista de exercícios: é **navegação por um mapa**. Quem
-pratica escolhe uma era, um mundo, uma ilha, uma obra — e cada uma dessas
+pratica escolhe uma era, uma região, uma tribo, uma obra — e cada uma dessas
 palavras precisa significar exatamente uma coisa, ou o filtro de uma tela não
 vai casar com o rótulo de outra.
 
@@ -23,12 +23,11 @@ O estado encontrado em 18/09/2026:
 |---|---|---|---|
 | Era | `MusicalEra` ✅ | 5 eras **escritas na tela**, com contagens inventadas | Fachada |
 | Mundo | `MusicalWorld` ✅ | não aparece | Tipo sem uso |
-| Ilha | `InstrumentIsland` ✅ | não aparece | Tipo sem uso |
 | Atlas | só em texto | `/worlds` | Sem tipo próprio |
-| **Tribo** | **não existe** | não existe | Pedido, sem definição |
-| **Região** | **não existe** | "Brasil" e "Ocidental" viraram **cursos** | Eixo implícito |
+| **Tribo** | `Tribo` ✅ | eixo do Atlas | **Substituiu `InstrumentIsland` em 18/09** |
+| **Região** | `Regiao` ✅ | eixo do Atlas | **Criada em 18/09** |
 | Liga | `RankingLeague` ✅ | não aparece | Tipo sem uso |
-| Gênero | não existe | não existe | Pedido |
+| Gênero | `Genero` ✅ | faceta de filtro | **Criado em 18/09**, 16 gêneros |
 
 ---
 
@@ -40,7 +39,7 @@ O estado encontrado em 18/09/2026:
 
 O Atlas não tem tipo próprio e **não deve ter** — ele é a *composição* dos
 eixos abaixo. Dar-lhe uma entidade criaria uma segunda fonte de verdade sobre
-o que já está em Era, Região e Ilha.
+o que já está em Era, Região e Tribo.
 
 Rota: `/worlds`. **O nome da rota está errado** — "mundos" é um dos eixos, não
 o mapa. Ver `T-1` no TODO.
@@ -55,8 +54,8 @@ dos três, e é por isso que ela é a unidade que o passaporte carimba.
 ```
                     ERA  (quando)
                      │
-      REGIÃO ────────┼──────── ILHA
-      (onde)         │        (com quê)
+      REGIÃO ────────┼──────── TRIBO
+      (onde)         │        (com quem)
                    OBRA
 ```
 
@@ -73,8 +72,8 @@ dos três, e é por isso que ela é a unidade que o passaporte carimba.
 | Não é | gênero, região, nem curso |
 
 **Regra:** era é **período histórico**, não estilo. "Música Brasileira de
-Tradição" — hoje listada como era na tela — **não é uma era**: é uma região
-atravessando várias eras. Erro a corrigir (`T-2`).
+Tradição" estava listada como era na tela — **e não é**: é uma região, e
+atravessa várias eras. Corrigido em 18/09 (`T-2`).
 
 #### 2 · Região — o eixo geográfico
 
@@ -82,8 +81,8 @@ atravessando várias eras. Erro a corrigir (`T-2`).
 
 | | |
 |---|---|
-| Tipo | **não existe — criar** |
-| Exemplos | Europa Ocidental · Brasil · Península Ibérica · Europa Oriental |
+| Tipo | `Regiao` |
+| Exemplos | Europa Ocidental · Brasil · Península Ibérica |
 | Tem | delimitação, escolas, movimentos, compositores |
 | Não é | era, nem gênero |
 
@@ -97,24 +96,35 @@ abrir outro curso. Região é o eixo que faltava.
 > que sabemos que haverá muita movimentação de compositores e movimentos
 > musicais."*
 
-#### 3 · Ilha — o eixo do instrumento
+#### 3 · Tribo — o eixo da gente
 
-> **Território do Atlas com currículo próprio, dedicado a um instrumento.**
+> **A população nichada.** Não um lugar: um grupo.
 
 | | |
 |---|---|
-| Tipo | `InstrumentIsland` |
-| Exemplos | Ilha do Violino · Ilha do Piano |
-| Tem | corpus pedagógico com proveniência, progressão em etapas, técnicas, eras relevantes |
-| Estado | `AVAILABLE` · `IN_PREPARATION` · `PLANNED` |
+| Tipo | `Tribo` |
+| Exemplos | Tribo dos violinistas · dos pianistas · **dos historiadores** |
+| Tem | corpus pedagógico com proveniência, progressão em etapas, eras e regiões relevantes |
+| Estado | `ABERTA` · `EM_PREPARO` · `ANUNCIADA` |
+| Natureza | `INSTRUMENTO` · `DISCIPLINA` · `OFICIO` |
 
-**Por que ilha e não filtro:** a trilha de um instrumento é **um curso à
+**Por que tribo, e não ilha.** O tipo se chamava `InstrumentIsland`, e o erro
+não era de rótulo: **ilha dá ideia de lugar** — e lugar, aqui, é assunto do
+Atlas, que já trata de *onde* (região) e de *quando* (era). Dois vocabulários
+competindo pelo mesmo significado foi o que este catálogo pegou.
+
+Tribo trata de **gente**: a população nichada de um lugar ou de um tempo. E a
+generalização é o ganho — quem estuda história da música forma uma tribo
+tanto quanto quem toca violino, e isso **não cabia** em "ilha de instrumento".
+
+**Tribo não tem coordenada no mapa.** Quem tem é o mundo.
+
+**Por que tribo e não filtro:** a trilha de uma tribo é **um percurso à
 parte**, com corpus e pedagogia próprios. O violino tem método de repertório,
-caderno de estudos técnicos e escalas — nada disso é teoria musical, e nada
-disso cabe como faceta de busca.
+caderno de estudos técnicos e escalas; o historiador tem outro conjunto.
 
-**Ilha `PLANNED` aparece no mapa, fechada, nunca simulada com conteúdo
-inventado.** Marcar o lugar sem prometer o conteúdo.
+**Tribo `ANUNCIADA` aparece na lista, fechada, com o motivo escrito, e nunca
+preenchida com conteúdo inventado.**
 
 ---
 
@@ -128,10 +138,9 @@ inventado.** Marcar o lugar sem prometer o conteúdo.
 | Exemplos | Barroco Alemão · Romantismo Francês · Modernismo Brasileiro |
 | Tem | coordenadas no mapa, tema estético, requisito de desbloqueio, obras |
 
-**Correção necessária:** hoje `MusicalWorld` tem `eraId` e **não tem região**.
-Com isso, "Barroco" é um mundo só — quando Barroco alemão e Barroco italiano
-são territórios distintos, com escolas distintas. Acrescentar `regiaoId`
-(`T-3`).
+`MusicalWorld` tinha `eraId` e **não tinha região** — com isso, "Barroco" era
+um mundo só, quando Barroco alemão e Barroco italiano são territórios
+distintos, com escolas distintas. `regiaoId` acrescentado em 18/09.
 
 > **Era ≠ Mundo.** A era é o *recorte de tempo*; o mundo é o *lugar
 > navegável* que resulta de cruzá-la com uma região. Eras são poucas; mundos
@@ -141,36 +150,14 @@ são territórios distintos, com escolas distintas. Acrescentar `regiaoId`
 
 ### Tribo
 
-> **A comunidade de quem pratica um instrumento.** É gente, não lugar.
+Definida acima, como o terceiro eixo. **Decisão tomada em 18/09/2026:** o
+termo "ilha" foi removido do projeto.
 
-| | |
-|---|---|
-| Tipo | **não existe — criar** |
-| Exemplos | Tribo do Violino · Tribo do Piano |
-| Tem | membros, classificação interna, marcos coletivos |
-
-**A decisão que este documento toma, e que precisa da sua confirmação:**
-
-Foi dito que *"tribo é importante pois dignifica qual instrumento"* — e
-`InstrumentIsland` já significa instrumento. Dois nomes para a mesma coisa
-seria exatamente o problema que este catálogo existe para evitar.
-
-A distinção proposta:
-
-| | Ilha | Tribo |
-|---|---|---|
-| O que é | **Lugar** no mapa | **Gente** que o habita |
-| Tem | Corpus, currículo, etapas | Membros, classificação, marcos |
-| Você… | **visita** | **pertence** |
-| Serve para | Estudar | Competir e comparar |
-| Um por instrumento | Sim | Sim |
-
-Assim: *"você estuda na Ilha do Violino e pertence à Tribo do Violino"*. A
-ilha responde **o que praticar**; a tribo responde **com quem me comparo**.
-
-> **Se você preferir um nome só, é decisão sua** — e aí Ilha fica, porque já
-> existe no domínio e tem corpus atrelado. O que não pode é os dois existirem
-> significando o mesmo. Ver `T-4`.
+> *"Tribo é o correto — tribo de violinistas, tribo de pianistas, tribo de
+> historiadores. Tribo trata da ideia de grupo nichado. Ilha dava a ideia de
+> local e não combinaria nada com o Atlas: agora o Atlas trata sobre tudo,
+> local e tempo, mas no quesito tribo seria a população nichada daquele local
+> ou tempo."*
 
 ---
 
@@ -208,8 +195,7 @@ A mesma pessoa está em várias ao mesmo tempo. Detalhes em
 | **Obra** | A peça musical. Fica no cruzamento dos três eixos | `AtlasWorkPlacement` ✅ |
 | **Compositor** | Quem a escreveu. Pertence a uma era e a uma região | `HistoricalMaster` ✅ |
 
-`AtlasWorkPlacement` já cruza `eraId` + `instrumentIslandId` + `composerId`.
-Falta `regiaoId` (`T-3`).
+`AtlasWorkPlacement` cruza `eraId` + `regiaoId` + `triboId` + `composerId`.
 
 ---
 
@@ -219,7 +205,7 @@ Falta `regiaoId` (`T-3`).
 
 | | |
 |---|---|
-| Tipo | **não existe — criar como faceta, não como entidade** |
+| Tipo | `Genero` — faceta, não entidade do mapa |
 | Exemplos | Concerto · Sonata · Fuga · Choro · Modinha |
 
 **Por que faceta e não eixo:** gênero não organiza o mapa — refina a busca
@@ -238,8 +224,7 @@ duração.
 | Um recorte de tempo | **Era** | Período, época, mundo |
 | Um recorte geográfico | **Região** | Mundo, país |
 | Era × Região, navegável | **Mundo** | Era, território |
-| O instrumento como lugar de estudo | **Ilha** | Tribo, trilha |
-| Quem pratica o instrumento | **Tribo** | Ilha, grupo |
+| A população nichada | **Tribo** | Ilha, grupo, comunidade |
 | Faixa de competição | **Liga** | Ranking, nível |
 | Posição dentro da liga | **Classificação** | Ranking, liga |
 | Tipo da peça | **Gênero** | Estilo, forma |
@@ -257,12 +242,13 @@ Cada linha é uma pendência em `CLAUDE_TODO.md`, seção **T**.
 | T-1 | `/worlds` → `/atlas`; o mapa não é um dos eixos | `AppRouterOutlet`, `audiencia.ts`, menu |
 | T-2 | "Música Brasileira de Tradição" está listada como **era**; é **região** | `WorldsAtlasScreen` |
 | T-3 | Criar `Regiao`; acrescentar `regiaoId` a `MusicalWorld` e `AtlasWorkPlacement` | `domain/gamification.ts` |
-| T-4 | Decidir Tribo × Ilha, e criar `Tribo` se confirmado | ⛔ decisão sua |
+| T-4 | ~~Decidir Tribo × Ilha~~ — **decidido: ilha removida.** `InstrumentIsland` → `Tribo`, com natureza `INSTRUMENTO`/`DISCIPLINA`/`OFICIO` | ✅ |
 | T-5 | Criar `Genero` como faceta de obra | `domain/gamification.ts` |
 | T-6 | **As 5 eras do Atlas estão escritas na tela, com contagens inventadas** — "142 obras canônicas" sem acervo | `WorldsAtlasScreen` |
 | T-7 | Os 5 compositores do grafo estão escritos na tela | `MusicGraphScreen` |
-| T-8 | `MusicalWorld`, `InstrumentIsland` e `RankingLeague` existem e **nenhuma tela os consome** | — |
+| T-8 | `MusicalWorld` e `RankingLeague` existem e **nenhuma tela os consome** | — |
 | T-9 | Conferir se o mapa do braço do violino corresponde ao Atlas | `BracoDoViolino.tsx` |
+| T-10 | `regiaoId` em `MusicalWorld` ✅ e em `AtlasWorkPlacement` ✅ | feito em 18/09 |
 
 ---
 

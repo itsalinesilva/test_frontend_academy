@@ -1,5 +1,6 @@
 import { LocalStorageAdapter } from '../infrastructure/storage/local-storage';
-import { MusicalEra, AtlasWorkPlacement, InstrumentIsland } from '../domain/gamification';
+import { MusicalEra, AtlasWorkPlacement } from '../domain/gamification';
+import { Tribo } from '../domain/tribo';
 import {
   ERAS_PADRAO,
   REGIOES_PADRAO,
@@ -7,14 +8,15 @@ import {
   Regiao,
   Genero,
 } from '../data/seed-atlas';
+import { TRIBOS_PADRAO } from '../data/seed-tribos';
 
 /**
  * O Atlas.
  *
  * POR QUE ESTE REPOSITÓRIO EXISTE
  * -------------------------------
- * `MusicalEra`, `MusicalWorld`, `InstrumentIsland` e `AtlasWorkPlacement`
- * estavam no domínio desde o começo, e **nenhuma tela os consumia**. A tela
+ * `MusicalEra`, `MusicalWorld`, `Tribo` e `AtlasWorkPlacement` estavam no
+ * domínio desde o começo, e **nenhuma tela os consumia**. A tela
  * do Atlas, em paralelo, trazia cinco eras escritas dentro do próprio
  * arquivo, com contagens de obra inventadas — "142 obras canônicas" numa
  * plataforma sem acervo de obras.
@@ -41,7 +43,7 @@ export interface AtlasRepository {
   regiaoPorSlug(slug: string): Promise<Regiao | null>;
 
   listarGeneros(): Promise<Genero[]>;
-  listarIlhas(): Promise<InstrumentIsland[]>;
+  listarTribos(): Promise<Tribo[]>;
 
   /** Obras do acervo, opcionalmente filtradas pelos eixos. */
   listarObras(filtro?: FiltroDoAtlas): Promise<AtlasWorkPlacement[]>;
@@ -53,14 +55,14 @@ export interface AtlasRepository {
 /**
  * Filtro pelos três eixos, mais a faceta de gênero.
  *
- * Os três eixos se cruzam: era diz *quando*, região diz *onde*, ilha diz
- * *com que instrumento*. Gênero não é eixo — refina o resultado dentro do
- * cruzamento.
+ * Os três eixos se cruzam: era diz *quando*, região diz *onde*, tribo diz
+ * *com quem* — qual população nichada produziu ou pratica. Gênero não é
+ * eixo: refina o resultado dentro do cruzamento.
  */
 export interface FiltroDoAtlas {
   eraId?: string;
   regiaoId?: string;
-  ilhaId?: string;
+  triboId?: string;
   generoId?: string;
   compositorId?: string;
 }
@@ -98,15 +100,16 @@ export class PersistentAtlasRepository implements AtlasRepository {
   }
 
   /**
-   * Ilhas de instrumento.
+   * Tribos — a população nichada.
    *
-   * Nasce vazio. A Ilha do Violino **existe como corpus** — há métodos no
-   * acervo —, mas declará-la aqui antes de a trilha estar publicada seria
-   * prometer navegação que não há. A convenção do domínio é clara: ilha sem
-   * currículo fica `PLANNED`, visível e fechada, nunca simulada.
+   * Vêm do catálogo, com o status que cada uma tem de verdade. A dos
+   * violinistas e a dos historiadores estão `EM_PREPARO`: o corpus existe,
+   * a progressão não. As demais estão `ANUNCIADA`, e a lista as mostra
+   * fechadas, com o motivo — nunca preenchidas com conteúdo inventado para
+   * a tela não parecer vazia.
    */
-  public async listarIlhas(): Promise<InstrumentIsland[]> {
-    return [];
+  public async listarTribos(): Promise<Tribo[]> {
+    return TRIBOS_PADRAO;
   }
 
   private obras(): AtlasWorkPlacement[] {
@@ -117,7 +120,8 @@ export class PersistentAtlasRepository implements AtlasRepository {
     return this.obras().filter(
       (o) =>
         (!filtro.eraId || o.eraId === filtro.eraId) &&
-        (!filtro.ilhaId || o.instrumentIslandId === filtro.ilhaId) &&
+        (!filtro.regiaoId || o.regiaoId === filtro.regiaoId) &&
+        (!filtro.triboId || o.triboId === filtro.triboId) &&
         (!filtro.compositorId || o.composerId === filtro.compositorId)
     );
   }
