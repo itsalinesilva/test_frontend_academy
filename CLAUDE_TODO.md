@@ -856,6 +856,26 @@ que **ainda não existe**. Depende de I.2.
 | T-20 | **Prática dentro do curso**, ao fim da grade, com cadeado que diz o motivo | Astra A7 | ⬜ |
 | T-21 | XP declarado **antes** — `+10` no botão | Duolingo B7 | ⬜ |
 | T-22 | Exercício: barra, vidas, etiqueta de tipo, **atalho numérico**, pular sem punição | Duolingo B8 | ⬜ |
+
+**A anatomia da lição, mapeada da saga de capturas (paridade §B9–B10).** O
+laço já existe em `domain/exercicio-musical.ts`, com 29 casos. Falta a tela.
+
+| # | Item | Origem | Estado |
+| :--- | :--- | :--- | :---: |
+| T-44 | **Sete tipos de exercício** traduzidos para música — reconhecer notação, identificar de ouvido, seguir o padrão, escrever na pauta, combinar pares, ditado, função harmônica | §B10.2 | ✅ domínio · ⬜ telas |
+| T-45 | **Quatro tipos além da referência** — tocar, cantar, bater o ritmo, apontar no braço. Medidos pelo microfone | nosso | ✅ domínio · ⬜ telas |
+| T-46 | **O erro volta na mesma lição**, com a etiqueta "corrija o erro de antes" | §B9.5 | ✅ domínio · ⬜ tela |
+| T-47 | A alternativa **soa** ao ser tocada | §B9.3 | ⬜ |
+| T-48 | Dois botões de escuta: normal e **meia velocidade** | §B9.3 | ⬜ |
+| T-49 | **Ouvir voz a voz** de uma cadência; comparar a sua execução com a referência; **transpor** o mesmo exercício | nosso | ⬜ |
+| T-50 | Combo aceso a partir de 5 seguidos, com a barra mudando de cor | §B9.4 | ✅ domínio · ⬜ tela |
+| T-51 | `MUITO FÁCIL` / `MUITO DIFÍCIL` / reportar no rodapé do acerto | §B9.4 | ⬜ |
+| T-52 | **Som de acerto e erro musicalmente coerente** — tríade no tom, segunda menor, combo subindo a escala, cadência ao fim | §B10.5 | ⬜ |
+| T-53 | Encerramento em etapas, **uma conquista por tela** | §B9.6 | ⬜ |
+| T-54 | **Meta de ofensiva** escolhida pela pessoa: 7 / 14 / 30 dias | §B9.6 | ⬜ |
+| T-55 | `REVISAR LIÇÃO` ao fim | §B9.6 | ⬜ |
+| T-56 | Ao sair, **o mapa já atualizado** — nó concluído, seguinte aberto, sem recarregar | §B9.7 | ⬜ |
+| T-57 | Avisar que o progresso se perde ao sair da lição pelo `✕` | §B9.1 | ⬜ |
 | T-23 | Percurso ancorado no Atlas: era → região → ilha → obra → exercício | pedido | ⬜ |
 | P.5 | Aba de ritmo: o metrônomo toca, mas **não mede nem grava** | — | ⬜ |
 | P.6 | Aba de acordes está declarada no seletor e **não existe** | — | ⬜ |

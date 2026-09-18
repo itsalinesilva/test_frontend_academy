@@ -353,6 +353,197 @@ e **atalho numérico** (`1`, `2`, `3`), botões `PULAR` e `VERIFICAR`.
 
 ---
 
+## B9 · A lição inteira, do início ao fim
+
+> Mapeado de uma saga de capturas de `duolingo.com/lesson`, do primeiro
+> exercício à tela de encerramento. É a seção mais importante deste volume:
+> descreve o **laço** que faz alguém praticar todo dia.
+
+### B9.1 · Anatomia da tela de exercício
+
+Constante em todos os exercícios, e é o esqueleto que o Conservatório adota:
+
+```
+  ┌──────────────────────────────────────────────────────────┐
+  │  ✕        ▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░         ♥ 5     │  ← sair · progresso · vidas
+  ├──────────────────────────────────────────────────────────┤
+  │              ⊕ PALAVRA NOVA                              │  ← etiqueta do tipo
+  │              Enunciado em uma linha                      │
+  │                                                          │
+  │              [ conteúdo do exercício ]                   │
+  │                                                          │
+  ├──────────────────────────────────────────────────────────┤
+  │  PULAR                                    VERIFICAR      │  ← rodapé fixo
+  └──────────────────────────────────────────────────────────┘
+```
+
+| Elemento | O que faz | Detalhe observado |
+|---|---|---|
+| `✕` | Sai da lição | Sem confirmação; o progresso da lição se perde |
+| Barra de progresso | Quanto falta | **Muda de cor no combo** — verde → amarelo |
+| `♥ 5` | Vidas | Cai a cada erro: 5 → 4 → 3 nas capturas |
+| Etiqueta | Prepara a atenção | `PALAVRA NOVA` · `NOVO PADRÃO` · `CORRIJA O ERRO DE ANTES` |
+| Enunciado | Uma linha, imperativo | "Selecione o significado correto:" |
+| `PULAR` | Passa sem punir | Sempre disponível |
+| `VERIFICAR` | Confere | **Desabilitado até haver resposta** |
+
+### B9.2 · Os sete tipos de exercício
+
+| # | Tipo | Como funciona | Mecânica a extrair |
+|---|---|---|---|
+| 1 | **Reconhecer pela imagem** | "Qual destas imagens é 'leite'?" · 3 cartões com figura e rótulo | Reconhecimento visual, três alternativas |
+| 2 | **Escolher o significado** | Personagem diz a palavra; 3 opções de texto | Som/símbolo → nome |
+| 3 | **Seguir o padrão** | Frase modelo com áudio; completar lacuna com banco de palavras | **Analogia**: dado A→B, faça C→? |
+| 4 | **Traduzir com banco** | Áudio numa língua; montar a frase na outra, com peças | Construção guiada |
+| 5 | **Combinar os pares** | Duas colunas; parear até esvaziar | Associação em lote |
+| 6 | **Tocar no que escutar** | Só áudio; escrever o que ouviu | **Ditado puro** |
+| 7 | **Corrigir o erro de antes** | O exercício errado **volta** na mesma lição | Repetição espaçada dentro da sessão |
+
+### B9.3 · Áudio — e é aqui que a referência é mais forte
+
+| Capacidade | O que a captura mostra |
+|---|---|
+| **O símbolo soa ao ser tocado** | Clicar na palavra faz o personagem falá-la |
+| **Dois botões de escuta** | Normal e **lento** (ícone de tartaruga) |
+| Repetir à vontade | Sem limite e sem custo |
+| Sublinhado pontilhado | Marca o trecho que o áudio cobre |
+| Palavra nova destacada | `With` em roxo, no meio da frase |
+
+> **Para uma plataforma de música, isto não é acessório: é o conteúdo.** Numa
+> língua o áudio ajuda; na música o áudio **é** a matéria. A velocidade
+> reduzida, que ali é conveniência, aqui é instrumento pedagógico — ouvir uma
+> cadência a meia velocidade é o que torna audível a condução de vozes.
+
+### B9.4 · Reforço — o que mantém alguém na sessão
+
+| Sinal | Quando aparece | Onde |
+|---|---|---|
+| `2 SEGUIDOS!` · `8 SEGUIDOS!` | Acertos consecutivos | Acima da barra |
+| **Barra muda de cor** | A partir de certo combo | Verde → amarelo |
+| Faísca na peça pareada | Ao acertar um par | Sobre o cartão |
+| `Boa!` · `Isso mesmo!` | Após acertar | Rodapé verde |
+| `Significado: açúcar` | Junto do acerto | Reforça o sentido |
+| Som de acerto e de erro | Sempre | — |
+
+E o rodapé de acerto traz `MUITO FÁCIL` · `MUITO DIFÍCIL` · `REPORTAR`:
+**calibragem pedida a quem responde**, no momento em que a impressão está
+fresca.
+
+### B9.5 · O erro não termina a lição
+
+A mecânica mais bem resolvida da referência:
+
+1. errar consome uma vida;
+2. o exercício **volta mais tarde na mesma lição**, com a etiqueta
+   `CORRIJA O ERRO DE ANTES`;
+3. a lição só fecha quando o que se errou foi refeito.
+
+> Isto não é punição: é **repetição espaçada dentro da sessão**. O erro
+> vira a matéria da própria lição.
+
+### B9.6 · O encerramento, em etapas comemoradas
+
+Uma tela por conquista, cada uma com seu `CONTINUAR`:
+
+| Ordem | Tela | Conteúdo |
+|---|---|---|
+| 1 | Desbloqueio | "Você desbloqueou o Score!" |
+| 2 | Score explicado | Barra 1 → 2, e **o que o número significa** |
+| 3 | Ofensiva | Chama, `1 dia`, semana, e o aviso: "vai zerar se não praticar amanhã" |
+| 4 | **Meta de ofensiva** | 7 / 14 / 30 dias · `Boa` `Ótima` `Incrível` · e o argumento: "2 vezes mais chances de terminar o curso" |
+| 5 | Missões | `Todas as missões do dia concluídas!` com a barra cheia |
+
+E no rodapé de várias: **`REVISAR LIÇÃO`** — voltar ao que se fez.
+
+> **Uma conquista por tela, e não um resumo.** Ler "ganhou 40 XP, manteve a
+> ofensiva e completou a missão" é uma informação; ver três telas é três
+> momentos. A diferença é deliberada, e funciona.
+
+### B9.7 · Ao sair, o mapa já mudou
+
+O percurso volta atualizado: o nó concluído marcado, o seguinte aberto. **Sem
+recarregar e sem pedir nada.**
+
+---
+
+## B10 · A tradução para música
+
+> A adaptação é quase direta, e isso não é coincidência: **notação musical é
+> uma língua escrita, e o ouvido é a escuta dela.** Onde o Duolingo tem
+> alfabeto, palavra e frase, a música tem nota, intervalo e progressão.
+
+### B10.1 · O dicionário
+
+| Duolingo | Conservatório |
+|---|---|
+| Letra | **Nota** — nome, altura, posição na pauta |
+| Palavra | **Intervalo, acorde, célula rítmica** |
+| Frase | **Progressão, cadência, melodia** |
+| Pronúncia | **Altura tocada** |
+| Escrita | **Notação na pauta** |
+| Significado | **Função harmônica** — tônica, dominante |
+| Sotaque | **Timbre e articulação** |
+
+### B10.2 · Os sete tipos, traduzidos
+
+| # | Duolingo | Conservatório |
+|---|---|---|
+| 1 | "Qual destas imagens é 'leite'?" | **"Qual destas pautas mostra Dó maior?"** — três pautas desenhadas |
+| 2 | "Selecione o significado correto" | **"Ouça e identifique"** — soa um intervalo, três nomes |
+| 3 | "Siga o padrão" | **"Complete a cadência"** — dado I–IV–V–I em Dó, faça em Sol |
+| 4 | "Escreva em português" | **"Escreva na pauta"** — ouvir e montar com notas do banco |
+| 5 | "Combine os pares" | **Parear** cifra ↔ pauta · som ↔ nome · intervalo ↔ distância |
+| 6 | "Toque no que escutar" | **Ditado melódico** — ouvir e escrever, com botão de meia velocidade |
+| 7 | "Corrija o erro de antes" | Igual — o exercício errado volta na mesma lição |
+
+### B10.3 · O que é nosso, e vai além
+
+Estas capacidades **não existem na referência** e a plataforma já tem a
+infraestrutura de cada uma:
+
+| Tipo | Como funciona | O que usa, e já existe |
+|---|---|---|
+| **Tocar a resposta** | Em vez de clicar, **toca a nota no instrumento**; o microfone confere a altura | `useCapturaAcustica`, detecção por autocorrelação |
+| **Cantar a resposta** | Solfejar o intervalo; o afinador mede em cents | `notaMaisProxima`, `desvioEmCents` |
+| **Bater o ritmo** | Tocar a célula no tempo; mede-se o desvio em milissegundos | `medirTentativa` |
+| **Braço do instrumento** | Apontar a posição no braço do violino | `BracoDoViolino` |
+| **Pauta interativa** | Arrastar a nota para a linha certa | `STAFF`, `ScoreContainer` |
+| **Teclado** | Tocar o acorde nas teclas | Bloco `KEYBOARD` |
+| **Diagrama gerado** | Ciclo de quintas, régua de intervalos | Bloco `DIAGRAM` |
+| **Metrônomo** | Executar no andamento pedido | Já existe na Prática |
+
+> **É aqui que a plataforma deixa de ser "Duolingo de música" e passa a ser
+> outra coisa.** Clicar na alternativa certa prova que a pessoa reconhece;
+> **tocar a nota certa prova que ela sabe**. A referência não tem como medir
+> isso — nós temos, e desde o primeiro exercício.
+
+### B10.4 · O que o áudio ganha em música
+
+| Recurso | Na referência | Aqui |
+|---|---|---|
+| Velocidade reduzida | Conveniência | **Instrumento pedagógico** — a meia velocidade a condução de vozes fica audível |
+| Repetir | Sem limite | Igual |
+| Ouvir separado | Não existe | **Voz a voz** — ouvir só o baixo de uma cadência |
+| Comparar | Não existe | **A sua execução contra a referência**, lado a lado |
+| Transpor | Não existe | **Ouvir o mesmo exercício em outra tonalidade** — o que prova que a pessoa reconhece a relação, e não a altura |
+
+### B10.5 · Reforço sonoro — e a diferença que importa
+
+O som de acerto e de erro precisa ser **musicalmente coerente**, e não um
+efeito genérico:
+
+| Evento | Som |
+|---|---|
+| Acerto | Tríade maior no tom do exercício |
+| Erro | Segunda menor, ou resolução suspensa |
+| Combo | Cada acerto seguido sobe um grau da escala |
+| Lição concluída | Cadência autêntica perfeita no tom |
+
+> Num produto de música, o som de recompensa **também ensina**. Um efeito
+> eletrônico genérico seria a única parte da plataforma que não é musical.
+
+---
+
 # PARTE C — O que o Conservatório monta a partir dos dois
 
 Cada linha existe porque apareceu numa captura. Os detalhes de contagem estão
@@ -376,6 +567,18 @@ em `docs/harness/76_ECONOMIA_DE_PROGRESSO.md`; a taxonomia do mapa, em
 | C13 | Requisito explícito no cadeado | B2 | "Faltam 3 lições" | Igual |
 | C14 | Atalho numérico no exercício | B8 | Sempre | Sempre |
 | C15 | Passagem de apresentação | A2 | Diagrama do Atlas | Mascote |
+| C16 | **Sete tipos de exercício**, traduzidos para música | B9.2 · B10.2 | Pauta, som, cifra | Igual, com figura |
+| C17 | **Áudio com meia velocidade e repetição** | B9.3 | Instrumento pedagógico | Igual |
+| C18 | **Ouvir voz a voz, comparar, transpor** | nosso | Sempre | Simplificado |
+| C19 | **Tocar, cantar ou bater a resposta** — medida pelo microfone | nosso | Sempre | Com tolerância maior |
+| C20 | Combo de acertos, com a barra mudando de cor | B9.4 | Discreto | Animado |
+| C21 | `MUITO FÁCIL` / `MUITO DIFÍCIL` / reportar | B9.4 | Sempre | Simplificado |
+| C22 | **O erro volta na mesma lição** | B9.5 | Sempre | Sempre |
+| C23 | Encerramento em etapas, **uma conquista por tela** | B9.6 | Sóbrio | Comemorado |
+| C24 | Meta de ofensiva escolhida pela pessoa | B9.6 | 7 / 14 / 30 dias | Igual |
+| C25 | Revisar a lição ao fim | B9.6 | Sempre | Sempre |
+| C26 | Ao sair, o mapa já atualizado | B9.7 | Sempre | Sempre |
+| C27 | **Som de acerto e erro musicalmente coerente** | B10.5 | Tríade e segunda menor | Igual |
 
 ## C8 · Vidas e índice de débito — variação nossa
 
@@ -406,6 +609,7 @@ Pedido registrado, em resumo: em vez de vidas que travam o estudo, manter um
 
 | Do Duolingo | Motivo |
 |---|---|
+| Sair da lição **sem avisar** que o progresso se perde | Perda de dado sem aviso |
 | Mascote em toda tela | Decisão explícita: sóbrio na forma adulta |
 | Verde saturado e traço infantil | Paleta é anil e ouro |
 | "Mais missões em breve" | Promessa de funcionalidade futura na tela — antipadrão |
