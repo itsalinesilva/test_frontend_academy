@@ -151,7 +151,7 @@ export function ondeTocar(nota: string): PontoNoBraco | null {
 
 /** Todas as notas alcançáveis em primeira posição, por corda. */
 export function notasEmPrimeiraPosicao(): PontoNoBraco[] {
-  const pontos: PontoNoBraco[] = [];
+  const points: PontoNoBraco[] = [];
   for (const corda of CORDAS) {
     const solta = frequenciaDaNota(corda.solta);
     if (solta === null) continue;
@@ -161,10 +161,10 @@ export function notasEmPrimeiraPosicao(): PontoNoBraco[] {
       const frequenciaHz = solta * Math.pow(2, s / 12);
       const nota = notaMaisProxima(frequenciaHz)?.nota;
       if (!nota) continue;
-      pontos.push({ corda, digitacao, fracao: fracaoDoBraco(s), nota, frequenciaHz });
+      points.push({ corda, digitacao, fracao: fracaoDoBraco(s), nota, frequenciaHz });
     }
   }
-  return pontos;
+  return points;
 }
 
 /** Extensão coberta pela primeira posição, para validar uma partitura. */

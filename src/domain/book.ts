@@ -173,7 +173,7 @@ export function secoesEditaveis(livro: LivroDoConservatorio): SecaoDoLivro[] {
   return livro.secoes.filter((s) => s.origem === 'EDITAVEL').sort((a, b) => a.ordem - b.ordem);
 }
 
-export function contarPalavras(livro: LivroDoConservatorio): number {
+export function countWords(livro: LivroDoConservatorio): number {
   return livro.secoes.reduce(
     (a, s) => a + (s.conteudo.match(/[A-Za-zÀ-ÿ]+/g) ?? []).length,
     0

@@ -13,15 +13,15 @@ import {
 import { RankingLeaderboardEntry, RankingLeague } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { PageLayout } from '../../components/layout/PageLayout';
 
 export const RankingScreen: React.FC = () => {
-  const { userId } = useUsuarioAtual();
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedLeague, setSelectedLeague] = useState<RankingLeague>(RankingLeague.CONSERVATORIO);
+  const [selectedLeague, setSelectedLeague] = useState<RankingLeague>(RankingLeague.CONSERVATORY);
   const [entries, setEntries] = useState<RankingLeaderboardEntry[]>([]);
   const currentUserId = userId;
 
@@ -47,7 +47,7 @@ export const RankingScreen: React.FC = () => {
     { id: RankingLeague.GOLD, label: 'Ouro', color: 'text-amber-600' },
     { id: RankingLeague.PLATINUM, label: 'Platina', color: 'text-teal-600' },
     { id: RankingLeague.DIAMOND, label: 'Diamante', color: 'text-blue-600' },
-    { id: RankingLeague.CONSERVATORIO, label: 'Conservatório', color: 'text-purple-600' },
+    { id: RankingLeague.CONSERVATORY, label: 'Conservatório', color: 'text-purple-600' },
   ];
 
   if (loading) {

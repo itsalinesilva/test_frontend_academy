@@ -14,21 +14,21 @@ import { CAPITULOS_OCIDENTAL } from './ocidental/capitulos';
 
 function q(
   id: string,
-  enunciado: string,
-  alternativas: string[],
+  prompt: string,
+  choices: string[],
   correta: number,
-  explicacao: string,
+  explanation: string,
   competencias: string[],
   dificuldade: DificuldadeQuestao = 'basica'
 ): Questao {
   const letras = ['a', 'b', 'c', 'd'];
   return {
     id,
-    enunciado,
+    prompt,
     tipo: 'MULTIPLA_ESCOLHA',
-    alternativas: alternativas.map((texto, i) => ({ id: letras[i], texto })),
+    choices: choices.map((texto, i) => ({ id: letras[i], texto })),
     resposta: letras[correta],
-    explicacao,
+    explanation,
     dificuldade,
     competencias,
   };
@@ -322,7 +322,7 @@ const CAPITULOS: CapituloLivreto[] = CAPITULOS_OCIDENTAL.map((c) => ({
   id: `cap_ocid_${String(c.numero).padStart(2, '0')}`,
   numero: c.numero,
   titulo: c.titulo,
-  licaoId: `les_ocid_${String(c.numero).padStart(2, '0')}`,
+  lessonId: `les_ocid_${String(c.numero).padStart(2, '0')}`,
   questoes: POR_CAPITULO[c.numero] ?? [],
 }));
 
@@ -334,5 +334,5 @@ export const LIVRETO_OCIDENTAL: Livreto = {
     'Três questões ao fim de cada capítulo, cobrando relação e não data. As mesmas questões reaparecem no simulado, na ordem estudada.',
   capitulos: CAPITULOS,
   criadoEm: '2026-09-17T00:00:00.000Z',
-  atualizadoEm: '2026-09-17T00:00:00.000Z',
+  updatedAt: '2026-09-17T00:00:00.000Z',
 };

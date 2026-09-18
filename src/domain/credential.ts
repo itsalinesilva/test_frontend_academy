@@ -28,7 +28,7 @@ export interface CredencialEmitida {
   dados: DadosEmissao;
   templateSnapshot: TemplateCredencial;
   /** Origem, quando a emissão veio de um curso concluído. */
-  origem?: { tipo: 'CURSO' | 'TRILHA' | 'HABILITACAO' | 'MANUAL'; entidadeId?: EntityId };
+  origem?: { tipo: 'COURSE' | 'TRILHA' | 'HABILITACAO' | 'MANUAL'; entidadeId?: EntityId };
   sha256Hash: string;
   emitidaEm: ISOTimestamp;
   revogadaEm?: ISOTimestamp;

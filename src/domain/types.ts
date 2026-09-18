@@ -154,7 +154,7 @@ export interface Profile {
 export enum CourseLevel {
   FUNDAMENTAL = 'FUNDAMENTAL',
   INTERMEDIARIO = 'INTERMEDIARIO',
-  AVANCADO = 'AVANCADO',
+  ADVANCED = 'ADVANCED',
   MESTRADO = 'MESTRADO',
 }
 

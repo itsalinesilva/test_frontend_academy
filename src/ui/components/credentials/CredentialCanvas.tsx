@@ -216,15 +216,15 @@ export const CredentialCanvas: React.FC<CredentialCanvasProps> = ({
         const alinhamento = el.alinhamento;
         const x = xDoTexto(el.caixa, alinhamento);
 
-        const rotulo = el.kind === 'CAMPO' ? el.rotuloAcima : undefined;
-        const deslocamentoRotulo = rotulo ? 22 : 0;
+        const label = el.kind === 'CAMPO' ? el.rotuloAcima : undefined;
+        const deslocamentoRotulo = label ? 22 : 0;
 
         const linhas = quebrarLinhas(texto, el.caixa.largura, el.tamanhoFonte);
         const alturaLinha = el.tamanhoFonte * 1.22;
 
         return (
           <g key={el.id}>
-            {rotulo && (
+            {label && (
               <text
                 x={x}
                 y={el.caixa.y + 12}
@@ -234,7 +234,7 @@ export const CredentialCanvas: React.FC<CredentialCanvasProps> = ({
                 letterSpacing={3}
                 fill={t.corTextoSuave}
               >
-                {rotulo.toLocaleUpperCase('pt-BR')}
+                {label.toLocaleUpperCase('pt-BR')}
               </text>
             )}
             <text

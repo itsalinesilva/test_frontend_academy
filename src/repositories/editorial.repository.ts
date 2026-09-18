@@ -1,5 +1,5 @@
 import { LocalStorageAdapter } from '../infrastructure/storage/local-storage';
-import { EdicaoEditorial } from '../domain/edicao-editorial';
+import { EditorialEdit } from '../domain/editorial-edit';
 
 /**
  * Camada editorial — as correções feitas por quem edita o Conservatório.
@@ -20,12 +20,12 @@ import { EdicaoEditorial } from '../domain/edicao-editorial';
  * dado do aluno" — que passou a cobrir também esta chave.
  */
 export interface EditorialRepository {
-  todas(): Promise<EdicaoEditorial[]>;
-  daLicao(licaoId: string): Promise<EdicaoEditorial[]>;
-  salvar(edicao: EdicaoEditorial): Promise<EdicaoEditorial>;
+  todas(): Promise<EditorialEdit[]>;
+  daLicao(lessonId: string): Promise<EditorialEdit[]>;
+  salvar(edicao: EditorialEdit): Promise<EditorialEdit>;
   reverter(id: string): Promise<void>;
   /** Histórico completo, do mais recente ao mais antigo. */
-  historico(limite?: number): Promise<EdicaoEditorial[]>;
+  historico(limite?: number): Promise<EditorialEdit[]>;
 }
 
 export class PersistentEditorialRepository implements EditorialRepository {
@@ -37,16 +37,16 @@ export class PersistentEditorialRepository implements EditorialRepository {
     this.storage = storage;
   }
 
-  private lista(): EdicaoEditorial[] {
-    return this.storage.get<EdicaoEditorial[]>(this.CHAVE) ?? [];
+  private lista(): EditorialEdit[] {
+    return this.storage.get<EditorialEdit[]>(this.CHAVE) ?? [];
   }
 
-  public async todas(): Promise<EdicaoEditorial[]> {
+  public async todas(): Promise<EditorialEdit[]> {
     return this.lista();
   }
 
-  public async daLicao(licaoId: string): Promise<EdicaoEditorial[]> {
-    return this.lista().filter((e) => e.licaoId === licaoId);
+  public async daLicao(lessonId: string): Promise<EditorialEdit[]> {
+    return this.lista().filter((e) => e.lessonId === lessonId);
   }
 
   /**
@@ -56,7 +56,7 @@ export class PersistentEditorialRepository implements EditorialRepository {
    * mesmo parágrafo deixa **uma** edição, com o texto atual — e não duas
    * empilhadas, em que a de baixo é a que vale e ninguém sabe disso.
    */
-  public async salvar(edicao: EdicaoEditorial): Promise<EdicaoEditorial> {
+  public async salvar(edicao: EditorialEdit): Promise<EditorialEdit> {
     const atuais = this.lista();
     const i = atuais.findIndex((e) => e.id === edicao.id);
     /**
@@ -83,7 +83,7 @@ export class PersistentEditorialRepository implements EditorialRepository {
     );
   }
 
-  public async historico(limite = 100): Promise<EdicaoEditorial[]> {
+  public async historico(limite = 100): Promise<EditorialEdit[]> {
     return this.lista()
       .slice()
       .sort((a, b) => b.editadaEm.localeCompare(a.editadaEm))

@@ -30,7 +30,7 @@ import {
 } from '../../../domain/reviews';
 import { reviewsRepository, montarAvaliacao } from '../../../repositories/reviews.repository';
 import { Estrelas } from '../../components/academy/Estrelas';
-import { FormularioDeAvaliacao } from '../../components/academy/FormularioDeAvaliacao';
+import { ReviewForm } from '../../components/academy/ReviewForm';
 import { CarrosselDeDepoimentos } from '../../components/academy/CarrosselDeDepoimentos';
 import { User } from '../../../domain/types';
 
@@ -109,7 +109,7 @@ export const CoursePresentationScreen: React.FC = () => {
       if (sessao && vivo) {
         setUsuario(sessao.user);
         setProgresso(await academyService.getUserProgress(sessao.user.id, c.id));
-        setMinhaAvaliacao(await reviewsRepository.doUsuario(sessao.user.id, c.id));
+        setMinhaAvaliacao(await reviewsRepository.forUser(sessao.user.id, c.id));
       }
       if (vivo) setCarregando(false);
     };
@@ -681,7 +681,7 @@ export const CoursePresentationScreen: React.FC = () => {
               </h2>
               <div className="mt-3">
                 {usuario ? (
-                  <FormularioDeAvaliacao
+                  <ReviewForm
                     concluiuOCurso={concluiu}
                     jaAvaliou={Boolean(minhaAvaliacao)}
                     valorInicial={

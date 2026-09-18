@@ -3,7 +3,7 @@ import { CourseLevel } from '../domain/types';
 import { CAPITULOS_POPULAR, COMPETENCIAS_POPULAR } from './popular/capitulos';
 import { BLOCOS_POPULAR } from './popular/blocos';
 import { LIVRETO_POPULAR } from './seed-booklet-popular';
-import { calcularCargaDaLicao, horasDoCurso } from '../domain/carga-horaria';
+import { calculateLessonWorkload, courseHours } from '../domain/workload';
 
 /**
  * Curso de História Social da Música Popular Brasileira.
@@ -38,11 +38,11 @@ const QUESTOES_POR_CAPITULO = new Map(
 const MINUTOS_POR_CAPITULO = new Map(
   CAPITULOS_POPULAR.map((c) => [
     c.numero,
-    calcularCargaDaLicao(BLOCOS[c.numero] ?? [], QUESTOES_POR_CAPITULO.get(c.numero) ?? []).total,
+    calculateLessonWorkload(BLOCOS[c.numero] ?? [], QUESTOES_POR_CAPITULO.get(c.numero) ?? []).total,
   ])
 );
 
-const CARGA_POPULAR = horasDoCurso([...MINUTOS_POR_CAPITULO.values()]);
+const CARGA_POPULAR = courseHours([...MINUTOS_POR_CAPITULO.values()]);
 
 export const CURSO_POPULAR: AcademyCourse = {
   id: 'crs_historia_social_popular',

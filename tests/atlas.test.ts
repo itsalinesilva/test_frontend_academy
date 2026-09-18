@@ -4,7 +4,7 @@ import { PersistentAtlasRepository } from '../src/repositories/atlas.repository'
 import { LocalStorageAdapter } from '../src/infrastructure/storage/local-storage';
 import { ERAS_PADRAO, REGIOES_PADRAO, GENEROS_PADRAO } from '../src/data/seed-atlas';
 import { AtlasWorkPlacement } from '../src/domain/gamification';
-import { tribosAbertas, fontesProcessadas, NaturezaDaTribo } from '../src/domain/tribo';
+import { openTribes, processedSources, TribeNature } from '../src/domain/tribe';
 
 /**
  * O Atlas — taxonomia é conhecimento, contagem é medição.
@@ -162,7 +162,7 @@ describe('tribo — a população nichada', () => {
      */
     const tribos = await novo().listarTribos();
     expect(tribos.length).toBeGreaterThan(0);
-    expect(tribosAbertas(tribos)).toEqual([]);
+    expect(openTribes(tribos)).toEqual([]);
   });
 
   it('tribo não é lugar: não tem coordenada no mapa', async () => {
@@ -180,7 +180,7 @@ describe('tribo — a população nichada', () => {
     // Quem estuda história forma uma tribo tanto quanto quem toca violino —
     // e isso não cabia em "ilha de instrumento".
     const tribos = await novo().listarTribos();
-    expect(tribos.some((t) => t.natureza === NaturezaDaTribo.DISCIPLINA)).toBe(true);
+    expect(tribos.some((t) => t.natureza === TribeNature.DISCIPLINE)).toBe(true);
     expect(tribos.some((t) => t.slug === 'historiadores')).toBe(true);
   });
 
@@ -206,7 +206,7 @@ describe('tribo — a população nichada', () => {
     // Mostrar "15 obras" quando nenhuma foi processada seria anunciar acervo
     // que a plataforma não alcança.
     for (const t of await novo().listarTribos()) {
-      expect(fontesProcessadas(t), t.name).toBe(0);
+      expect(processedSources(t), t.name).toBe(0);
     }
   });
 });

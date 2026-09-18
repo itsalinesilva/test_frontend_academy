@@ -15,21 +15,21 @@ import { CAPITULOS_BRASIL } from './brasil/capitulos';
 
 function q(
   id: string,
-  enunciado: string,
-  alternativas: string[],
+  prompt: string,
+  choices: string[],
   correta: number,
-  explicacao: string,
+  explanation: string,
   competencias: string[],
   dificuldade: DificuldadeQuestao = 'basica'
 ): Questao {
   const letras = ['a', 'b', 'c', 'd'];
   return {
     id,
-    enunciado,
+    prompt,
     tipo: 'MULTIPLA_ESCOLHA',
-    alternativas: alternativas.map((texto, i) => ({ id: letras[i], texto })),
+    choices: choices.map((texto, i) => ({ id: letras[i], texto })),
     resposta: letras[correta],
-    explicacao,
+    explanation,
     dificuldade,
     competencias,
   };
@@ -294,7 +294,7 @@ const CAPITULOS: CapituloLivreto[] = CAPITULOS_BRASIL.map((c) => ({
   id: `cap_bras_${String(c.numero).padStart(2, '0')}`,
   numero: c.numero,
   titulo: c.titulo,
-  licaoId: `les_bras_${String(c.numero).padStart(2, '0')}`,
+  lessonId: `les_bras_${String(c.numero).padStart(2, '0')}`,
   questoes: POR_CAPITULO[c.numero] ?? [],
 }));
 
@@ -306,5 +306,5 @@ export const LIVRETO_BRASIL: Livreto = {
     'Três questões ao fim de cada capítulo. Várias cobram a leitura crítica que o curso faz, e não a memorização de datas.',
   capitulos: CAPITULOS,
   criadoEm: '2026-09-17T00:00:00.000Z',
-  atualizadoEm: '2026-09-17T00:00:00.000Z',
+  updatedAt: '2026-09-17T00:00:00.000Z',
 };

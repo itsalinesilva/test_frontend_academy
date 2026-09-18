@@ -14,14 +14,14 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { PracticeProfile } from '../../../domain/practice';
-import { CONCLUSOES_PARA_ENTRAR_NA_LIGA } from '../../../domain/economia-de-progresso';
+import { COMPLETIONS_TO_JOIN_LEAGUE } from '../../../domain/progress-economy';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { PageLayout } from '../../components/layout/PageLayout';
 
 export const PracticeProfileScreen: React.FC = () => {
-  const { userId } = useUsuarioAtual();
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -144,7 +144,7 @@ export const PracticeProfileScreen: React.FC = () => {
           <div className="font-serif text-lg font-bold text-purple-900 truncate">
             {profile.currentLeague ?? (
               <span className="text-sm font-normal text-stone-400">
-                entra após {CONCLUSOES_PARA_ENTRAR_NA_LIGA} conclusões
+                entra após {COMPLETIONS_TO_JOIN_LEAGUE} conclusões
               </span>
             )}
           </div>

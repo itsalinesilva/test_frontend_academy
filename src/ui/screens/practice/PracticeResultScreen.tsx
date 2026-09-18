@@ -16,7 +16,7 @@ import {
 import { PracticeResult } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
-import { PainelDeMedicao } from '../../components/practice/PainelDeMedicao';
+import { MeasurementPanel } from '../../components/practice/MeasurementPanel';
 import { PageLayout } from '../../components/layout/PageLayout';
 
 export const PracticeResultScreen: React.FC = () => {
@@ -183,7 +183,7 @@ export const PracticeResultScreen: React.FC = () => {
           quando nao havia o que medir. O painel unico mostra o que foi medido
           e diz, com a razao, o que nao foi.
         */}
-        <PainelDeMedicao medicao={medicao} variante="completo" id="resultado-medicao" />
+        <MeasurementPanel medicao={medicao} variante="completo" id="resultado-medicao" />
       </section>
 
       {/* Recommendations & Feedback points */}

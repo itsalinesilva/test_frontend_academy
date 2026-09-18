@@ -28,7 +28,7 @@ import { PracticeRepository, practiceRepository } from '../../repositories/pract
 import { profileService, ProfileService } from './profile.service';
 import { analyticsService } from '../../infrastructure/telemetry/analytics-service';
 import { AnalyticsEventType } from '../../domain/analytics';
-import { nivelDe, CONCLUSOES_PARA_ENTRAR_NA_LIGA } from '../../domain/economia-de-progresso';
+import { levelOf, COMPLETIONS_TO_JOIN_LEAGUE } from '../../domain/progress-economy';
 
 export interface EvaluateAttemptInput {
   exerciseId: string;
@@ -201,8 +201,8 @@ export class PracticeService {
     } else if (aprovada) {
       headline = 'Execução dentro do alvo';
       const partes: string[] = [];
-      if (medicao.afinacao.desvioCents !== null) {
-        partes.push(`afinação a ${Math.abs(medicao.afinacao.desvioCents)} cents do alvo`);
+      if (medicao.afinacao.deviationCents !== null) {
+        partes.push(`afinação a ${Math.abs(medicao.afinacao.deviationCents)} cents do alvo`);
       }
       if (medicao.tempoRitmico.desvioMedioMs !== null) {
         partes.push(`desvio médio de ${medicao.tempoRitmico.desvioMedioMs} ms em relação ao pulso`);
@@ -225,9 +225,9 @@ export class PracticeService {
         .filter((d): d is [string, number] => typeof d[1] === 'number')
         .sort((a, b) => a[1] - b[1])[0];
 
-      if (medicao.afinacao.desvioCents !== null && Math.abs(medicao.afinacao.desvioCents) > 25) {
-        const acima = medicao.afinacao.desvioCents > 0;
-        details = `A altura ficou ${Math.abs(medicao.afinacao.desvioCents)} cents ${acima ? 'acima' : 'abaixo'} de ${medicao.afinacao.notaAlvo}.`;
+      if (medicao.afinacao.deviationCents !== null && Math.abs(medicao.afinacao.deviationCents) > 25) {
+        const acima = medicao.afinacao.deviationCents > 0;
+        details = `A altura ficou ${Math.abs(medicao.afinacao.deviationCents)} cents ${acima ? 'acima' : 'abaixo'} de ${medicao.afinacao.notaAlvo}.`;
         correctiveAction = acima
           ? 'Alivie a pressão do ataque e reapoie a nota um pouco mais grave.'
           : 'Sustente o apoio e busque a nota um pouco mais aguda antes de soar.';
@@ -253,7 +253,7 @@ export class PracticeService {
       isCorrect,
       accuracyScore: nota ?? 0,
       timingDeviationMs: medicao.tempoRitmico.desvioMedioMs ?? 0,
-      pitchDeviationCents: medicao.afinacao.desvioCents ?? 0,
+      pitchDeviationCents: medicao.afinacao.deviationCents ?? 0,
       medicao,
       immediateFeedback: {
         headline,
@@ -556,7 +556,7 @@ export class PracticeService {
 
   public async getLeaderboard(
     period: string = 'WEEKLY',
-    league: RankingLeague = RankingLeague.CONSERVATORIO
+    league: RankingLeague = RankingLeague.CONSERVATORY
   ): Promise<RankingLeaderboardEntry[]> {
     return this.repo.getLeaderboard(period, league);
   }
@@ -624,8 +624,8 @@ export class PracticeService {
       lista.reduce((sum, r) => sum + r.xpGained, 0);
 
     const totalXp = somarXp(results);
-    const nivel = nivelDe(totalXp);
-    const xpDaSemana = somarXp(results.filter((r) => r.createdAt >= inicioDaSemana()));
+    const nivel = levelOf(totalXp);
+    const weeklyXp = somarXp(results.filter((r) => r.createdAt >= inicioDaSemana()));
     const xpDoMes = somarXp(results.filter((r) => r.createdAt >= inicioDoMes()));
 
     return {
@@ -637,18 +637,18 @@ export class PracticeService {
       overallAccuracyPercentage: avgAcc,
       /** §6: entra-se na liga depois de tres conclusoes, e nao antes. */
       currentLeague:
-        results.length >= CONCLUSOES_PARA_ENTRAR_NA_LIGA ? RankingLeague.BRONZE : null,
+        results.length >= COMPLETIONS_TO_JOIN_LEAGUE ? RankingLeague.BRONZE : null,
       streak,
       dailyGoal,
       experience: {
         id: `xp_${userId}`,
         userId,
         totalXp,
-        weeklyXp: xpDaSemana,
+        weeklyXp: weeklyXp,
         monthlyXp: xpDoMes,
         level: nivel.nivel,
-        currentLevelXp: nivel.xpNoNivel,
-        nextLevelXp: nivel.xpDoNivel,
+        currentLevelXp: nivel.xpInLevel,
+        nextLevelXp: nivel.levelXp,
         lastEarnedAt: results[results.length - 1]?.createdAt ?? null,
       },
       masteryCount: count,

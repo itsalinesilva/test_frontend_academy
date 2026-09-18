@@ -16,12 +16,12 @@ import { ExerciseAttempt, Exercise } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
 import { useRouter, useRouteParams } from '../../navigation/router';
-import { PainelDeMedicao } from '../../components/practice/PainelDeMedicao';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { MeasurementPanel } from '../../components/practice/MeasurementPanel';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { PageLayout } from '../../components/layout/PageLayout';
 
 export const ImmediateFeedbackScreen: React.FC = () => {
-  const { userId } = useUsuarioAtual();
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const params = useRouteParams();
   const attemptId = params.id || '';
@@ -211,7 +211,7 @@ export const ImmediateFeedbackScreen: React.FC = () => {
           quando nao havia o que medir. O painel unico mostra o que foi medido
           e diz, com a razao, o que nao foi.
         */}
-        <PainelDeMedicao medicao={medicao} variante="completo" id="feedback-medicao" />
+        <MeasurementPanel medicao={medicao} variante="completo" id="feedback-medicao" />
       </section>
 
       {/* Gamified Action Loop Footer */}

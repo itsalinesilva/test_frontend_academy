@@ -44,7 +44,7 @@ import { PracticeModality, ExerciseType } from './practice';
  */
 export type NaturezaMedicao =
   /** Há sinal sonoro: afinação, tempo, ritmo, sustentação são medíveis. */
-  | 'ACUSTICA'
+  | 'ACOUSTICS'
   /** Resposta simbólica: a medição é acerto e tempo de resposta. */
   | 'SIMBOLICA';
 
@@ -70,7 +70,7 @@ export function naturezaDoExercicio(
   tipo: ExerciseType
 ): NaturezaMedicao {
   return MODALIDADES_ACUSTICAS.has(modalidade) || TIPOS_ACUSTICOS.has(tipo)
-    ? 'ACUSTICA'
+    ? 'ACOUSTICS'
     : 'SIMBOLICA';
 }
 
@@ -105,16 +105,16 @@ export function frequenciaDaNota(nota: string, a4 = 440): number | null {
 export function notaMaisProxima(
   frequencia: number,
   a4 = 440
-): { nota: string; desvioCents: number } | null {
+): { nota: string; deviationCents: number } | null {
   if (!Number.isFinite(frequencia) || frequencia <= 0) return null;
 
   const semitonsDeA4 = 12 * Math.log2(frequencia / a4);
   const arredondado = Math.round(semitonsDeA4);
-  const desvioCents = Math.round((semitonsDeA4 - arredondado) * 100);
+  const deviationCents = Math.round((semitonsDeA4 - arredondado) * 100);
 
   const indice = ((arredondado + 9) % 12 + 12) % 12;
   const oitava = 4 + Math.floor((arredondado + 9) / 12);
-  return { nota: `${SEMITONS[indice]}${oitava}`, desvioCents };
+  return { nota: `${SEMITONS[indice]}${oitava}`, deviationCents };
 }
 
 /**
@@ -133,7 +133,7 @@ export function desvioEmCents(frequencia: number, frequenciaAlvo: number): numbe
 
 export interface SinalDaTentativa {
   /** Frequências detectadas ao longo da execução, em Hz. */
-  frequenciasHz?: number[];
+  frequenciesHz?: number[];
   /** Nota alvo em notação científica. */
   notaAlvo?: string;
   /** Instantes dos ataques, em ms desde o início da tentativa. */
@@ -157,7 +157,7 @@ export interface SinalDaTentativa {
 // ---------------------------------------------------------------------------
 
 /** Uma dimensão medida. `null` significa que não houve dado — não zero. */
-export type Dimensao = number | null;
+export type Dimension = number | null;
 
 export interface MedicaoReal {
   natureza: NaturezaMedicao;
@@ -165,35 +165,35 @@ export interface MedicaoReal {
   afinacao: {
     notaAlvo: string | null;
     notaDetectada: string | null;
-    desvioCents: Dimensao;
+    deviationCents: Dimension;
     /** 0..100, derivada do desvio. */
-    pontuacao: Dimensao;
+    pontuacao: Dimension;
   };
   /** Constância da afinação ao longo da nota: 0..100. */
-  estabilidadeDeAltura: Dimensao;
+  estabilidadeDeAltura: Dimension;
   tempoRitmico: {
     bpmAlvo: number | null;
-    bpmMedido: Dimensao;
+    bpmMedido: Dimension;
     /** Desvio médio absoluto em relação à grade, em ms. */
-    desvioMedioMs: Dimensao;
+    desvioMedioMs: Dimension;
     /** 0..100, derivada do desvio. */
-    pontuacao: Dimensao;
+    pontuacao: Dimension;
   };
   /** Regularidade dos intervalos entre ataques: 0..100. */
-  estabilidadeRitmica: Dimensao;
+  estabilidadeRitmica: Dimension;
   sustentacao: {
     alvoSegundos: number | null;
     realSegundos: number | null;
-    pontuacao: Dimensao;
+    pontuacao: Dimension;
   };
   acerto: {
     correto: boolean | null;
     tempoDeRespostaMs: number | null;
-    pontuacao: Dimensao;
+    pontuacao: Dimension;
   };
 
   /** Média ponderada das dimensões medidas. `null` se nada foi medido. */
-  notaGlobal: Dimensao;
+  notaGlobal: Dimension;
   /** Nomes das dimensões que entraram na nota. */
   dimensoesMedidas: string[];
   /** Por que uma dimensão esperada ficou de fora. */
@@ -213,8 +213,8 @@ export interface MedicaoReal {
  * depois, em vez de punir igualmente um desvio imperceptível e um erro
  * audível.
  */
-export function pontuarAfinacao(desvioCents: number): number {
-  const d = Math.abs(desvioCents);
+export function pontuarAfinacao(deviationCents: number): number {
+  const d = Math.abs(deviationCents);
   if (d <= 5) return 100;
   if (d >= 50) return 0;
   // Queda suave entre 5 e 50 cents.
@@ -227,8 +227,8 @@ export function pontuarAfinacao(desvioCents: number): number {
  * ~20 ms é o limiar comum de percepção de assincronia em ataques musicais;
  * acima de ~120 ms o ataque é ouvido como fora do tempo.
  */
-export function pontuarTempo(desvioMs: number): number {
-  const d = Math.abs(desvioMs);
+export function pontuarTempo(deviationMs: number): number {
+  const d = Math.abs(deviationMs);
   if (d <= 20) return 100;
   if (d >= 120) return 0;
   return Math.round(100 * Math.pow(1 - (d - 20) / 100, 1.3));
@@ -279,10 +279,10 @@ export function medirTentativa(
   const medidas: Record<string, number> = {};
 
   // --- afinação ------------------------------------------------------------
-  const frequencias = (sinal.frequenciasHz ?? []).filter((f) => Number.isFinite(f) && f > 0);
+  const frequencias = (sinal.frequenciesHz ?? []).filter((f) => Number.isFinite(f) && f > 0);
   const frequenciaAlvo = sinal.notaAlvo ? frequenciaDaNota(sinal.notaAlvo) : null;
 
-  let desvioCents: number | null = null;
+  let deviationCents: number | null = null;
   let notaDetectada: string | null = null;
   let pontuacaoAfinacao: number | null = null;
   let estabilidadeDeAltura: number | null = null;
@@ -295,8 +295,8 @@ export function medirTentativa(
     notaDetectada = notaMaisProxima(mediana)?.nota ?? null;
 
     if (frequenciaAlvo) {
-      desvioCents = Math.round(desvioEmCents(mediana, frequenciaAlvo) ?? 0);
-      pontuacaoAfinacao = pontuarAfinacao(desvioCents);
+      deviationCents = Math.round(desvioEmCents(mediana, frequenciaAlvo) ?? 0);
+      pontuacaoAfinacao = pontuarAfinacao(deviationCents);
       medidas.afinacao = pontuacaoAfinacao;
     } else {
       ausencias.push('Sem nota alvo definida: o desvio de afinação não pôde ser calculado.');
@@ -311,7 +311,7 @@ export function medirTentativa(
       estabilidadeDeAltura = Math.max(0, Math.round(100 - dispersao * 2.2));
       medidas.estabilidadeDeAltura = estabilidadeDeAltura;
     }
-  } else if (natureza === 'ACUSTICA') {
+  } else if (natureza === 'ACOUSTICS') {
     ausencias.push('Não houve som audível para medir a afinação.');
   }
 
@@ -344,7 +344,7 @@ export function medirTentativa(
     } else {
       ausencias.push('Sem andamento alvo: o desvio de tempo não pôde ser calculado.');
     }
-  } else if (natureza === 'ACUSTICA' && sinal.bpmAlvo) {
+  } else if (natureza === 'ACOUSTICS' && sinal.bpmAlvo) {
     ausencias.push('Ataques insuficientes para medir o andamento (são necessários ao menos dois).');
   }
 
@@ -387,7 +387,7 @@ export function medirTentativa(
     afinacao: {
       notaAlvo: sinal.notaAlvo ?? null,
       notaDetectada,
-      desvioCents,
+      deviationCents,
       pontuacao: pontuacaoAfinacao,
     },
     estabilidadeDeAltura,
@@ -493,7 +493,7 @@ function mediaPresente(valores: (number | null | undefined)[]): number | null {
 export function agregarMedicoes(medicoes: MedicaoReal[]): MedicaoReal {
   const presentes = medicoes.filter(Boolean);
 
-  const desvios = presentes.map((m) => m.afinacao.desvioCents);
+  const desvios = presentes.map((m) => m.afinacao.deviationCents);
   const medidas: Record<string, number | null> = {
     afinacao: mediaPresente(presentes.map((m) => m.afinacao.pontuacao)),
     estabilidadeDeAltura: mediaPresente(presentes.map((m) => m.estabilidadeDeAltura)),
@@ -511,13 +511,13 @@ export function agregarMedicoes(medicoes: MedicaoReal[]): MedicaoReal {
       : null;
 
   return {
-    natureza: presentes.some((m) => m.natureza === 'ACUSTICA') ? 'ACUSTICA' : 'SIMBOLICA',
+    natureza: presentes.some((m) => m.natureza === 'ACOUSTICS') ? 'ACOUSTICS' : 'SIMBOLICA',
     afinacao: {
       notaAlvo: presentes.find((m) => m.afinacao.notaAlvo)?.afinacao.notaAlvo ?? null,
       notaDetectada: null,
       // Desvio médio ABSOLUTO: quem ora sobe 30 cents e ora desce 30 não está
       // afinado, e a média com sinal daria zero — a melhor nota possível.
-      desvioCents: mediaPresente(desvios.map((d) => (d === null ? null : Math.abs(d)))),
+      deviationCents: mediaPresente(desvios.map((d) => (d === null ? null : Math.abs(d)))),
       pontuacao: medidas.afinacao,
     },
     estabilidadeDeAltura: medidas.estabilidadeDeAltura,
@@ -595,8 +595,8 @@ export function descreverSessao(tentativas: TentativaResumivel[], total: number)
     if (valor !== null) linhas.push(`${ROTULO_DIMENSAO[nome] ?? nome}: ${valor} de 100`);
   }
 
-  if (agregada.afinacao.desvioCents !== null) {
-    linhas.push(`desvio médio de afinação: ${agregada.afinacao.desvioCents} cents`);
+  if (agregada.afinacao.deviationCents !== null) {
+    linhas.push(`desvio médio de afinação: ${agregada.afinacao.deviationCents} cents`);
   }
   if (agregada.tempoRitmico.desvioMedioMs !== null) {
     linhas.push(`desvio médio em relação ao pulso: ${agregada.tempoRitmico.desvioMedioMs} ms`);

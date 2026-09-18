@@ -62,7 +62,7 @@ export class PersistentCredentialRepository implements CredentialRepository {
 
   public async salvarTemplate(template: TemplateCredencial): Promise<TemplateCredencial> {
     const mapa = await this.mapaTemplates();
-    const atualizado: TemplateCredencial = { ...template, atualizadoEm: new Date().toISOString() };
+    const atualizado: TemplateCredencial = { ...template, updatedAt: new Date().toISOString() };
     mapa[template.id] = atualizado;
     await this.storage.setItem(this.chaveTemplates, mapa);
     return atualizado;

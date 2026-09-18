@@ -37,7 +37,7 @@ export type TipoQuestao =
 
 export type DificuldadeQuestao = 'basica' | 'intermediaria' | 'avancada';
 
-export interface Alternativa {
+export interface Choice {
   id: string;
   texto: string;
   /** Por que esta alternativa está errada — ou certa. */
@@ -46,10 +46,10 @@ export interface Alternativa {
 
 export interface Questao {
   id: EntityId;
-  enunciado: string;
+  prompt: string;
   tipo: TipoQuestao;
   /** Vazio em resposta curta. */
-  alternativas: Alternativa[];
+  choices: Choice[];
   /** Id da alternativa correta, ou o texto aceito em resposta curta. */
   resposta: string;
   /**
@@ -58,7 +58,7 @@ export interface Questao {
    * Obrigatória. Uma questão sem explicação ensina a acertar, não o assunto —
    * e é o tipo de questão que um gerador automático produz aos milhares.
    */
-  explicacao: string;
+  explanation: string;
   dificuldade: DificuldadeQuestao;
   /** Conceitos que a questão verifica. Serve para montar prova equivalente. */
   competencias: string[];
@@ -75,7 +75,7 @@ export interface CapituloLivreto {
   numero: number;
   titulo: string;
   /** Lição a que este capítulo corresponde, quando há. */
-  licaoId?: EntityId;
+  lessonId?: EntityId;
   /**
    * Questões de fixação, mostradas ao fim da leitura do capítulo.
    *
@@ -95,7 +95,7 @@ export interface Livreto {
   /** Quem editou por último, para a trilha de revisão. */
   atualizadoPor?: string;
   criadoEm: ISOTimestamp;
-  atualizadoEm: ISOTimestamp;
+  updatedAt: ISOTimestamp;
 }
 
 // ---------------------------------------------------------------------------
@@ -126,7 +126,7 @@ export interface Avaliacao {
   /** Minutos; zero significa sem limite. */
   tempoLimiteMinutos: number;
   criadoEm: ISOTimestamp;
-  atualizadoEm: ISOTimestamp;
+  updatedAt: ISOTimestamp;
 }
 
 /** Questões efetivas de uma avaliação, resolvendo as referências. */
@@ -169,7 +169,7 @@ export function montarSimulado(livreto: Livreto, notaDeCorte = 70): Avaliacao {
     notaDeCorte,
     tempoLimiteMinutos: 0,
     criadoEm: agora,
-    atualizadoEm: agora,
+    updatedAt: agora,
   };
 }
 
@@ -272,8 +272,8 @@ export function validarQuestao(q: Questao): ProblemaDeQuestao[] {
   const erro = (mensagem: string) => p.push({ questaoId: q.id, gravidade: 'erro', mensagem });
   const aviso = (mensagem: string) => p.push({ questaoId: q.id, gravidade: 'aviso', mensagem });
 
-  if (q.enunciado.trim().length < 10) erro('O enunciado está vazio ou curto demais.');
-  if (q.explicacao.trim().length < 10) {
+  if (q.prompt.trim().length < 10) erro('O enunciado está vazio ou curto demais.');
+  if (q.explanation.trim().length < 10) {
     erro('Falta a explicação. Sem ela, a questão ensina a acertar, não o assunto.');
   }
   if (q.competencias.length === 0) {
@@ -281,16 +281,16 @@ export function validarQuestao(q: Questao): ProblemaDeQuestao[] {
   }
 
   if (q.tipo === 'MULTIPLA_ESCOLHA' || q.tipo === 'IDENTIFICACAO') {
-    if (q.alternativas.length < 3) erro('Multipla escolha precisa de ao menos três alternativas.');
-    if (!q.alternativas.some((a) => a.id === q.resposta)) {
+    if (q.choices.length < 3) erro('Multipla escolha precisa de ao menos três alternativas.');
+    if (!q.choices.some((a) => a.id === q.resposta)) {
       erro('A resposta indicada não corresponde a nenhuma alternativa.');
     }
-    const textos = q.alternativas.map((a) => a.texto.trim().toLowerCase());
+    const textos = q.choices.map((a) => a.texto.trim().toLowerCase());
     if (new Set(textos).size !== textos.length) erro('Há alternativas repetidas.');
     if (textos.some((t) => t.length === 0)) erro('Há alternativa em branco.');
   }
 
-  if (q.tipo === 'VERDADEIRO_FALSO' && q.alternativas.length !== 2) {
+  if (q.tipo === 'VERDADEIRO_FALSO' && q.choices.length !== 2) {
     erro('Verdadeiro ou falso precisa de exatamente duas alternativas.');
   }
 
@@ -492,7 +492,7 @@ export function montarProvaFinal(
   const finais = embaralhar(escolhidas, proximo).map((q) => ({
     ...q,
     id: `pf_${q.id}`,
-    alternativas: q.alternativas.map((a) => ({ ...a })),
+    choices: q.choices.map((a) => ({ ...a })),
     competencias: [...q.competencias],
   }));
 
@@ -507,7 +507,7 @@ export function montarProvaFinal(
     notaDeCorte: cfg.notaDeCorte,
     tempoLimiteMinutos: cfg.tempoLimiteMinutos,
     criadoEm: agora,
-    atualizadoEm: agora,
+    updatedAt: agora,
   };
 }
 

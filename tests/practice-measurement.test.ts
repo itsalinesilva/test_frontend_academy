@@ -45,7 +45,7 @@ describe('Conversão de altura', () => {
   it('identifica a nota mais próxima de uma frequência', () => {
     expect(notaMaisProxima(440)?.nota).toBe('A4');
     expect(notaMaisProxima(261.63)?.nota).toBe('C4');
-    expect(notaMaisProxima(440)?.desvioCents).toBe(0);
+    expect(notaMaisProxima(440)?.deviationCents).toBe(0);
   });
 
   it('o desvio em cents é a definição, não uma aproximação', () => {
@@ -90,38 +90,38 @@ describe('Medição — o que não foi medido fica AUSENTE', () => {
   it('sem som, a afinação é null e a ausência é explicada', () => {
     // A versão anterior devolveria aqui um desvio entre 45 e 85 cents,
     // sorteado, e o aluno leria isso como "você desafinou".
-    const m = medirTentativa({ notaAlvo: 'A4' }, 'ACUSTICA');
+    const m = medirTentativa({ notaAlvo: 'A4' }, 'ACOUSTICS');
 
-    expect(m.afinacao.desvioCents).toBeNull();
+    expect(m.afinacao.deviationCents).toBeNull();
     expect(m.afinacao.pontuacao).toBeNull();
     expect(m.notaGlobal).toBeNull();
     expect(m.ausencias.join(' ')).toMatch(/som audível/i);
   });
 
   it('ausência NÃO é zero', () => {
-    const m = medirTentativa({ notaAlvo: 'A4' }, 'ACUSTICA');
+    const m = medirTentativa({ notaAlvo: 'A4' }, 'ACOUSTICS');
     expect(m.afinacao.pontuacao).not.toBe(0);
     expect(m.estabilidadeRitmica).not.toBe(0);
   });
 
   it('nada medido significa nem aprovado nem reprovado', () => {
-    const m = medirTentativa({}, 'ACUSTICA');
+    const m = medirTentativa({}, 'ACOUSTICS');
     expect(tentativaAprovada(m)).toBeNull();
   });
 
   it('a mesma entrada produz sempre a mesma medição', () => {
     // O sorteio anterior falhava exatamente aqui.
-    const sinal = { frequenciasHz: [442, 441, 443], notaAlvo: 'A4' };
-    const a = medirTentativa(sinal, 'ACUSTICA');
-    const b = medirTentativa(sinal, 'ACUSTICA');
+    const sinal = { frequenciesHz: [442, 441, 443], notaAlvo: 'A4' };
+    const a = medirTentativa(sinal, 'ACOUSTICS');
+    const b = medirTentativa(sinal, 'ACOUSTICS');
     expect(a).toEqual(b);
   });
 });
 
 describe('Medição acústica', () => {
   it('nota exata dá afinação perfeita', () => {
-    const m = medirTentativa({ frequenciasHz: [440, 440, 440], notaAlvo: 'A4' }, 'ACUSTICA');
-    expect(m.afinacao.desvioCents).toBe(0);
+    const m = medirTentativa({ frequenciesHz: [440, 440, 440], notaAlvo: 'A4' }, 'ACOUSTICS');
+    expect(m.afinacao.deviationCents).toBe(0);
     expect(m.afinacao.pontuacao).toBe(100);
     expect(m.afinacao.notaDetectada).toBe('A4');
   });
@@ -129,55 +129,55 @@ describe('Medição acústica', () => {
   it('mede o desvio real de quem canta um pouco alto', () => {
     // 30 cents acima de A4.
     const f = 440 * Math.pow(2, 30 / 1200);
-    const m = medirTentativa({ frequenciasHz: [f, f, f], notaAlvo: 'A4' }, 'ACUSTICA');
-    expect(m.afinacao.desvioCents).toBe(30);
+    const m = medirTentativa({ frequenciesHz: [f, f, f], notaAlvo: 'A4' }, 'ACOUSTICS');
+    expect(m.afinacao.deviationCents).toBe(30);
     expect(m.afinacao.pontuacao).toBeLessThan(100);
     expect(m.afinacao.pontuacao).toBeGreaterThan(0);
   });
 
   it('usa a mediana: um quadro espúrio não desloca a leitura', () => {
     const m = medirTentativa(
-      { frequenciasHz: [440, 441, 439, 1760, 440], notaAlvo: 'A4' },
-      'ACUSTICA'
+      { frequenciesHz: [440, 441, 439, 1760, 440], notaAlvo: 'A4' },
+      'ACOUSTICS'
     );
     expect(m.afinacao.notaDetectada).toBe('A4');
-    expect(Math.abs(m.afinacao.desvioCents!)).toBeLessThan(10);
+    expect(Math.abs(m.afinacao.deviationCents!)).toBeLessThan(10);
   });
 
   it('afinação firme pontua mais que afinação oscilante', () => {
     const firme = medirTentativa(
-      { frequenciasHz: [440, 440.2, 439.8, 440.1, 440], notaAlvo: 'A4' },
-      'ACUSTICA'
+      { frequenciesHz: [440, 440.2, 439.8, 440.1, 440], notaAlvo: 'A4' },
+      'ACOUSTICS'
     );
     const oscilante = medirTentativa(
-      { frequenciasHz: [430, 450, 435, 447, 440], notaAlvo: 'A4' },
-      'ACUSTICA'
+      { frequenciesHz: [430, 450, 435, 447, 440], notaAlvo: 'A4' },
+      'ACOUSTICS'
     );
     expect(firme.estabilidadeDeAltura!).toBeGreaterThan(oscilante.estabilidadeDeAltura!);
   });
 
   it('calcula o andamento a partir dos ataques', () => {
     // Quatro ataques a cada 500 ms = 120 bpm.
-    const m = medirTentativa({ ataquesMs: [0, 500, 1000, 1500], bpmAlvo: 120 }, 'ACUSTICA');
+    const m = medirTentativa({ ataquesMs: [0, 500, 1000, 1500], bpmAlvo: 120 }, 'ACOUSTICS');
     expect(m.tempoRitmico.bpmMedido).toBe(120);
     expect(m.tempoRitmico.desvioMedioMs).toBe(0);
     expect(m.tempoRitmico.pontuacao).toBe(100);
   });
 
   it('detecta o arrasto de quem atrasa progressivamente', () => {
-    const m = medirTentativa({ ataquesMs: [0, 520, 1070, 1650], bpmAlvo: 120 }, 'ACUSTICA');
+    const m = medirTentativa({ ataquesMs: [0, 520, 1070, 1650], bpmAlvo: 120 }, 'ACOUSTICS');
     expect(m.tempoRitmico.desvioMedioMs!).toBeGreaterThan(0);
     expect(m.tempoRitmico.pontuacao!).toBeLessThan(100);
   });
 
   it('pulso regular pontua mais que pulso irregular', () => {
-    const regular = medirTentativa({ ataquesMs: [0, 500, 1000, 1500] }, 'ACUSTICA');
-    const irregular = medirTentativa({ ataquesMs: [0, 380, 1010, 1380] }, 'ACUSTICA');
+    const regular = medirTentativa({ ataquesMs: [0, 500, 1000, 1500] }, 'ACOUSTICS');
+    const irregular = medirTentativa({ ataquesMs: [0, 380, 1010, 1380] }, 'ACOUSTICS');
     expect(regular.estabilidadeRitmica!).toBeGreaterThan(irregular.estabilidadeRitmica!);
   });
 
   it('um ataque só não permite medir andamento', () => {
-    const m = medirTentativa({ ataquesMs: [0], bpmAlvo: 120 }, 'ACUSTICA');
+    const m = medirTentativa({ ataquesMs: [0], bpmAlvo: 120 }, 'ACOUSTICS');
     expect(m.tempoRitmico.bpmMedido).toBeNull();
     expect(m.ausencias.join(' ')).toMatch(/ao menos dois/i);
   });
@@ -206,8 +206,8 @@ describe('Medição simbólica', () => {
   });
 
   it('classifica corretamente a natureza de cada exercício', () => {
-    expect(naturezaDoExercicio(PracticeModality.VOICE, ExerciseType.SIGHT_SINGING)).toBe('ACUSTICA');
-    expect(naturezaDoExercicio(PracticeModality.RHYTHM, ExerciseType.RHYTHM_TAP)).toBe('ACUSTICA');
+    expect(naturezaDoExercicio(PracticeModality.VOICE, ExerciseType.SIGHT_SINGING)).toBe('ACOUSTICS');
+    expect(naturezaDoExercicio(PracticeModality.RHYTHM, ExerciseType.RHYTHM_TAP)).toBe('ACOUSTICS');
     expect(naturezaDoExercicio(PracticeModality.THEORY, ExerciseType.INTERVAL)).toBe('SIMBOLICA');
     expect(naturezaDoExercicio(PracticeModality.EAR_TRAINING, ExerciseType.CHORD)).toBe('SIMBOLICA');
   });
@@ -216,7 +216,7 @@ describe('Medição simbólica', () => {
 describe('Nota global', () => {
   it('pondera só o que foi medido, renormalizando os pesos', () => {
     // Só afinação, e perfeita: a nota é 100, não 30 (o peso da afinação).
-    const m = medirTentativa({ frequenciasHz: [440], notaAlvo: 'A4' }, 'ACUSTICA');
+    const m = medirTentativa({ frequenciesHz: [440], notaAlvo: 'A4' }, 'ACOUSTICS');
     expect(m.notaGlobal).toBe(100);
     expect(m.dimensoesMedidas).toEqual(['afinacao']);
   });
@@ -224,12 +224,12 @@ describe('Nota global', () => {
   it('combina dimensões quando há mais de uma', () => {
     const m = medirTentativa(
       {
-        frequenciasHz: [440, 440, 440, 440],
+        frequenciesHz: [440, 440, 440, 440],
         notaAlvo: 'A4',
         ataquesMs: [0, 500, 1000, 1500],
         bpmAlvo: 120,
       },
-      'ACUSTICA'
+      'ACOUSTICS'
     );
     expect(m.dimensoesMedidas.length).toBeGreaterThan(1);
     expect(m.notaGlobal).toBeGreaterThan(90);

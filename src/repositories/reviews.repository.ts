@@ -1,6 +1,6 @@
 import { LocalStorageAdapter } from '../infrastructure/storage/storage-adapter';
 import { AvaliacaoDeCurso, Estrelas } from '../domain/reviews';
-import { RegistroDeEstudo, DiaISO, registrarEstudo } from '../domain/frequencia';
+import { StudyRecord, IsoDay, recordStudy } from '../domain/study-attendance';
 
 /**
  * Avaliações de curso e frequência de estudo.
@@ -16,12 +16,12 @@ import { RegistroDeEstudo, DiaISO, registrarEstudo } from '../domain/frequencia'
 export interface ReviewsRepository {
   listarPorCurso(courseId: string): Promise<AvaliacaoDeCurso[]>;
   listarTodas(): Promise<AvaliacaoDeCurso[]>;
-  doUsuario(userId: string, courseId: string): Promise<AvaliacaoDeCurso | null>;
+  forUser(userId: string, courseId: string): Promise<AvaliacaoDeCurso | null>;
   salvar(a: AvaliacaoDeCurso): Promise<AvaliacaoDeCurso>;
   remover(id: string): Promise<void>;
 
-  frequencia(userId: string): Promise<RegistroDeEstudo[]>;
-  registrarEstudo(userId: string, dia: DiaISO, minutos: number): Promise<RegistroDeEstudo[]>;
+  frequencia(userId: string): Promise<StudyRecord[]>;
+  recordStudy(userId: string, dia: IsoDay, minutos: number): Promise<StudyRecord[]>;
 }
 
 export class PersistentReviewsRepository implements ReviewsRepository {
@@ -50,7 +50,7 @@ export class PersistentReviewsRepository implements ReviewsRepository {
       .sort((a, b) => b.criadaEm.localeCompare(a.criadaEm));
   }
 
-  public async doUsuario(userId: string, courseId: string): Promise<AvaliacaoDeCurso | null> {
+  public async forUser(userId: string, courseId: string): Promise<AvaliacaoDeCurso | null> {
     return this.todas().find((a) => a.userId === userId && a.courseId === courseId) ?? null;
   }
 
@@ -69,21 +69,21 @@ export class PersistentReviewsRepository implements ReviewsRepository {
     );
   }
 
-  private mapaDeFrequencia(): Record<string, RegistroDeEstudo[]> {
-    return this.storage.get<Record<string, RegistroDeEstudo[]>>(this.CHAVES.FREQUENCIA) ?? {};
+  private mapaDeFrequencia(): Record<string, StudyRecord[]> {
+    return this.storage.get<Record<string, StudyRecord[]>>(this.CHAVES.FREQUENCIA) ?? {};
   }
 
-  public async frequencia(userId: string): Promise<RegistroDeEstudo[]> {
+  public async frequencia(userId: string): Promise<StudyRecord[]> {
     return this.mapaDeFrequencia()[userId] ?? [];
   }
 
-  public async registrarEstudo(
+  public async recordStudy(
     userId: string,
-    dia: DiaISO,
+    dia: IsoDay,
     minutos: number
-  ): Promise<RegistroDeEstudo[]> {
+  ): Promise<StudyRecord[]> {
     const mapa = this.mapaDeFrequencia();
-    const atualizados = registrarEstudo(mapa[userId] ?? [], dia, minutos);
+    const atualizados = recordStudy(mapa[userId] ?? [], dia, minutos);
     this.storage.set(this.CHAVES.FREQUENCIA, { ...mapa, [userId]: atualizados });
     return atualizados;
   }

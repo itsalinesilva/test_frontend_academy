@@ -101,7 +101,7 @@ export const ProfileHomeTab: React.FC<ProfileHomeTabProps> = ({
             </div>
             <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-600">
               <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                🔥 {profile.practice?.currentStreakDays || 0} dias seguidos
+                🔥 {profile.practice?.currentStreakDays || 0} dias streak
               </span>
               <span>{profile.practice?.totalPracticeSessions || 0} sessões</span>
             </div>

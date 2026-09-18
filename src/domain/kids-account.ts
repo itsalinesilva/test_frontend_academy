@@ -141,7 +141,7 @@ export interface CredenciaisInfantis {
   hashSenha: string;
   saltSenha: string;
   iteracoes: number;
-  atualizadoEm: ISOTimestamp;
+  updatedAt: ISOTimestamp;
 }
 
 export interface PerfilInfantil {
@@ -159,7 +159,7 @@ export interface PerfilInfantil {
   credenciais: CredenciaisInfantis;
   permissoes: PermissoesInfantis;
   criadoEm: ISOTimestamp;
-  atualizadoEm: ISOTimestamp;
+  updatedAt: ISOTimestamp;
 }
 
 export function idadeEmAnos(dataNascimento: string, referencia = new Date()): number {

@@ -15,7 +15,7 @@ import {
   AcademicCertificateRecord,
   AcademicHistoryEntry,
 } from '../domain/academy';
-import { aplicarEdicoes, aplicarEdicoesEmLote, EdicaoEditorial } from '../domain/edicao-editorial';
+import { applyEdits, applyEditsToMany, EditorialEdit } from '../domain/editorial-edit';
 import {
   SEED_CATEGORIES,
   SEED_PROGRAMS,
@@ -239,8 +239,8 @@ export class PersistentAcademyRepository implements AcademyRepository {
    * A chave editorial NÃO está em `conteudoPublicado()`. Publicar uma versão
    * nova do catálogo não apaga correção de texto.
    */
-  private edicoes(): EdicaoEditorial[] {
-    return this.storage.get<EdicaoEditorial[]>('amd_academy_editorial_v1') ?? [];
+  private edicoes(): EditorialEdit[] {
+    return this.storage.get<EditorialEdit[]>('amd_academy_editorial_v1') ?? [];
   }
 
   private licoesPublicadas(): AcademyLesson[] {
@@ -248,18 +248,18 @@ export class PersistentAcademyRepository implements AcademyRepository {
   }
 
   public async listLessons(): Promise<AcademyLesson[]> {
-    return aplicarEdicoesEmLote(this.licoesPublicadas(), this.edicoes());
+    return applyEditsToMany(this.licoesPublicadas(), this.edicoes());
   }
 
   public async listLessonsByModule(moduleId: string): Promise<AcademyLesson[]> {
-    return aplicarEdicoesEmLote(
+    return applyEditsToMany(
       this.licoesPublicadas().filter((l) => l.moduleId === moduleId),
       this.edicoes()
     ).sort((a, b) => a.order - b.order);
   }
 
   public async listLessonsByCourse(courseId: string): Promise<AcademyLesson[]> {
-    return aplicarEdicoesEmLote(
+    return applyEditsToMany(
       this.licoesPublicadas().filter((l) => l.courseId === courseId),
       this.edicoes()
     ).sort((a, b) => a.order - b.order);
@@ -267,7 +267,7 @@ export class PersistentAcademyRepository implements AcademyRepository {
 
   public async findLessonById(id: string): Promise<AcademyLesson | null> {
     const licao = this.licoesPublicadas().find((l) => l.id === id);
-    return licao ? aplicarEdicoes(licao, this.edicoes()) : null;
+    return licao ? applyEdits(licao, this.edicoes()) : null;
   }
 
   // -------------------------------------------------------------------------

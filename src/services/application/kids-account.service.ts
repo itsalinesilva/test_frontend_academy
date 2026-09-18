@@ -103,11 +103,11 @@ export class KidsAccountService {
         hashSenha: hash,
         saltSenha: salt,
         iteracoes,
-        atualizadoEm: agora,
+        updatedAt: agora,
       },
       permissoes: { ...PERMISSOES_PADRAO, ...pedido.permissoes },
       criadoEm: agora,
-      atualizadoEm: agora,
+      updatedAt: agora,
     });
   }
 
@@ -152,9 +152,9 @@ export class KidsAccountService {
         hashSenha: hash,
         saltSenha: salt,
         iteracoes,
-        atualizadoEm: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
-      atualizadoEm: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     });
   }
 
@@ -169,7 +169,7 @@ export class KidsAccountService {
     return this.repo.salvarPerfil({
       ...perfil,
       permissoes,
-      atualizadoEm: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     });
   }
 

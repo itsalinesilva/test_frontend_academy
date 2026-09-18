@@ -99,16 +99,16 @@ export interface AmostraDetectada {
   frequenciaHz: number;
 }
 
-export interface JulgamentoDeNota {
-  notaId: string;
-  esperada: string | null;
-  veredito: Veredito;
+export interface NoteJudgement {
+  noteId: string;
+  expected: string | null;
+  verdict: Veredito;
   /** Desvio temporal em ms; negativo é adiantado. `null` se não tocada. */
-  desvioMs: number | null;
+  deviationMs: number | null;
   /** Desvio de altura em cents. `null` se não tocada. */
-  desvioCents: number | null;
-  detectada: string | null;
-  pontos: number;
+  deviationCents: number | null;
+  detected: string | null;
+  points: number;
 }
 
 export interface ToleranciaDeJulgamento {
@@ -152,23 +152,23 @@ export function julgarNota(
   amostras: AmostraDetectada[],
   bpm: number,
   tolerancia: ToleranciaDeJulgamento = TOLERANCIA_PADRAO
-): JulgamentoDeNota {
-  const base: Omit<JulgamentoDeNota, 'veredito' | 'pontos'> = {
-    notaId: nota.id,
-    esperada: nota.nota,
-    desvioMs: null,
-    desvioCents: null,
-    detectada: null,
+): NoteJudgement {
+  const base: Omit<NoteJudgement, 'verdict' | 'points'> = {
+    noteId: nota.id,
+    expected: nota.nota,
+    deviationMs: null,
+    deviationCents: null,
+    detected: null,
   };
 
   // Pausa: não se julga silêncio como acerto nem como erro.
   if (nota.nota === null) {
-    return { ...base, veredito: 'PERFEITO', pontos: 0 };
+    return { ...base, verdict: 'PERFEITO', points: 0 };
   }
 
   const alvoHz = frequenciaDaNota(nota.nota);
   if (alvoHz === null) {
-    return { ...base, veredito: 'NAO_TOCADA', pontos: 0 };
+    return { ...base, verdict: 'NAO_TOCADA', points: 0 };
   }
 
   const inicioMs = batidaParaMs(nota.inicioBatida, bpm);
@@ -177,7 +177,7 @@ export function julgarNota(
 
   const candidatas = amostras.filter((a) => Math.abs(a.ms - inicioMs) <= janela);
   if (candidatas.length === 0) {
-    return { ...base, veredito: 'NAO_TOCADA', pontos: PONTOS.NAO_TOCADA };
+    return { ...base, verdict: 'NAO_TOCADA', points: PONTOS.NAO_TOCADA };
   }
 
   const melhor = candidatas.reduce((a, b) => {
@@ -186,25 +186,25 @@ export function julgarNota(
     return db < da ? b : a;
   });
 
-  const desvioCents = Math.round(desvioEmCents(melhor.frequenciaHz, alvoHz) ?? 0);
-  const desvioMs = Math.round(melhor.ms - inicioMs);
-  const detectada = nota.nota;
+  const deviationCents = Math.round(desvioEmCents(melhor.frequenciaHz, alvoHz) ?? 0);
+  const deviationMs = Math.round(melhor.ms - inicioMs);
+  const detected = nota.nota;
 
-  const comum = { ...base, desvioMs, desvioCents, detectada };
+  const comum = { ...base, deviationMs, deviationCents, detected };
 
-  if (Math.abs(desvioCents) > tolerancia.centsTolerados) {
-    return { ...comum, veredito: 'ALTURA_ERRADA', pontos: PONTOS.ALTURA_ERRADA };
+  if (Math.abs(deviationCents) > tolerancia.centsTolerados) {
+    return { ...comum, verdict: 'ALTURA_ERRADA', points: PONTOS.ALTURA_ERRADA };
   }
 
   const perfeito = Math.max(tolerancia.pisoMs, duracaoMs * tolerancia.fracaoPerfeito);
   const bom = Math.max(tolerancia.pisoMs * 1.6, duracaoMs * tolerancia.fracaoBom);
-  const absoluto = Math.abs(desvioMs);
+  const absoluto = Math.abs(deviationMs);
 
-  if (absoluto <= perfeito) return { ...comum, veredito: 'PERFEITO', pontos: PONTOS.PERFEITO };
-  if (absoluto <= bom) return { ...comum, veredito: 'BOM', pontos: PONTOS.BOM };
+  if (absoluto <= perfeito) return { ...comum, verdict: 'PERFEITO', points: PONTOS.PERFEITO };
+  if (absoluto <= bom) return { ...comum, verdict: 'BOM', points: PONTOS.BOM };
 
-  const veredito: Veredito = desvioMs < 0 ? 'ADIANTADO' : 'ATRASADO';
-  return { ...comum, veredito, pontos: PONTOS[veredito] };
+  const verdict: Veredito = deviationMs < 0 ? 'ADIANTADO' : 'ATRASADO';
+  return { ...comum, verdict, points: PONTOS[verdict] };
 }
 
 // ---------------------------------------------------------------------------
@@ -214,11 +214,11 @@ export function julgarNota(
 export interface ResultadoDaExecucao {
   partituraId: string;
   bpm: number;
-  julgamentos: JulgamentoDeNota[];
+  julgamentos: NoteJudgement[];
   /** Notas efetivamente julgadas — pausas não contam. */
   notasJulgadas: number;
-  acertos: number;
-  pontos: number;
+  correct: number;
+  points: number;
   /** 0..100. */
   precisao: number;
   /** Maior sequência de notas sem erro. */
@@ -236,16 +236,16 @@ export function julgarExecucao(
   tolerancia: ToleranciaDeJulgamento = TOLERANCIA_PADRAO
 ): ResultadoDaExecucao {
   const julgamentos = partitura.notas.map((n) => julgarNota(n, amostras, bpm, tolerancia));
-  const reais = julgamentos.filter((j) => j.esperada !== null);
+  const reais = julgamentos.filter((j) => j.expected !== null);
 
-  const acertos = reais.filter((j) => j.veredito === 'PERFEITO' || j.veredito === 'BOM').length;
-  const pontos = reais.reduce((a, j) => a + j.pontos, 0);
+  const correct = reais.filter((j) => j.verdict === 'PERFEITO' || j.verdict === 'BOM').length;
+  const points = reais.reduce((a, j) => a + j.points, 0);
   const maximo = reais.length * PONTOS.PERFEITO;
 
   let sequencia = 0;
   let maiorSequencia = 0;
   for (const j of reais) {
-    if (j.veredito === 'PERFEITO' || j.veredito === 'BOM') {
+    if (j.verdict === 'PERFEITO' || j.verdict === 'BOM') {
       sequencia += 1;
       maiorSequencia = Math.max(maiorSequencia, sequencia);
     } else {
@@ -253,7 +253,7 @@ export function julgarExecucao(
     }
   }
 
-  const tocadas = reais.filter((j) => j.desvioMs !== null);
+  const tocadas = reais.filter((j) => j.deviationMs !== null);
   const media = (valores: number[]) =>
     valores.length > 0 ? Math.round(valores.reduce((a, b) => a + b, 0) / valores.length) : null;
 
@@ -262,12 +262,12 @@ export function julgarExecucao(
     bpm,
     julgamentos,
     notasJulgadas: reais.length,
-    acertos,
-    pontos,
-    precisao: maximo > 0 ? Math.round((pontos / maximo) * 100) : 0,
+    correct,
+    points,
+    precisao: maximo > 0 ? Math.round((points / maximo) * 100) : 0,
     maiorSequencia,
-    desvioMedioMs: media(tocadas.map((j) => Math.abs(j.desvioMs!))),
-    desvioMedioCents: media(tocadas.map((j) => Math.abs(j.desvioCents!))),
+    desvioMedioMs: media(tocadas.map((j) => Math.abs(j.deviationMs!))),
+    desvioMedioCents: media(tocadas.map((j) => Math.abs(j.deviationCents!))),
   };
 }
 

@@ -45,15 +45,15 @@ export const CredentialVerifyScreen: React.FC = () => {
   }, [codigoDaUrl, verificar]);
 
   const situacao = resultado?.situacao;
-  const explicacao = situacao ? EXPLICACAO_SITUACAO[situacao] : null;
+  const explanation = situacao ? EXPLICACAO_SITUACAO[situacao] : null;
   const credencial = resultado && 'credencial' in resultado ? resultado.credencial : null;
 
   const aparencia =
     situacao === 'VALIDA'
-      ? { borda: 'border-emerald-300', fundo: 'bg-emerald-50', texto: 'text-emerald-900', Icone: ShieldCheck }
+      ? { borda: 'border-emerald-300', fundo: 'bg-emerald-50', texto: 'text-emerald-900', Icon: ShieldCheck }
       : situacao === 'EXPIRADA'
-        ? { borda: 'border-amber-300', fundo: 'bg-amber-50', texto: 'text-amber-900', Icone: AlertTriangle }
-        : { borda: 'border-red-300', fundo: 'bg-red-50', texto: 'text-red-900', Icone: AlertTriangle };
+        ? { borda: 'border-amber-300', fundo: 'bg-amber-50', texto: 'text-amber-900', Icon: AlertTriangle }
+        : { borda: 'border-red-300', fundo: 'bg-red-50', texto: 'text-red-900', Icon: AlertTriangle };
 
   return (
     <PageLayout
@@ -103,13 +103,13 @@ export const CredentialVerifyScreen: React.FC = () => {
             </Button>
           </form>
 
-          {explicacao && (
+          {explanation && (
             <Card variant="default" padding="lg" className={`space-y-2 ${aparencia.borda} ${aparencia.fundo}`}>
               <p className={`flex items-center gap-2 font-serif text-base font-bold ${aparencia.texto}`}>
-                <aparencia.Icone className="h-5 w-5 shrink-0" />
-                {explicacao.titulo}
+                <aparencia.Icon className="h-5 w-5 shrink-0" />
+                {explanation.titulo}
               </p>
-              <p className={`text-sm leading-relaxed ${aparencia.texto}`}>{explicacao.texto}</p>
+              <p className={`text-sm leading-relaxed ${aparencia.texto}`}>{explanation.texto}</p>
 
               {situacao === 'REVOGADA' && credencial?.motivoRevogacao && (
                 <p className="border-t border-red-200 pt-2 text-xs text-red-800">
@@ -137,10 +137,10 @@ export const CredentialVerifyScreen: React.FC = () => {
                     ] as [string, string | undefined][]
                   )
                     .filter(([, v]) => Boolean(v))
-                    .map(([rotulo, valor]) => (
-                      <div key={rotulo} className="flex flex-col border-b border-stone-100 py-1">
+                    .map(([label, valor]) => (
+                      <div key={label} className="flex flex-col border-b border-stone-100 py-1">
                         <dt className="font-mono text-[10px] uppercase tracking-wider text-stone-500">
-                          {rotulo}
+                          {label}
                         </dt>
                         <dd className="text-stone-800">{valor}</dd>
                       </div>

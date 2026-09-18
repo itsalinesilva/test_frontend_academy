@@ -37,7 +37,7 @@ export const PortfolioScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [filter, setFilter] = useState<FiltroArtefato>('todas');
-  const [veredito, setVeredito] = useState<Veredito | null>(null);
+  const [verdict, setVeredito] = useState<Veredito | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -268,10 +268,10 @@ export const PortfolioScreen: React.FC = () => {
 
         <Modal
           id="portfolio-verification-modal"
-          isOpen={veredito !== null}
+          isOpen={verdict !== null}
           onClose={() => setVeredito(null)}
           title="Conferência de integridade"
-          description={veredito?.evidencia.title}
+          description={verdict?.evidencia.title}
           size="lg"
           footer={
             <Button variant="outline" size="sm" onClick={() => setVeredito(null)}>
@@ -279,29 +279,29 @@ export const PortfolioScreen: React.FC = () => {
             </Button>
           }
         >
-          {veredito && (
+          {verdict && (
             <div className="space-y-4 text-xs">
               <p
-                className={`flex items-start gap-2 font-sans font-semibold ${rotuloVeredito[veredito.resultado].classe}`}
+                className={`flex items-start gap-2 font-sans font-semibold ${rotuloVeredito[verdict.resultado].classe}`}
               >
-                {veredito.resultado === 'valida' ? (
+                {verdict.resultado === 'valida' ? (
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
                 ) : (
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                 )}
-                <span>{rotuloVeredito[veredito.resultado].texto}</span>
+                <span>{rotuloVeredito[verdict.resultado].texto}</span>
               </p>
 
               <dl className="space-y-2 border-t border-stone-100 pt-3 font-mono">
                 <div className="space-y-0.5">
                   <dt className="text-[10px] uppercase tracking-wider text-stone-500">Registrado</dt>
-                  <dd className="break-all text-stone-800">{veredito.evidencia.sha256Hash}</dd>
+                  <dd className="break-all text-stone-800">{verdict.evidencia.sha256Hash}</dd>
                 </div>
                 <div className="space-y-0.5">
                   <dt className="text-[10px] uppercase tracking-wider text-stone-500">
                     Recalculado agora
                   </dt>
-                  <dd className="break-all text-stone-800">{veredito.recalculado}</dd>
+                  <dd className="break-all text-stone-800">{verdict.recalculado}</dd>
                 </div>
               </dl>
 

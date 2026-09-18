@@ -209,7 +209,7 @@ export const CursoSidebar: React.FC<CursoSidebarProps> = ({
           {recursosAbertos && (
             <ul className="space-y-0.5">
               {recursos.map((r) => {
-                const Icone = r.icon;
+                const Icon = r.icon;
                 return (
                   <li key={r.label}>
                     <button
@@ -217,7 +217,7 @@ export const CursoSidebar: React.FC<CursoSidebarProps> = ({
                       onClick={() => navigate(r.path)}
                       className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[11px] text-stone-700 transition-colors hover:bg-stone-50"
                     >
-                      <Icone className="h-3.5 w-3.5 shrink-0 text-stone-400" aria-hidden="true" />
+                      <Icon className="h-3.5 w-3.5 shrink-0 text-stone-400" aria-hidden="true" />
                       {r.label}
                     </button>
                   </li>

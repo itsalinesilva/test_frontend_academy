@@ -75,10 +75,10 @@ import { PortfolioScreen } from './profile/PortfolioScreen';
 import { NetworkDirectoryScreen } from './profile/NetworkDirectoryScreen';
 import { CredentialStudioScreen } from './admin/CredentialStudioScreen';
 import { BookletEditorScreen } from './admin/BookletEditorScreen';
-import { BibliotecaScreen } from './admin/BibliotecaScreen';
+import { LibraryScreen } from './admin/LibraryScreen';
 import { CredentialVerifyScreen } from './credentials/CredentialVerifyScreen';
 import { KidsCreateScreen } from './kids/KidsCreateScreen';
-import { SimuladorViolinoScreen } from './violin/SimuladorViolinoScreen';
+import { ViolinSimulatorScreen } from './violin/ViolinSimulatorScreen';
 import { KidsGuardianScreen } from './kids/KidsGuardianScreen';
 import { EditProfileScreen } from './profile/EditProfileScreen';
 
@@ -447,7 +447,7 @@ export const AppRouterOutlet: React.FC = () => {
 
   // VIOLINO
   if (currentPath.startsWith('/violin/simulator')) {
-    return <SimuladorViolinoScreen />;
+    return <ViolinSimulatorScreen />;
   }
 
   // CONTA INFANTIL
@@ -517,7 +517,7 @@ export const AppRouterOutlet: React.FC = () => {
     return <BookletEditorScreen />;
   }
   if (currentPath === '/admin/biblioteca') {
-    return <BibliotecaScreen />;
+    return <LibraryScreen />;
   }
   if (currentPath === '/admin/audit') {
     return <AdminAuditScreen />;

@@ -65,7 +65,7 @@ export type SlotImagem = 'logotipo' | 'fundo' | 'selo' | 'assinatura' | 'ornamen
 
 export interface EspecificacaoImagem {
   readonly slot: SlotImagem;
-  readonly rotulo: string;
+  readonly label: string;
   readonly larguraIdeal: number;
   readonly alturaIdeal: number;
   readonly formatos: readonly string[];
@@ -87,7 +87,7 @@ export function especificacoesImagem(tipo: TipoCredencial): EspecificacaoImagem[
 
   const logotipo: EspecificacaoImagem = {
     slot: 'logotipo',
-    rotulo: 'Logotipo da plataforma',
+    label: 'Logotipo da plataforma',
     larguraIdeal: tipo === 'BADGE' ? 220 : 360,
     alturaIdeal: tipo === 'BADGE' ? 220 : 120,
     formatos: vetorPreferido,
@@ -98,7 +98,7 @@ export function especificacoesImagem(tipo: TipoCredencial): EspecificacaoImagem[
 
   const fundo: EspecificacaoImagem = {
     slot: 'fundo',
-    rotulo: 'Fundo / textura',
+    label: 'Fundo / textura',
     larguraIdeal: CANVAS[tipo].largura,
     alturaIdeal: CANVAS[tipo].altura,
     formatos: ['image/png', 'image/jpeg', 'image/svg+xml'],
@@ -113,7 +113,7 @@ export function especificacoesImagem(tipo: TipoCredencial): EspecificacaoImagem[
 
   const selo: EspecificacaoImagem = {
     slot: 'selo',
-    rotulo: 'Selo institucional',
+    label: 'Selo institucional',
     larguraIdeal: 200,
     alturaIdeal: 200,
     formatos: vetorPreferido,
@@ -124,7 +124,7 @@ export function especificacoesImagem(tipo: TipoCredencial): EspecificacaoImagem[
 
   const assinatura: EspecificacaoImagem = {
     slot: 'assinatura',
-    rotulo: 'Assinatura digitalizada',
+    label: 'Assinatura digitalizada',
     larguraIdeal: 320,
     alturaIdeal: 110,
     formatos: vetorPreferido,
@@ -135,7 +135,7 @@ export function especificacoesImagem(tipo: TipoCredencial): EspecificacaoImagem[
 
   const ornamento: EspecificacaoImagem = {
     slot: 'ornamento',
-    rotulo: 'Ornamento de borda',
+    label: 'Ornamento de borda',
     larguraIdeal: CANVAS[tipo].largura,
     alturaIdeal: 90,
     formatos: vetorPreferido,
@@ -309,7 +309,7 @@ export interface TemplateCredencial {
   /** Template de fábrica: pode ser copiado, não apagado. */
   ehPadrao: boolean;
   criadoEm: ISOTimestamp;
-  atualizadoEm: ISOTimestamp;
+  updatedAt: ISOTimestamp;
 }
 
 // ---------------------------------------------------------------------------
@@ -370,10 +370,10 @@ const OBRIGATORIOS: Record<TipoCredencial, CampoEmissao[]> = {
  * fixo. Exigir os dois obrigaria a repetir a mesma informação duas vezes no
  * papel.
  */
-const PELO_MENOS_UM: Partial<Record<TipoCredencial, { campos: CampoEmissao[]; explicacao: string }>> = {
+const PELO_MENOS_UM: Partial<Record<TipoCredencial, { campos: CampoEmissao[]; explanation: string }>> = {
   CERTIFICADO: {
     campos: ['tituloDocumento', 'nomeCurso'],
-    explicacao:
+    explanation:
       'O certificado precisa identificar a conquista: inclua o título do documento ou o nome do curso.',
   },
 };
@@ -397,7 +397,7 @@ export function validarTemplate(template: TemplateCredencial): ProblemaTemplate[
 
   const alternativa = PELO_MENOS_UM[template.tipo];
   if (alternativa && !alternativa.campos.some((c) => camposPresentes.has(c))) {
-    problemas.push({ gravidade: 'erro', mensagem: alternativa.explicacao });
+    problemas.push({ gravidade: 'erro', mensagem: alternativa.explanation });
   }
 
   if (template.tipo !== 'BADGE' && !template.elementos.some((e) => e.kind === 'QRCODE')) {
@@ -424,7 +424,7 @@ export function validarTemplate(template: TemplateCredencial): ProblemaTemplate[
     if (spec.obrigatoria && !template.imagens[spec.slot]) {
       problemas.push({
         gravidade: 'erro',
-        mensagem: `A imagem obrigatória "${spec.rotulo}" não foi enviada.`,
+        mensagem: `A imagem obrigatória "${spec.label}" não foi enviada.`,
       });
     }
   }

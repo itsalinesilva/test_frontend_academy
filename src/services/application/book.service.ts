@@ -283,8 +283,8 @@ export class BookService {
                 c.questoes
                   .map(
                     (q, k) =>
-                      `**${k + 1}.** ${q.enunciado}\n\n` +
-                      q.alternativas.map((a) => `${a.id}) ${a.texto}`).join('\n')
+                      `**${k + 1}.** ${q.prompt}\n\n` +
+                      q.choices.map((a) => `${a.id}) ${a.texto}`).join('\n')
                   )
                   .join('\n\n')
             )
@@ -309,7 +309,7 @@ export class BookService {
               (c) =>
                 `## ${c.numero}. ${c.titulo}\n\n` +
                 c.questoes
-                  .map((q, k) => `**${k + 1}.** ${q.resposta}) — ${q.explicacao}`)
+                  .map((q, k) => `**${k + 1}.** ${q.resposta}) — ${q.explanation}`)
                   .join('\n\n')
             )
             .join('\n\n'),
@@ -357,9 +357,9 @@ function edicaoPorExtenso(n: number): string {
   return `${nomes[n] ?? `${n}ª`} edição`;
 }
 
-function textoDosExercicios(livreto: Livreto, moduloId: string, licaoId: string): string {
+function textoDosExercicios(livreto: Livreto, moduloId: string, lessonId: string): string {
   const capitulo =
-    livreto.capitulos.find((c) => c.licaoId === licaoId) ??
+    livreto.capitulos.find((c) => c.lessonId === lessonId) ??
     livreto.capitulos.find((c) => c.id === moduloId);
   if (!capitulo || capitulo.questoes.length === 0) return '';
 
@@ -368,8 +368,8 @@ function textoDosExercicios(livreto: Livreto, moduloId: string, licaoId: string)
     capitulo.questoes
       .map(
         (q, i) =>
-          `**${i + 1}.** ${q.enunciado}\n\n` +
-          q.alternativas.map((a) => `${a.id}) ${a.texto}`).join('\n')
+          `**${i + 1}.** ${q.prompt}\n\n` +
+          q.choices.map((a) => `${a.id}) ${a.texto}`).join('\n')
       )
       .join('\n\n') +
     `\n\n*Respostas comentadas no gabarito, ao fim do livro.*`

@@ -329,7 +329,7 @@ export const DesignSystemCatalog: React.FC = () => {
                   <div className="p-3 bg-stone-50 rounded border border-stone-200 space-y-1">
                     <span className="text-[11px] font-mono text-stone-400 uppercase">Monospace (Teoria Musical & DSP)</span>
                     <p className="text-xs font-mono text-stone-800">
-                      C4 (261.63 Hz) → G4 (392.00 Hz) • [Intervalo: 7 semitons (P5)]
+                      C4 (261.63 Hz) → G4 (392.00 Hz) • [Interval: 7 semitons (P5)]
                     </p>
                   </div>
                 </div>

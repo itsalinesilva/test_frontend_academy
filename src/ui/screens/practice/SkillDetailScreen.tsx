@@ -12,13 +12,13 @@ import {
 import { Skill, Exercise, MasteryRecord } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { ProgressRing } from '../../components/data-display/ProgressRing';
 import { SkillNode } from '../../components/domain/SkillNode';
 
 export const SkillDetailScreen: React.FC = () => {
-  const { userId } = useUsuarioAtual();
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const params = useRouteParams();
   const skillId = params.id;

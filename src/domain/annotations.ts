@@ -29,11 +29,11 @@ export type TipoAnotacao =
 
 export type CorDeMarcacao = 'amarelo' | 'verde' | 'azul' | 'rosa';
 
-export const CORES_DE_MARCACAO: Record<CorDeMarcacao, { hex: string; rotulo: string }> = {
-  amarelo: { hex: '#fde68a', rotulo: 'Amarelo' },
-  verde: { hex: '#bbf7d0', rotulo: 'Verde' },
-  azul: { hex: '#cad6e8', rotulo: 'Azul' },
-  rosa: { hex: '#fbcfe8', rotulo: 'Rosa' },
+export const CORES_DE_MARCACAO: Record<CorDeMarcacao, { hex: string; label: string }> = {
+  amarelo: { hex: '#fde68a', label: 'Amarelo' },
+  verde: { hex: '#bbf7d0', label: 'Verde' },
+  azul: { hex: '#cad6e8', label: 'Azul' },
+  rosa: { hex: '#fbcfe8', label: 'Rosa' },
 };
 
 /**
@@ -57,7 +57,7 @@ export interface Anotacao {
   userId: EntityId;
   cursoId: EntityId;
   /** Lição ou página do curso. */
-  licaoId: EntityId;
+  lessonId: EntityId;
   /** Bloco dentro da lição, quando a lição é composta por blocos. */
   blocoId?: string;
   tipo: TipoAnotacao;
@@ -67,7 +67,7 @@ export interface Anotacao {
   /** Texto escrito pelo aluno. Obrigatório em comentário. */
   comentario?: string;
   criadaEm: ISOTimestamp;
-  atualizadaEm: ISOTimestamp;
+  updatedAtIso: ISOTimestamp;
 }
 
 // ---------------------------------------------------------------------------
@@ -193,12 +193,12 @@ export function segmentar(conteudo: string, anotacoes: Anotacao[]): SegmentoDeTe
     cortes.add(r.faixa.fim);
   }
 
-  const pontos = [...cortes].filter((p) => p >= 0 && p <= conteudo.length).sort((a, b) => a - b);
+  const points = [...cortes].filter((p) => p >= 0 && p <= conteudo.length).sort((a, b) => a - b);
   const segmentos: SegmentoDeTexto[] = [];
 
-  for (let i = 0; i < pontos.length - 1; i++) {
-    const de = pontos[i];
-    const ate = pontos[i + 1];
+  for (let i = 0; i < points.length - 1; i++) {
+    const de = points[i];
+    const ate = points[i + 1];
     if (ate <= de) continue;
     segmentos.push({
       texto: conteudo.slice(de, ate),
@@ -234,7 +234,7 @@ export function montarCaderno(
 ): EntradaDoCaderno[] {
   return anotacoes
     .map((anotacao) => {
-      const conteudo = conteudoPorLicao[anotacao.licaoId] ?? '';
+      const conteudo = conteudoPorLicao[anotacao.lessonId] ?? '';
       const faixa = anotacao.ancora ? resolverAncora(anotacao.ancora, conteudo) : null;
       return {
         anotacao,
@@ -244,7 +244,7 @@ export function montarCaderno(
     })
     .sort(
       (a, b) =>
-        a.anotacao.licaoId.localeCompare(b.anotacao.licaoId) ||
+        a.anotacao.lessonId.localeCompare(b.anotacao.lessonId) ||
         a.posicao - b.posicao ||
         a.anotacao.criadaEm.localeCompare(b.anotacao.criadaEm)
     )
@@ -265,6 +265,6 @@ export function resumirCaderno(entradas: EntradaDoCaderno[]): ResumoDoCaderno {
     comentarios: entradas.filter((e) => e.anotacao.tipo === 'COMENTARIO').length,
     marcadores: entradas.filter((e) => e.anotacao.tipo === 'MARCADOR').length,
     orfas: entradas.filter((e) => e.orfa).length,
-    licoesComAnotacao: new Set(entradas.map((e) => e.anotacao.licaoId)).size,
+    licoesComAnotacao: new Set(entradas.map((e) => e.anotacao.lessonId)).size,
   };
 }

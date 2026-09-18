@@ -29,13 +29,13 @@ import { practiceService } from '../../../services/application/practice.service'
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
 import { ImmediateFeedbackModal } from '../../components/practice/ImmediateFeedbackModal';
 import { useRouter, useRouteParams } from '../../navigation/router';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
-import { useCapturaAcustica } from '../../hooks/useCapturaAcustica';
-import { PainelDeCaptura } from '../../components/practice/PainelDeCaptura';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { useAudioCapture } from '../../hooks/useAudioCapture';
+import { CapturePanel } from '../../components/practice/CapturePanel';
 
 export const ExerciseSessionScreen: React.FC = () => {
-  const { userId } = useUsuarioAtual();
-  const captura = useCapturaAcustica();
+  const { userId } = useCurrentUser();
+  const captura = useAudioCapture();
   const router = useRouter();
   const params = useRouteParams();
   const sessionId = params.id || '';
@@ -493,7 +493,7 @@ export const ExerciseSessionScreen: React.FC = () => {
         qualquer controle de execucao, porque e a condicao para que a
         tentativa seja medida — e nao um extra opcional escondido no rodape.
       */}
-      <PainelDeCaptura
+      <CapturePanel
         estado={captura.estado}
         leitura={captura.leitura}
         notaAlvo={exercise.targetPitch ?? undefined}
@@ -939,7 +939,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               className="px-3 py-1.5 bg-teal-50 border border-teal-200 text-teal-900 rounded-lg text-xs font-mono font-bold hover:bg-teal-100 flex items-center gap-1.5"
             >
               <Volume2 className="w-3.5 h-3.5 text-teal-700" />
-              <span>Ouvir Intervalo Modelo</span>
+              <span>Ouvir Interval Modelo</span>
             </button>
           </div>
 
@@ -970,7 +970,7 @@ export const ExerciseSessionScreen: React.FC = () => {
 
           <div className="flex items-center justify-between pt-2">
             <span className="text-xs font-mono text-stone-500">
-              Intervalo Escolhido: <strong>{selectedInterval || 'Nenhum'}</strong>
+              Interval Escolhido: <strong>{selectedInterval || 'Nenhum'}</strong>
             </span>
             <Button
               id="btn-evaluate-perception"

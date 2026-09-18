@@ -4,7 +4,7 @@ import { CAPITULOS_BRASIL, COMPETENCIAS_BRASIL } from './brasil/capitulos';
 import { BLOCOS_BR_01_09 } from './brasil/blocos-01-09';
 import { BLOCOS_BR_10_18 } from './brasil/blocos-10-18';
 import { LIVRETO_BRASIL } from './seed-booklet-brasil';
-import { calcularCargaDaLicao, horasDoCurso } from '../domain/carga-horaria';
+import { calculateLessonWorkload, courseHours } from '../domain/workload';
 
 /**
  * Curso de História da Música Brasileira — conteúdo autoral do Conservatório.
@@ -41,11 +41,11 @@ const QUESTOES_POR_CAPITULO = new Map(
 const MINUTOS_POR_CAPITULO = new Map(
   CAPITULOS_BRASIL.map((c) => [
     c.numero,
-    calcularCargaDaLicao(BLOCOS[c.numero] ?? [], QUESTOES_POR_CAPITULO.get(c.numero) ?? []).total,
+    calculateLessonWorkload(BLOCOS[c.numero] ?? [], QUESTOES_POR_CAPITULO.get(c.numero) ?? []).total,
   ])
 );
 
-const CARGA_BRASIL = horasDoCurso([...MINUTOS_POR_CAPITULO.values()]);
+const CARGA_BRASIL = courseHours([...MINUTOS_POR_CAPITULO.values()]);
 
 export const CURSO_BRASIL: AcademyCourse = {
   id: 'crs_historia_brasil',

@@ -9,7 +9,7 @@ import {
   Livreto,
   CapituloLivreto,
   Questao,
-  Alternativa,
+  Choice,
   Avaliacao,
   TipoQuestao,
   DificuldadeQuestao,
@@ -149,7 +149,7 @@ export const BookletEditorScreen: React.FC = () => {
                       q.id === qId
                         ? {
                             ...q,
-                            alternativas: q.alternativas.map((a) =>
+                            choices: q.choices.map((a) =>
                               a.id === altId ? { ...a, texto } : a
                             ),
                           }
@@ -492,8 +492,8 @@ const EditorDeQuestao: React.FC<{
         <span className="mt-1 font-mono text-[10px] text-stone-400">{indice}</span>
         <textarea
         aria-label="Enunciado da questão"
-          value={questao.enunciado}
-          onChange={(e) => onChange({ enunciado: e.target.value })}
+          value={questao.prompt}
+          onChange={(e) => onChange({ prompt: e.target.value })}
           placeholder="Enunciado da questão"
           rows={2}
           className="flex-1 rounded border border-stone-300 p-2 text-xs text-stone-900 focus:border-stone-500 focus:outline-none"
@@ -552,7 +552,7 @@ const EditorDeQuestao: React.FC<{
 
       {questao.tipo !== 'RESPOSTA_CURTA' ? (
         <ul className="space-y-1">
-          {questao.alternativas.map((a: Alternativa) => (
+          {questao.choices.map((a: Choice) => (
             <li key={a.id} className="flex items-center gap-2">
               <input
                 type="radio"
@@ -586,8 +586,8 @@ const EditorDeQuestao: React.FC<{
 
       <textarea
         aria-label="Por que a resposta é essa — o aluno lê isto depois de responder"
-        value={questao.explicacao}
-        onChange={(e) => onChange({ explicacao: e.target.value })}
+        value={questao.explanation}
+        onChange={(e) => onChange({ explanation: e.target.value })}
         placeholder="Por que a resposta é essa — o aluno lê isto depois de responder"
         rows={2}
         className="w-full rounded border border-stone-300 p-2 text-[11px] text-stone-800 focus:border-stone-500 focus:outline-none"

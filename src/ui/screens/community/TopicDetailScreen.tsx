@@ -6,7 +6,7 @@ import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
 import { Avatar } from '../../components/data-display/Avatar';
 import { ErrorState } from '../../components/feedback/ErrorState';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { forumRepository } from '../../../repositories/forum.repository';
 import { ForumTopic, ForumPost } from '../../../domain/community';
 import { ArrowLeft, MessageSquare, Send } from 'lucide-react';
@@ -40,7 +40,7 @@ const desdeQuando = (iso: string): string => {
 export const TopicDetailScreen: React.FC = () => {
   const { params, navigate } = useRouter();
   const topicId = params.id;
-  const { userId, nome } = useUsuarioAtual();
+  const { userId, nome } = useCurrentUser();
 
   const [topico, setTopico] = useState<ForumTopic | null | undefined>(undefined);
   const [mensagens, setMensagens] = useState<ForumPost[]>([]);

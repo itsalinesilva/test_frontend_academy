@@ -12,12 +12,12 @@ import {
 import { ExerciseAttempt, Exercise } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
-import { PainelDeMedicao } from '../../components/practice/PainelDeMedicao';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { MeasurementPanel } from '../../components/practice/MeasurementPanel';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { PageLayout } from '../../components/layout/PageLayout';
 
 export const AttemptDetailScreen: React.FC = () => {
-  const { userId } = useUsuarioAtual();
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const params = useRouteParams();
   const attemptId = params.id || '';
@@ -151,7 +151,7 @@ export const AttemptDetailScreen: React.FC = () => {
           todas sempre preenchidas, inclusive quando não havia o que medir.
           O painel único mostra o que foi medido e diz o que não foi.
         */}
-        <PainelDeMedicao medicao={medicao} variante="completo" id="attempt-medicao" />
+        <MeasurementPanel medicao={medicao} variante="completo" id="attempt-medicao" />
       </section>
 
       {/* Action Footer */}

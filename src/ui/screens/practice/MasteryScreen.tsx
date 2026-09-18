@@ -8,12 +8,12 @@ import {
 import { Skill, MasteryRecord } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { DataGrid } from '../../components/data-display/DataGrid';
 
 export const MasteryScreen: React.FC = () => {
-  const { userId } = useUsuarioAtual();
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);

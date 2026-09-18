@@ -24,16 +24,16 @@ import {
 function questao(id: string, sobre: string[], dificuldade: Questao['dificuldade'] = 'basica'): Questao {
   return {
     id,
-    enunciado: `Enunciado da questão ${id}, com extensão suficiente.`,
+    prompt: `Enunciado da questão ${id}, com extensão suficiente.`,
     tipo: 'MULTIPLA_ESCOLHA',
-    alternativas: [
+    choices: [
       { id: 'a', texto: 'Primeira alternativa' },
       { id: 'b', texto: 'Segunda alternativa' },
       { id: 'c', texto: 'Terceira alternativa' },
       { id: 'd', texto: 'Quarta alternativa' },
     ],
     resposta: 'b',
-    explicacao: 'A segunda alternativa é a correta porque descreve o conceito.',
+    explanation: 'A segunda alternativa é a correta porque descreve o conceito.',
     dificuldade,
     competencias: sobre,
   };
@@ -59,7 +59,7 @@ const LIVRETO: Livreto = {
     },
   ],
   criadoEm: '2026-01-01T00:00:00.000Z',
-  atualizadoEm: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
 };
 
 describe('Livreto e simulado', () => {
@@ -78,12 +78,12 @@ describe('Livreto e simulado', () => {
       capitulos: LIVRETO.capitulos.map((c) => ({
         ...c,
         questoes: c.questoes.map((q) =>
-          q.id === 'q1' ? { ...q, enunciado: 'Enunciado corrigido pela revisão.' } : q
+          q.id === 'q1' ? { ...q, prompt: 'Enunciado corrigido pela revisão.' } : q
         ),
       })),
     };
     const resolvidas = questoesDaAvaliacao(s, editado);
-    expect(resolvidas[0].enunciado).toBe('Enunciado corrigido pela revisão.');
+    expect(resolvidas[0].prompt).toBe('Enunciado corrigido pela revisão.');
   });
 
   it('a ordem do simulado segue a numeração dos capítulos, não a inserção', () => {
@@ -108,7 +108,7 @@ describe('Equivalência entre prova e curso', () => {
     notaDeCorte: 70,
     tempoLimiteMinutos: 60,
     criadoEm: '2026-01-01T00:00:00.000Z',
-    atualizadoEm: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
   });
 
   it('aprova uma prova que cobre as mesmas competências', () => {
@@ -151,7 +151,7 @@ describe('Equivalência entre prova e curso', () => {
 
 describe('Validação editorial', () => {
   it('exige explicação — questão sem ela ensina a acertar, não o assunto', () => {
-    const p = validarQuestao({ ...questao('x', ['t']), explicacao: '' });
+    const p = validarQuestao({ ...questao('x', ['t']), explanation: '' });
     expect(p.some((i) => i.gravidade === 'erro' && /explicação/i.test(i.mensagem))).toBe(true);
   });
 
@@ -163,7 +163,7 @@ describe('Validação editorial', () => {
   it('acusa alternativas repetidas e em branco', () => {
     const repetida = validarQuestao({
       ...questao('x', ['t']),
-      alternativas: [
+      choices: [
         { id: 'a', texto: 'Mesma' },
         { id: 'b', texto: 'mesma' },
         { id: 'c', texto: 'Outra' },
@@ -173,7 +173,7 @@ describe('Validação editorial', () => {
 
     const branco = validarQuestao({
       ...questao('x', ['t']),
-      alternativas: [
+      choices: [
         { id: 'a', texto: 'Uma' },
         { id: 'b', texto: '  ' },
         { id: 'c', texto: 'Outra' },
@@ -225,12 +225,12 @@ function marcacao(id: string, inicio: number, fim: number): Anotacao {
     id,
     userId: 'u1',
     cursoId: 'c1',
-    licaoId: 'l1',
+    lessonId: 'l1',
     tipo: 'MARCA_TEXTO',
     ancora: criarAncora(TEXTO, inicio, fim),
     cor: 'amarelo',
     criadaEm: '2026-01-01T00:00:00.000Z',
-    atualizadaEm: '2026-01-01T00:00:00.000Z',
+    updatedAtIso: '2026-01-01T00:00:00.000Z',
   };
 }
 
@@ -364,8 +364,8 @@ describe('Curso de Teoria — integridade do conteúdo', () => {
       expect(l.courseId).toBe(CURSO_TEORIA.id);
     }
     for (const m of MODULOS_TEORIA) {
-      for (const licaoId of m.lessonIds) {
-        expect(LICOES_TEORIA.some((l) => l.id === licaoId), `módulo ${m.id} cita lição inexistente`).toBe(true);
+      for (const lessonId of m.lessonIds) {
+        expect(LICOES_TEORIA.some((l) => l.id === lessonId), `módulo ${m.id} cita lição inexistente`).toBe(true);
       }
     }
   });
@@ -403,8 +403,8 @@ describe('Curso de Teoria — integridade do conteúdo', () => {
 
 describe('Livreto de Teoria', () => {
   it('não tem erro estrutural', () => {
-    const erros = validarLivreto(LIVRETO_TEORIA).filter((p) => p.gravidade === 'erro');
-    expect(erros, erros.map((e) => e.mensagem).join(' | ')).toEqual([]);
+    const wrong = validarLivreto(LIVRETO_TEORIA).filter((p) => p.gravidade === 'erro');
+    expect(wrong, wrong.map((e) => e.mensagem).join(' | ')).toEqual([]);
   });
 
   it('cobre os cinquenta e oito capítulos com quantidade equilibrada', () => {
@@ -421,7 +421,7 @@ describe('Livreto de Teoria', () => {
   it('cada capítulo do livreto aponta para a lição correspondente', () => {
     const licoes = new Set(LICOES_TEORIA.map((l) => l.id));
     for (const c of LIVRETO_TEORIA.capitulos) {
-      expect(c.licaoId && licoes.has(c.licaoId), `capítulo ${c.numero} sem lição`).toBe(true);
+      expect(c.lessonId && licoes.has(c.lessonId), `capítulo ${c.numero} sem lição`).toBe(true);
     }
   });
 
@@ -429,7 +429,7 @@ describe('Livreto de Teoria', () => {
     // Questão sem explicação ensina a acertar, não o assunto.
     for (const c of LIVRETO_TEORIA.capitulos) {
       for (const q of c.questoes) {
-        expect(q.explicacao.length, `${q.id}`).toBeGreaterThan(40);
+        expect(q.explanation.length, `${q.id}`).toBeGreaterThan(40);
       }
     }
   });
@@ -485,8 +485,8 @@ describe('Síntese como base de extração de questões', () => {
   });
 
   it('a síntese não tem erro estrutural', () => {
-    const erros = validarSintese(SINTESE_TEORIA).filter((p) => p.gravidade === 'erro');
-    expect(erros, erros.map((e) => e.mensagem).join(' | ')).toEqual([]);
+    const wrong = validarSintese(SINTESE_TEORIA).filter((p) => p.gravidade === 'erro');
+    expect(wrong, wrong.map((e) => e.mensagem).join(' | ')).toEqual([]);
   });
 
   it('cada bloco é UMA afirmação — não um resumo', () => {

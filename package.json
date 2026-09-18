@@ -12,7 +12,7 @@
     "test": "vitest run",
     "verify:secrets": "node scripts/verify-bundle-secrets.mjs",
     "verify:citations": "node scripts/verify-no-citations.mjs",
-    "livros": "vite-node scripts/gerar-livros.ts",
+    "livros": "vite-node scripts/generate-books.ts",
     "measure:parity": "node scripts/measure-parity.mjs",
     "qa": "node scripts/qa.mjs",
     "qa:json": "node scripts/qa.mjs --json",

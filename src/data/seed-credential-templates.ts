@@ -297,7 +297,7 @@ export const TEMPLATES_PADRAO: TemplateCredencial[] = [
     imagens: {},
     ehPadrao: true,
     criadoEm: agora,
-    atualizadoEm: agora,
+    updatedAt: agora,
   },
   {
     id: 'tpl_credencial_cartao',
@@ -310,7 +310,7 @@ export const TEMPLATES_PADRAO: TemplateCredencial[] = [
     imagens: {},
     ehPadrao: true,
     criadoEm: agora,
-    atualizadoEm: agora,
+    updatedAt: agora,
   },
   {
     id: 'tpl_badge_selo',
@@ -323,7 +323,7 @@ export const TEMPLATES_PADRAO: TemplateCredencial[] = [
     imagens: {},
     ehPadrao: true,
     criadoEm: agora,
-    atualizadoEm: agora,
+    updatedAt: agora,
   },
 ];
 

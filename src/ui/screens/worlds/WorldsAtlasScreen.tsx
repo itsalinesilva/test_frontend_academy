@@ -7,7 +7,7 @@ import { EmptyState } from '../../components/feedback/EmptyState';
 import { atlasRepository, FiltroDoAtlas } from '../../../repositories/atlas.repository';
 import { MusicalEra, AtlasWorkPlacement } from '../../../domain/gamification';
 import { Regiao, Genero } from '../../../data/seed-atlas';
-import { Tribo, StatusDaTribo } from '../../../domain/tribo';
+import { Tribe, TribeStatus } from '../../../domain/tribe';
 import { Network, Calendar, Globe2, Music, Library, Users } from 'lucide-react';
 
 /**
@@ -44,7 +44,7 @@ export const WorldsAtlasScreen: React.FC = () => {
   const [eras, setEras] = useState<MusicalEra[] | null>(null);
   const [regioes, setRegioes] = useState<Regiao[]>([]);
   const [generos, setGeneros] = useState<Genero[]>([]);
-  const [tribos, setTribos] = useState<Tribo[]>([]);
+  const [tribos, setTribos] = useState<Tribe[]>([]);
   const [obras, setObras] = useState<AtlasWorkPlacement[]>([]);
   const [totalNoAcervo, setTotalNoAcervo] = useState(0);
 
@@ -195,7 +195,7 @@ export const WorldsAtlasScreen: React.FC = () => {
           </h2>
 
           <p className="text-xs text-stone-600">
-            A população nichada de cada lugar e de cada tempo. Tribo é gente, e
+            A população nichada de cada lugar e de cada tempo. Tribe é gente, e
             não lugar — quem tem coordenada no mapa é o mundo.
           </p>
 
@@ -204,7 +204,7 @@ export const WorldsAtlasScreen: React.FC = () => {
               Todas as tribos
             </BotaoDeFiltro>
             {tribos.map((t) => {
-              const fechada = t.status === StatusDaTribo.ANUNCIADA;
+              const fechada = t.status === TribeStatus.ANNOUNCED;
               return (
                 <BotaoDeFiltro
                   key={t.id}
@@ -214,7 +214,7 @@ export const WorldsAtlasScreen: React.FC = () => {
                   onClick={() => setTriboId(t.id)}
                 >
                   {t.name}
-                  {t.status !== StatusDaTribo.ABERTA && (
+                  {t.status !== TribeStatus.OPEN && (
                     <span className="ml-1.5 font-mono text-[10px] opacity-70">
                       {fechada ? 'anunciada' : 'em preparo'}
                     </span>

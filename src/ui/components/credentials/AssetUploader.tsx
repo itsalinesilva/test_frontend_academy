@@ -106,7 +106,7 @@ export const AssetUploader: React.FC<AssetUploaderProps> = ({ spec, valor, onCha
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-xs font-semibold text-stone-100">
-            {spec.rotulo}
+            {spec.label}
             {spec.obrigatoria && <span className="ml-1 text-red-400">*</span>}
           </p>
           <p className="font-mono text-[10px] text-stone-400">
@@ -125,7 +125,7 @@ export const AssetUploader: React.FC<AssetUploaderProps> = ({ spec, valor, onCha
       {valor ? (
         <div className="flex items-center gap-2">
           <div className="flex h-14 flex-1 items-center justify-center rounded border border-zinc-700 bg-[repeating-conic-gradient(#3f3f46_0%_25%,#27272a_0%_50%)] bg-[length:12px_12px] p-1">
-            <img src={valor} alt={spec.rotulo} className="max-h-12 max-w-full object-contain" />
+            <img src={valor} alt={spec.label} className="max-h-12 max-w-full object-contain" />
           </div>
           <button
             type="button"

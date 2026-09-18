@@ -4,7 +4,7 @@ import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { roomsRepository } from '../../../repositories/rooms.repository';
 import { TeacherRoomDetail, ModalidadeDeSala } from '../../../domain/teacher';
 import { Users, Plus, ArrowRight, GraduationCap } from 'lucide-react';
@@ -30,7 +30,7 @@ const NOME_DA_MODALIDADE: Record<ModalidadeDeSala, string> = {
 
 export const RoomsDirectoryScreen: React.FC = () => {
   const { navigate } = useRouter();
-  const { userId } = useUsuarioAtual();
+  const { userId } = useCurrentUser();
   const [filtro, setFiltro] = useState<'todas' | 'minhas'>('todas');
   const [salas, setSalas] = useState<TeacherRoomDetail[] | null>(null);
 

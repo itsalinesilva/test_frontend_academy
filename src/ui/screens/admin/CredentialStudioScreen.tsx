@@ -346,12 +346,12 @@ export const CredentialStudioScreen: React.FC = () => {
                 <Type className="h-3 w-3" /> Identificação
               </h3>
               <CampoTexto
-                rotulo="Nome da matriz"
+                label="Nome da matriz"
                 valor={rascunho.nome}
                 onChange={(v) => setRascunho((r) => (r ? { ...r, nome: v } : r))}
               />
               <CampoTexto
-                rotulo="Descrição"
+                label="Descrição"
                 valor={rascunho.descricao}
                 onChange={(v) => setRascunho((r) => (r ? { ...r, descricao: v } : r))}
               />
@@ -361,21 +361,21 @@ export const CredentialStudioScreen: React.FC = () => {
               <h3 className="flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
                 <Palette className="h-3 w-3" /> Cores
               </h3>
-              <CampoCor rotulo="Primária" valor={rascunho.tokens.corPrimaria} onChange={(v) => alterarToken('corPrimaria', v)} />
-              <CampoCor rotulo="Secundária (bordô)" valor={rascunho.tokens.corSecundaria} onChange={(v) => alterarToken('corSecundaria', v)} />
-              <CampoCor rotulo="Fundo" valor={rascunho.tokens.corFundo} onChange={(v) => alterarToken('corFundo', v)} />
-              <CampoCor rotulo="Texto" valor={rascunho.tokens.corTexto} onChange={(v) => alterarToken('corTexto', v)} />
-              <CampoCor rotulo="Texto suave" valor={rascunho.tokens.corTextoSuave} onChange={(v) => alterarToken('corTextoSuave', v)} />
-              <CampoCor rotulo="Moldura" valor={rascunho.tokens.corMoldura} onChange={(v) => alterarToken('corMoldura', v)} />
+              <CampoCor label="Primária" valor={rascunho.tokens.corPrimaria} onChange={(v) => alterarToken('corPrimaria', v)} />
+              <CampoCor label="Secundária (bordô)" valor={rascunho.tokens.corSecundaria} onChange={(v) => alterarToken('corSecundaria', v)} />
+              <CampoCor label="Fundo" valor={rascunho.tokens.corFundo} onChange={(v) => alterarToken('corFundo', v)} />
+              <CampoCor label="Texto" valor={rascunho.tokens.corTexto} onChange={(v) => alterarToken('corTexto', v)} />
+              <CampoCor label="Texto suave" valor={rascunho.tokens.corTextoSuave} onChange={(v) => alterarToken('corTextoSuave', v)} />
+              <CampoCor label="Moldura" valor={rascunho.tokens.corMoldura} onChange={(v) => alterarToken('corMoldura', v)} />
               <CampoNumero
-                rotulo="Espessura da moldura"
+                label="Espessura da moldura"
                 valor={rascunho.tokens.espessuraMoldura}
                 min={0}
                 max={12}
                 onChange={(v) => alterarToken('espessuraMoldura', v)}
               />
               <CampoNumero
-                rotulo="Raio dos cantos"
+                label="Raio dos cantos"
                 valor={rascunho.tokens.raioCanto}
                 min={0}
                 max={40}
@@ -388,12 +388,12 @@ export const CredentialStudioScreen: React.FC = () => {
                 <Type className="h-3 w-3" /> Tipografia
               </h3>
               <CampoTexto
-                rotulo="Fonte dos títulos"
+                label="Fonte dos títulos"
                 valor={rascunho.tokens.fonteTitulo}
                 onChange={(v) => alterarToken('fonteTitulo', v)}
               />
               <CampoTexto
-                rotulo="Fonte do corpo"
+                label="Fonte do corpo"
                 valor={rascunho.tokens.fonteCorpo}
                 onChange={(v) => alterarToken('fonteCorpo', v)}
               />
@@ -528,9 +528,9 @@ const PainelEmissao: React.FC<{
           ['dataEmissao', 'Data de emissão'],
           ['nomeInstituicao', 'Instituição'],
         ] as [keyof typeof campos, string][]
-      ).map(([chave, rotulo]) => (
+      ).map(([chave, label]) => (
         <label key={chave} className="block space-y-1">
-          <span className="text-[11px] font-semibold text-stone-300">{rotulo}</span>
+          <span className="text-[11px] font-semibold text-stone-300">{label}</span>
           <input
             type="text"
             value={String(campos[chave] ?? '')}
@@ -587,13 +587,13 @@ const PainelEmissao: React.FC<{
 // Campos do inspetor
 // ---------------------------------------------------------------------------
 
-const CampoTexto: React.FC<{ rotulo: string; valor: string; onChange: (v: string) => void }> = ({
-  rotulo,
+const CampoTexto: React.FC<{ label: string; valor: string; onChange: (v: string) => void }> = ({
+  label,
   valor,
   onChange,
 }) => (
   <label className="block space-y-1">
-    <span className="text-[10px] text-stone-400">{rotulo}</span>
+    <span className="text-[10px] text-stone-400">{label}</span>
     <input
       type="text"
       value={valor}
@@ -603,13 +603,13 @@ const CampoTexto: React.FC<{ rotulo: string; valor: string; onChange: (v: string
   </label>
 );
 
-const CampoCor: React.FC<{ rotulo: string; valor: string; onChange: (v: string) => void }> = ({
-  rotulo,
+const CampoCor: React.FC<{ label: string; valor: string; onChange: (v: string) => void }> = ({
+  label,
   valor,
   onChange,
 }) => (
   <label className="flex items-center justify-between gap-2">
-    <span className="text-[10px] text-stone-400">{rotulo}</span>
+    <span className="text-[10px] text-stone-400">{label}</span>
     <span className="flex items-center gap-1.5">
       <input
         type="text"
@@ -621,7 +621,7 @@ const CampoCor: React.FC<{ rotulo: string; valor: string; onChange: (v: string) 
         type="color"
         value={/^#[0-9a-f]{6}$/i.test(valor) ? valor : '#000000'}
         onChange={(e) => onChange(e.target.value)}
-        aria-label={`Escolher ${rotulo}`}
+        aria-label={`Escolher ${label}`}
         className="h-6 w-8 cursor-pointer rounded border border-zinc-600 bg-transparent"
       />
     </span>
@@ -629,14 +629,14 @@ const CampoCor: React.FC<{ rotulo: string; valor: string; onChange: (v: string) 
 );
 
 const CampoNumero: React.FC<{
-  rotulo: string;
+  label: string;
   valor: number;
   min: number;
   max: number;
   onChange: (v: number) => void;
-}> = ({ rotulo, valor, min, max, onChange }) => (
+}> = ({ label, valor, min, max, onChange }) => (
   <label className="flex items-center justify-between gap-2">
-    <span className="text-[10px] text-stone-400">{rotulo}</span>
+    <span className="text-[10px] text-stone-400">{label}</span>
     <input
       type="number"
       value={valor}

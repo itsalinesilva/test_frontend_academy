@@ -38,7 +38,7 @@ const CAPITULOS: CapituloLivreto[] = CAPITULOS_TEORIA.map((c) => ({
   id: `cap_teoria_${String(c.numero).padStart(2, '0')}`,
   numero: c.numero,
   titulo: c.titulo,
-  licaoId: `les_teoria_${String(c.numero).padStart(2, '0')}`,
+  lessonId: `les_teoria_${String(c.numero).padStart(2, '0')}`,
   questoes: QUESTOES[c.numero] ?? [],
 }));
 
@@ -50,5 +50,5 @@ export const LIVRETO_TEORIA: Livreto = {
     'Três questões ao fim de cada um dos 58 capítulos. As mesmas questões reaparecem no simulado, na ordem em que foram estudadas.',
   capitulos: CAPITULOS,
   criadoEm: '2026-09-17T00:00:00.000Z',
-  atualizadoEm: '2026-09-17T00:00:00.000Z',
+  updatedAt: '2026-09-17T00:00:00.000Z',
 };

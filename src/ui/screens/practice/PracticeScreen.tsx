@@ -5,14 +5,14 @@ import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { practiceRepository } from '../../../repositories/practice.repository';
 import {
-  gerarRodada,
-  acertou,
-  QuestaoDeIntervalo,
-  Intervalo,
-} from '../../../domain/treino-de-intervalos';
+  generateRound,
+  isAnswerCorrect,
+  IntervalQuestion,
+  Interval,
+} from '../../../domain/interval-training';
 import { CirculationBar } from '../../components/navigation/CirculationBar';
 import {
   Target,
@@ -61,14 +61,14 @@ const QUESTOES_POR_RODADA = 10;
 
 export const PracticeScreen: React.FC = () => {
   const { navigate } = useRouter();
-  const { userId } = useUsuarioAtual();
+  const { userId } = useCurrentUser();
   const [activeTab, setActiveTab] = useState<'intervals' | 'rhythm' | 'chords'>('intervals');
 
-  const [rodada, setRodada] = useState<QuestaoDeIntervalo[]>(() =>
-    gerarRodada(QUESTOES_POR_RODADA)
+  const [rodada, setRodada] = useState<IntervalQuestion[]>(() =>
+    generateRound(QUESTOES_POR_RODADA)
   );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<Intervalo | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<Interval | null>(null);
   const [feedback, setFeedback] = useState<{ isCorrect: boolean; text: string } | null>(null);
 
   /**
@@ -117,23 +117,23 @@ export const PracticeScreen: React.FC = () => {
    * nada. Quando nao ha sessao, o treino continua funcionando; so nao grava
    * em nome de ninguem.
    */
-  const handleAnswer = async (option: Intervalo) => {
+  const handleAnswer = async (option: Interval) => {
     if (selectedAnswer) return;
     setSelectedAnswer(option);
     setTotalAttempts((prev) => prev + 1);
 
-    const isCorrect = acertou(currentQ, option);
+    const isCorrect = isAnswerCorrect(currentQ, option);
     const xp = isCorrect ? 25 : 0;
 
     if (isCorrect) {
       setCorrectAttempts((prev) => prev + 1);
       setSessionXp((prev) => prev + xp);
-      setFeedback({ isCorrect: true, text: `Correto. ${currentQ.intervalo.explicacao}` });
+      setFeedback({ isCorrect: true, text: `Correto. ${currentQ.intervalo.explanation}` });
       webAudioSynth.playChord([261.63, 329.63, 392.0, 523.25], 0.8);
     } else {
       setFeedback({
         isCorrect: false,
-        text: `Era ${currentQ.intervalo.nome}. ${currentQ.intervalo.explicacao}`,
+        text: `Era ${currentQ.intervalo.nome}. ${currentQ.intervalo.explanation}`,
       });
       webAudioSynth.playTone(220, 0.5, 'sawtooth');
     }
@@ -161,7 +161,7 @@ export const PracticeScreen: React.FC = () => {
     setCurrentQuestionIndex((prev) => {
       const proximo = prev + 1;
       if (proximo < rodada.length) return proximo;
-      setRodada(gerarRodada(QUESTOES_POR_RODADA));
+      setRodada(generateRound(QUESTOES_POR_RODADA));
       return 0;
     });
   };
@@ -219,7 +219,7 @@ export const PracticeScreen: React.FC = () => {
         description: 'Parabéns! Sua meta diária de percepção e treino rítmico foi concluída com êxito.',
         actionLabel: 'Reiniciar Prática',
         onAction: () => {
-          setRodada(gerarRodada(QUESTOES_POR_RODADA));
+          setRodada(generateRound(QUESTOES_POR_RODADA));
           setCurrentQuestionIndex(0);
         },
       }}
@@ -236,7 +236,7 @@ export const PracticeScreen: React.FC = () => {
             </div>
             <div>
               <p className="text-[11px] text-stone-500 font-mono">Ofensiva Atual</p>
-              <p className="text-sm font-bold text-stone-900">{sessionStreak} dias seguidos</p>
+              <p className="text-sm font-bold text-stone-900">{sessionStreak} dias streak</p>
             </div>
           </Card>
 
@@ -311,7 +311,7 @@ export const PracticeScreen: React.FC = () => {
                   Exercício {currentQuestionIndex + 1} de {rodada.length}
                 </span>
                 <h3 className="text-lg font-serif font-bold text-stone-900 mt-1">
-                  Identifique o Intervalo Melódico e Harmônico
+                  Identifique o Interval Melódico e Harmônico
                 </h3>
               </div>
 
@@ -360,7 +360,7 @@ export const PracticeScreen: React.FC = () => {
 
             {/* Answer Options */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {currentQ.alternativas.map((opt) => {
+              {currentQ.choices.map((opt) => {
                 const isSelected = selectedAnswer?.semitons === opt.semitons;
                 const isCorrect = opt.semitons === currentQ.intervalo.semitons;
 

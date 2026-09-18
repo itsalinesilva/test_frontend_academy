@@ -10,7 +10,7 @@ import { BLOCOS_16_30 } from './theory/blocos-16-30';
 import { BLOCOS_31_44 } from './theory/blocos-31-44';
 import { BLOCOS_45_58 } from './theory/blocos-45-58';
 import { LIVRETO_TEORIA } from './seed-booklet-theory';
-import { calcularCargaDaLicao, horasDoCurso } from '../domain/carga-horaria';
+import { calculateLessonWorkload, courseHours } from '../domain/workload';
 
 /**
  * Curso de Teoria da Música — conteúdo autoral do Conservatório Muscicapa.
@@ -72,11 +72,11 @@ const QUESTOES_POR_CAPITULO = new Map(
 const MINUTOS_POR_CAPITULO = new Map(
   CAPITULOS_TEORIA.map((c) => [
     c.numero,
-    calcularCargaDaLicao(BLOCOS[c.numero] ?? [], QUESTOES_POR_CAPITULO.get(c.numero) ?? []).total,
+    calculateLessonWorkload(BLOCOS[c.numero] ?? [], QUESTOES_POR_CAPITULO.get(c.numero) ?? []).total,
   ])
 );
 
-const CARGA_HORARIA = horasDoCurso([...MINUTOS_POR_CAPITULO.values()]);
+const CARGA_HORARIA = courseHours([...MINUTOS_POR_CAPITULO.values()]);
 
 // ---------------------------------------------------------------------------
 // Curso

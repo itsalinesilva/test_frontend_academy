@@ -55,9 +55,9 @@ export class CredentialService {
    */
   public async salvarTemplate(template: TemplateCredencial): Promise<TemplateCredencial> {
     const problemas = validarTemplate(template);
-    const erros = problemas.filter((p) => p.gravidade === 'erro');
-    if (erros.length > 0) {
-      throw new Error(`Template inválido: ${erros.map((e) => e.mensagem).join(' ')}`);
+    const wrong = problemas.filter((p) => p.gravidade === 'erro');
+    if (wrong.length > 0) {
+      throw new Error(`Template inválido: ${wrong.map((e) => e.mensagem).join(' ')}`);
     }
     return this.repo.salvarTemplate(template);
   }
@@ -74,7 +74,7 @@ export class CredentialService {
       nome: novoNome || `${origem.nome} (cópia)`,
       ehPadrao: false,
       criadoEm: agora,
-      atualizadoEm: agora,
+      updatedAt: agora,
     };
     return this.repo.salvarTemplate(copia);
   }
@@ -161,7 +161,7 @@ export class CredentialService {
       imagens: {},
       ehPadrao: false,
       criadoEm: agora,
-      atualizadoEm: agora,
+      updatedAt: agora,
     };
   }
 

@@ -6,7 +6,7 @@ import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
 import { Avatar } from '../../components/data-display/Avatar';
 import { ErrorState } from '../../components/feedback/ErrorState';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { forumRepository, criarTopico } from '../../../repositories/forum.repository';
 import { ForumTopic, ForumCategory } from '../../../domain/community';
 import { MessageSquare, Calendar, Filter, Plus, ArrowRight } from 'lucide-react';
@@ -23,11 +23,11 @@ import { MessageSquare, Calendar, Filter, Plus, ArrowRight } from 'lucide-react'
  * respostas vem das respostas. Fórum sem ninguém é fórum vazio, e é isso que
  * a tela mostra até a primeira pessoa escrever.
  */
-const CATEGORIAS: { valor: ForumCategory | 'todos'; rotulo: string }[] = [
-  { valor: 'todos', rotulo: 'Todos os debates' },
-  { valor: ForumCategory.ANALYSIS, rotulo: 'Análises de obras' },
-  { valor: ForumCategory.HARMONY, rotulo: 'Harmonia' },
-  { valor: ForumCategory.REPERTOIRE, rotulo: 'Repertório' },
+const CATEGORIAS: { valor: ForumCategory | 'todos'; label: string }[] = [
+  { valor: 'todos', label: 'Todos os debates' },
+  { valor: ForumCategory.ANALYSIS, label: 'Análises de obras' },
+  { valor: ForumCategory.HARMONY, label: 'Harmonia' },
+  { valor: ForumCategory.REPERTOIRE, label: 'Repertório' },
 ];
 
 const ROTULO_DA_CATEGORIA: Record<string, string> = {
@@ -50,7 +50,7 @@ const desdeQuando = (iso: string): string => {
 
 export const CommunityFeedScreen: React.FC = () => {
   const { navigate } = useRouter();
-  const { userId, nome } = useUsuarioAtual();
+  const { userId, nome } = useCurrentUser();
   const [filtro, setFiltro] = useState<ForumCategory | 'todos'>('todos');
   const [topicos, setTopicos] = useState<ForumTopic[] | null>(null);
 
@@ -158,9 +158,9 @@ export const CommunityFeedScreen: React.FC = () => {
                 onChange={(e) => setCategoria(e.target.value as ForumCategory)}
                 className="w-full rounded border border-stone-300 bg-white p-2.5 text-sm"
               >
-                {Object.entries(ROTULO_DA_CATEGORIA).map(([valor, rotulo]) => (
+                {Object.entries(ROTULO_DA_CATEGORIA).map(([valor, label]) => (
                   <option key={valor} value={valor}>
-                    {rotulo}
+                    {label}
                   </option>
                 ))}
               </select>
@@ -210,7 +210,7 @@ export const CommunityFeedScreen: React.FC = () => {
                   filtro === c.valor ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100'
                 }`}
               >
-                {c.rotulo}
+                {c.label}
               </button>
             ))}
           </div>

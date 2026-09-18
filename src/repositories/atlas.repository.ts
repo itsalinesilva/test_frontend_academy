@@ -1,6 +1,6 @@
 import { LocalStorageAdapter } from '../infrastructure/storage/local-storage';
 import { MusicalEra, AtlasWorkPlacement } from '../domain/gamification';
-import { Tribo } from '../domain/tribo';
+import { Tribe } from '../domain/tribe';
 import {
   ERAS_PADRAO,
   REGIOES_PADRAO,
@@ -8,7 +8,7 @@ import {
   Regiao,
   Genero,
 } from '../data/seed-atlas';
-import { TRIBOS_PADRAO } from '../data/seed-tribos';
+import { TRIBOS_PADRAO } from '../data/seed-tribes';
 
 /**
  * O Atlas.
@@ -43,7 +43,7 @@ export interface AtlasRepository {
   regiaoPorSlug(slug: string): Promise<Regiao | null>;
 
   listarGeneros(): Promise<Genero[]>;
-  listarTribos(): Promise<Tribo[]>;
+  listarTribos(): Promise<Tribe[]>;
 
   /** Obras do acervo, opcionalmente filtradas pelos eixos. */
   listarObras(filtro?: FiltroDoAtlas): Promise<AtlasWorkPlacement[]>;
@@ -108,7 +108,7 @@ export class PersistentAtlasRepository implements AtlasRepository {
    * fechadas, com o motivo — nunca preenchidas com conteúdo inventado para
    * a tela não parecer vazia.
    */
-  public async listarTribos(): Promise<Tribo[]> {
+  public async listarTribos(): Promise<Tribe[]> {
     return TRIBOS_PADRAO;
   }
 

@@ -4,10 +4,10 @@ import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter, useRouteParams } from '../../navigation/router';
 import { CursoSidebar } from '../../components/academy/CursoSidebar';
 import { LessonBlockRenderer } from '../../components/academy/LessonBlocks';
-import { EdicaoDoBloco } from '../../components/academy/EdicaoDoBloco';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { BlockEditor } from '../../components/academy/BlockEditor';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { editorialRepository } from '../../../repositories/editorial.repository';
-import { EdicaoEditorial, idDaEdicao } from '../../../domain/edicao-editorial';
+import { EditorialEdit, editId } from '../../../domain/editorial-edit';
 import { academyService } from '../../../services/application/academy.service';
 import { authService } from '../../../services/application/auth.service';
 import {
@@ -50,8 +50,8 @@ export const LessonTheaterScreen: React.FC = () => {
    * `ehAdmin` vem da sessão assinada pelo servidor. Não há decisão de
    * privilégio nesta tela.
    */
-  const { ehAdmin, nome: nomeDoEditor } = useUsuarioAtual();
-  const [edicoes, setEdicoes] = useState<EdicaoEditorial[]>([]);
+  const { ehAdmin, nome: nomeDoEditor } = useCurrentUser();
+  const [edicoes, setEdicoes] = useState<EditorialEdit[]>([]);
 
   const recarregarEdicoes = React.useCallback(async () => {
     if (!lessonId) return;
@@ -69,7 +69,7 @@ export const LessonTheaterScreen: React.FC = () => {
    * aplicada — e não o rascunho que o editor tinha em mãos. Se os dois
    * divergissem, o editor veria a correção e o aluno não.
    */
-  const salvarCorrecao = async (edicao: EdicaoEditorial) => {
+  const salvarCorrecao = async (edicao: EditorialEdit) => {
     await editorialRepository.salvar(edicao);
     await recarregarEdicoes();
     const atualizada = await academyService.getLesson(lessonId);
@@ -255,13 +255,13 @@ export const LessonTheaterScreen: React.FC = () => {
                     secaoId: s.id,
                     blocoId: b.id,
                   };
-                  const id = idDaEdicao(licao.id, alvo);
+                  const id = editId(licao.id, alvo);
                   const edicao = edicoes.find((e) => e.id === id);
 
                   return (
-                    <EdicaoDoBloco
+                    <BlockEditor
                       key={b.id}
-                      licaoId={licao.id}
+                      lessonId={licao.id}
                       alvo={alvo}
                       bloco={b}
                       publicado={
@@ -273,7 +273,7 @@ export const LessonTheaterScreen: React.FC = () => {
                       onReverter={reverterCorrecao}
                     >
                       {renderizado}
-                    </EdicaoDoBloco>
+                    </BlockEditor>
                   );
                 })}
               </section>

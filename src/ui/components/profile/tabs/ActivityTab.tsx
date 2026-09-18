@@ -32,7 +32,7 @@ interface Atividade {
   /** Ano ou data ISO, conforme o item de origem registra. */
   quando: string;
   selo: string;
-  Icone: typeof Music;
+  Icon: typeof Music;
   cor: string;
 }
 
@@ -43,11 +43,11 @@ const TIPO_DE_PARTITURA: Record<ProfileScoreItem['type'], string> = {
   transcricao: 'Transcrição',
 };
 
-const FILTROS: { valor: Categoria; rotulo: string }[] = [
-  { valor: 'todas', rotulo: 'Todas' },
-  { valor: 'gravacoes', rotulo: 'Gravações' },
-  { valor: 'partituras', rotulo: 'Partituras' },
-  { valor: 'conquistas', rotulo: 'Conquistas' },
+const FILTROS: { valor: Categoria; label: string }[] = [
+  { valor: 'todas', label: 'Todas' },
+  { valor: 'gravacoes', label: 'Gravações' },
+  { valor: 'partituras', label: 'Partituras' },
+  { valor: 'conquistas', label: 'Conquistas' },
 ];
 
 export const ActivityTab: React.FC<ActivityTabProps> = ({ profile }) => {
@@ -64,7 +64,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ profile }) => {
         descricao: [r.composer, r.workReference, r.instrumentUsed].filter(Boolean).join(' · '),
         quando: r.recordingDate,
         selo: 'Gravação',
-        Icone: Music,
+        Icon: Music,
         cor: 'bg-amber-100 text-amber-900',
       });
     }
@@ -79,7 +79,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ profile }) => {
           .join(' · '),
         quando: s.publishedAt,
         selo: 'Partitura',
-        Icone: FileText,
+        Icon: FileText,
         cor: 'bg-anil-100 text-anil-900',
       });
     }
@@ -92,7 +92,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ profile }) => {
         descricao: a.description,
         quando: String(a.year),
         selo: a.issuer,
-        Icone: Award,
+        Icon: Award,
         cor: 'bg-stone-100 text-stone-800',
       });
     }
@@ -129,7 +129,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ profile }) => {
                   : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
               }`}
             >
-              {f.rotulo}
+              {f.label}
             </button>
           ))}
         </div>
@@ -158,7 +158,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ profile }) => {
                 className={`absolute -left-[31px] top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white shadow-xs ${act.cor}`}
                 aria-hidden="true"
               >
-                <act.Icone className="h-3.5 w-3.5" />
+                <act.Icon className="h-3.5 w-3.5" />
               </div>
 
               <Card variant="default" padding="md" className="transition-colors hover:border-stone-400">

@@ -18,148 +18,148 @@
  * Uso:  node scripts/qa.mjs [--json] [--so-falhas]
  */
 import { execFileSync } from 'node:child_process';
-import { GRAVIDADE as G, relatar, imprimir } from './qa/nucleo.mjs';
-import { checarTexto, checarMarkdownDoConteudo } from './qa/texto.mjs';
+import { SEVERITY as G, report, printReport } from './qa/core.mjs';
+import { checkText, checkContentMarkdown } from './qa/text.mjs';
 import {
-  checarColisaoDeChaves,
-  checarFiltroPorUsuario,
-  checarConteudoNaoApagaAluno,
-  checarAutoridadeDeAdmin,
-  checarVazamentoNoConsole,
-  checarInjecaoDeHtml,
-  checarEncerramentoDeSessao,
-  checarSegredoVersionado,
-} from './qa/seguranca.mjs';
+  checkKeyCollision,
+  checkPerUserFilter,
+  checkPublishKeepsStudentData,
+  checkAdminAuthority,
+  checkConsoleLeak,
+  checkHtmlInjection,
+  checkSessionTeardown,
+  checkCommittedSecret,
+} from './qa/security.mjs';
 import {
-  checarDestinosDeNavegacao,
-  checarPromessaDeTitulacao,
-  checarRessalvaDeCursoLivre,
-  checarDadoFabricado,
-  checarAgregadoInflado,
-  checarRepertorioLivre,
-  checarBotaoFalso,
-  checarSucessoSemEfeito,
-  checarDadosDentroDaTela,
-  checarFerramentaDeDesenvolvimento,
-  checarPromessaDeEmBreve,
-  checarNomeAcessivel,
-  checarRotuloDeCampo,
-  checarTextoAlternativo,
-  checarAlcancePorTeclado,
-} from './qa/fluxo.mjs';
+  checkNavigationTargets,
+  checkDegreeClaims,
+  checkFreeCourseDisclaimer,
+  checkFabricatedData,
+  checkInflatedAggregate,
+  checkPublicDomainRepertoire,
+  checkDeadButton,
+  checkSuccessWithoutEffect,
+  checkDataInsideScreen,
+  checkDevToolInProduction,
+  checkComingSoonPromise,
+  checkAccessibleName,
+  checkFieldLabel,
+  checkAltText,
+  checkKeyboardReach,
+} from './qa/flow.mjs';
 import {
-  checarSimboloDaContagem,
-  checarVocabularioDaContagem,
-  checarValorForaDaTabela,
-  checarValorDivergente,
-} from './qa/economia.mjs';
+  checkCountingSymbol,
+  checkCountingVocabulary,
+  checkValueOutsideTable,
+  checkDivergentValue,
+} from './qa/economy.mjs';
 
 /** A auditoria de rotas já existia; entra aqui em vez de virar comando à parte. */
 function checarRotas() {
   const r = JSON.parse(
-    execFileSync('node', ['scripts/auditar-rotas.mjs', '--json'], { encoding: 'utf-8' })
+    execFileSync('node', ['scripts/audit-routes.mjs', '--json'], { encoding: 'utf-8' })
   );
   return {
-    orfas: r.orfas.map((n) => ({ arquivo: n, detalhe: 'tela existe e nenhuma rota a abre' })),
-    vazando: r.vazando.map((n) => ({
-      arquivo: n,
-      detalhe: 'promete ao visitante o que só o aluno tem',
+    orphans: r.orphans.map((n) => ({ file: n, detail: 'tela existe e nenhuma rota a abre' })),
+    leaking: r.leaking.map((n) => ({
+      file: n,
+      detail: 'promete ao visitante o que só o aluno tem',
     })),
-    total: r.rotas.length,
-    telas: r.telas.length,
-    distinguem: r.telas.filter((t) => t.cheсaSessao).length,
+    total: r.routes.length,
+    screens: r.screens.length,
+    distinguishing: r.screens.filter((t) => t.cheсaSessao).length,
   };
 }
 
-const texto = checarTexto();
-const rotas = checarRotas();
+const texto = checkText();
+const routes = checarRotas();
 
-const SECOES = [
+const SECTIONS = [
   {
-    titulo: 'SEGURANÇA — dado de um aluno não aparece para outro',
-    checagens: [
-      relatar('leitura de dado de aluno filtra por usuário', checarFiltroPorUsuario(), G.BLOQUEIA),
-      relatar('nenhuma chave de armazenamento colide', checarColisaoDeChaves(), G.BLOQUEIA),
-      relatar('publicar conteúdo não apaga dado do aluno', checarConteudoNaoApagaAluno(), G.BLOQUEIA),
-      relatar('privilégio de admin não é decidido no cliente', checarAutoridadeDeAdmin(), G.BLOQUEIA),
-      relatar('nenhum dado pessoal vai ao console', checarVazamentoNoConsole(), G.BLOQUEIA),
-      relatar('nenhuma injeção de HTML sem sanitização', checarInjecaoDeHtml(), G.BLOQUEIA),
-      relatar('encerrar sessão apaga a sessão local', checarEncerramentoDeSessao(), G.BLOQUEIA),
-      relatar('nenhum segredo de credencial versionado', checarSegredoVersionado(), G.BLOQUEIA),
+    heading: 'SEGURANÇA — dado de um aluno não aparece para outro',
+    checks: [
+      report('leitura de dado de aluno filtra por usuário', checkPerUserFilter(), G.BLOCKS),
+      report('nenhuma chave de armazenamento colide', checkKeyCollision(), G.BLOCKS),
+      report('publicar conteúdo não apaga dado do aluno', checkPublishKeepsStudentData(), G.BLOCKS),
+      report('privilégio de admin não é decidido no cliente', checkAdminAuthority(), G.BLOCKS),
+      report('nenhum dado pessoal vai ao console', checkConsoleLeak(), G.BLOCKS),
+      report('nenhuma injeção de HTML sem sanitização', checkHtmlInjection(), G.BLOCKS),
+      report('encerrar sessão apaga a sessão local', checkSessionTeardown(), G.BLOCKS),
+      report('nenhum segredo de credencial versionado', checkCommittedSecret(), G.BLOCKS),
     ],
   },
   {
-    titulo: 'NEGÓCIO — a plataforma não promete o que não entrega',
-    checagens: [
-      relatar('nenhuma promessa de titulação reconhecida', checarPromessaDeTitulacao(), G.BLOQUEIA),
-      relatar('a ressalva de curso livre está escrita', checarRessalvaDeCursoLivre(), G.BLOQUEIA),
-      relatar('nenhum dado fabricado no catálogo', checarDadoFabricado(), G.BLOQUEIA),
-      relatar('nenhum agregado inflado nem ausência disfarçada', checarAgregadoInflado(), G.BLOQUEIA),
-      relatar('nenhum botão falso', checarBotaoFalso(), G.BLOQUEIA),
-      relatar('nenhum sucesso anunciado sem efeito', checarSucessoSemEfeito(), G.BLOQUEIA),
-      relatar('nenhum conjunto de dados escrito na tela', checarDadosDentroDaTela(), G.BLOQUEIA),
-      relatar('nada prometido para "em breve"', checarPromessaDeEmBreve(), G.CORRIGIR),
-      relatar(
+    heading: 'NEGÓCIO — a plataforma não promete o que não entrega',
+    checks: [
+      report('nenhuma promessa de titulação reconhecida', checkDegreeClaims(), G.BLOCKS),
+      report('a ressalva de curso livre está escrita', checkFreeCourseDisclaimer(), G.BLOCKS),
+      report('nenhum dado fabricado no catálogo', checkFabricatedData(), G.BLOCKS),
+      report('nenhum agregado inflado nem ausência disfarçada', checkInflatedAggregate(), G.BLOCKS),
+      report('nenhum botão falso', checkDeadButton(), G.BLOCKS),
+      report('nenhum sucesso anunciado sem efeito', checkSuccessWithoutEffect(), G.BLOCKS),
+      report('nenhum conjunto de dados escrito na tela', checkDataInsideScreen(), G.BLOCKS),
+      report('nada prometido para "em breve"', checkComingSoonPromise(), G.FIX),
+      report(
         'nenhuma ferramenta de desenvolvimento em produção',
-        checarFerramentaDeDesenvolvimento(),
-        G.BLOQUEIA
+        checkDevToolInProduction(),
+        G.BLOCKS
       ),
-      relatar('todo o repertório é de domínio público', checarRepertorioLivre(), G.CORRIGIR),
+      report('todo o repertório é de domínio público', checkPublicDomainRepertoire(), G.FIX),
     ],
   },
   {
-    titulo: 'ECONOMIA — a tabela de contagem e o código dizem a mesma coisa',
-    checagens: [
-      relatar('todo símbolo afirmado na contagem existe', checarSimboloDaContagem(), G.BLOQUEIA),
-      relatar('nenhum XP atribuído fora da tabela', checarValorForaDaTabela(), G.BLOQUEIA),
-      relatar('a tabela e as constantes dizem o mesmo número', checarValorDivergente(), G.BLOQUEIA),
-      relatar('o vocabulário do Atlas está certo na contagem', checarVocabularioDaContagem(), G.CORRIGIR),
+    heading: 'ECONOMIA — a tabela de contagem e o código dizem a mesma coisa',
+    checks: [
+      report('todo símbolo afirmado na contagem existe', checkCountingSymbol(), G.BLOCKS),
+      report('nenhum XP atribuído fora da tabela', checkValueOutsideTable(), G.BLOCKS),
+      report('a tabela e as constantes dizem o mesmo número', checkDivergentValue(), G.BLOCKS),
+      report('o vocabulário do Atlas está certo na contagem', checkCountingVocabulary(), G.FIX),
     ],
   },
   {
-    titulo: 'ROTAS E FLUXO — todo caminho chega a algum lugar',
-    checagens: [
-      relatar('nenhuma tela órfã', rotas.orfas, G.BLOQUEIA),
-      relatar('nenhuma tela vaza conteúdo de logado', rotas.vazando, G.BLOQUEIA),
-      relatar('todo destino de navegação existe', checarDestinosDeNavegacao(), G.BLOQUEIA),
+    heading: 'ROTAS E FLUXO — todo caminho chega a algum lugar',
+    checks: [
+      report('nenhuma tela órfã', routes.orphans, G.BLOCKS),
+      report('nenhuma tela vaza conteúdo de logado', routes.leaking, G.BLOCKS),
+      report('todo destino de navegação existe', checkNavigationTargets(), G.BLOCKS),
     ],
   },
   {
-    titulo: 'TEXTO — o que o aluno lê está escrito certo',
-    checagens: [
-      relatar('nenhuma codificação corrompida', texto.mojibake, G.BLOQUEIA),
-      relatar('nenhuma marca de trabalho inacabado', texto.inacabado, G.BLOQUEIA),
-      relatar('nenhum markdown quebrado no conteúdo', checarMarkdownDoConteudo(), G.BLOQUEIA),
-      relatar('ortografia: acentuação', texto.ortografia, G.CORRIGIR),
-      relatar('pontuação e espaçamento', texto.pontuacao, G.CORRIGIR),
-      relatar('nenhum inglês na interface em português', texto.ingles, G.CORRIGIR),
+    heading: 'TEXTO — o que o aluno lê está escrito certo',
+    checks: [
+      report('nenhuma codificação corrompida', texto.mojibake, G.BLOCKS),
+      report('nenhuma marca de trabalho inacabado', texto.inacabado, G.BLOCKS),
+      report('nenhum markdown quebrado no conteúdo', checkContentMarkdown(), G.BLOCKS),
+      report('ortografia: acentuação', texto.ortografia, G.FIX),
+      report('pontuação e espaçamento', texto.pontuacao, G.FIX),
+      report('nenhum inglês na interface em português', texto.ingles, G.FIX),
     ],
   },
   {
-    titulo: 'USABILIDADE — a interface é operável por quem não usa mouse nem enxerga',
-    checagens: [
-      relatar('todo botão tem nome acessível', checarNomeAcessivel(), G.CORRIGIR),
-      relatar('todo campo tem rótulo', checarRotuloDeCampo(), G.CORRIGIR),
-      relatar('toda imagem tem alt', checarTextoAlternativo(), G.CORRIGIR),
-      relatar('todo clicável alcançável pelo teclado', checarAlcancePorTeclado(), G.CORRIGIR),
+    heading: 'USABILIDADE — a interface é operável por quem não usa mouse nem enxerga',
+    checks: [
+      report('todo botão tem nome acessível', checkAccessibleName(), G.FIX),
+      report('todo campo tem rótulo', checkFieldLabel(), G.FIX),
+      report('toda imagem tem alt', checkAltText(), G.FIX),
+      report('todo clicável alcançável pelo teclado', checkKeyboardReach(), G.FIX),
     ],
   },
 ];
 
-const todas = SECOES.flatMap((s) => s.checagens);
+const allChecks = SECTIONS.flatMap((s) => s.checks);
 
 if (process.argv.includes('--json')) {
   console.log(
     JSON.stringify(
       {
-        rotas: rotas.total,
-        telas: rotas.telas,
-        telasQueDistinguemVisitante: rotas.distinguem,
-        checagens: todas.map((c) => ({
+        routes: routes.total,
+        screens: routes.screens,
+        screensDistinguishingVisitor: routes.distinguishing,
+        checks: allChecks.map((c) => ({
           nome: c.nome,
-          gravidade: c.gravidade,
-          achados: c.achados.length,
-          detalhes: c.achados,
+          severity: c.severity,
+          findings: c.findings.length,
+          details: c.findings,
         })),
       },
       null,
@@ -168,20 +168,20 @@ if (process.argv.includes('--json')) {
   );
   process.exitCode = 0;
 } else {
-  const soFalhas = process.argv.includes('--so-falhas');
+  const onlyFailures = process.argv.includes('--so-falhas');
   console.log('');
-  for (const secao of SECOES) {
-    const visiveis = soFalhas ? secao.checagens.filter((c) => c.achados.length) : secao.checagens;
-    if (!visiveis.length) continue;
-    console.log(secao.titulo);
-    console.log(imprimir(visiveis).texto.split('\n').slice(0, -2).join('\n'));
+  for (const section of SECTIONS) {
+    const visible = onlyFailures ? section.checks.filter((c) => c.findings.length) : section.checks;
+    if (!visible.length) continue;
+    console.log(section.heading);
+    console.log(printReport(visible).texto.split('\n').slice(0, -2).join('\n'));
     console.log('');
   }
 
-  const { bloqueios, correcoes } = imprimir(todas);
+  const { blockers, fixables } = printReport(allChecks);
   console.log('---');
-  console.log(`rotas ${rotas.total} · telas ${rotas.telas} · distinguem visitante ${rotas.distinguem}`);
-  console.log(`bloqueios ${bloqueios} · a corrigir ${correcoes}`);
+  console.log(`rotas ${routes.total} · telas ${routes.screens} · distinguem visitante ${routes.distinguishing}`);
+  console.log(`bloqueios ${blockers} · a corrigir ${fixables}`);
   console.log('não coberto por máquina: docs/harness/72_PENTE_FINO_QUALIDADE.md');
-  process.exitCode = bloqueios > 0 ? 1 : 0;
+  process.exitCode = blockers > 0 ? 1 : 0;
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import { LogIn, UserPlus } from 'lucide-react';
 import { useRouter } from './router';
 import { audienciaDaRota } from './audiencia';
-import { useUsuarioAtual } from '../hooks/useUsuarioAtual';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 
 export interface GuardaDeAudienciaProps {
   children: React.ReactNode;
@@ -26,7 +26,7 @@ export interface GuardaDeAudienciaProps {
  */
 export const GuardaDeAudiencia: React.FC<GuardaDeAudienciaProps> = ({ children }) => {
   const { currentPath, navigate } = useRouter();
-  const { userId, carregando } = useUsuarioAtual();
+  const { userId, carregando } = useCurrentUser();
 
   const audiencia = audienciaDaRota(currentPath);
 

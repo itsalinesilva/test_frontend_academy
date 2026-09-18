@@ -69,9 +69,9 @@ export class BookletService {
    * publicar uma questão impossível de acertar.
    */
   public async salvarLivreto(livreto: Livreto): Promise<Livreto> {
-    const erros = validarLivreto(livreto).filter((p) => p.gravidade === 'erro');
-    if (erros.length > 0) {
-      throw new Error(`Livreto com erro: ${erros.map((e) => e.mensagem).join(' ')}`);
+    const wrong = validarLivreto(livreto).filter((p) => p.gravidade === 'erro');
+    if (wrong.length > 0) {
+      throw new Error(`Livreto com erro: ${wrong.map((e) => e.mensagem).join(' ')}`);
     }
     return this.repo.salvarLivreto(livreto);
   }
@@ -84,7 +84,7 @@ export class BookletService {
       descricao: '',
       capitulos: [],
       criadoEm: agora(),
-      atualizadoEm: agora(),
+      updatedAt: agora(),
     };
   }
 
@@ -102,16 +102,16 @@ export class BookletService {
   public criarQuestao(): Questao {
     return {
       id: novoId('q'),
-      enunciado: '',
+      prompt: '',
       tipo: 'MULTIPLA_ESCOLHA',
-      alternativas: [
+      choices: [
         { id: 'a', texto: '' },
         { id: 'b', texto: '' },
         { id: 'c', texto: '' },
         { id: 'd', texto: '' },
       ],
       resposta: 'a',
-      explicacao: '',
+      explanation: '',
       dificuldade: 'basica',
       competencias: [],
     };
@@ -168,7 +168,7 @@ export class BookletService {
       notaDeCorte: 70,
       tempoLimiteMinutos: tipo === 'PROVA' ? 60 : 0,
       criadoEm: agora(),
-      atualizadoEm: agora(),
+      updatedAt: agora(),
     };
   }
 
@@ -201,7 +201,7 @@ export class BookletService {
   public async anotar(entrada: {
     userId: string;
     cursoId: string;
-    licaoId: string;
+    lessonId: string;
     blocoId?: string;
     tipo: TipoAnotacao;
     ancora?: AncoraDeTrecho;
@@ -215,7 +215,7 @@ export class BookletService {
       id: novoId('anot'),
       ...entrada,
       criadaEm: agora(),
-      atualizadaEm: agora(),
+      updatedAtIso: agora(),
     });
   }
 

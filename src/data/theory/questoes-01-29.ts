@@ -2,21 +2,21 @@ import { Questao, DificuldadeQuestao } from '../../domain/booklet';
 
 export function q(
   id: string,
-  enunciado: string,
-  alternativas: string[],
+  prompt: string,
+  choices: string[],
   correta: number,
-  explicacao: string,
+  explanation: string,
   competencias: string[],
   dificuldade: DificuldadeQuestao = 'basica'
 ): Questao {
   const letras = ['a', 'b', 'c', 'd'];
   return {
     id,
-    enunciado,
+    prompt,
     tipo: 'MULTIPLA_ESCOLHA',
-    alternativas: alternativas.map((texto, i) => ({ id: letras[i], texto })),
+    choices: choices.map((texto, i) => ({ id: letras[i], texto })),
     resposta: letras[correta],
-    explicacao,
+    explanation,
     dificuldade,
     competencias,
   };

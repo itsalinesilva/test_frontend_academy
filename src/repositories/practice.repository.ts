@@ -272,7 +272,7 @@ export class PersistentPracticeRepository implements PracticeRepository {
 
   public async getLeaderboard(
     _period: string = 'WEEKLY',
-    league: RankingLeague = RankingLeague.CONSERVATORIO
+    league: RankingLeague = RankingLeague.CONSERVATORY
   ): Promise<RankingLeaderboardEntry[]> {
     const list = this.storage.get<RankingLeaderboardEntry[]>(this.STORAGE_KEYS.LEADERBOARD) || RANKING_INICIAL;
     return list.filter((l) => l.league === league || !league);

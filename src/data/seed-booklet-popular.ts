@@ -11,21 +11,21 @@ import { CAPITULOS_POPULAR } from './popular/capitulos';
 
 function q(
   id: string,
-  enunciado: string,
-  alternativas: string[],
+  prompt: string,
+  choices: string[],
   correta: number,
-  explicacao: string,
+  explanation: string,
   competencias: string[],
   dificuldade: DificuldadeQuestao = 'basica'
 ): Questao {
   const letras = ['a', 'b', 'c', 'd'];
   return {
     id,
-    enunciado,
+    prompt,
     tipo: 'MULTIPLA_ESCOLHA',
-    alternativas: alternativas.map((texto, i) => ({ id: letras[i], texto })),
+    choices: choices.map((texto, i) => ({ id: letras[i], texto })),
     resposta: letras[correta],
-    explicacao,
+    explanation,
     dificuldade,
     competencias,
   };
@@ -234,7 +234,7 @@ const CAPITULOS: CapituloLivreto[] = CAPITULOS_POPULAR.map((c) => ({
   id: `cap_pop_${String(c.numero).padStart(2, '0')}`,
   numero: c.numero,
   titulo: c.titulo,
-  licaoId: `les_pop_${String(c.numero).padStart(2, '0')}`,
+  lessonId: `les_pop_${String(c.numero).padStart(2, '0')}`,
   questoes: POR_CAPITULO[c.numero] ?? [],
 }));
 
@@ -246,5 +246,5 @@ export const LIVRETO_POPULAR: Livreto = {
     'Três questões ao fim de cada capítulo, quase todas sobre causa social: por que tal arranjo material produziu tal resultado musical.',
   capitulos: CAPITULOS,
   criadoEm: '2026-09-17T00:00:00.000Z',
-  atualizadoEm: '2026-09-17T00:00:00.000Z',
+  updatedAt: '2026-09-17T00:00:00.000Z',
 };

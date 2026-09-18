@@ -305,10 +305,10 @@ export const SEED_ASSESSMENTS: AcademyAssessment[] = PROVAS_PADRAO.map((p) => ({
   timeLimitMinutes: p.tempoLimiteMinutos,
   questions: p.questoesProprias.map((q) => ({
     id: q.id,
-    prompt: q.enunciado,
-    options: q.alternativas.map((a) => ({ id: a.id, label: a.texto, text: a.texto })),
+    prompt: q.prompt,
+    options: q.choices.map((a) => ({ id: a.id, label: a.texto, text: a.texto })),
     correctOptionId: q.resposta,
-    explanation: q.explicacao,
+    explanation: q.explanation,
     skill: q.competencias[0] ?? 'geral',
   })),
   createdAt: AGORA,

@@ -104,7 +104,7 @@ function confusoesDasQuestoes(ids: string[]): string[] {
   for (const id of ids) {
     const q = porId.get(id);
     if (!q) continue;
-    for (const a of q.alternativas) {
+    for (const a of q.choices) {
       if (a.id !== q.resposta) fora.push(a.texto);
     }
   }

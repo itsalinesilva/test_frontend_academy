@@ -92,16 +92,16 @@ export const ImmediateFeedbackModal: React.FC<ImmediateFeedbackProps> = ({
         */}
         <div className="grid grid-cols-2 gap-2 text-center text-xs sm:grid-cols-4">
           <Celula
-            rotulo="Afinação"
+            label="Afinação"
             valor={medicao.afinacao.pontuacao}
             detalhe={
-              medicao.afinacao.desvioCents !== null
-                ? `${medicao.afinacao.desvioCents > 0 ? '+' : ''}${medicao.afinacao.desvioCents} cents`
+              medicao.afinacao.deviationCents !== null
+                ? `${medicao.afinacao.deviationCents > 0 ? '+' : ''}${medicao.afinacao.deviationCents} cents`
                 : null
             }
           />
           <Celula
-            rotulo="Tempo"
+            label="Tempo"
             valor={medicao.tempoRitmico.pontuacao}
             detalhe={
               medicao.tempoRitmico.desvioMedioMs !== null
@@ -110,7 +110,7 @@ export const ImmediateFeedbackModal: React.FC<ImmediateFeedbackProps> = ({
             }
           />
           <Celula
-            rotulo="Pulso"
+            label="Pulso"
             valor={medicao.estabilidadeRitmica}
             detalhe={
               medicao.tempoRitmico.bpmMedido !== null
@@ -119,13 +119,13 @@ export const ImmediateFeedbackModal: React.FC<ImmediateFeedbackProps> = ({
             }
           />
           <Celula
-            rotulo="Altura firme"
+            label="Altura firme"
             valor={medicao.estabilidadeDeAltura}
             detalhe={medicao.afinacao.notaDetectada}
           />
-          <Celula rotulo="Sustentação" valor={medicao.sustentacao.pontuacao} detalhe={null} />
+          <Celula label="Sustentação" valor={medicao.sustentacao.pontuacao} detalhe={null} />
           <Celula
-            rotulo="Resposta"
+            label="ResponseMode"
             valor={medicao.acerto.pontuacao}
             detalhe={
               medicao.acerto.correto === null
@@ -222,16 +222,16 @@ export const ImmediateFeedbackModal: React.FC<ImmediateFeedbackProps> = ({
  * enxergar uma nota baixa onde houve apenas falta de sinal.
  */
 const Celula: React.FC<{
-  rotulo: string;
+  label: string;
   valor: number | null;
   detalhe: string | null;
-}> = ({ rotulo, valor, detalhe }) => (
+}> = ({ label, valor, detalhe }) => (
   <div
     className={`rounded border p-2 ${
       valor === null ? 'border-stone-100 bg-stone-50/50' : 'border-stone-100 bg-stone-50'
     }`}
   >
-    <span className="block font-mono text-[10px] uppercase text-stone-500">{rotulo}</span>
+    <span className="block font-mono text-[10px] uppercase text-stone-500">{label}</span>
     <span
       className={`font-mono font-bold ${valor === null ? 'text-stone-300' : 'text-stone-900'}`}
     >

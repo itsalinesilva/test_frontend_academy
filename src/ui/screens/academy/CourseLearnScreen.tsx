@@ -4,7 +4,7 @@ import { clsx } from 'clsx';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter, useRouteParams } from '../../navigation/router';
 import { CursoSidebar } from '../../components/academy/CursoSidebar';
-import { CalendarioDeEstudo } from '../../components/academy/CalendarioDeEstudo';
+import { StudyCalendar } from '../../components/academy/StudyCalendar';
 import { academyService } from '../../../services/application/academy.service';
 import { authService } from '../../../services/application/auth.service';
 import {
@@ -13,7 +13,7 @@ import {
   AcademyLesson,
   UserAcademyProgress,
 } from '../../../domain/academy';
-import { RegistroDeEstudo, diaDe } from '../../../domain/frequencia';
+import { StudyRecord, dayOf } from '../../../domain/study-attendance';
 import { Estrelas, SeletorDeEstrelas } from '../../components/academy/Estrelas';
 import { reviewsRepository, montarAvaliacao } from '../../../repositories/reviews.repository';
 import { AvaliacaoDeCurso, Estrelas as NotaEstrelas } from '../../../domain/reviews';
@@ -37,7 +37,7 @@ export const CourseLearnScreen: React.FC = () => {
   const [modulos, setModulos] = useState<AcademyModule[]>([]);
   const [licoesPorModulo, setLicoes] = useState<Record<string, AcademyLesson[]>>({});
   const [progresso, setProgresso] = useState<UserAcademyProgress | null>(null);
-  const [frequencia, setFrequencia] = useState<RegistroDeEstudo[]>([]);
+  const [frequencia, setFrequencia] = useState<StudyRecord[]>([]);
   const [outrosCursos, setOutros] = useState<AcademyCourse[]>([]);
   const [minhaAvaliacao, setMinhaAvaliacao] = useState<AvaliacaoDeCurso | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -81,11 +81,11 @@ export const CourseLearnScreen: React.FC = () => {
         setUserId(sessao.user.id);
         setUserNome(sessao.user.name);
         setProgresso(await academyService.getUserProgress(sessao.user.id, c.id));
-        setMinhaAvaliacao(await reviewsRepository.doUsuario(sessao.user.id, c.id));
+        setMinhaAvaliacao(await reviewsRepository.forUser(sessao.user.id, c.id));
 
         // Abrir a tela do curso é atividade de estudo: marca o dia.
         setFrequencia(
-          await reviewsRepository.registrarEstudo(sessao.user.id, diaDe(new Date()), 0)
+          await reviewsRepository.recordStudy(sessao.user.id, dayOf(new Date()), 0)
         );
       }
       if (vivo) setCarregando(false);
@@ -168,7 +168,7 @@ export const CourseLearnScreen: React.FC = () => {
 
       <PageLayout.Aside>
         <div className="rounded-xl bg-white p-4 ring-1 ring-stone-200">
-          <CalendarioDeEstudo registros={frequencia} />
+          <StudyCalendar registros={frequencia} />
         </div>
 
         <div className="rounded-xl bg-white p-4 ring-1 ring-stone-200">

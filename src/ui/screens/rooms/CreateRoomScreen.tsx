@@ -4,7 +4,7 @@ import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { ErrorState } from '../../components/feedback/ErrorState';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { roomsRepository, criarSala } from '../../../repositories/rooms.repository';
 import { ModalidadeDeSala } from '../../../domain/teacher';
 import { ArrowLeft, PlusCircle } from 'lucide-react';
@@ -22,7 +22,7 @@ import { ArrowLeft, PlusCircle } from 'lucide-react';
  */
 export const CreateRoomScreen: React.FC = () => {
   const { navigate } = useRouter();
-  const { userId, nome, carregando } = useUsuarioAtual();
+  const { userId, nome, carregando } = useCurrentUser();
   const [title, setTitle] = useState('');
   const [type, setType] = useState<ModalidadeDeSala>('CLASSE_REGULAR');
   const [description, setDescription] = useState('');

@@ -3,7 +3,7 @@ import { CourseLevel } from '../domain/types';
 import { CAPITULOS_VIOLINO, COMPETENCIAS_VIOLINO } from './violino/capitulos';
 import { BLOCOS_VIOLINO } from './violino/blocos';
 import { LIVRETO_VIOLINO } from './seed-booklet-violino';
-import { calcularCargaDaLicao, horasDoCurso } from '../domain/carga-horaria';
+import { calculateLessonWorkload, courseHours } from '../domain/workload';
 
 /**
  * Curso de Violino — conteúdo autoral do Conservatório.
@@ -36,14 +36,14 @@ const QUESTOES_POR_CAPITULO = new Map(
 const MINUTOS_POR_CAPITULO = new Map(
   CAPITULOS_VIOLINO.map((c) => [
     c.numero,
-    calcularCargaDaLicao(
+    calculateLessonWorkload(
       BLOCOS_VIOLINO[c.numero] ?? [],
       QUESTOES_POR_CAPITULO.get(c.numero) ?? []
     ).total,
   ])
 );
 
-const CARGA_VIOLINO = horasDoCurso([...MINUTOS_POR_CAPITULO.values()]);
+const CARGA_VIOLINO = courseHours([...MINUTOS_POR_CAPITULO.values()]);
 
 export const CURSO_VIOLINO: AcademyCourse = {
   id: 'crs_violino',

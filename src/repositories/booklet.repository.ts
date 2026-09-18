@@ -73,7 +73,7 @@ export class PersistentBookletRepository implements BookletRepository {
 
   public async salvarLivreto(livreto: Livreto): Promise<Livreto> {
     const mapa = await this.mapaLivretos();
-    const atualizado: Livreto = { ...livreto, atualizadoEm: new Date().toISOString() };
+    const atualizado: Livreto = { ...livreto, updatedAt: new Date().toISOString() };
     mapa[livreto.id] = atualizado;
     await this.gravar(this.chaveLivretos, mapa);
     return atualizado;
@@ -105,7 +105,7 @@ export class PersistentBookletRepository implements BookletRepository {
 
   public async salvarAvaliacao(a: Avaliacao): Promise<Avaliacao> {
     const mapa = await this.mapa<Avaliacao>(this.chaveAvaliacoes);
-    const atualizada: Avaliacao = { ...a, atualizadoEm: new Date().toISOString() };
+    const atualizada: Avaliacao = { ...a, updatedAt: new Date().toISOString() };
     mapa[a.id] = atualizada;
     await this.gravar(this.chaveAvaliacoes, mapa);
     return atualizada;
@@ -130,7 +130,7 @@ export class PersistentBookletRepository implements BookletRepository {
 
   public async salvarAnotacao(a: Anotacao): Promise<Anotacao> {
     const mapa = await this.mapa<Anotacao>(this.chaveAnotacoes);
-    const atualizada: Anotacao = { ...a, atualizadaEm: new Date().toISOString() };
+    const atualizada: Anotacao = { ...a, updatedAtIso: new Date().toISOString() };
     mapa[a.id] = atualizada;
     await this.gravar(this.chaveAnotacoes, mapa);
     return atualizada;

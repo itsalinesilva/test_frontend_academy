@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowRight, BookOpen, Target, ShieldCheck, Music2 } from 'lucide-react';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter } from '../../navigation/router';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { academyService } from '../../../services/application/academy.service';
 import { AcademyCourse, UserAcademyProgress } from '../../../domain/academy';
 import { CourseCard } from '../../components/domain/CourseCard';
@@ -26,7 +26,7 @@ import { Carrossel } from '../../components/layout/Carrossel';
  */
 export const HomeScreen: React.FC = () => {
   const { navigate } = useRouter();
-  const { userId, carregando: carregandoSessao } = useUsuarioAtual();
+  const { userId, carregando: carregandoSessao } = useCurrentUser();
 
   const [cursos, setCursos] = useState<AcademyCourse[]>([]);
   const [matriculas, setMatriculas] = useState<UserAcademyProgress[]>([]);
@@ -190,7 +190,7 @@ export const HomeScreen: React.FC = () => {
               </h2>
               <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-stone-600">
                 Sem conta você lê tudo. Com conta, a plataforma guarda onde você parou, o que você
-                acertou e o que você precisa refazer.
+                isCorrect e o que você precisa refazer.
               </p>
               <button
                 type="button"

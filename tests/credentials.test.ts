@@ -29,8 +29,8 @@ const DADOS = {
 describe('Matrizes de fábrica', () => {
   it('as três matrizes padrão são estruturalmente válidas', () => {
     for (const template of TEMPLATES_PADRAO) {
-      const erros = validarTemplate(template).filter((p) => p.gravidade === 'erro');
-      expect(erros, `${template.nome}: ${erros.map((e) => e.mensagem).join(' ')}`).toEqual([]);
+      const wrong = validarTemplate(template).filter((p) => p.gravidade === 'erro');
+      expect(wrong, `${template.nome}: ${wrong.map((e) => e.mensagem).join(' ')}`).toEqual([]);
     }
   });
 
@@ -62,9 +62,9 @@ describe('Validação da matriz', () => {
       ...base,
       elementos: base.elementos.filter((e) => !(e.kind === 'CAMPO' && e.campo === 'nomeTitular')),
     };
-    const erros = validarTemplate(semTitular).filter((p) => p.gravidade === 'erro');
-    expect(erros).toHaveLength(1);
-    expect(erros[0].mensagem).toContain('Nome de quem recebe');
+    const wrong = validarTemplate(semTitular).filter((p) => p.gravidade === 'erro');
+    expect(wrong).toHaveLength(1);
+    expect(wrong[0].mensagem).toContain('Nome de quem recebe');
   });
 
   it('o certificado aceita identificar a conquista por título OU por curso', () => {
@@ -79,8 +79,8 @@ describe('Validação da matriz', () => {
         (e) => !(e.kind === 'CAMPO' && (e.campo === 'nomeCurso' || e.campo === 'tituloDocumento'))
       ),
     };
-    const erros = validarTemplate(semNenhum).filter((p) => p.gravidade === 'erro');
-    expect(erros.some((e) => e.mensagem.includes('identificar a conquista'))).toBe(true);
+    const wrong = validarTemplate(semNenhum).filter((p) => p.gravidade === 'erro');
+    expect(wrong.some((e) => e.mensagem.includes('identificar a conquista'))).toBe(true);
   });
 
   it('acusa elemento que sai da área do documento', () => {
@@ -93,8 +93,8 @@ describe('Validação da matriz', () => {
           : e
       ),
     };
-    const erros = validarTemplate(vazando).filter((p) => p.gravidade === 'erro');
-    expect(erros.some((e) => e.elementoId === 'titulo')).toBe(true);
+    const wrong = validarTemplate(vazando).filter((p) => p.gravidade === 'erro');
+    expect(wrong.some((e) => e.elementoId === 'titulo')).toBe(true);
   });
 
   it('avisa (sem bloquear) quando falta QR num documento imprimível', () => {
@@ -302,8 +302,8 @@ describe('Ciclo de vida das matrizes', () => {
     const svc = servico();
     for (const tipo of ['CERTIFICADO', 'CREDENCIAL', 'BADGE'] as const) {
       const nova = svc.criarTemplateVazio(tipo, `Teste ${tipo}`);
-      const erros = validarTemplate(nova).filter((p) => p.gravidade === 'erro');
-      expect(erros, `${tipo}: ${erros.map((e) => e.mensagem).join(' ')}`).toEqual([]);
+      const wrong = validarTemplate(nova).filter((p) => p.gravidade === 'erro');
+      expect(wrong, `${tipo}: ${wrong.map((e) => e.mensagem).join(' ')}`).toEqual([]);
     }
   });
 

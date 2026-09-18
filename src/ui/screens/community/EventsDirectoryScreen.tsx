@@ -4,7 +4,7 @@ import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { communityEventsRepository } from '../../../repositories/community-events.repository';
 import { CommunityEvent } from '../../../domain/community';
 import { Calendar, Clock, Users, ArrowLeft, Check } from 'lucide-react';
@@ -35,7 +35,7 @@ const formatarHora = (iso: string) =>
 
 export const EventsDirectoryScreen: React.FC = () => {
   const { navigate } = useRouter();
-  const { userId } = useUsuarioAtual();
+  const { userId } = useCurrentUser();
   const [itens, setItens] = useState<EventoNaTela[] | null>(null);
   const [emCurso, setEmCurso] = useState<string | null>(null);
 

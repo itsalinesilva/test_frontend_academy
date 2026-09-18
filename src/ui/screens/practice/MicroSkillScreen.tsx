@@ -12,12 +12,12 @@ import {
 import { MicroSkill, Skill, Exercise } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
-import { useUsuarioAtual } from '../../hooks/useUsuarioAtual';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { ProgressRing } from '../../components/data-display/ProgressRing';
 
 export const MicroSkillScreen: React.FC = () => {
-  const { userId } = useUsuarioAtual();
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const params = useRouteParams();
   const microId = params.id;

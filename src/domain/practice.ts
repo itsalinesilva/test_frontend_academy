@@ -47,7 +47,7 @@ export enum RankingLeague {
   GOLD = 'GOLD',
   PLATINUM = 'PLATINUM',
   DIAMOND = 'DIAMOND',
-  CONSERVATORIO = 'CONSERVATORIO',
+  CONSERVATORY = 'CONSERVATORY',
 }
 
 export interface PracticeMeasurement {

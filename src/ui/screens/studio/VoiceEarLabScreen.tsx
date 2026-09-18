@@ -4,15 +4,15 @@ import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
-import { useCapturaAcustica } from '../../hooks/useCapturaAcustica';
+import { useAudioCapture } from '../../hooks/useAudioCapture';
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
 import { notaMaisProxima } from '../../../domain/practice-measurement';
 import {
-  gerarQuestao,
-  acertou as acertouOIntervalo,
-  QuestaoDeIntervalo,
-  Intervalo,
-} from '../../../domain/treino-de-intervalos';
+  generateQuestion,
+  isAnswerCorrect as isIntervalCorrect,
+  IntervalQuestion,
+  Interval,
+} from '../../../domain/interval-training';
 import { Mic, ArrowLeft, Play, MicOff } from 'lucide-react';
 
 /**
@@ -62,12 +62,12 @@ import { Mic, ArrowLeft, Play, MicOff } from 'lucide-react';
 
 export const VoiceEarLabScreen: React.FC = () => {
   const { navigate } = useRouter();
-  const { estado, leitura, iniciar, finalizar } = useCapturaAcustica();
+  const { estado, leitura, iniciar, finalizar } = useAudioCapture();
 
-  const [rodada, setRodada] = useState<QuestaoDeIntervalo>(() => gerarQuestao(Date.now()));
+  const [rodada, setRodada] = useState<IntervalQuestion>(() => generateQuestion(Date.now()));
   const [tocou, setTocou] = useState(false);
-  const [resposta, setResposta] = useState<Intervalo | null>(null);
-  const [acertos, setAcertos] = useState(0);
+  const [resposta, setResposta] = useState<Interval | null>(null);
+  const [correct, setAcertos] = useState(0);
   const [tentativas, setTentativas] = useState(0);
 
   const capturando = estado === 'capturando';
@@ -83,21 +83,21 @@ export const VoiceEarLabScreen: React.FC = () => {
     setTocou(true);
   }, [rodada]);
 
-  const responder = (escolha: Intervalo) => {
+  const responder = (escolha: Interval) => {
     if (resposta) return; // já respondeu esta rodada
     setResposta(escolha);
     setTentativas((n) => n + 1);
-    if (acertouOIntervalo(rodada, escolha)) setAcertos((n) => n + 1);
+    if (isIntervalCorrect(rodada, escolha)) setAcertos((n) => n + 1);
   };
 
   const proximaRodada = () => {
-    setRodada(gerarQuestao(Date.now()));
+    setRodada(generateQuestion(Date.now()));
     setResposta(null);
     setTocou(false);
   };
 
-  const precisao = tentativas === 0 ? null : Math.round((acertos / tentativas) * 100);
-  const acertou = resposta !== null && acertouOIntervalo(rodada, resposta);
+  const precisao = tentativas === 0 ? null : Math.round((correct / tentativas) * 100);
+  const isCorrect = resposta !== null && isIntervalCorrect(rodada, resposta);
 
   return (
     <ScreenContainer
@@ -155,19 +155,19 @@ export const VoiceEarLabScreen: React.FC = () => {
                 </p>
                 <p
                   className={`mt-2 font-mono text-sm font-semibold ${
-                    Math.abs(afinacao.desvioCents) <= 5
+                    Math.abs(afinacao.deviationCents) <= 5
                       ? 'text-emerald-700'
-                      : Math.abs(afinacao.desvioCents) <= 20
+                      : Math.abs(afinacao.deviationCents) <= 20
                         ? 'text-amber-700'
                         : 'text-red-700'
                   }`}
                 >
-                  {afinacao.desvioCents > 0 ? '+' : ''}
-                  {afinacao.desvioCents} cents
+                  {afinacao.deviationCents > 0 ? '+' : ''}
+                  {afinacao.deviationCents} cents
                 </p>
               </>
             ) : (
-              <p className="text-sm text-stone-500">Silêncio — nenhuma altura detectada.</p>
+              <p className="text-sm text-stone-500">Silêncio — nenhuma altura detected.</p>
             )}
           </div>
         </Card>
@@ -195,7 +195,7 @@ export const VoiceEarLabScreen: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            {rodada.alternativas.map((opcao) => {
+            {rodada.choices.map((opcao) => {
               const escolhida = resposta?.semitons === opcao.semitons;
               const eraACerta = resposta !== null && opcao.semitons === rodada.intervalo.semitons;
               return (
@@ -221,12 +221,12 @@ export const VoiceEarLabScreen: React.FC = () => {
           {resposta && (
             <div className="space-y-2">
               <p
-                className={`text-xs font-semibold ${acertou ? 'text-emerald-700' : 'text-red-700'}`}
+                className={`text-xs font-semibold ${isCorrect ? 'text-emerald-700' : 'text-red-700'}`}
                 role="status"
               >
-                {acertou
-                  ? `Correto. ${rodada.intervalo.explicacao}`
-                  : `Era ${rodada.intervalo.nome}. ${rodada.intervalo.explicacao}`}
+                {isCorrect
+                  ? `Correto. ${rodada.intervalo.explanation}`
+                  : `Era ${rodada.intervalo.nome}. ${rodada.intervalo.explanation}`}
               </p>
               <Button variant="primary" size="sm" onClick={proximaRodada}>
                 Próximo intervalo
@@ -238,7 +238,7 @@ export const VoiceEarLabScreen: React.FC = () => {
             <span>
               {tentativas === 0
                 ? 'Nenhuma resposta ainda'
-                : `${acertos} de ${tentativas} corretas`}
+                : `${correct} de ${tentativas} corretas`}
             </span>
             {precisao !== null && (
               <span

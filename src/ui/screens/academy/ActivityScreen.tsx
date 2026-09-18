@@ -145,7 +145,7 @@ export const ActivityScreen: React.FC = () => {
                 Instrução Pedagógica:
               </span>
               <span className="text-xs font-mono text-stone-500">
-                {activity.maxScore} pontos
+                {activity.maxScore} points
               </span>
             </div>
             <p className="text-sm text-stone-600 leading-relaxed font-sans bg-stone-50 p-3 rounded-lg border border-stone-200">

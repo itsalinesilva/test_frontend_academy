@@ -7,7 +7,7 @@ import {
 import { BLOCOS_OCID_01_10 } from './ocidental/blocos-01-10';
 import { BLOCOS_OCID_11_20 } from './ocidental/blocos-11-20';
 import { LIVRETO_OCIDENTAL } from './seed-booklet-ocidental';
-import { calcularCargaDaLicao, horasDoCurso } from '../domain/carga-horaria';
+import { calculateLessonWorkload, courseHours } from '../domain/workload';
 
 /**
  * Curso de História da Música Ocidental — conteúdo autoral do Conservatório.
@@ -47,11 +47,11 @@ const QUESTOES_POR_CAPITULO = new Map(
 const MINUTOS_POR_CAPITULO = new Map(
   CAPITULOS_OCIDENTAL.map((c) => [
     c.numero,
-    calcularCargaDaLicao(BLOCOS[c.numero] ?? [], QUESTOES_POR_CAPITULO.get(c.numero) ?? []).total,
+    calculateLessonWorkload(BLOCOS[c.numero] ?? [], QUESTOES_POR_CAPITULO.get(c.numero) ?? []).total,
   ])
 );
 
-const CARGA_OCIDENTAL = horasDoCurso([...MINUTOS_POR_CAPITULO.values()]);
+const CARGA_OCIDENTAL = courseHours([...MINUTOS_POR_CAPITULO.values()]);
 
 export const CURSO_OCIDENTAL: AcademyCourse = {
   id: 'crs_historia_ocidental',

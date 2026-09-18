@@ -101,9 +101,9 @@ describe('Digitação em primeira posição', () => {
   });
 
   it('cobre 32 pontos: quatro cordas, oito alturas cada', () => {
-    const pontos = notasEmPrimeiraPosicao();
-    expect(pontos).toHaveLength(32);
-    expect(new Set(pontos.map((p) => p.corda.nome)).size).toBe(4);
+    const points = notasEmPrimeiraPosicao();
+    expect(points).toHaveLength(32);
+    expect(new Set(points.map((p) => p.corda.nome)).size).toBe(4);
   });
 
   it('a frequência calculada bate com a nota nomeada', () => {
@@ -148,7 +148,7 @@ describe('Acompanhamento de partitura', () => {
       amostrasDe([[0, 'A4'], [1, 'B4'], [2, 'C#5'], [3, 'D5']]),
       60
     );
-    expect(r.julgamentos.every((j) => j.veredito === 'PERFEITO')).toBe(true);
+    expect(r.julgamentos.every((j) => j.verdict === 'PERFEITO')).toBe(true);
     expect(r.precisao).toBe(100);
     expect(r.maiorSequencia).toBe(4);
   });
@@ -157,21 +157,21 @@ describe('Acompanhamento de partitura', () => {
     // Tocar a nota certa fora do tempo e a nota errada no tempo são erros
     // diferentes, com correções diferentes.
     const alturaErrada = julgarNota(PECA.notas[0], amostrasDe([[0, 'C5']]), 60);
-    expect(alturaErrada.veredito).toBe('ALTURA_ERRADA');
+    expect(alturaErrada.verdict).toBe('ALTURA_ERRADA');
 
     const atrasado = julgarNota(PECA.notas[0], amostrasDe([[0.45, 'A4']]), 60);
-    expect(atrasado.veredito).toBe('ATRASADO');
-    expect(atrasado.desvioMs).toBeGreaterThan(0);
+    expect(atrasado.verdict).toBe('ATRASADO');
+    expect(atrasado.deviationMs).toBeGreaterThan(0);
 
     const adiantado = julgarNota(PECA.notas[1], amostrasDe([[0.55, 'B4']]), 60);
-    expect(adiantado.veredito).toBe('ADIANTADO');
-    expect(adiantado.desvioMs).toBeLessThan(0);
+    expect(adiantado.verdict).toBe('ADIANTADO');
+    expect(adiantado.deviationMs).toBeLessThan(0);
   });
 
   it('silêncio vira NAO_TOCADA, não erro de altura', () => {
     const r = julgarNota(PECA.notas[0], [], 60);
-    expect(r.veredito).toBe('NAO_TOCADA');
-    expect(r.desvioCents).toBeNull();
+    expect(r.verdict).toBe('NAO_TOCADA');
+    expect(r.deviationCents).toBeNull();
   });
 
   it('a janela acompanha o andamento', () => {
@@ -180,15 +180,15 @@ describe('Acompanhamento de partitura', () => {
     // rápido, e o jogo "quebraria" ao acelerar.
     const lento = julgarNota(PECA.notas[0], [{ ms: 100, frequenciaHz: 440 }], 60);
     const rapido = julgarNota(PECA.notas[0], [{ ms: 100, frequenciaHz: 440 }], 240);
-    expect(lento.veredito).toBe('PERFEITO');
-    expect(rapido.veredito).not.toBe('PERFEITO');
+    expect(lento.verdict).toBe('PERFEITO');
+    expect(rapido.verdict).not.toBe('PERFEITO');
   });
 
   it('o piso protege andamentos muito rápidos', () => {
     // Abaixo de ~50 ms nenhum instrumentista controla o ataque; sem o piso o
     // "perfeito" viraria inalcançável por razão física, não musical.
     const r = julgarNota(PECA.notas[0], [{ ms: 40, frequenciaHz: 440 }], 300);
-    expect(r.veredito).toBe('PERFEITO');
+    expect(r.verdict).toBe('PERFEITO');
   });
 
   it('escolhe a amostra pela altura, não pela proximidade no tempo', () => {
@@ -202,7 +202,7 @@ describe('Acompanhamento de partitura', () => {
       ],
       60
     );
-    expect(r.veredito).not.toBe('ALTURA_ERRADA');
+    expect(r.verdict).not.toBe('ALTURA_ERRADA');
   });
 
   it('pausa não conta como acerto nem como erro', () => {
@@ -221,7 +221,7 @@ describe('Acompanhamento de partitura', () => {
       60
     );
     expect(r.maiorSequencia).toBe(2);
-    expect(r.acertos).toBe(3);
+    expect(r.correct).toBe(3);
   });
 
   it('relata os desvios médios em ms e em cents', () => {

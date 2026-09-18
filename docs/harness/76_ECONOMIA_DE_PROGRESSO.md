@@ -83,26 +83,26 @@ Uma progressão só, sem tabela nova a cada faixa: sair do nível 1 custa 100, d
 
 | Evento | XP | Score | Ofensiva | Onde é disparado |
 |---|---:|---:|:---:|---|
-| Lição concluída | 10 | — | ✅ | `XP.LICAO_CONCLUIDA` · `academy.service.completeLesson` |
-| Checkpoint acertado na primeira | 5 | 5 | — | `XP.CHECKPOINT_ACERTADO` · `LessonBlocks` |
+| Lição concluída | 10 | — | ✅ | `XP.LESSON_COMPLETED` · `academy.service.completeLesson` |
+| Checkpoint acertado na primeira | 5 | 5 | — | `XP.CHECKPOINT_CORRECT` · `LessonBlocks` |
 | Checkpoint acertado depois de errar | 5 | — | — | idem |
-| Atividade concluída | 15 | conforme acerto | ✅ | `XP.ATIVIDADE_CONCLUIDA` · `saveActivityAttempt` |
-| Simulado concluído | 25 | conforme acerto | ✅ | `XP.SIMULADO_CONCLUIDO` · `saveAssessmentSubmission` |
-| **Prova final aprovada** | 100 | conforme nota | ✅ | `XP.PROVA_APROVADA` |
-| Prova final reprovada | 25 | — | ✅ | `XP.PROVA_REPROVADA` — esforço conta; acerto não |
-| Curso concluído | 250 | — | — | `XP.CURSO_CONCLUIDO` · `course_completed` |
-| Certificado emitido | 50 | — | — | `XP.CERTIFICADO_EMITIDO` · `saveCertificate` |
+| Atividade concluída | 15 | conforme acerto | ✅ | `XP.ACTIVITY_COMPLETED` · `saveActivityAttempt` |
+| Simulado concluído | 25 | conforme acerto | ✅ | `XP.MOCK_EXAM_COMPLETED` · `saveAssessmentSubmission` |
+| **Prova final aprovada** | 100 | conforme nota | ✅ | `XP.FINAL_EXAM_PASSED` |
+| Prova final reprovada | 25 | — | ✅ | `XP.FINAL_EXAM_FAILED` — esforço conta; acerto não |
+| Curso concluído | 250 | — | — | `XP.COURSE_COMPLETED_XP` · `course_completed` |
+| Certificado emitido | 50 | — | — | `XP.CERTIFICATE_ISSUED` · `saveCertificate` |
 
 ### Practice — treino
 
 | Evento | XP | Score | Ofensiva | Onde |
 |---|---:|---:|:---:|---|
-| Exercício acertado | 25 | conforme medição | ✅ | `XP.EXERCICIO_ACERTADO` · `saveAttempt` |
-| Exercício errado | 5 | — | ✅ | `XP.EXERCICIO_ERRADO` — e gera débito |
-| Rodada de 10 concluída | 20 | — | — | `XP.RODADA_CONCLUIDA` · `xpDaLicao` |
-| Missão diária cumprida | 50 | — | — | `XP.MISSAO_DIARIA` — ver §4 |
-| Missão diária de maior esforço | 75 | — | — | `XP.MISSAO_DIARIA_MAIOR` — ver §4 |
-| Meta do dia cumprida | 30 | — | — | `XP.META_DO_DIA` · `DailyGoal` |
+| Exercício acertado | 25 | conforme medição | ✅ | `XP.EXERCISE_CORRECT` · `saveAttempt` |
+| Exercício errado | 5 | — | ✅ | `XP.EXERCISE_WRONG` — e gera débito |
+| Rodada de 10 concluída | 20 | — | — | `XP.ROUND_COMPLETED` · `lessonXp` |
+| Missão diária cumprida | 50 | — | — | `XP.DAILY_MISSION` — ver §4 |
+| Missão diária de maior esforço | 75 | — | — | `XP.DAILY_MISSION_MAJOR` — ver §4 |
+| Meta do dia cumprida | 30 | — | — | `XP.DAILY_GOAL` · `DailyGoal` |
 | Unidade do percurso concluída | 150 | — | — | ⏳ `UNIDADE_CONCLUIDA` |
 | Obra de repertório avaliada | 200 | conforme avaliação | ✅ | ⏳ `REPERTORIO_EXECUTADO` |
 
@@ -112,17 +112,17 @@ Uma progressão só, sem tabela nova a cada faixa: sair do nível 1 custa 100, d
 |---|---:|---:|---|
 | Primeira visita a um mundo | 20 | — | ⏳ `MUNDO_VISITADO` |
 | Primeira visita a uma região | 20 | — | ⏳ `REGIAO_VISITADA` |
-| Obra analisada | 40 | conforme análise | `XP.OBRA_ANALISADA` · `WORK_ANALYZED` |
-| Excursão concluída | 120 | — | `XP.EXCURSAO_CONCLUIDA` · `TOUR_COMPLETED` |
+| Obra analisada | 40 | conforme análise | `XP.WORK_ANALYZED_XP` · `WORK_ANALYZED` |
+| Excursão concluída | 120 | — | `XP.TOUR_COMPLETED_XP` · `TOUR_COMPLETED` |
 
 ### Comunidade
 
 | Evento | XP | Score | Onde |
 |---|---:|---:|---|
-| Tópico aberto | 10 | — | `XP.TOPICO_ABERTO` · `forumRepository.salvarTopico` |
-| Resposta publicada | 5 | — | `XP.RESPOSTA_PUBLICADA` · `salvarResposta` |
-| Resposta aceita como solução | 30 | 20 | `XP.RESPOSTA_ACEITA` · `isAcceptedSolution` |
-| Avaliação de curso escrita | 15 | — | `XP.AVALIACAO_ESCRITA` · `reviewsRepository.salvar` |
+| Tópico aberto | 10 | — | `XP.TOPIC_OPENED` · `forumRepository.salvarTopico` |
+| Resposta publicada | 5 | — | `XP.REPLY_POSTED` · `salvarResposta` |
+| Resposta aceita como solução | 30 | 20 | `XP.REPLY_ACCEPTED` · `isAcceptedSolution` |
+| Avaliação de curso escrita | 15 | — | `XP.REVIEW_WRITTEN` · `reviewsRepository.salvar` |
 
 > **Nada de comunidade conta para a ofensiva.** Ofensiva é constância de
 > **estudo**; escrever no fórum todo dia não é praticar.
@@ -185,8 +185,8 @@ Três por dia, sorteadas de uma lista fixa, com prazo até a virada.
 
 As de 75 são as que pedem uma sessão inteira sem tropeço, ou a volta em outro
 período do dia — esforço de outra ordem que os 10 XP do aquecimento. Os dois
-valores estão na tabela de §2 como `XP.MISSAO_DIARIA` e
-`XP.MISSAO_DIARIA_MAIOR`; enquanto §4 tinha 75 e §2 só previa 50, o próprio
+valores estão na tabela de §2 como `XP.DAILY_MISSION` e
+`XP.DAILY_MISSION_MAJOR`; enquanto §4 tinha 75 e §2 só previa 50, o próprio
 documento se contradizia, e foi `checarValorForaDaTabela` que apontou.
 
 **Desafio do mês:** um só, de longo curso — por exemplo, 20 lições no mês.

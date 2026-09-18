@@ -181,7 +181,7 @@ const IntervalLab: React.FC<{ block: Extract<LessonBlock, { kind: 'INTERVAL_LAB'
         {analysis && (
           <dl className="grid grid-cols-3 gap-2 rounded-md bg-white p-2.5 text-xs ring-1 ring-stone-200">
             <div>
-              <dt className="text-[10px] uppercase text-stone-500">Intervalo</dt>
+              <dt className="text-[10px] uppercase text-stone-500">Interval</dt>
               <dd className="font-serif font-bold text-stone-900">{analysis.name}</dd>
             </div>
             <div>

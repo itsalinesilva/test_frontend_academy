@@ -120,7 +120,7 @@ export const AssessmentResultScreen: React.FC = () => {
               Aproveitamento: {(attempt?.percentageScore ?? attempt?.scorePercentage ?? 0).toFixed(0)}%
             </h2>
             <p className="text-xs text-stone-600">
-              Pontuação obtida: <strong>{attempt?.scoreEarned}</strong> de {attempt?.maxScore} pontos possíveis.
+              Pontuação obtida: <strong>{attempt?.scoreEarned}</strong> de {attempt?.maxScore} points possíveis.
               (Corte mínimo exigido: {assessment?.passingScorePercentage}%)
             </p>
           </div>

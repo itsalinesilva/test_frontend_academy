@@ -100,7 +100,7 @@ export const CertificateScreen: React.FC = () => {
               apresenta o documento.
             */}
             <span className="text-xs font-mono uppercase tracking-widest text-stone-600 block">
-              CONSERVATÓRIO MUSCICAPA • CURSO LIVRE DE QUALIFICAÇÃO MUSICAL
+              CONSERVATÓRIO MUSCICAPA • COURSE FREE DE QUALIFICAÇÃO MUSICAL
             </span>
             <h1 className="font-serif font-bold text-3xl sm:text-4xl text-stone-900 tracking-tight">
               CERTIFICADO DE MÉRITO ACADÊMICO
