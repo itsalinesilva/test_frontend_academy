@@ -324,7 +324,13 @@ Consequência: se o KV cair ou for desligado, o produto continua inteiro para ca
 > Substitui a lista de 2026-09-17, que era parcial.
 >
 > **Estado medido agora:** 83 rotas · 81 telas · 0 órfãs · **0 bloqueios e 0
-> correções** no pente fino · 488 testes passando · tsc e eslint limpos.
+> correções** no pente fino · **527 testes** passando · tsc e eslint limpos.
+>
+> **Harness reorganizado em 2026-09-18.** `HARNESS_CLAUDE.md`,
+> `HARNESS_AI_STUDIO.md`, `73_ANTIPADROES.md` e `74_RITUAL_DE_QUALIDADE.md`
+> são novos; `35_TEST_STRATEGY`, `66_TEST_CASE_LIBRARY`, `43_RELEASE_GATES`,
+> `40_AGENTS_HARNESS`, `13_DEFINITION_OF_DONE` e `README` foram reescritos
+> com o que a auditoria mostrou que faltava.
 
 ### O que já foi fechado neste levantamento
 
@@ -414,8 +420,8 @@ promete o que não pode cumprir.
 | C.2 | Dado de um aluno não chega ao outro no mesmo dispositivo | ✅ |
 | C.3 | **Cópia de segurança em JSON no Drive da pessoa** — nunca executada de ponta a ponta. Exige conta Google real. **É a única coisa que impede perda total ao limpar o navegador.** | ⛔ depende de G.1 |
 | C.4 | Restaurar a partir do backup — o caminho inverso não existe | ⬜ |
-| C.5 | Edição das lições pelo aluno: `BookletEditorScreen` grava? Não verificado por teste | ⬜ |
-| C.6 | Biblioteca do Conservatório — seções editáveis persistem a edição? Não verificado | ⬜ |
+| C.5 | **Edição do conteúdo pelo admin** — camada editorial, correção na própria leitura, sobrevive à publicação, e o livro da biblioteca sai com ela. 17 casos em `tests/edicao-editorial.test.ts` | ✅ |
+| C.6 | Livreto — exercícios, simulados e provas gravam e voltam. Coberto no mesmo arquivo | ✅ |
 | C.7 | Exportar e apagar todos os dados (LGPD) — `68_DATA_RETENTION_EXPORT_DELETE.md` sem implementação | ⬜ |
 
 ---
@@ -470,6 +476,21 @@ pendência, não nota de rodapé.
 | G.1 | Criar o **OAuth Client ID** no Google Cloud e preencher `.env.local` / Cloudflare. Sem isso ninguém cria conta em produção, e C.3 fica bloqueado. | ⛔ |
 | G.2 | O seed do perfil da fundadora é um currículo fabricado (percentil 99,8 · 420 h · posts com 215 apoios) e vai a produção com seu nome. Esvaziar? | ⛔ |
 | G.3 | `OAuthCallbackScreen` ficou órfã de propósito (o login usa janela, não redirecionamento). Remover? | ⛔ |
+
+---
+
+### H — Verificações que ainda não existem
+
+Cada linha é um antipadrão de `73_ANTIPADROES.md` sem vigilância automática.
+Está escrito em vez de dar impressão de cobertura.
+
+| # | Antipadrão sem verificação | Estado |
+| :--- | :--- | :---: |
+| H.1 | **A5** — painel que responde sem consultar. Só parcial hoje | ⬜ |
+| H.2 | **E3** — estado de tela que os dados não governam | ⬜ |
+| H.3 | **E4** — segunda fonte de verdade descrevendo a mesma entidade | ⬜ |
+| H.4 | **A4** — a conferência é por arquivo: se um arquivo tem duas afordâncias e perde a guarda de uma, não pega | ⬜ |
+| H.5 | Coesão entre pergunta e explicação de um `CHECKPOINT` — hoje só a edição preserva os dois juntos | ⬜ |
 
 ---
 

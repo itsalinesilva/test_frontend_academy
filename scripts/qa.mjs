@@ -38,6 +38,7 @@ import {
   checarBotaoFalso,
   checarSucessoSemEfeito,
   checarDadosDentroDaTela,
+  checarFerramentaDeDesenvolvimento,
   checarPromessaDeEmBreve,
   checarNomeAcessivel,
   checarRotuloDeCampo,
@@ -88,6 +89,11 @@ const SECOES = [
       relatar('nenhum sucesso anunciado sem efeito', checarSucessoSemEfeito(), G.BLOQUEIA),
       relatar('nenhum conjunto de dados escrito na tela', checarDadosDentroDaTela(), G.BLOQUEIA),
       relatar('nada prometido para "em breve"', checarPromessaDeEmBreve(), G.CORRIGIR),
+      relatar(
+        'nenhuma ferramenta de desenvolvimento em produção',
+        checarFerramentaDeDesenvolvimento(),
+        G.BLOQUEIA
+      ),
       relatar('todo o repertório é de domínio público', checarRepertorioLivre(), G.CORRIGIR),
     ],
   },

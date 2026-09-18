@@ -332,6 +332,76 @@ export function checarDadosDentroDaTela() {
   return achados;
 }
 
+/**
+ * Ferramenta de desenvolvimento exposta a quem usa.
+ *
+ * O inspetor de estados do `ScreenContainer` aparecia em TODA tela
+ * publicada, com o rótulo "Estados UI (populated)" e uma barra para forçar
+ * erro, vazio e sucesso. O aluno via — e podia acionar — um painel de
+ * depuração do time.
+ *
+ * O sinal é o nome: inspetor, depuração, simulador de papel, conta local de
+ * desenvolvimento. Tudo isso existe legitimamente, e tudo isso pertence a
+ * `import.meta.env.DEV`.
+ *
+ * LIMITE, DECLARADO
+ * -----------------
+ * A conferência é por ARQUIVO: acusa quando a marca aparece e o arquivo não
+ * tem guarda de DEV nenhuma. Se um arquivo tem duas afordâncias e perde a
+ * guarda de UMA, isto não pega — a outra guarda mantém o arquivo silencioso.
+ *
+ * Cobrir esse caso exigiria seguir o fluxo de controle até cada ponto de
+ * renderização, e não vale o custo. Fica escrito aqui em vez de dar a
+ * impressão de cobertura que não existe.
+ */
+export function checarFerramentaDeDesenvolvimento() {
+  /**
+   * Nomes que só existem para o time.
+   *
+   * `stateTester` está aqui porque foi o caso real: `showStateTester` e
+   * `setShowStateTester` governavam um painel que aparecia em toda tela
+   * publicada.
+   */
+  const MARCAS =
+    /(stateTester|state-tester|debugPanel|debug-panel|InspetorDe|inspetorDe|RoleSimulator|simuladorDePapel|ContaLocalDeDesenvolvimento)/i;
+
+  const achados = [];
+  for (const { arquivo, codigo } of interfaces()) {
+    if (arquivo.includes('design-system-catalog')) continue;
+    if (/import\.meta\.env\.DEV/.test(codigo)) continue;
+
+    /**
+     * A guarda pertence a quem DEFINE a ferramenta, não a quem a compõe.
+     *
+     * `ContaLocalDeDesenvolvimento` já se protege sozinha — só renderiza
+     * quando `DEV && !isGoogleSignInConfigured()`. Cobrar a guarda de novo
+     * das telas de entrada acusaria código correto, que é o que mais
+     * depressa faz um relatório perder autoridade.
+     *
+     * Por isso o arquivo é lido **sem as linhas de importação**, e os nomes
+     * que ele importa não contam: quem importa está usando; quem declara
+     * está definindo.
+     */
+    const importados = new Set(
+      [...codigo.matchAll(/import\s+\{([^}]*)\}/g)]
+        .flatMap((m) => m[1].split(','))
+        .map((n) => n.trim().split(/\s+as\s+/).pop())
+    );
+
+    const semImports = codigo.replace(/^\s*import\s[^\n]*$/gm, '');
+    const m = semImports.match(MARCAS);
+    if (!m) continue;
+    if ([...importados].some((n) => n && MARCAS.test(n))) continue;
+
+    achados.push({
+      arquivo,
+      linha: semImports.slice(0, m.index).split('\n').length,
+      detalhe: `"${m[0]}" sem guarda de DEV — ferramenta do time visível para quem usa`,
+    });
+  }
+  return achados;
+}
+
 // ------------------------------------------------------------ usabilidade ---
 
 /**

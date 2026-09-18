@@ -70,7 +70,7 @@ mais dura.
 |---|---|
 | leitura de dado de aluno filtra por usuário | `listMasteriesByUser(_userId)` ignorava o identificador e devolvia o desempenho de todo mundo |
 | nenhuma chave de armazenamento colide | dois repositórios gravando na mesma chave; o aluno perde progresso sem ninguém descobrir |
-| publicar conteúdo não apaga dado do aluno | a republicação do catálogo passando por cima de progresso, certificados e histórico |
+| publicar conteúdo não apaga dado do aluno | a republicação do catálogo passando por cima de progresso, certificados, histórico — **e da camada editorial**, que é revisão de texto já feita |
 | privilégio de admin não é decidido no cliente | bastaria editar o `localStorage` para virar administrador |
 | nenhum dado pessoal vai ao console | vaza em qualquer máquina com o inspetor aberto |
 | nenhuma injeção de HTML sem sanitização | conteúdo do aluno virando script |
@@ -87,6 +87,7 @@ mais dura.
 | **nenhum botão falso** | Controle que só abre `alert`, ou cujo `onClick` não faz nada. |
 | **nenhum sucesso anunciado sem efeito** | A versão silenciosa do anterior: acende "Salvo!" por três segundos e não grava. |
 | nada prometido para "em breve" | Dívida que o aluno paga: ele procurou, achou, e não pode usar. |
+| **nenhuma ferramenta de desenvolvimento em produção** | O inspetor de estados aparecia em toda tela publicada. Afordância do time pertence a `import.meta.env.DEV`. |
 | todo o repertório é de domínio público | Obra protegida sem licença é problema jurídico, não detalhe de catálogo. |
 
 ### Rotas e fluxo
@@ -213,8 +214,22 @@ caso em `tests/pente-fino.test.ts`.
 
 ---
 
+## Onde isto se encaixa
+
+| Documento | Responde |
+|---|---|
+| `73_ANTIPADROES.md` | **O que** cada verificação previne, e o que já custou |
+| `35_TEST_STRATEGY.md` | **Em que ordem** se testa, e o que cada camada responde |
+| `74_RITUAL_DE_QUALIDADE.md` | **Com que frequência**, e o roteiro manual |
+| `43_RELEASE_GATES.md` | O que reprova publicação |
+
 ## Histórico
 
-Criado em setembro de 2026, junto com a remoção dos achados que ele
-encontrou na primeira execução. O relatório completo daquela execução, e o que
-foi feito com cada achado, está no commit que introduziu `scripts/qa.mjs`.
+Criado em setembro de 2026, junto com a remoção dos achados que ele encontrou
+na primeira execução. O relatório daquela execução, e o que foi feito com cada
+achado, está no commit que introduziu `scripts/qa.mjs`.
+
+Ampliado no mesmo mês com as verificações de conjunto de dados escrito na
+tela, botão falso em objeto de ação, sucesso sem efeito e ferramenta de
+desenvolvimento em produção — **nenhuma imaginada; todas vindas de um achado
+real**.

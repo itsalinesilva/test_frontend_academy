@@ -73,8 +73,28 @@
 71. `70_FIRST_BUILD_BACKLOG.md`
 72. `71_LEGACY_BLUEPRINT_REFERENCE.md`
 73. `72_PENTE_FINO_QUALIDADE.md` — o que `npm run qa` verifica, e o que ele **não** verifica
-74. `DOC_INDEX.md`
-75. `MASTER_BLUEPRINT.md`
-76. `README.md`
+74. `73_ANTIPADROES.md` — o que já foi construído errado aqui, e não pode voltar
+75. `74_RITUAL_DE_QUALIDADE.md` — com que frequência se verifica, e o roteiro manual
+76. `HARNESS_CLAUDE.md` — contrato do agente conversacional
+77. `HARNESS_AI_STUDIO.md` — padrões de engenharia para geração assistida
+78. `DOC_INDEX.md`
+79. `MASTER_BLUEPRINT.md`
+80. `README.md`
 
-Total Markdown documents: 76.
+Total: 80 documentos.
+
+---
+
+## Os cinco operacionais
+
+Lidos todo dia. Os demais são referência de contrato.
+
+| Documento | Responde |
+|---|---|
+| `HARNESS_CLAUDE.md` | Como o agente conversacional trabalha aqui |
+| `HARNESS_AI_STUDIO.md` | Padrões de engenharia para geração assistida |
+| `73_ANTIPADROES.md` | O que não pode voltar, e o que custou |
+| `35_TEST_STRATEGY.md` | Em que ordem se testa, e o que cada camada responde |
+| `74_RITUAL_DE_QUALIDADE.md` | Com que frequência, e o roteiro manual |
+
+**Ninguém escreve código sem ter lido `73_ANTIPADROES.md`.**
