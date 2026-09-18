@@ -5,11 +5,11 @@ import { LoadingState } from '../../components/feedback/LoadingState';
 
 export const OAuthCallbackScreen: React.FC = () => {
   const { navigate } = useRouter();
-  const [status, setStatus] = useState('Processando autenticação federada...');
+  const [status, setStatus] = useState('Processando autenticação federada…');
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setStatus('Sessão validada. Redirecionando para a Academia...');
+      setStatus('Sessão validada. Redirecionando para a Academia…');
       setTimeout(() => {
         navigate('/');
       }, 500);

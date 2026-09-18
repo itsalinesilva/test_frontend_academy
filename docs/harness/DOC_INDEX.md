@@ -72,8 +72,9 @@
 70. `69_MOBILE_NATIVE_CONTRACT.md`
 71. `70_FIRST_BUILD_BACKLOG.md`
 72. `71_LEGACY_BLUEPRINT_REFERENCE.md`
-73. `DOC_INDEX.md`
-74. `MASTER_BLUEPRINT.md`
-75. `README.md`
+73. `72_PENTE_FINO_QUALIDADE.md` — o que `npm run qa` verifica, e o que ele **não** verifica
+74. `DOC_INDEX.md`
+75. `MASTER_BLUEPRINT.md`
+76. `README.md`
 
-Total Markdown documents: 75.
+Total Markdown documents: 76.

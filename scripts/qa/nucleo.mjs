@@ -9,7 +9,7 @@
  * ---------------------
  * Nenhum checador afirma qualidade. Cada um verifica **uma propriedade
  * mecanicamente verificável** e diz o que verificou. O que não dá para
- * verificar por máquina está listado em `docs/harness/QUALIDADE.md` na seção
+ * verificar por máquina está listado em `docs/harness/72_PENTE_FINO_QUALIDADE.md` na seção
  * do que NÃO é coberto — e continua não coberto até alguém cobrir.
  */
 import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';

@@ -1,7 +1,7 @@
 # CLAUDE_TODO.md — Backlog de Engenharia
 
 **Origem:** diagnóstico do COMANDO 0 (`CLAUDE_AUDIT.md`)
-**Atualizado:** 2026-09-16
+**Atualizado:** 2026-09-18
 **Regra:** nenhum item é fechado por "a tela existe". Fecha-se com código + persistência + autorização + teste + documentação.
 
 **Estados:** ⬜ aberto · 🔄 em andamento · ✅ concluído · ⛔ bloqueado (depende de decisão sua ou de serviço externo)
@@ -315,37 +315,162 @@ Consequência: se o KV cair ou for desligado, o produto continua inteiro para ca
 
 ---
 
-## Pendências abertas em 2026-09-17
 
-### Conteúdo (o maior bloco)
-- [ ] **Curso de História da Música Ocidental** — fonte extraída (765 páginas,
-      camada de texto limpa). Curso não redigido.
-- [ ] **Curso de História da Música Brasileira** — fonte extraída por OCR
-      (281 páginas). Curso não redigido.
-- [ ] **Curso de Violino** — explicação do instrumento, postura e todo o
-      conteúdo textual dos livros, seguido do board de prática só com obras
-      de domínio público, organizado pelos 4 níveis.
-- [ ] **Programas** — aparecem sozinhos quando o segundo curso entrar.
-- [ ] **Prova final de Teoria** — política declarada, questões não redigidas.
-- [ ] **Livreto de Teoria** — cobre 16 capítulos; precisa cobrir os 58.
-      Faltam questões para `tonalidade` e `transposicao`.
-- [ ] **Laboratórios** — 17 dos 58 capítulos ainda não têm bloco sonoro
-      (capítulos de notação e vocabulário: 6, 7, 8, 20, 27, 28, 30, 33, 34,
-      36, 37, 38, 47, 48, 49, 57, 58).
+## PENDÊNCIAS REAIS — levantamento de 2026-09-18
 
-### Sistema — lacunas de paridade (ver `docs/PARIDADE_COURSERA.md`)
-- [ ] Vídeo na lição (só existe `VIDEO_PLACEHOLDER`)
-- [ ] Prazos e cronograma pessoal do aluno
-- [ ] Boletim consolidado (as notas existem, a tela não)
-- [ ] Fórum ancorado em curso/lição
-- [ ] Limite de tentativas e cooldown em prova
-- [ ] Revisão por pares
-- [ ] Certificado de conclusão de programa (gatilho)
-- [ ] Analytics de engajamento por curso
+> **Como esta lista foi feita.** Cada número veio de `npm run qa`,
+> `node scripts/auditar-rotas.mjs` ou da suíte, executados nesta data. Nenhum
+> item foi estimado, e nenhum foi dado por fechado porque a tela existe.
+> Substitui a lista de 2026-09-17, que era parcial.
+>
+> **Estado medido agora:** 83 rotas · 81 telas · 0 órfãs · **0 bloqueios** no
+> pente fino · 129 correções abertas · 488 testes passando · tsc e eslint
+> limpos.
 
-### Interface
-- [ ] `ExerciseSessionScreen`, `PracticeScreen`, `ImmediateFeedbackScreen`
-      ainda não usam a forma D (workspace) do `PageLayout`
-- [ ] Revisar as demais telas com o mesmo critério aplicado ao Academy:
-      sem card decorativo, sem botão com frase onde cabe um ícone, sem
-      legenda que repete o que o elemento já diz
+### O que já foi fechado neste levantamento
+
+Registrado aqui porque a lista anterior não continha estes itens — eles só
+apareceram quando o pente fino passou a procurá-los.
+
+| Achado | Onde estava |
+| :--- | :--- |
+| ✅ Vazamento de dado entre alunos: `listMasteriesByUser()` ignorava o `userId` e devolvia o desempenho de todos | `practice.repository.ts` |
+| ✅ Progresso falso semeado em conta nova: 7 dias de sequência, 14 de recorde, 18/20 min da meta, ranking com Bach e Clara Schumann | `seed-practice-content.ts` |
+| ✅ Catálogo paralelo fabricado, 197 linhas, **consumido por nenhuma tela** — apagado | `course.repository.ts` |
+| ✅ Três recitais fixos exibidos em todo perfil, incluindo um no Theatro Municipal | `EventsTab.tsx` |
+| ✅ Gravação de Bach de abril de 2024 exibida em todo perfil | `ActivityTab.tsx` |
+| ✅ Criar sala chamava `setTimeout(400)` e navegava — não gravava nada | `CreateRoomScreen.tsx` |
+| ✅ Diretório com três turmas de professores inventados | `RoomsDirectoryScreen.tsx` |
+| ✅ Detalhe da sala ignorava o id da rota; listava a fundadora como aluna com nota 9,5 | `RoomDetailScreen.tsx` |
+| ✅ "Garantir participação" respondia com um alerta de "inscrição confirmada" sem inscrever | `EventsDirectoryScreen.tsx` |
+| ✅ "Publicar no fórum" limpava o campo e não gravava; dois debates inventados | `CommunityFeedScreen.tsx` |
+| ✅ Tópico ignorava o id e mostrava sempre o mesmo debate, com resposta de professor inexistente | `TopicDetailScreen.tsx` |
+| ✅ Trilha de auditoria relatando **uma tentativa de acesso não autenticado que nunca houve** | `AdminAuditScreen.tsx` |
+| ✅ Quatro "motores" com versão, latência e saúde inventadas; diagnóstico que não consultava nada | `AdminEnginesScreen.tsx` |
+| ✅ Quatro usuários inventados; botões de provisionar conta e editar permissão que não agiam | `AdminUsersScreen.tsx` |
+| ✅ Dois planos curriculares inventados, enquanto o catálogo real ao lado não aparecia | `AdminContentScreen.tsx` |
+| ✅ Certificado dizia "ACADEMIA MUSICAL DIGITAL · CÁTEDRA DE **ENSINO SUPERIOR** LIVRE" e não trazia a ressalva de curso livre | `CertificateScreen.tsx` |
+| ✅ "Salvar partitura" acendia "Salvo!" por 3 s sem gravar | `ScoreScreen.tsx` |
+| ✅ Laboratório auditivo inteiro fingido: afinador com valores fixos, intervalo que não tocava, resposta que não corrigia, "85% de precisão" de quem nunca respondeu | `VoiceEarLabScreen.tsx` |
+| ✅ Inspetor de estados de desenvolvimento **exposto ao aluno em produção** | `ScreenContainer.tsx` |
+| ✅ Banner "Todos os serviços operando · Status 100% Online" sem nenhuma verificação | `HelpScreen.tsx` |
+| ✅ Senha de conta infantil trocada por diálogo do navegador: texto visível, sem confirmação | `KidsGuardianScreen.tsx` |
+| ✅ Blocos inteiros de texto sem acentuação em três telas | Academy, Profile |
+
+---
+
+### A — Acessibilidade · 129 correções, com teto travado na suíte
+
+`tests/pente-fino.test.ts` impede que estes números subam. Baixá-los é o que
+registra progresso.
+
+| # | Item | Qtde | Estado |
+| :--- | :--- | ---: | :---: |
+| A.1 | Campo de formulário sem rótulo acessível | 94 | ⬜ |
+| A.2 | Elemento clicável que o teclado não alcança (`div`/`span`/`tr` com `onClick`) | 22 | ⬜ |
+| A.3 | Botão só com ícone e sem `aria-label` | 13 | ⬜ |
+
+**Concentração de A.1** — atacar por aqui resolve metade:
+`EditHeaderModal` 14 · `PublishPortfolioModal` 12 · `BookletEditorScreen` 9 ·
+`EditProfileScreen` 8 · `TeacherRoomModal` 6 · `OnboardingScreen` 5.
+
+**Concentração de A.2** — os componentes de sobreposição (`Dialog`, `Drawer`,
+`DropdownMenu`, `NotificationsPopover`, `CommandPalette`) usam `div` com
+`onClick` para fechar ao clicar fora. Corrigir os cinco fecha 5 dos 22 e é o
+padrão que as telas copiam.
+
+---
+
+### B — Visitante e aluno · 39 de 81 telas não distinguem
+
+A guarda de rota protege o acesso; ela **não** faz a tela pública adaptar o
+conteúdo. Uma tela pública que fala com o aluno quando quem lê é visitante
+promete o que não pode cumprir.
+
+| # | Área | Telas | Estado |
+| :--- | :--- | ---: | :---: |
+| B.1 | `admin` — todas exigem login; confirmar se a guarda basta ou se falta mensagem | 9 | ⬜ |
+| B.2 | `academy` — as públicas precisam de versão visitante de verdade | 8 | ⬜ |
+| B.3 | `studio` | 4 | ⬜ |
+| B.4 | `auth` — são `somenteVisitante`; verificar se a distinção é necessária | 3 | ⬜ |
+| B.5 | `practice` | 3 | ⬜ |
+| B.6 | `worlds` | 3 | ⬜ |
+| B.7 | `profile` (2) · `credentials` · `help` · `notfound` · `notifications` · `rooms` · `score` · `search` | 9 | ⬜ |
+
+---
+
+### C — Persistência
+
+| # | Item | Estado |
+| :--- | :--- | :---: |
+| C.1 | Progresso, avaliação e frequência sobrevivem ao recarregar — 13 casos em `tests/persistencia-e-isolamento.test.ts` | ✅ |
+| C.2 | Dado de um aluno não chega ao outro no mesmo dispositivo | ✅ |
+| C.3 | **Cópia de segurança em JSON no Drive da pessoa** — nunca executada de ponta a ponta. Exige conta Google real. **É a única coisa que impede perda total ao limpar o navegador.** | ⛔ depende de G.1 |
+| C.4 | Restaurar a partir do backup — o caminho inverso não existe | ⬜ |
+| C.5 | Edição das lições pelo aluno: `BookletEditorScreen` grava? Não verificado por teste | ⬜ |
+| C.6 | Biblioteca do Conservatório — seções editáveis persistem a edição? Não verificado | ⬜ |
+| C.7 | Exportar e apagar todos os dados (LGPD) — `68_DATA_RETENTION_EXPORT_DELETE.md` sem implementação | ⬜ |
+
+---
+
+### D — Recursos que a tela sugeria e que não existem
+
+Os controles que mentiam foram removidos; os recursos continuam abertos.
+
+| # | Item | Onde | Estado |
+| :--- | :--- | :--- | :---: |
+| D.1 | Exportar e importar MusicXML | Score, Studio | ⬜ |
+| D.2 | Salvar partitura (exige repositório + serialização do editor) | Score, Studio | ⬜ |
+| D.3 | Persistir projeto da mesa de mixagem | `DawProjectScreen` | ⬜ |
+| D.4 | Fila de moderação do fórum (denunciar conteúdo) | Community | ⬜ |
+| D.5 | Sistema de chamados — hoje é um e-mail para a instituição | Help | ⬜ |
+| D.6 | Tarefas da sala: publicar, entregar evidência, avaliar | Rooms | ⬜ |
+| D.7 | Matrícula do aluno na sala (a capacidade já existe no modelo) | Rooms | ⬜ |
+| D.8 | Criar evento da Academia (a inscrição já funciona; falta quem crie) | Community | ⬜ |
+| D.9 | Registrar evento, gravação e partitura no perfil (o tipo existe; falta a tela) | Profile | ⬜ |
+
+---
+
+### E — Texto e conteúdo
+
+| # | Item | Estado |
+| :--- | :--- | :---: |
+| E.1 | **Revisão humana dos 126 capítulos dos 5 cursos.** O pente fino confere acentuação de lista fechada, pontuação e markdown. **Não confere concordância, regência, coesão nem se a frase cabe no lugar.** Nenhum capítulo passou por revisão. | ⬜ |
+| E.2 | Revisão de correção **musical** do conteúdo — que o capítulo 5 corresponda à lição 5 está testado; que o que ele ensina esteja certo, não | ⬜ |
+| E.3 | 17 dos 58 capítulos de Teoria sem laboratório sonoro (6, 7, 8, 20, 27, 28, 30, 33, 34, 36, 37, 38, 47, 48, 49, 57, 58) | ⬜ |
+| E.4 | Vídeo na lição — só existe um bloco reservado. É a maior lacuna de paridade. | ⬜ |
+
+---
+
+### F — O que só olho humano ou navegador real pega
+
+Descrito em `docs/harness/72_PENTE_FINO_QUALIDADE.md`. Repetido aqui porque é
+pendência, não nota de rodapé.
+
+| # | Item | Estado |
+| :--- | :--- | :---: |
+| F.1 | **Mobile** — nenhuma verificação toca largura, alvo de toque ou gesto | ⬜ |
+| F.2 | **Navegador real** — os testes rodam em jsdom, que não tem layout nem som. O defeito da lupa (texto empurrado para fora durante a animação) **não era reproduzível em jsdom** e só apareceu abrindo o navegador. Falta uma passada manual tela a tela. | ⬜ |
+| F.3 | Aparência: contraste, espaçamento, hierarquia | ⬜ |
+| F.4 | `navigate(variavel)` — só destinos literais são conferidos | ⬜ |
+
+---
+
+### G — Decisões que dependem de você
+
+| # | Item | Estado |
+| :--- | :--- | :---: |
+| G.1 | Criar o **OAuth Client ID** no Google Cloud e preencher `.env.local` / Cloudflare. Sem isso ninguém cria conta em produção, e C.3 fica bloqueado. | ⛔ |
+| G.2 | O seed do perfil da fundadora é um currículo fabricado (percentil 99,8 · 420 h · posts com 215 apoios) e vai a produção com seu nome. Esvaziar? | ⛔ |
+| G.3 | `OAuthCallbackScreen` ficou órfã de propósito (o login usa janela, não redirecionamento). Remover? | ⛔ |
+
+---
+
+### Ordem sugerida
+
+1. **G.1** — destrava C.3 e o cadastro real; tudo o mais depende disso para ser verificável de verdade.
+2. **A.1 nos seis arquivos concentrados** — 54 das 94 correções em seis lugares.
+3. **F.2** — uma passada no navegador de verdade, tela a tela. É a classe de defeito que nenhum teste daqui alcança, e foi ela que produziu o pior erro do projeto até agora.
+4. **B.2** — as 8 telas públicas do Academy são as que o visitante mais vê.
+5. **E.1** — revisão do texto, capítulo a capítulo.
+6. Só então **Practice** (comando 5-6).

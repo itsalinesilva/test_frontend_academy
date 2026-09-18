@@ -214,7 +214,7 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
               </label>
               <textarea
                 rows={2}
-                placeholder="Ex: Microfonação estéreo, edição sem compressão, estudo prévio de partituras..."
+                placeholder="Ex: Microfonação estéreo, edição sem compressão, estudo prévio de partituras…"
                 value={processNotes}
                 onChange={(e) => setProcessNotes(e.target.value)}
                 className="w-full text-sm p-2 rounded border border-stone-300"
@@ -315,7 +315,7 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
             </Button>
             <Button variant="primary" size="md" type="submit" disabled={isSubmitting}>
               <Save className="w-4 h-4 mr-1.5" />
-              {isSubmitting ? 'Publicando...' : 'Publicar no Portfólio'}
+              {isSubmitting ? 'Publicando…' : 'Publicar no Portfólio'}
             </Button>
           </div>
         </form>

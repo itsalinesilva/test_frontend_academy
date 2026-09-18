@@ -5,6 +5,7 @@ import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { academyService } from '../../../services/application/academy.service';
 import { AcademyCertificate } from '../../../domain/academy';
+import { RESSALVA_CURSO_LIVRE } from '../../../domain/credential-design';
 import {
   GraduationCap,
   ShieldCheck,
@@ -60,8 +61,8 @@ export const CertificateScreen: React.FC = () => {
   return (
     <ScreenContainer
       id={`certificate-view-${certificateId}`}
-      title="Certificado Digital Canônico"
-      subtitle="Documento acadêmico comprobatório de proficiência e integralização curricular."
+      title="Certificado"
+      subtitle="Comprovante de conclusão do curso e de aprovação na avaliação final."
       badgeLabel="Autenticado"
       badgeVariant="brand"
       primaryAction={{
@@ -90,14 +91,22 @@ export const CertificateScreen: React.FC = () => {
 
           {/* Institutional Header */}
           <div className="text-center space-y-2 border-b-2 border-stone-800 pb-6">
+            {/*
+              Dizia "ACADEMIA MUSICAL DIGITAL — CÁTEDRA DE ENSINO SUPERIOR
+              LIVRE". Dois erros no mesmo cabeçalho, e o segundo é sério:
+              "ensino superior" é categoria regulada, e o Conservatório não a
+              oferece. Quem lesse o certificado poderia entender graduação
+              onde há curso livre — e quem mais perde com isso é a pessoa que
+              apresenta o documento.
+            */}
             <span className="text-xs font-mono uppercase tracking-widest text-stone-600 block">
-              ACADEMIA MUSICAL DIGITAL • CÁTEDRA DE ENSINO SUPERIOR LIVRE
+              CONSERVATÓRIO MUSCICAPA • CURSO LIVRE DE QUALIFICAÇÃO MUSICAL
             </span>
             <h1 className="font-serif font-bold text-3xl sm:text-4xl text-stone-900 tracking-tight">
               CERTIFICADO DE MÉRITO ACADÊMICO
             </h1>
             <p className="text-xs text-stone-500 font-sans">
-              Autenticação sob normas de transparência epistêmica e fundamentação acústica
+              Emitido mediante conclusão integral do curso e aprovação na avaliação final
             </p>
           </div>
 
@@ -153,6 +162,15 @@ export const CertificateScreen: React.FC = () => {
               <div className="truncate">Hash SHA-256: {certificate?.cryptographicHash}</div>
             </div>
           </div>
+          {/*
+            Ressalva de curso livre — a mesma frase que `CredentialCanvas`
+            desenha no rodapé de toda credencial, aqui também. Ela precisa
+            estar no documento IMPRESSO, e não apenas na tela ao redor dele:
+            é o papel que chega ao empregador.
+          */}
+          <p className="border-t border-stone-200 pt-4 text-center text-[10px] leading-relaxed text-stone-500">
+            {RESSALVA_CURSO_LIVRE}
+          </p>
         </div>
 
         {/* Verification & Sharing info */}

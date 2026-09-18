@@ -57,7 +57,7 @@ export const AcademySearchScreen: React.FC = () => {
       density="catalog"
       asideLabel="Refinar busca"
       state={'content'}
-      loadingMessage="Carregando..."
+      loadingMessage="Carregando…"
     >
       <PageLayout.Aside>
         <Card variant="default" padding="md" className="space-y-2">
@@ -82,7 +82,7 @@ export const AcademySearchScreen: React.FC = () => {
             <input
               id="academy-main-search-input"
               type="text"
-              placeholder="Digite um conceito, nota, escala, regra ou professor (ex: oitava, tríade, Schumann, Fux)..."
+              placeholder="Digite um conceito, nota, escala, regra ou professor (ex: oitava, tríade, Schumann, Fux)…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="bg-transparent text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none w-full font-sans"
@@ -142,7 +142,7 @@ export const AcademySearchScreen: React.FC = () => {
         {/* Results Counter */}
         <div className="flex items-center justify-between text-xs text-stone-500 font-mono">
           <span>{totalResults} resultado(s) localizado(s)</span>
-          {isSearching && <span>Buscando...</span>}
+          {isSearching && <span>Buscando…</span>}
         </div>
 
         {/* Results List */}

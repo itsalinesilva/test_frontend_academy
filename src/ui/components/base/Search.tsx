@@ -23,7 +23,7 @@ export const Search: React.FC<SearchProps> = ({
   isLoading = false,
   shortcutHint,
   size = 'md',
-  placeholder = 'Buscar cursos, obras, professores, ferramentas...',
+  placeholder = 'Buscar cursos, obras, professores, ferramentas…',
   disabled = false,
   className,
   ...props

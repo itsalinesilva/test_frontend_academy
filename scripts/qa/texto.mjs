@@ -14,7 +14,7 @@
  *
  * O que ele NÃO verifica, e ninguém deve fingir que verifica: concordância,
  * regência, coesão, e se a frase faz sentido no lugar em que está. Isso é
- * revisão humana, está declarado em `docs/harness/QUALIDADE.md` como não
+ * revisão humana, está declarado em `docs/harness/72_PENTE_FINO_QUALIDADE.md` como não
  * coberto e está aberto em `CLAUDE_TODO.md`.
  */
 import { fontes, interfaces, textosDeInterface } from './nucleo.mjs';
@@ -129,17 +129,59 @@ export function checarTexto() {
         }
       }
 
-      if (/\S {2,}\S/.test(texto)) {
-        pontuacao.push({ arquivo, linha, detalhe: `espaço duplo: ${texto.slice(0, 55)}` });
-      }
-      if (/\S +[,.;:!?](\s|$)/.test(texto)) {
-        pontuacao.push({ arquivo, linha, detalhe: `espaço antes de pontuação: ${texto.slice(0, 55)}` });
-      }
-      if (/[,;](?=[A-Za-zÀ-ÿ])/.test(texto)) {
-        pontuacao.push({ arquivo, linha, detalhe: `falta espaço após pontuação: ${texto.slice(0, 55)}` });
-      }
-      if (/\.\.\./.test(texto)) {
-        pontuacao.push({ arquivo, linha, detalhe: `use reticências tipográficas: ${texto.slice(0, 55)}` });
+      /**
+       * Espaçamento se confere na PROSA, não no andaime do template.
+       *
+       * O extrator troca cada `${…}` por um marcador. Isso junta pedaços que
+       * no texto final nunca se encostam: `${cents} cents${nota ? …}` virava
+       * "• cents•" e era acusado de espaço antes de pontuação que não existe.
+       * Conferir cada trecho contínuo separadamente elimina o artefato sem
+       * perder o erro de verdade, que mora dentro de um trecho só.
+       */
+      for (const trecho of texto.split('•')) {
+        if (!/[A-Za-zÀ-ÿ]{3}/.test(trecho)) continue;
+        /**
+         * Sobrou `${` ou `}`: é interpolação aninhada que o extrator não
+         * conseguiu fechar — código, não prosa. Conferir pontuação nele só
+         * produz achado falso.
+         */
+        if (/[${}]/.test(trecho)) continue;
+        // classe utilitária dentro de template literal de `className`
+        if (/^[a-z][\w-]*(?:\[[^\]]*\])?(?:\s+[a-z][\w-]*(?:\[[^\]]*\])?)*$/.test(trecho.trim()))
+          continue;
+
+        if (/\S {2,}\S/.test(trecho)) {
+          pontuacao.push({ arquivo, linha, detalhe: `espaço duplo: ${trecho.slice(0, 55)}` });
+        }
+        if (/\S +[,.;:!?](\s|$)/.test(trecho)) {
+          pontuacao.push({
+            arquivo,
+            linha,
+            detalhe: `espaço antes de pontuação: ${trecho.slice(0, 55)}`,
+          });
+        }
+        /**
+         * Lista de valores de atributo não é frase.
+         *
+         * `rel="noopener,noreferrer"` e `accept=".woff2,.woff,…"` separam
+         * itens por vírgula sem espaço porque a especificação manda, não
+         * porque alguém escreveu mal.
+         */
+        const listaTecnica = /^[\w.@/+-]+(,[\w.@/+-]+)+$/.test(trecho.trim());
+        if (!listaTecnica && /[,;](?=[A-Za-zÀ-ÿ])/.test(trecho)) {
+          pontuacao.push({
+            arquivo,
+            linha,
+            detalhe: `falta espaço após pontuação: ${trecho.slice(0, 55)}`,
+          });
+        }
+        if (/\.\.\./.test(trecho)) {
+          pontuacao.push({
+            arquivo,
+            linha,
+            detalhe: `use reticências tipográficas: ${trecho.slice(0, 55)}`,
+          });
+        }
       }
 
       if (INACABADO.test(texto)) {

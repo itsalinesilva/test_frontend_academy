@@ -9,11 +9,8 @@ import { webAudioSynth } from '../../../infrastructure/audio/synth';
 import {
   FileMusic,
   Play,
-  Save,
-  Download,
   ArrowRight,
   BookOpen,
-  Check,
 } from 'lucide-react';
 
 export const ScoreScreen: React.FC = () => {
@@ -24,7 +21,6 @@ export const ScoreScreen: React.FC = () => {
   const [tempo, setTempo] = useState(72);
   const [activeScoreTitle, setActiveScoreTitle] = useState('Estudo Contrapontístico em Dó Maior');
   const [composerName, setComposerName] = useState('Johann Sebastian Bach (Revisão Urtext)');
-  const [isSaved, setIsSaved] = useState(false);
 
   const urtextCatalog = [
     {
@@ -63,7 +59,6 @@ export const ScoreScreen: React.FC = () => {
     setTimeSignature(item.time);
     setTempo(item.tempo);
     setClef(item.clef as 'treble' | 'bass');
-    setIsSaved(false);
   };
 
   const handleAuditionScore = () => {
@@ -71,10 +66,16 @@ export const ScoreScreen: React.FC = () => {
     webAudioSynth.playSequence([261.63, 293.66, 329.63, 349.23, 293.66, 329.63, 261.63, 392.00], 0.3);
   };
 
-  const handleSaveScore = () => {
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 3000);
-  };
+  /*
+    Aqui existia `handleSaveScore`: acendia "Salvo!" em verde por tres
+    segundos e apagava. Nao gravava a partitura em lugar nenhum — e quem
+    usava nao tinha como distinguir isso de ter salvado, ate voltar e nao
+    encontrar nada.
+
+    Guardar partitura de verdade exige um repositorio de partituras e uma
+    serializacao do que o editor tem na tela. Nenhum dos dois existe hoje;
+    esta aberto em CLAUDE_TODO.md. Ate la, o botao nao esta aqui.
+  */
 
   return (
     <ScreenContainer
@@ -92,11 +93,6 @@ export const ScoreScreen: React.FC = () => {
         {
           label: 'Voltar para Prática',
           onClick: () => navigate('/practice'),
-        },
-        {
-          label: 'Exportar MusicXML',
-          icon: Download,
-          onClick: () => alert('Arquivo MusicXML canônico preparado para download.'),
         },
       ]}
       emptyProps={{
@@ -218,14 +214,6 @@ export const ScoreScreen: React.FC = () => {
               Auditar Partitura
             </Button>
 
-            <Button
-              variant={isSaved ? 'outline' : 'primary'}
-              size="sm"
-              onClick={handleSaveScore}
-              leadingIcon={isSaved ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Save className="w-3.5 h-3.5" />}
-            >
-              {isSaved ? 'Salvo!' : 'Salvar Partitura'}
-            </Button>
           </div>
         </div>
 

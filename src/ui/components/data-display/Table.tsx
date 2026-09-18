@@ -115,7 +115,7 @@ export function Table<T>({
               <td colSpan={columns.length} className="px-6 py-12 text-center text-stone-500">
                 <div className="inline-flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin text-stone-600" />
-                  <span>Carregando dados acadêmicos...</span>
+                  <span>Carregando dados acadêmicos…</span>
                 </div>
               </td>
             </tr>

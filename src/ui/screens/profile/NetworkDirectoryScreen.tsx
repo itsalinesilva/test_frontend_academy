@@ -55,7 +55,7 @@ export const NetworkDirectoryScreen: React.FC = () => {
       density="catalog"
       asideLabel="Refinar"
       state={isLoading ? 'loading' : erro ? 'error' : filtradas.length === 0 ? 'empty' : 'content'}
-      loadingMessage="Carregando o diretório de músicos..."
+      loadingMessage="Carregando o diretório de músicos…"
       errorProps={{ message: erro ?? '', onRetry: () => window.location.reload() }}
       emptyProps={{
         title: termo ? 'Nenhum músico encontrado' : 'A rede ainda está se formando',

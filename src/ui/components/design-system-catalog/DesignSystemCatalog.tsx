@@ -1030,7 +1030,7 @@ export const DesignSystemCatalog: React.FC = () => {
                 {demoState === 'loading' && (
                   <LoadingState
                     id="loader-demo"
-                    message="Sincronizando partitura com o motor de análise teórica..."
+                    message="Sincronizando partitura com o motor de análise teórica…"
                   />
                 )}
 

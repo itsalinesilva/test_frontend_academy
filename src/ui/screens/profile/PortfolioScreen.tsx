@@ -127,7 +127,7 @@ export const PortfolioScreen: React.FC = () => {
               ? 'empty'
               : 'content'
       }
-      loadingMessage="Carregando o dossiê de evidências..."
+      loadingMessage="Carregando o dossiê de evidências…"
       errorProps={{ message: erro ?? '', onRetry: () => window.location.reload() }}
       emptyProps={{
         title: filter === 'todas' ? 'Nenhuma evidência ainda' : 'Nada nesta categoria',

@@ -57,7 +57,7 @@ export const SearchScreen: React.FC = () => {
           <input
             id="omnisearch-input"
             type="text"
-            placeholder="Buscar por compositor, título de obra, lição, sala ou termo teórico..."
+            placeholder="Buscar por compositor, título de obra, lição, sala ou termo teórico…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full pl-11 pr-4 py-3.5 text-sm sm:text-base rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-anil-800 bg-white shadow-sm"

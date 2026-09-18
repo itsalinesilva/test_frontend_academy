@@ -82,7 +82,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   emptyProps,
   errorProps,
   successProps,
-  loadingMessage = 'Carregando recursos acadêmicos...',
+  loadingMessage = 'Carregando recursos acadêmicos…',
   children,
 }) => {
   const { breadcrumbs: autoBreadcrumbs, navigate, authorization } = useRouter();

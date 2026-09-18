@@ -21,7 +21,7 @@ export const EditProfileScreen: React.FC = () => {
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   // Antes, um erro ao salvar so aparecia no console: a pessoa via o botao
-  // voltar de "Salvando..." ao normal e nada mais, sem saber se gravou.
+  // voltar de "Salvando…" ao normal e nada mais, sem saber se gravou.
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
@@ -97,7 +97,7 @@ export const EditProfileScreen: React.FC = () => {
       form="focus"
       density="editorial"
       state={isLoading ? 'loading' : 'content'}
-      loadingMessage="Carregando seu perfil..."
+      loadingMessage="Carregando seu perfil…"
     >
       <PageLayout.Hero>
         <div className="space-y-1">
@@ -122,7 +122,7 @@ export const EditProfileScreen: React.FC = () => {
         {savedSuccess && (
           <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-md text-xs flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-            <span>Perfil acadêmico atualizado com sucesso! Redirecionando...</span>
+            <span>Perfil acadêmico atualizado com sucesso! Redirecionando…</span>
           </div>
         )}
 
@@ -244,7 +244,7 @@ export const EditProfileScreen: React.FC = () => {
               </Button>
               <Button variant="primary" size="md" type="submit" disabled={isSaving}>
                 <Save className="w-4 h-4 mr-1.5" />
-                {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+                {isSaving ? 'Salvando…' : 'Salvar Alterações'}
               </Button>
             </div>
           </Card>

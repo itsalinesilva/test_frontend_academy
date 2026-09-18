@@ -46,6 +46,47 @@ export const KidsGuardianScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [recado, setRecado] = useState<string | null>(null);
 
+  /**
+   * Troca de senha da conta infantil.
+   *
+   * Isto era um `window.prompt`. Três problemas, e nenhum cosmético: a senha
+   * fica visível em texto na tela enquanto se digita, não há campo de
+   * confirmação — um erro de digitação tranca a criança para fora da própria
+   * conta —, e o diálogo do navegador não diz qual é a regra antes de a
+   * pessoa tentar.
+   *
+   * O formulário abaixo resolve os três.
+   */
+  const [trocandoSenhaDe, setTrocandoSenhaDe] = useState<string | null>(null);
+  const [novaSenha, setNovaSenha] = useState('');
+  const [confirmacao, setConfirmacao] = useState('');
+  const [erroDaSenha, setErroDaSenha] = useState<string | null>(null);
+
+  const fecharTrocaDeSenha = () => {
+    setTrocandoSenhaDe(null);
+    setNovaSenha('');
+    setConfirmacao('');
+    setErroDaSenha(null);
+  };
+
+  const confirmarTrocaDeSenha = async (userId: string) => {
+    if (novaSenha.length < 8) {
+      setErroDaSenha('A senha precisa de pelo menos 8 caracteres.');
+      return;
+    }
+    if (novaSenha !== confirmacao) {
+      setErroDaSenha('As duas senhas não são iguais.');
+      return;
+    }
+    try {
+      await kidsAccountService.trocarSenha(userId, novaSenha);
+      fecharTrocaDeSenha();
+      avisar('Senha trocada. A anterior deixou de funcionar.');
+    } catch (e) {
+      setErroDaSenha(e instanceof Error ? e.message : 'Não foi possível trocar a senha.');
+    }
+  };
+
   const carregar = useCallback(async () => {
     const sessao = await authService.getActiveSession();
     const responsavelId = sessao?.user.id;
@@ -432,22 +473,77 @@ export const KidsGuardianScreen: React.FC = () => {
                 que nem nós conseguimos mostrá-la de volta — se ela for esquecida, o caminho é
                 definir outra.
               </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const nova = window.prompt(
-                    `Nova senha para ${crianca.nomeExibicao} (mínimo 8 caracteres):`
-                  );
-                  if (!nova) return;
-                  kidsAccountService
-                    .trocarSenha(crianca.userId, nova)
-                    .then(() => avisar('Senha trocada. A anterior deixou de funcionar.'))
-                    .catch((e) => avisar(e instanceof Error ? e.message : 'Não foi possível trocar.'));
-                }}
-              >
-                <KeyRound className="mr-1 h-3.5 w-3.5" /> Definir nova senha
-              </Button>
+              {trocandoSenhaDe === crianca.userId ? (
+                <div className="space-y-3 rounded-md border border-stone-200 bg-stone-50 p-3">
+                  <p className="text-xs font-semibold text-stone-800">
+                    Nova senha de {crianca.nomeExibicao}
+                  </p>
+
+                  {erroDaSenha && (
+                    <p role="alert" className="text-xs font-medium text-red-700">
+                      {erroDaSenha}
+                    </p>
+                  )}
+
+                  <div className="space-y-1">
+                    <label
+                      htmlFor={`senha-${crianca.userId}`}
+                      className="block text-xs text-stone-600"
+                    >
+                      Senha (mínimo 8 caracteres)
+                    </label>
+                    <input
+                      id={`senha-${crianca.userId}`}
+                      type="password"
+                      autoComplete="new-password"
+                      value={novaSenha}
+                      onChange={(e) => setNovaSenha(e.target.value)}
+                      className="w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-anil-700 focus:ring-1 focus:ring-anil-700"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label
+                      htmlFor={`senha-conf-${crianca.userId}`}
+                      className="block text-xs text-stone-600"
+                    >
+                      Repita a senha
+                    </label>
+                    <input
+                      id={`senha-conf-${crianca.userId}`}
+                      type="password"
+                      autoComplete="new-password"
+                      value={confirmacao}
+                      onChange={(e) => setConfirmacao(e.target.value)}
+                      className="w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none focus:border-anil-700 focus:ring-1 focus:ring-anil-700"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2">
+                    <Button variant="ghost" size="sm" onClick={fecharTrocaDeSenha}>
+                      Cancelar
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => confirmarTrocaDeSenha(crianca.userId)}
+                    >
+                      Definir a senha
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    fecharTrocaDeSenha();
+                    setTrocandoSenhaDe(crianca.userId);
+                  }}
+                >
+                  <KeyRound className="mr-1 h-3.5 w-3.5" aria-hidden="true" /> Definir nova senha
+                </Button>
+              )}
             </Card>
           </div>
         )}

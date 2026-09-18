@@ -217,6 +217,45 @@ export function checarBotaoFalso() {
 }
 
 /**
+ * Sucesso sem efeito.
+ *
+ * É o botão falso na versão silenciosa, e por isso mais difícil de ver: o
+ * controle não abre `alert` nenhum — ele acende um "Salvo!" verde por três
+ * segundos e apaga. Para quem usa, é indistinguível de ter salvado.
+ *
+ * `handleSaveScore` era exatamente isto: `setIsSaved(true)` seguido de um
+ * `setTimeout` que desfazia. A partitura nunca ia a lugar nenhum.
+ *
+ * O sinal é: a função marca sucesso e não chama repositório, serviço nem
+ * rede. Quem de fato grava chama alguém.
+ */
+export function checarSucessoSemEfeito() {
+  const achados = [];
+  for (const { arquivo, codigo: conteudo } of interfaces()) {
+    if (arquivo.includes('design-system-catalog')) continue;
+
+    for (const m of conteudo.matchAll(
+      /const\s+(\w*(?:[Ss]ave|[Ss]alvar|[Ss]ubmit|[Ee]nviar|[Pp]ublic)\w*)\s*=\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{([\s\S]{0,700}?)\n\s{2}\};/g
+    )) {
+      const [, nome, corpo] = m;
+      const marcaSucesso = /set(?:Is)?(?:Saved|Salvo|Sucesso|Success|Enviado|Publicado)\s*\(\s*true/i.test(corpo);
+      if (!marcaSucesso) continue;
+
+      const agiuDeVerdade =
+        /[Rr]epository\.|[Ss]ervice\.|await\s|fetch\(|storage\.|localStorage\./.test(corpo);
+      if (agiuDeVerdade) continue;
+
+      achados.push({
+        arquivo,
+        linha: conteudo.slice(0, m.index).split('\n').length,
+        detalhe: `${nome}() anuncia sucesso sem gravar nada`,
+      });
+    }
+  }
+  return achados;
+}
+
+/**
  * Promessa de funcionalidade futura escrita como se fosse presente.
  *
  * "Em breve" numa tela publicada é uma dívida que o aluno paga: ele procurou,
@@ -281,7 +320,7 @@ export function checarDadosDentroDaTela() {
         /\b(author|autor|teacher|professor|host|actor|ator|owner|email|timestamp|date|data|createdAt|publishedAt|dueDate|enrolled|inscrit|membersCount|studentCount|count|status|severity|version|xp|score|nota|grade|price|preco)\s*:/i;
       if (!CAMPO_DE_DADO.test(corpo)) continue;
       // um item que CARREGA a propria acao e um comando, nao um registro
-      if (/action:\s*\(/.test(corpo)) continue;
+      if (/[^A-Za-z]action:\s*\(/.test(corpo)) continue;
 
       achados.push({
         arquivo,

@@ -12,7 +12,7 @@
  *
  * "ok" quer dizer que *aquela* verificação passou. Não quer dizer que a tela
  * está boa. O que nenhuma verificação alcança está escrito em
- * `docs/harness/QUALIDADE.md`, na seção "o que isto não cobre" — e está
+ * `docs/harness/72_PENTE_FINO_QUALIDADE.md`, na seção "o que isto não cobre" — e está
  * aberto em `CLAUDE_TODO.md` até alguém fechar.
  *
  * Uso:  node scripts/qa.mjs [--json] [--so-falhas]
@@ -36,6 +36,7 @@ import {
   checarDadoFabricado,
   checarRepertorioLivre,
   checarBotaoFalso,
+  checarSucessoSemEfeito,
   checarDadosDentroDaTela,
   checarPromessaDeEmBreve,
   checarNomeAcessivel,
@@ -84,6 +85,7 @@ const SECOES = [
       relatar('a ressalva de curso livre está escrita', checarRessalvaDeCursoLivre(), G.BLOQUEIA),
       relatar('nenhum dado fabricado no catálogo', checarDadoFabricado(), G.BLOQUEIA),
       relatar('nenhum botão falso', checarBotaoFalso(), G.BLOQUEIA),
+      relatar('nenhum sucesso anunciado sem efeito', checarSucessoSemEfeito(), G.BLOQUEIA),
       relatar('nenhum conjunto de dados escrito na tela', checarDadosDentroDaTela(), G.BLOQUEIA),
       relatar('nada prometido para "em breve"', checarPromessaDeEmBreve(), G.CORRIGIR),
       relatar('todo o repertório é de domínio público', checarRepertorioLivre(), G.CORRIGIR),
@@ -155,6 +157,6 @@ if (process.argv.includes('--json')) {
   console.log('---');
   console.log(`rotas ${rotas.total} · telas ${rotas.telas} · distinguem visitante ${rotas.distinguem}`);
   console.log(`bloqueios ${bloqueios} · a corrigir ${correcoes}`);
-  console.log('não coberto por máquina: docs/harness/QUALIDADE.md');
+  console.log('não coberto por máquina: docs/harness/72_PENTE_FINO_QUALIDADE.md');
   process.exitCode = bloqueios > 0 ? 1 : 0;
 }

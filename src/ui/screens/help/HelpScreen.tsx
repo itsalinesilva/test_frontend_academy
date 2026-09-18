@@ -1,7 +1,28 @@
 import React from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { Card } from '../../components/base/Card';
-import { HelpCircle, Terminal, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { HelpCircle, Terminal, MessageSquare } from 'lucide-react';
+
+/**
+ * Canal de suporte.
+ *
+ * "Abrir chamado" respondia `alert('Formulário de suporte institucional
+ * despachado')`. Não existe sistema de chamados, e nada era despachado — a
+ * pessoa que precisava de ajuda saía da tela achando que tinha pedido.
+ *
+ * Enquanto não houver atendimento próprio, o canal honesto é o e-mail da
+ * instituição, com o assunto já preenchido. Isso funciona de verdade.
+ */
+const EMAIL_DE_SUPORTE = 'suporte@conservatoriomuscicapa.com.br';
+
+function abrirSuporte(): void {
+  const assunto = encodeURIComponent('Suporte — Conservatório Muscicapa');
+  const endereco = typeof window !== 'undefined' ? window.location.href : '';
+  const corpo = encodeURIComponent(
+    ['Descreva o que aconteceu e em qual tela.', '', `Endereço: ${endereco}`].join('\n')
+  );
+  window.location.href = `mailto:${EMAIL_DE_SUPORTE}?subject=${assunto}&body=${corpo}`;
+}
 
 export const HelpScreen: React.FC = () => {
 
@@ -28,20 +49,21 @@ export const HelpScreen: React.FC = () => {
       badgeLabel="Suporte Acadêmico"
       badgeVariant="neutral"
       primaryAction={{
-        label: 'Abrir Chamado',
+        label: 'Escrever para o suporte',
         icon: MessageSquare,
-        onClick: () => alert('Formulário de suporte institucional despachado.'),
+        onClick: abrirSuporte,
       }}
     >
       <div className="max-w-3xl mx-auto space-y-6">
-        {/* System Health Status */}
-        <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between text-xs text-emerald-900">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-            <span>Todos os serviços e motores de áudio operando normalmente.</span>
-          </div>
-          <span className="font-mono text-[11px] text-emerald-800">Status 100% Online</span>
-        </div>
+        {/*
+          Aqui havia um aviso verde: "Todos os serviços e motores de áudio
+          operando normalmente — Status 100% Online". Não havia verificação
+          nenhuma por trás dele; era um retângulo que dizia "está tudo bem"
+          sempre, inclusive com tudo fora do ar.
+
+          Quem quiser saber o que este navegador concede à plataforma tem a
+          verificação de verdade em /admin/engines, que mede na hora.
+        */}
 
         {/* FAQs */}
         <div className="space-y-3">

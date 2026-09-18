@@ -9,7 +9,6 @@ import {
   Plus,
   RotateCcw,
   RotateCw,
-  Save,
   ArrowLeft,
 } from 'lucide-react';
 
@@ -43,19 +42,14 @@ export const DawProjectScreen: React.FC = () => {
       id="daw-project"
       title={`Projeto DAW: ${projectId}`}
       subtitle="Estúdio Digital Multitrack • Processamento não-destrutivo com preservação de versões"
-      badgeLabel="Autosave Habilitado"
-      badgeVariant="brand"
+      badgeLabel="Mesa de mixagem"
+      badgeVariant="neutral"
       primaryAction={{
-        label: 'Salvar Snapshot',
-        icon: Save,
-        onClick: () => alert('Snapshot da versão salvo no histórico seguro do projeto.'),
+        label: 'Voltar ao estúdio',
+        icon: ArrowLeft,
+        onClick: () => navigate('/studio'),
       }}
       secondaryActions={[
-        {
-          label: 'Voltar ao Hub',
-          icon: ArrowLeft,
-          onClick: () => navigate('/studio'),
-        },
       ]}
       emptyProps={{
         title: 'Projeto não encontrado',

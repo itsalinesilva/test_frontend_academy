@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 3000 --host 0.0.0.0",
-    "build": "tsc && vite build && npm run verify:secrets && npm run verify:citations",
+    "build": "tsc && vite build && npm run verify:secrets && npm run verify:citations && npm run qa",
     "preview": "vite preview --port 3000 --host 0.0.0.0",
     "lint": "eslint src --ext .ts,.tsx",
     "typecheck": "tsc --noEmit",
@@ -13,7 +13,10 @@
     "verify:secrets": "node scripts/verify-bundle-secrets.mjs",
     "verify:citations": "node scripts/verify-no-citations.mjs",
     "livros": "vite-node scripts/gerar-livros.ts",
-    "measure:parity": "node scripts/measure-parity.mjs"
+    "measure:parity": "node scripts/measure-parity.mjs",
+    "qa": "node scripts/qa.mjs",
+    "qa:json": "node scripts/qa.mjs --json",
+    "verificar": "npm run typecheck && npm run lint && npm run qa && npm test"
   },
   "dependencies": {
     "clsx": "^2.1.1",

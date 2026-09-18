@@ -233,7 +233,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               setQuery(e.target.value);
               setSelectedIndex(0);
             }}
-            placeholder="Navegar para Academy, Practice, Score, Studio, Profile..."
+            placeholder="Navegar para Academy, Practice, Score, Studio, Profile…"
             className="w-full text-sm sm:text-base text-stone-900 placeholder:text-stone-400 bg-transparent focus:outline-none"
           />
           <kbd className="text-[10px] font-mono text-stone-400 bg-stone-100 border border-stone-200 px-1.5 py-0.5 rounded">

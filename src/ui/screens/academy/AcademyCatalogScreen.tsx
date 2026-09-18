@@ -99,7 +99,7 @@ export const AcademyCatalogScreen: React.FC = () => {
             <input
               id="academy-catalog-search-input"
               type="text"
-              placeholder="Buscar por disciplina, trilha, autor ou competência..."
+              placeholder="Buscar por disciplina, trilha, autor ou competência…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="bg-transparent text-xs sm:text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none w-full font-sans"
