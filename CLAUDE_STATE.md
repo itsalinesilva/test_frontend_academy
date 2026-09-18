@@ -5,11 +5,41 @@
 
 | Campo | Valor |
 | :--- | :--- |
-| **Última atualização** | 2026-09-16 |
-| **Missão concluída** | **COMANDO 4 — Profile 36→92/100 · 4 de 4 telas FULL · 7 defeitos corrigidos** |
-| **Branch** | `main` (commit `cad89d0`) |
-| **Próxima missão** | **COMANDO 5 — Practice (paridade Duolingo + Astra Trainer)** · começa pela TODO 3.10 |
+| **Última atualização** | 2026-09-18 |
+| **Missão concluída** | **COMANDO 5 — a camada de telas do Practice**, oito componentes com domínio próprio |
+| **Branch** | `feat/security-authority-and-audit` (commit `43f7b2f`) |
+| **Próxima missão** | **Ligar o Practice** — rotas, persistência e o gerador de exercícios (T-58, T-59) |
 | **Status global** | 🟠 **PROTÓTIPO COM AUTENTICAÇÃO REAL** — os bloqueadores de segurança estão fechados; a paridade funcional não |
+
+### O que mudou nesta sessão
+
+| Verificação | Comando | Resultado |
+| :--- | :--- | :--- |
+| Typecheck estrito | `tsc --noEmit` | ✅ 0 erros |
+| Lint | `eslint src tests scripts` | ⚠️ 0 erros · 21 avisos (`no-explicit-any`, todos anteriores) |
+| Testes | `vitest run` | ✅ **861** em 47 arquivos |
+| Pente fino | `node scripts/qa.mjs` | ✅ **0 bloqueios · 0 a corrigir** |
+
+**Telas do Practice construídas:** exercício, encerramento, caminho do
+percurso, liga, matrícula, missões, réguas do perfil, ofensiva.
+
+**Domínios novos:** `gramatica-musical` (280 formas de exercício),
+`economia-de-progresso` (a tabela de contagem em código),
+`encerramento-da-licao`, `percurso`, `missoes`, clubes em `frequencia`.
+
+**Defeitos reais corrigidos:** `getPracticeProfile` fabricava o retrato de
+quem pratica — somava `+125` minutos, `+8` sessões e `+74` tentativas a
+números reais, dava 86% de precisão a quem nunca praticou, e abria o perfil
+no nível 12 e na liga Conservatório. A tabela de contagem citava três
+símbolos inexistentes e contradizia a si mesma no valor das missões.
+
+**Verificações novas no pente fino:** agregado inflado, símbolo inexistente na
+contagem, valor divergente entre documento e código, vocabulário do Atlas.
+
+> **O que NÃO está pronto, e é o próximo passo:** as oito telas existem, são
+> testadas e não têm rota — nenhuma é alcançável pela navegação. Nada do que
+> elas produzem é persistido, e não há gerador que produza exercícios para as
+> 21 dimensões. Ver `CLAUDE_TODO.md` T-58 e T-59.
 
 ---
 
