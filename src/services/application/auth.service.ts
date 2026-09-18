@@ -1,3 +1,4 @@
+import { isGoogleSignInConfigured } from '../../infrastructure/auth/google-identity-client';
 import { User, Profile, UserRole, AppMode } from '../../domain/types';
 import {
   GoogleAuthenticationRequest,
@@ -157,6 +158,86 @@ export class AuthService {
    * verificada mais a concessão administrativa. O cliente nunca decide quem
    * é quem, nem quem é admin.
    */
+  /**
+   * Conta local — SÓ EM DESENVOLVIMENTO.
+   *
+   * POR QUE ISTO EXISTE
+   * -------------------
+   * A plataforma autentica exclusivamente por Google (ADR-001.A), o que é a
+   * decisão certa em produção. Em desenvolvimento, porém, ela tornava a
+   * plataforma **impossível de usar**: sem `VITE_GOOGLE_OAUTH_CLIENT_ID`
+   * configurado, não havia como criar conta, e portanto não havia como ver
+   * nenhuma tela na versão logada.
+   *
+   * TRÊS TRAVAS, E POR QUE CADA UMA
+   * -------------------------------
+   * 1. `import.meta.env.DEV` — o Vite elimina este método do bundle de
+   *    produção por eliminação de código morto. Ele não existe no build.
+   * 2. Google configurado desativa o atalho — se há o caminho real, usa-se o
+   *    real.
+   * 3. A conta criada **nunca recebe privilégio de admin**. Privilégio segue
+   *    a outorga assinada pelo servidor, e um atalho local não é servidor.
+   *    Foi exatamente assim que o mock anterior deixou qualquer um entrar
+   *    como fundadora (CLAUDE_AUDIT.md S-03/S-04).
+   */
+  public async authenticateLocalDevelopment(
+    nome: string,
+    email: string
+  ): Promise<AuthSessionResponse> {
+    if (!import.meta.env.DEV) {
+      throw new UnauthorizedError('Conta local existe apenas em desenvolvimento.');
+    }
+    if (isGoogleSignInConfigured()) {
+      throw new UnauthorizedError(
+        'Google Sign-In está configurado neste ambiente; use a entrada federada.'
+      );
+    }
+
+    const limpo = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(limpo)) {
+      throw new UnauthorizedError('Informe um e-mail válido.');
+    }
+
+    const agora = new Date().toISOString();
+    let user = await this.userRepo.findByEmail(limpo);
+
+    if (!user) {
+      user = {
+        id: `usr_local_${limpo.replace(/[^a-z0-9]/g, '_')}`,
+        email: limpo,
+        name: nome.trim() || limpo.split('@')[0],
+        primaryRole: UserRole.ALUNO,
+        assignedRoles: [UserRole.ALUNO],
+        isEmailVerified: false,
+        authProvider: 'google',
+        isFounderAdmin: false,
+        linkedAccounts: [],
+        createdAt: agora,
+        updatedAt: agora,
+      };
+      await this.userRepo.save(user);
+    }
+
+    const profile = await this.ensureProfile(user);
+
+    const session: AuthSessionResponse = {
+      user,
+      profile,
+      capabilities: entitlementService.getEffectiveCapabilities(user),
+      entitlements: entitlementService.getEffectiveEntitlements(user),
+      mode: this.resolveUserMode(user, profile),
+      // Token de desenvolvimento: não vale contra o servidor de autoridade, e
+      // é isso mesmo. Nenhuma rota protegida do servidor o aceita.
+      accessToken: 'dev-local-session',
+      expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
+      isAdmin: false,
+      adminCapabilities: [],
+    };
+
+    await this.storage.setItem(this.sessionKey, session);
+    return session;
+  }
+
   public async authenticateWithGoogle(req: GoogleAuthenticationRequest): Promise<AuthSessionResponse> {
     const response = await fetch(`${AUTHORITY_BASE}/auth/session`, {
       method: 'POST',

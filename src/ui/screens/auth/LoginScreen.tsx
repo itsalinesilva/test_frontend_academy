@@ -3,6 +3,7 @@ import { useRouter } from '../../navigation/router';
 import { authService } from '../../../services/application/auth.service';
 import { Card } from '../../components/base/Card';
 import { GoogleSignInButton } from '../../components/auth/GoogleSignInButton';
+import { ContaLocalDeDesenvolvimento } from '../../components/auth/ContaLocalDeDesenvolvimento';
 import { ErrorState } from '../../components/feedback/ErrorState';
 import { GraduationCap, ShieldCheck, HardDrive, Loader2 } from 'lucide-react';
 
@@ -77,6 +78,11 @@ export const LoginScreen: React.FC = () => {
               onError={setError}
               text="signin_with"
               disabled={isAuthenticating}
+            />
+
+            <ContaLocalDeDesenvolvimento
+              onEntrou={(destino) => navigate(destino)}
+              onErro={(m) => setError(m || null)}
             />
 
             {isAuthenticating && (

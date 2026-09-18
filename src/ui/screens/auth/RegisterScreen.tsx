@@ -4,6 +4,7 @@ import { authService } from '../../../services/application/auth.service';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { GoogleSignInButton } from '../../components/auth/GoogleSignInButton';
+import { ContaLocalDeDesenvolvimento } from '../../components/auth/ContaLocalDeDesenvolvimento';
 import { ErrorState } from '../../components/feedback/ErrorState';
 import { GraduationCap, ShieldCheck, Users, Loader2 } from 'lucide-react';
 
@@ -71,6 +72,11 @@ export const RegisterScreen: React.FC = () => {
             onError={setError}
             text="signup_with"
             disabled={isAuthenticating}
+          />
+
+          <ContaLocalDeDesenvolvimento
+            onEntrou={(destino) => navigate(destino)}
+            onErro={(m) => setError(m || null)}
           />
 
           {isAuthenticating && (

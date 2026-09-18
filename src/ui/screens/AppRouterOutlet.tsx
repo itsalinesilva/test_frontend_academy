@@ -9,6 +9,7 @@ import { ShieldAlert, LogIn, ArrowLeft } from 'lucide-react';
 
 // 6 Primary Pillars
 import { AcademyHomeScreen } from './academy/AcademyHomeScreen';
+import { HomeScreen } from './home/HomeScreen';
 import { AcademyCatalogScreen } from './academy/AcademyCatalogScreen';
 import { AcademySearchScreen } from './academy/AcademySearchScreen';
 import { ProgramDetailScreen } from './academy/ProgramDetailScreen';
@@ -228,14 +229,13 @@ export const AppRouterOutlet: React.FC = () => {
     );
   }
 
-  // Raiz: a plataforma abre no Academy.
+  // Raiz: a home, nas duas versoes.
   //
-  // Havia aqui uma tela de "visao geral" que repetia o menu do header pela
-  // terceira vez e enchia o resto de cards decorativos com botoes que nao
-  // levavam a lugar nenhum. Foi removida: quem entra quer estudar, e o
-  // Academy e onde se estuda.
+  // Visitante recebe o que a plataforma e e por que criar conta. Quem entrou
+  // recebe o proprio feed. A tela antiga daqui repetia o menu do header pela
+  // terceira vez e foi removida; esta nao repete menu nenhum.
   if (currentPath === '/' || currentPath === '' || currentPath === '/overview') {
-    return <AcademyHomeScreen />;
+    return <HomeScreen />;
   }
 
   // Design System

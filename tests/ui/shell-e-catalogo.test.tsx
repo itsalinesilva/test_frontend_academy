@@ -83,18 +83,23 @@ describe('o shell tem um header, e um só', () => {
   });
 });
 
-describe('a tela de "visão geral" da raiz foi removida', () => {
-  it('o arquivo não existe', () => {
+describe('a raiz tem home própria, nas duas versões', () => {
+  it('a tela de "visão geral" antiga não existe mais', () => {
     expect(existsSync(resolve(raiz, 'src/ui/screens/overview/OverviewScreen.tsx'))).toBe(false);
   });
 
-  it('a raiz abre o Academy', () => {
+  it('a raiz abre a HomeScreen', () => {
     const outlet = lerCodigo('src/ui/screens/AppRouterOutlet.tsx');
-    // ProfileOverviewScreen e outra tela e continua existindo; o que sumiu e
-    // a tela de raiz, importada de `overview/`.
-    expect(outlet).not.toContain("overview/OverviewScreen");
-    expect(outlet).not.toMatch(/<OverviewScreen\s*\/>/);
-    expect(outlet).toMatch(/currentPath === '\/'[\s\S]{0,200}<AcademyHomeScreen/);
+    expect(outlet).not.toContain('overview/OverviewScreen');
+    expect(outlet).toMatch(/currentPath === '\/'[\s\S]{0,240}<HomeScreen/);
+  });
+
+  it('a home distingue visitante de aluno logado', () => {
+    const home = lerCodigo('src/ui/screens/home/HomeScreen.tsx');
+    expect(home).toContain('useUsuarioAtual');
+    // O ramo de visitante existe e convida a criar conta.
+    expect(home).toContain('if (!userId)');
+    expect(home).toContain('/auth/register');
   });
 });
 

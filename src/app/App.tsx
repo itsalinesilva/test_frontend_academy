@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { RouterProvider, useRouter } from '../ui/navigation/router';
 import { AppShell } from '../ui/components/layout/AppShell';
 import { AppRouterOutlet } from '../ui/screens/AppRouterOutlet';
+import { GuardaDeAudiencia } from '../ui/navigation/GuardaDeAudiencia';
 import { authService } from '../services/application/auth.service';
 import { User, UserRole } from '../domain/types';
 import { LoadingState } from '../ui/components/feedback/LoadingState';
@@ -86,7 +87,10 @@ const AppContent: React.FC<AppContentProps> = ({
         assignedRoles={assignedRoles}
         onSwitchRole={onSwitchRole}
       />
-      <AppRouterOutlet />
+      {/* A audiencia de cada rota e declarada em navigation/audiencia.ts. */}
+      <GuardaDeAudiencia>
+        <AppRouterOutlet />
+      </GuardaDeAudiencia>
     </AppShell>
   );
 };

@@ -8,7 +8,7 @@ export const HelpScreen: React.FC = () => {
   const faqs = [
     {
       q: 'Como funciona a validação de evidências e insígnias?',
-      a: 'Todas as gravações e exercícios submetidos são analisados pelos motores analíticos da plataforma e avaliados pelo docente da sua cátedra. Uma vez aprovados, um hash SHA-256 é registrado no seu portfólio.',
+      a: 'Todas as gravações e exercícios submetidos são analisados pelos motores analíticos da plataforma e avaliados pelo docente da sua cátedra. Uma vez aprovados, um hash SHA-256 é registrado no portfólio de quem submeteu.',
     },
     {
       q: 'Quais os requisitos de hardware para usar a DAW e o Afinador?',
