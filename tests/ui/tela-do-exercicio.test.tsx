@@ -259,3 +259,120 @@ describe('a etiqueta de revisão', () => {
     expect(screen.getByText(/corrija o erro de antes/i)).toBeInTheDocument();
   });
 });
+
+describe('sair no meio avisa o que se perde', () => {
+  it('sem nada respondido, o ✕ sai direto', async () => {
+    // Confirmar a saida de uma licao intocada e atrito puro: nao ha progresso
+    // em risco, e a pergunta so ensina a descartar avisos sem ler.
+    const user = userEvent.setup();
+    const { aoSair } = montar();
+    await user.click(screen.getByRole('button', { name: /sair da lição/i }));
+    expect(aoSair).toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('com exercício respondido, pergunta antes — e diz o que se perde', async () => {
+    const user = userEvent.setup();
+    const licao = responder(iniciarLicao('lic', [exercicio, exercicio]), true);
+    const { aoSair } = montar({ licao });
+
+    await user.click(screen.getByRole('button', { name: /sair da lição/i }));
+    expect(aoSair).not.toHaveBeenCalled();
+
+    const aviso = screen.getByRole('dialog');
+    // "Tem certeza?" nao informa nada: o aviso precisa dizer a consequencia.
+    expect(aviso).toHaveTextContent(/não será registrado/i);
+  });
+
+  it('ficar fecha o aviso sem sair', async () => {
+    const user = userEvent.setup();
+    const licao = responder(iniciarLicao('lic', [exercicio, exercicio]), true);
+    const { aoSair } = montar({ licao });
+
+    await user.click(screen.getByRole('button', { name: /sair da lição/i }));
+    await user.click(screen.getByRole('button', { name: /continuar a lição/i }));
+
+    expect(aoSair).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('confirmar sai de fato', async () => {
+    const user = userEvent.setup();
+    const licao = responder(iniciarLicao('lic', [exercicio, exercicio]), true);
+    const { aoSair } = montar({ licao });
+
+    await user.click(screen.getByRole('button', { name: /sair da lição/i }));
+    await user.click(screen.getByRole('button', { name: /perder o progresso/i }));
+    expect(aoSair).toHaveBeenCalled();
+  });
+
+  it('Escape equivale a ficar', async () => {
+    const user = userEvent.setup();
+    const licao = responder(iniciarLicao('lic', [exercicio, exercicio]), true);
+    const { aoSair } = montar({ licao });
+
+    await user.click(screen.getByRole('button', { name: /sair da lição/i }));
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(aoSair).not.toHaveBeenCalled();
+  });
+});
+
+describe('calibragem do exercício', () => {
+  const conferir = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.click(screen.getByRole('button', { name: /quinta justa/i }));
+    await user.click(screen.getByRole('button', { name: 'Conferir' }));
+  };
+
+  it('sem destino para o dado, o rodapé não existe', async () => {
+    /**
+     * Um botao que coleta opiniao e nao a registra em lugar nenhum e pior do
+     * que nao perguntar: cria a impressao de que alguem esta ouvindo.
+     */
+    const user = userEvent.setup();
+    montar();
+    await conferir(user);
+    expect(screen.queryByRole('button', { name: /muito fácil/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /reportar/i })).not.toBeInTheDocument();
+  });
+
+  it('o veredito chega a quem vai registrá-lo', async () => {
+    const user = userEvent.setup();
+    const aoAvaliarDificuldade = vi.fn();
+    montar({ aoAvaliarDificuldade });
+
+    await conferir(user);
+    await user.click(screen.getByRole('button', { name: /muito difícil/i }));
+
+    expect(aoAvaliarDificuldade).toHaveBeenCalledWith('e1', 'DIFICIL');
+  });
+
+  it('respondido o veredito, o rodapé confirma em vez de repetir a pergunta', async () => {
+    const user = userEvent.setup();
+    montar({ aoAvaliarDificuldade: vi.fn() });
+
+    await conferir(user);
+    await user.click(screen.getByRole('button', { name: /muito fácil/i }));
+
+    expect(screen.getByText(/anotado/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /muito fácil/i })).not.toBeInTheDocument();
+  });
+
+  it('reportar chega a quem vai revisar', async () => {
+    const user = userEvent.setup();
+    const aoReportar = vi.fn();
+    montar({ aoReportar });
+
+    await conferir(user);
+    await user.click(screen.getByRole('button', { name: /reportar/i }));
+
+    expect(aoReportar).toHaveBeenCalledWith('e1');
+    expect(screen.getByText(/vamos revisar/i)).toBeInTheDocument();
+  });
+
+  it('antes de conferir não se avalia o que ainda não se viu', async () => {
+    montar({ aoAvaliarDificuldade: vi.fn(), aoReportar: vi.fn() });
+    expect(screen.queryByRole('button', { name: /muito fácil/i })).not.toBeInTheDocument();
+  });
+});

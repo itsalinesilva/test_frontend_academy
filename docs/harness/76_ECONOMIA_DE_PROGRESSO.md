@@ -50,6 +50,16 @@ cada uma se perde.
 
 **Esta é a autoridade.** Valor que não está aqui não é atribuído.
 
+A coluna **Onde** nomeia o símbolo do código que dispara o evento, e o `⏳`
+marca o que **ainda não existe**. A distinção não é cosmética: uma tabela que
+nomeia código inexistente sem dizer que ele não existe é a mesma falha de
+sempre — declarar pronto o que não está — só que em forma de documento.
+
+Quem verifica isto não é a leitura: é `scripts/qa/economia.mjs`, que abre cada
+símbolo sem `⏳` e falha se não o encontrar no código. Implementar um evento
+significa criar o símbolo **e** apagar o `⏳` da linha; esquecer a segunda
+metade não quebra nada, mas esquecer a primeira quebra a suíte.
+
 ### Academy — estudo
 
 | Evento | XP | Score | Ofensiva | Onde é disparado |
@@ -73,15 +83,15 @@ cada uma se perde.
 | Rodada de 10 concluída | 20 | — | — | fim da rodada |
 | Missão diária cumprida | 50 | — | — | ver §4 |
 | Meta do dia cumprida | 30 | — | — | `DailyGoal.isCompleted` |
-| Etapa de ilha concluída | 150 | — | — | `STAGE_COMPLETED` |
-| Obra de repertório avaliada | 200 | conforme avaliação | ✅ | `REPERTOIRE_PERFORMED` |
+| Unidade do percurso concluída | 150 | — | — | ⏳ `UNIDADE_CONCLUIDA` |
+| Obra de repertório avaliada | 200 | conforme avaliação | ✅ | ⏳ `REPERTORIO_EXECUTADO` |
 
 ### Atlas — exploração
 
 | Evento | XP | Score | Onde |
 |---|---:|---:|---|
-| Primeira visita a um mundo | 20 | — | passaporte |
-| Primeira visita a uma ilha | 20 | — | `ISLAND_VISITED` |
+| Primeira visita a um mundo | 20 | — | ⏳ `MUNDO_VISITADO` |
+| Primeira visita a uma região | 20 | — | ⏳ `REGIAO_VISITADA` |
 | Obra analisada | 40 | conforme análise | `WORK_ANALYZED` |
 | Excursão concluída | 120 | — | `TOUR_COMPLETED` |
 

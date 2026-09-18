@@ -98,6 +98,22 @@ describe('acessibilidade', () => {
   }
 });
 
+describe('a economia de progresso não envelhece em silêncio', () => {
+  /**
+   * `76_ECONOMIA_DE_PROGRESSO.md` se declara a autoridade sobre XP, score,
+   * ofensiva e débito. Uma autoridade que envelhece sem avisar é pior que
+   * nenhuma: quem lê confia, e o código já faz outra coisa.
+   *
+   * As duas verificações bloqueantes entram sozinhas no laço acima. Esta,
+   * que é de vocabulário, fica travada aqui — "ilha" já voltou uma vez pela
+   * tabela de contagem depois de removida do domínio.
+   */
+  it('o vocabulário do Atlas não regride na tabela de contagem', () => {
+    const c = checagem('o vocabulário do Atlas está certo na contagem');
+    expect(c.achados, onde(c)).toBe(0);
+  });
+});
+
 describe('a plataforma inteira continua alcançável', () => {
   it('toda tela tem rota, e toda rota declara a quem serve', () => {
     expect(relatorio.telas).toBeGreaterThan(70);

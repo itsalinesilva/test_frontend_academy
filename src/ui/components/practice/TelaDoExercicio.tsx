@@ -8,13 +8,23 @@ import {
   progresso,
 } from '../../../domain/exercicio-musical';
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
-import { X, Volume2, Turtle, Check, RotateCcw } from 'lucide-react';
+import { X, Volume2, Turtle, Check, RotateCcw, Flag } from 'lucide-react';
 
 interface TelaDoExercicioProps {
   licao: LicaoEmAndamento;
   aoResponder: (acertou: boolean, escolhidas: string[]) => void;
   aoPular: () => void;
   aoSair: () => void;
+  /**
+   * Calibragem do exercicio pela propria pessoa.
+   *
+   * Opcional DE PROPOSITO: sem destino para o dado, o rodape nao aparece. Um
+   * botao que coleta opiniao e nao a registra em lugar nenhum e pior do que
+   * nao perguntar — cria a impressao de que alguem esta ouvindo.
+   */
+  aoAvaliarDificuldade?: (exercicioId: string, veredito: 'FACIL' | 'DIFICIL') => void;
+  /** Idem: sem destino, sem botao. */
+  aoReportar?: (exercicioId: string) => void;
 }
 
 /**
@@ -51,15 +61,30 @@ export const TelaDoExercicio: React.FC<TelaDoExercicioProps> = ({
   aoResponder,
   aoPular,
   aoSair,
+  aoAvaliarDificuldade,
+  aoReportar,
 }) => {
   const exercicio = exercicioAtual(licao);
   const [escolhidas, setEscolhidas] = useState<string[]>([]);
   const [conferido, setConferido] = useState<null | { acertou: boolean }>(null);
+  const [calibragem, setCalibragem] = useState<Calibragem>(null);
+  const [confirmandoSaida, setConfirmandoSaida] = useState(false);
 
   useEffect(() => {
     setEscolhidas([]);
     setConferido(null);
+    setCalibragem(null);
   }, [exercicio?.id]);
+
+  /**
+   * Sair so pergunta quando ha o que perder.
+   *
+   * Confirmar a saida de uma licao intocada seria atrito puro: nao ha
+   * progresso nenhum em risco, e a pergunta so ensinaria a pessoa a
+   * descartar avisos sem ler.
+   */
+  const haProgresso = licao.acertos + licao.erros > 0;
+  const tentarSair = () => (haProgresso ? setConfirmandoSaida(true) : aoSair());
 
   const tocar = useCallback(
     (frequencias: number[] | undefined, modo: 'SEQUENCIA' | 'ACORDE', lento = false) => {
@@ -120,7 +145,7 @@ export const TelaDoExercicio: React.FC<TelaDoExercicioProps> = ({
       <header className="flex items-center gap-4 px-4 py-4 sm:px-8">
         <button
           type="button"
-          onClick={aoSair}
+          onClick={tentarSair}
           aria-label="Sair da lição"
           className="rounded p-1 text-stone-400 transition-colors hover:text-stone-700"
         >
@@ -249,6 +274,52 @@ export const TelaDoExercicio: React.FC<TelaDoExercicioProps> = ({
               {conferido.acertou ? 'Correto.' : 'Não é essa.'}
             </p>
             <p className="mt-1 text-sm leading-relaxed text-stone-700">{exercicio.explicacao}</p>
+
+            {(aoAvaliarDificuldade || aoReportar) && (
+              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-stone-900/10 pt-3">
+                {calibragem ? (
+                  <p role="status" className="text-xs text-stone-600">
+                    {calibragem === 'REPORTADO'
+                      ? 'Reportado. Vamos revisar este exercício.'
+                      : 'Anotado — o percurso se ajusta a isso.'}
+                  </p>
+                ) : (
+                  <>
+                    {aoAvaliarDificuldade && (
+                      <>
+                        <span className="mr-1 text-xs text-stone-500">Para você, isto foi</span>
+                        {(['FACIL', 'DIFICIL'] as const).map((veredito) => (
+                          <button
+                            key={veredito}
+                            type="button"
+                            onClick={() => {
+                              aoAvaliarDificuldade(exercicio.id, veredito);
+                              setCalibragem(veredito);
+                            }}
+                            className="rounded-full border border-stone-300 bg-white px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-stone-600 transition-colors hover:border-anil-700 hover:text-anil-800"
+                          >
+                            {veredito === 'FACIL' ? 'muito fácil' : 'muito difícil'}
+                          </button>
+                        ))}
+                      </>
+                    )}
+                    {aoReportar && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          aoReportar(exercicio.id);
+                          setCalibragem('REPORTADO');
+                        }}
+                        className="ml-auto flex items-center gap-1 text-xs text-stone-500 underline-offset-2 transition-colors hover:text-stone-800 hover:underline"
+                      >
+                        <Flag className="h-3 w-3" aria-hidden="true" />
+                        Reportar um problema
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </div>
         )}
       </main>
@@ -274,6 +345,71 @@ export const TelaDoExercicio: React.FC<TelaDoExercicioProps> = ({
           </button>
         </div>
       </footer>
+
+      {confirmandoSaida && (
+        <ConfirmacaoDeSaida
+          aoFicar={() => setConfirmandoSaida(false)}
+          aoSair={aoSair}
+        />
+      )}
+    </div>
+  );
+};
+
+type Calibragem = 'FACIL' | 'DIFICIL' | 'REPORTADO' | null;
+
+/**
+ * O aviso antes de sair.
+ *
+ * A licao so conta quando termina: quem sai no meio perde o que respondeu.
+ * Isso precisa ser dito ANTES, e dito por inteiro — "tem certeza?" nao informa
+ * nada. E o botao em destaque e o de FICAR, porque sair e a acao destrutiva.
+ */
+const ConfirmacaoDeSaida: React.FC<{ aoFicar: () => void; aoSair: () => void }> = ({
+  aoFicar,
+  aoSair,
+}) => {
+  useEffect(() => {
+    const aoTeclar = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') aoFicar();
+    };
+    window.addEventListener('keydown', aoTeclar);
+    return () => window.removeEventListener('keydown', aoTeclar);
+  }, [aoFicar]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="titulo-da-saida"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-stone-900/50 p-4 sm:items-center"
+    >
+      <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+        <h2 id="titulo-da-saida" className="font-serif text-xl font-bold text-stone-900">
+          Sair da lição?
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-stone-600">
+          O que você respondeu até aqui não será registrado, e a lição recomeça do
+          primeiro exercício.
+        </p>
+        <div className="mt-6 flex flex-col gap-2">
+          <button
+            type="button"
+            autoFocus
+            onClick={aoFicar}
+            className="rounded-lg bg-anil-800 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-anil-700"
+          >
+            Continuar a lição
+          </button>
+          <button
+            type="button"
+            onClick={aoSair}
+            className="rounded-lg px-6 py-2.5 text-sm font-medium text-stone-500 transition-colors hover:text-red-700"
+          >
+            Sair e perder o progresso
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

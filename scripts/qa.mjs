@@ -46,6 +46,11 @@ import {
   checarTextoAlternativo,
   checarAlcancePorTeclado,
 } from './qa/fluxo.mjs';
+import {
+  checarSimboloDaContagem,
+  checarVocabularioDaContagem,
+  checarValorForaDaTabela,
+} from './qa/economia.mjs';
 
 /** A auditoria de rotas já existia; entra aqui em vez de virar comando à parte. */
 function checarRotas() {
@@ -97,6 +102,14 @@ const SECOES = [
         G.BLOQUEIA
       ),
       relatar('todo o repertório é de domínio público', checarRepertorioLivre(), G.CORRIGIR),
+    ],
+  },
+  {
+    titulo: 'ECONOMIA — a tabela de contagem e o código dizem a mesma coisa',
+    checagens: [
+      relatar('todo símbolo afirmado na contagem existe', checarSimboloDaContagem(), G.BLOQUEIA),
+      relatar('nenhum XP atribuído fora da tabela', checarValorForaDaTabela(), G.BLOQUEIA),
+      relatar('o vocabulário do Atlas está certo na contagem', checarVocabularioDaContagem(), G.CORRIGIR),
     ],
   },
   {
