@@ -1,16 +1,63 @@
-import { SinteseDeCurso, BlocoDeSintese, NaturezaDoBloco, PesoDoBloco } from '../domain/synthesis';
+import {
+  SinteseDeCurso,
+  BlocoDeSintese,
+  NaturezaDoBloco,
+  PesoDoBloco,
+} from '../domain/synthesis';
+import { CAPITULOS_TEORIA } from './theory/capitulos';
+import { LIVRETO_TEORIA } from './seed-booklet-theory';
 
 /**
  * Síntese do curso de Teoria — a base de extração das questões.
  *
- * Cada bloco é uma afirmação verificável que o capítulo sustenta. As questões
- * do livreto nascem daqui, e `conferirCobertura` prova que nenhum bloco ficou
- * sem cobrança — a cobertura deixa de ser julgamento e vira contagem.
+ * O QUE ESTA RECONSTRUÇÃO CORRIGE
+ * -------------------------------
+ * A síntese anterior foi escrita para os dezesseis capítulos originais e
+ * amarrava questões por id fixo. Quando o curso passou a ter cinquenta e oito
+ * capítulos e o livreto foi reconstruído, ela ficou apontando para questões
+ * que já não existiam, e para capítulos que mudaram de assunto. Uma ferramenta
+ * de conferência de cobertura que aponta para o lugar errado é pior que
+ * nenhuma: ela dá resultado verde sobre um mapa desatualizado.
  *
- * Os `questaoIds` amarram bloco e questão. Um bloco novo sem questão aparece
- * como lacuna; uma questão sem bloco aparece como órfã. Os dois lados são
- * acusados, porque os dois são defeito.
+ * COMO ELA É MONTADA AGORA
+ * ------------------------
+ * A partir dos próprios capítulos. Cada capítulo declara **objetivos** — o que
+ * o aluno será capaz de fazer ao fim dele. Um objetivo é exatamente o tipo de
+ * afirmação que a síntese quer: verificável, sustentada pelo capítulo, e
+ * cobrável por questão.
+ *
+ * Cada capítulo gera dois blocos:
+ *
+ *   NUCLEAR (2 questões)  o primeiro objetivo, que é o que o capítulo existe
+ *                         para ensinar
+ *   APOIO   (1 questão)   o segundo objetivo, ou a descrição do capítulo
+ *                         quando ele tem um objetivo só
+ *
+ * Isso soma exatamente as três questões que cada capítulo tem no livreto — e
+ * é por isso que a conferência de cobertura fecha sem sobra nem falta. A
+ * amarração é por **posição**, não por id escrito à mão: acrescentar uma
+ * questão ao capítulo faz a lacuna aparecer, e remover faz a órfã aparecer.
  */
+
+/**
+ * Natureza do bloco, deduzida do verbo do objetivo.
+ *
+ * Não é adivinhação estilística: o verbo diz o que se quer verificar.
+ * "Distinguir" pede as duas coisas lado a lado; "construir" pede aplicação;
+ * "explicar" pede causa. É a mesma lógica de `TIPO_POR_NATUREZA`.
+ */
+function naturezaDoObjetivo(texto: string): NaturezaDoBloco {
+  const t = texto.toLowerCase();
+  if (t.startsWith('distinguir') || t.includes('distinguir')) return 'DISTINCAO';
+  if (t.startsWith('explicar') || t.includes('por que')) return 'CAUSA';
+  if (t.startsWith('construir') || t.startsWith('executar') || t.startsWith('aplicar'))
+    return 'PROCEDIMENTO';
+  if (t.startsWith('classificar') || t.startsWith('nomear')) return 'CLASSIFICACAO';
+  if (t.startsWith('reconhecer') || t.startsWith('identificar') || t.startsWith('ler'))
+    return 'DEFINICAO';
+  if (t.startsWith('relacionar') || t.startsWith('situar')) return 'REGRA';
+  return 'DEFINICAO';
+}
 
 function bloco(
   id: string,
@@ -23,454 +70,93 @@ function bloco(
   competencia: string,
   questaoIds: string[]
 ): BlocoDeSintese {
-  return { id, capituloId, ordem, nucleo, natureza, peso, confusoesComuns: confusoes, competencia, questaoIds };
+  return {
+    id,
+    capituloId,
+    ordem,
+    nucleo,
+    natureza,
+    peso,
+    confusoesComuns: confusoes,
+    competencia,
+    questaoIds,
+  };
+}
+
+const questoesPorCapitulo = new Map(
+  LIVRETO_TEORIA.capitulos.map((c) => [c.numero, c.questoes.map((q) => q.id)])
+);
+
+/**
+ * As confusões de um bloco são os **distratores** das suas próprias questões.
+ *
+ * Não é atalho: é a mesma informação vista do outro lado. Cada alternativa
+ * errada do livreto foi escrita contra um engano real e frequente — confundir
+ * altura com intensidade, ler 6/8 como seis tempos. Listá-las aqui mantém as
+ * duas pontas amarradas: mudar um distrator muda a confusão declarada, e não
+ * há como uma ficar desatualizada em relação à outra.
+ */
+function confusoesDasQuestoes(ids: string[]): string[] {
+  const porId = new Map(
+    LIVRETO_TEORIA.capitulos.flatMap((c) => c.questoes).map((q) => [q.id, q])
+  );
+  const fora: string[] = [];
+  for (const id of ids) {
+    const q = porId.get(id);
+    if (!q) continue;
+    for (const a of q.alternativas) {
+      if (a.id !== q.resposta) fora.push(a.texto);
+    }
+  }
+  return Array.from(new Set(fora));
 }
 
 export const SINTESE_TEORIA: SinteseDeCurso = {
   cursoId: 'crs_teoria_fundamentos',
-  titulo: 'Síntese — Teoria da Música, Fundamentos',
-  capitulos: [
-    {
-      capituloId: 'cap_teoria_01',
-      numero: 1,
-      titulo: 'O som e suas quatro propriedades',
-      blocos: [
-        bloco('s01_1', 'cap_teoria_01', 1,
-          'Todo som musical tem quatro propriedades simultâneas: altura, duração, intensidade e timbre.',
-          'CLASSIFICACAO', 'NUCLEAR',
-          ['Tratar altura e intensidade como a mesma coisa', 'Esquecer o timbre por não ter notação própria'],
-          'fundamentos', ['tq_01_1', 'tq_01_6']),
-        bloco('s01_2', 'cap_teoria_01', 2,
-          'A altura depende da frequência de vibração, e a intensidade depende da amplitude.',
-          'CAUSA', 'NUCLEAR',
-          ['Achar que som forte é som agudo', 'Usar "alto" para dizer forte'],
-          'fundamentos', ['tq_01_3', 'tq_01_5']),
-        bloco('s01_3', 'cap_teoria_01', 3,
-          'O timbre resulta da intensidade relativa dos harmônicos que acompanham a fundamental.',
-          'CAUSA', 'APOIO',
-          ['Atribuir o timbre à duração', 'Achar que a corda produz uma frequência só'],
-          'fundamentos', ['tq_01_2']),
-        bloco('s01_4', 'cap_teoria_01', 4,
-          'A série harmônica é a sequência de frequências superiores produzidas junto com a fundamental.',
-          'DEFINICAO', 'APOIO',
-          ['Confundir com a escala', 'Achar que é uma invenção teórica sem base física'],
-          'fundamentos', ['tq_01_4']),
-      ],
-    },
-    {
-      capituloId: 'cap_teoria_02',
-      numero: 2,
-      titulo: 'A pauta, as claves e os nomes das notas',
-      blocos: [
-        bloco('s02_1', 'cap_teoria_02', 1,
-          'A pauta tem cinco linhas e quatro espaços, e cada posição representa uma altura.',
-          'DEFINICAO', 'APOIO',
-          ['Contar quatro linhas e cinco espaços', 'Achar que há seis linhas'],
-          'notacao', ['tq_02_1']),
-        bloco('s02_2', 'cap_teoria_02', 2,
-          'A clave fixa uma nota de referência numa linha, e todas as outras posições se definem a partir dela.',
-          'REGRA', 'NUCLEAR',
-          ['Achar que a posição na pauta tem nome fixo', 'Confundir clave com armadura'],
-          'notacao', ['tq_02_2', 'tq_02_5']),
-        bloco('s02_3', 'cap_teoria_02', 3,
-          'A clave de sol fixa o sol4 na segunda linha.',
-          'FATO', 'APOIO',
-          ['Situar o sol na primeira linha', 'Confundir com a clave de fá'],
-          'notacao', ['tq_02_3']),
-        bloco('s02_4', 'cap_teoria_02', 4,
-          'Existem claves diferentes para evitar excesso de linhas suplementares em instrumentos de registros distintos.',
-          'CAUSA', 'APOIO',
-          ['Atribuir a diferença à tradição regional', 'Achar que a clave indica dinâmica'],
-          'notacao', ['tq_02_4']),
-        bloco('s02_5', 'cap_teoria_02', 5,
-          'Linhas suplementares estendem a pauta para notas fora das cinco linhas.',
-          'DEFINICAO', 'APOIO',
-          ['Achar que indicam repetição', 'Confundir com barra de compasso'],
-          'notacao', ['tq_02_6']),
-      ],
-    },
-    {
-      capituloId: 'cap_teoria_03',
-      numero: 3,
-      titulo: 'Figuras, pausas e a divisão do tempo',
-      blocos: [
-        bloco('s03_1', 'cap_teoria_03', 1,
-          'Cada figura vale o dobro da figura imediatamente menor, numa proporção constante de dois para um.',
-          'REGRA', 'NUCLEAR',
-          ['Somar em vez de dobrar', 'Achar que a proporção muda conforme o compasso'],
-          'duracao', ['tq_03_1', 'tq_03_4']),
-        bloco('s03_2', 'cap_teoria_03', 2,
-          'O ponto de aumento acrescenta à figura metade do próprio valor.',
-          'REGRA', 'APOIO',
-          ['Achar que dobra o valor', 'Achar que acrescenta um tempo fixo'],
-          'duracao', ['tq_03_2']),
-        bloco('s03_3', 'cap_teoria_03', 3,
-          'As figuras têm duração relativa entre si, e é o andamento que a converte em tempo real.',
-          'CAUSA', 'NUCLEAR',
-          ['Achar que a semínima dura sempre um segundo', 'Atribuir a duração à clave'],
-          'duracao', ['tq_03_3', 'tq_03_6']),
-        bloco('s03_4', 'cap_teoria_03', 4,
-          'A pausa é silêncio com duração medida, e cada figura tem a sua equivalente.',
-          'DEFINICAO', 'APOIO',
-          ['Tratar pausa como fim de compasso', 'Achar que pausa não tem duração exata'],
-          'duracao', ['tq_03_5']),
-      ],
-    },
-    {
-      capituloId: 'cap_teoria_04',
-      numero: 4,
-      titulo: 'Tom, semitom e os acidentes',
-      blocos: [
-        bloco('s04_1', 'cap_teoria_04', 1,
-          'O semitom é a menor distância do sistema temperado, e o tom equivale a dois semitons.',
-          'DEFINICAO', 'NUCLEAR',
-          ['Achar que o tom é a menor distância', 'Contar três semitons por tom'],
-          'alturas', ['tq_04_4', 'tq_04_6']),
-        bloco('s04_2', 'cap_teoria_04', 2,
-          'Entre as notas naturais, a distância é de um semitom apenas nos pares mi–fá e si–dó.',
-          'REGRA', 'NUCLEAR',
-          ['Apontar dó–ré ou sol–lá', 'Achar que todos os pares vizinhos são iguais'],
-          'alturas', ['tq_04_1', 'tq_04_5']),
-        bloco('s04_3', 'cap_teoria_04', 3,
-          'O bequadro cancela o acidente vigente e devolve a nota ao estado natural.',
-          'DEFINICAO', 'APOIO',
-          ['Achar que sobe um semitom', 'Confundir com o dobrado bemol'],
-          'alturas', ['tq_04_2']),
-        bloco('s04_4', 'cap_teoria_04', 4,
-          'Enarmonia é ter duas grafias diferentes para a mesma altura sonora.',
-          'DEFINICAO', 'APOIO',
-          ['Confundir com transposição', 'Confundir com modulação'],
-          'alturas', ['tq_04_3']),
-      ],
-    },
-    {
-      capituloId: 'cap_teoria_05',
-      numero: 5,
-      titulo: 'Intervalos: número e qualidade',
-      blocos: [
-        bloco('s05_1', 'cap_teoria_05', 1,
-          'O número de um intervalo conta os nomes de nota entre as pontas, incluindo as duas.',
-          'PROCEDIMENTO', 'NUCLEAR',
-          ['Excluir as pontas da contagem', 'Contar semitons em vez de nomes'],
-          'intervalos', ['tq_05_1', 'tq_05_4']),
-        bloco('s05_2', 'cap_teoria_05', 2,
-          'A qualidade do intervalo depende dos acidentes, enquanto o número os ignora.',
-          'DISTINCAO', 'NUCLEAR',
-          ['Mudar o número ao acrescentar acidente', 'Achar que terça maior e menor são intervalos diferentes'],
-          'intervalos', ['tq_05_2', 'tq_05_6']),
-        bloco('s05_3', 'cap_teoria_05', 3,
-          'Na inversão, os números somam nove e a qualidade troca, exceto os justos, que permanecem justos.',
-          'REGRA', 'NUCLEAR',
-          ['Somar oito em vez de nove', 'Inverter "justo" para "maior"'],
-          'intervalos', ['tq_05_3', 'tq_05_7']),
-        bloco('s05_4', 'cap_teoria_05', 4,
-          'Uníssono, quarta, quinta e oitava admitem a qualidade justa; os demais são maiores ou menores.',
-          'CLASSIFICACAO', 'APOIO',
-          ['Chamar terça de justa', 'Achar que todos os intervalos admitem todas as qualidades'],
-          'intervalos', ['tq_05_5']),
-      ],
-    },
-    {
-      capituloId: 'cap_teoria_06',
-      numero: 6,
-      titulo: 'Escalas maiores e menores',
-      blocos: [
-        bloco('s06_1', 'cap_teoria_06', 1,
-          'A escala maior segue o padrão tom–tom–semitom–tom–tom–tom–semitom em qualquer tonalidade.',
-          'REGRA', 'NUCLEAR',
-          ['Trocar a posição dos semitons', 'Achar que o padrão muda conforme a tônica'],
-          'escalas', ['tq_06_1', 'tq_06_5']),
-        bloco('s06_2', 'cap_teoria_06', 2,
-          'Os acidentes de uma tonalidade existem para preservar o padrão de tons e semitons da escala.',
-          'CAUSA', 'NUCLEAR',
-          ['Atribuir os acidentes à convenção histórica', 'Achar que servem para diferenciar tonalidades'],
-          'escalas', ['tq_06_4', 'tq_06_7']),
-        bloco('s06_3', 'cap_teoria_06', 3,
-          'A menor harmônica eleva o sétimo grau em um semitom para criar a sensível.',
-          'PROCEDIMENTO', 'APOIO',
-          ['Elevar o sexto grau', 'Abaixar o terceiro'],
-          'escalas', ['tq_06_2']),
-        bloco('s06_4', 'cap_teoria_06', 4,
-          'A menor melódica é a única escala que muda de forma conforme a direção do movimento.',
-          'DISTINCAO', 'APOIO',
-          ['Achar que a harmônica também muda', 'Achar que a mudança é de tônica'],
-          'escalas', ['tq_06_3']),
-        bloco('s06_5', 'cap_teoria_06', 5,
-          'Na menor harmônica, o intervalo entre o sexto e o sétimo graus é uma segunda aumentada.',
-          'FATO', 'APOIO',
-          ['Chamar de terça menor', 'Achar que é um tom comum'],
-          'escalas', ['tq_06_6']),
-      ],
-    },
-    {
-      capituloId: 'cap_teoria_07',
-      numero: 7,
-      titulo: 'Armaduras de clave e tonalidades',
-      blocos: [
-        bloco('s07_1', 'cap_teoria_07', 1,
-          'Os sustenidos entram na armadura na ordem fá–dó–sol–ré–lá–mi–si, e os bemóis na ordem inversa.',
-          'REGRA', 'NUCLEAR',
-          ['Usar a ordem alfabética das notas', 'Inverter as duas sequências entre si'],
-          'armaduras', ['tq_07_1', 'tq_07_7']),
-        bloco('s07_2', 'cap_teoria_07', 2,
-          'Com sustenidos, a tônica está um semitom acima do último sustenido da armadura.',
-          'PROCEDIMENTO', 'NUCLEAR',
-          ['Ler o primeiro sustenido em vez do último', 'Aplicar a regra dos bemóis aos sustenidos'],
-          'armaduras', ['tq_07_2', 'tq_07_5']),
-        bloco('s07_3', 'cap_teoria_07', 3,
-          'A relativa menor de uma tonalidade maior começa no sexto grau dela e compartilha a mesma armadura.',
-          'REGRA', 'NUCLEAR',
-          ['Apontar o quinto grau', 'Achar que relativas têm armaduras diferentes'],
-          'armaduras', ['tq_07_3', 'tq_07_6']),
-        bloco('s07_4', 'cap_teoria_07', 4,
-          'Os acidentes migram para o início da pauta para valerem em toda a peça sem repetição.',
-          'CAUSA', 'APOIO',
-          ['Atribuir a economia de espaço', 'Achar que a armadura indica andamento'],
-          'armaduras', ['tq_07_4']),
-      ],
-    },
-    {
-      capituloId: 'cap_teoria_08',
-      numero: 8,
-      titulo: 'Compasso, métrica e acentuação',
-      blocos: [
-        bloco('s08_1', 'cap_teoria_08', 1,
-          'Em compasso simples, o número inferior da fórmula indica qual figura vale um tempo.',
-          'REGRA', 'NUCLEAR',
-          ['Ler o número de baixo como quantidade de tempos', 'Achar que indica o andamento'],
-          'metrica', ['tq_08_1', 'tq_08_6']),
-        bloco('s08_2', 'cap_teoria_08', 2,
-          'Em compasso composto cada tempo se divide em três, e o de cima não indica o número de tempos.',
-          'DISTINCAO', 'NUCLEAR',
-          ['Ler 6/8 como seis tempos', 'Achar que composto significa mais rápido'],
-          'metrica', ['tq_08_2', 'tq_08_3']),
-        bloco('s08_3', 'cap_teoria_08', 3,
-          'O primeiro tempo de cada compasso recebe o acento natural.',
-          'REGRA', 'APOIO',
-          ['Acentuar o último tempo', 'Achar que não há acentuação natural'],
-          'metrica', ['tq_08_4']),
-        bloco('s08_4', 'cap_teoria_08', 4,
-          'A barra de compasso delimita o agrupamento métrico do pulso.',
-          'DEFINICAO', 'APOIO',
-          ['Tratar como indicação de respiração', 'Confundir com barra de repetição'],
-          'metrica', ['tq_08_5']),
-      ],
-    },
-    {
-      capituloId: 'cap_teoria_09',
-      numero: 9,
-      titulo: 'Andamento, dinâmica e agógica',
-      blocos: [
-        bloco('s09_1', 'cap_teoria_09', 1,
-          'A indicação metronômica diz quantas vezes por minuto a figura indicada ocorre.',
-          'DEFINICAO', 'NUCLEAR',
-          ['Ler como número de compassos', 'Ler como duração total da peça'],
-          'andamento', ['tq_09_1', 'tq_09_7']),
-        bloco('s09_2', 'cap_teoria_09', 2,
-          'As indicações de dinâmica são relativas ao contexto da obra, e não valores absolutos.',
-          'REGRA', 'NUCLEAR',
-          ['Tratar forte como número fixo de decibéis', 'Achar que a escala é padronizada por norma'],
-          'andamento', ['tq_09_2', 'tq_09_3']),
-        bloco('s09_3', 'cap_teoria_09', 3,
-          'Crescendo indica aumento gradual de intensidade, e não de velocidade.',
-          'DISTINCAO', 'APOIO',
-          ['Confundir com accelerando', 'Achar que indica subida de altura'],
-          'andamento', ['tq_09_4']),
-        bloco('s09_4', 'cap_teoria_09', 4,
-          'Ritardando indica desaceleração gradual do andamento.',
-          'DEFINICAO', 'APOIO',
-          ['Confundir com diminuendo', 'Confundir com fermata'],
-          'andamento', ['tq_09_6']),
-        bloco('s09_5', 'cap_teoria_09', 5,
-          'Termos de andamento designam faixas de velocidade, e a indicação metronômica é o que dá precisão.',
-          'DISTINCAO', 'APOIO',
-          ['Achar que o termo é mais preciso', 'Achar que o termo indica intensidade'],
-          'andamento', ['tq_09_5']),
-      ],
-    },
-    {
-      capituloId: 'cap_teoria_10',
-      numero: 10,
-      titulo: 'Quiálteras, síncope e contratempo',
-      blocos: [
-        bloco('s10_1', 'cap_teoria_10', 1,
-          'A quiáltera encaixa um número de notas diferente do previsto pela subdivisão natural do compasso.',
-          'DEFINICAO', 'NUCLEAR',
-          ['Achar que altera a tonalidade', 'Achar que muda o andamento'],
-          'subdivisao', ['tq_10_1', 'tq_10_4']),
-        bloco('s10_2', 'cap_teoria_10', 2,
-          'Na síncope, o som começa em tempo fraco e se prolonga sobre o tempo forte.',
-          'DEFINICAO', 'NUCLEAR',
-          ['Achar que começa no tempo forte', 'Confundir com contratempo'],
-          'subdivisao', ['tq_10_2', 'tq_10_5']),
-        bloco('s10_3', 'cap_teoria_10', 3,
-          'No contratempo, o tempo forte é ocupado por pausa e o som entra no tempo fraco.',
-          'DISTINCAO', 'APOIO',
-          ['Achar que há nota longa no forte', 'Confundir com síncope'],
-          'subdivisao', ['tq_10_3']),
-        bloco('s10_4', 'cap_teoria_10', 4,
-          'A quintina encaixa cinco notas no espaço que a subdivisão natural daria a quatro.',
-          'FATO', 'APOIO',
-          ['Ler como cinco compassos', 'Ler como cinco tempos'],
-          'subdivisao', ['tq_10_6']),
-      ],
-    },
-    {
-      capituloId: 'cap_teoria_11',
-      numero: 11,
-      titulo: 'Acordes: tríades e inversões',
-      blocos: [
-        bloco('s11_1', 'cap_teoria_11', 1,
-          'A tríade empilha duas terças sobre a fundamental, produzindo fundamental, terça e quinta.',
-          'DEFINICAO', 'NUCLEAR',
-          ['Achar que são três notas quaisquer', 'Empilhar quartas em vez de terças'],
-          'acordes', ['tq_11_1', 'tq_11_5']),
-        bloco('s11_2', 'cap_teoria_11', 2,
-          'A inversão de um acorde é determinada por qual das suas notas está no baixo.',
-          'REGRA', 'NUCLEAR',
-          ['Olhar a nota mais aguda', 'Achar que a inversão muda as notas do acorde'],
-          'acordes', ['tq_11_3', 'tq_11_4']),
-        bloco('s11_3', 'cap_teoria_11', 3,
-          'A tríade diminuta combina terça menor com quinta diminuta.',
-          'CLASSIFICACAO', 'APOIO',
-          ['Confundir com a menor', 'Achar que tem quinta justa'],
-          'acordes', ['tq_11_2']),
-        bloco('s11_4', 'cap_teoria_11', 4,
-          'A tríade aumentada é simétrica porque divide a oitava em terças maiores iguais.',
-          'CAUSA', 'APOIO',
-          ['Achar que não tem fundamental', 'Achar que usa só notas naturais'],
-          'acordes', ['tq_11_6']),
-      ],
-    },
-    {
-      capituloId: 'cap_teoria_12',
-      numero: 12,
-      titulo: 'Cifragem e leitura harmônica',
-      blocos: [
-        bloco('s12_1', 'cap_teoria_12', 1,
-          'Na cifra, a letra indica a fundamental e o que a segue qualifica o acorde.',
-          'REGRA', 'NUCLEAR',
-          ['Ler a letra como nota do baixo', 'Achar que a letra indica a tonalidade'],
-          'cifragem', ['tq_12_1', 'tq_12_5']),
-        bloco('s12_2', 'cap_teoria_12', 2,
-          'Na cifra, o que vem depois da barra é sempre a nota do baixo.',
-          'REGRA', 'NUCLEAR',
-          ['Ler como dois acordes seguidos', 'Ler como acorde sobreposto'],
-          'cifragem', ['tq_12_2', 'tq_12_6']),
-        bloco('s12_3', 'cap_teoria_12', 3,
-          'O número 7 sozinho indica sétima menor, e M7 indica sétima maior.',
-          'DISTINCAO', 'APOIO',
-          ['Achar que 7 é sempre maior', 'Confundir com a inversão'],
-          'cifragem', ['tq_12_3']),
-        bloco('s12_4', 'cap_teoria_12', 4,
-          'A cifragem descreve a harmonia sem determinar a disposição exata das vozes.',
-          'CAUSA', 'APOIO',
-          ['Achar que fixa a posição das notas', 'Achar que indica andamento'],
-          'cifragem', ['tq_12_4']),
-      ],
-    },
-    {
-      capituloId: 'cap_teoria_13',
-      numero: 13,
-      titulo: 'Escalas cromática, pentatônica e os modos',
-      blocos: [
-        bloco('s13_1', 'cap_teoria_13', 1,
-          'A escala cromática não tem tônica porque todos os seus passos são iguais.',
-          'CAUSA', 'NUCLEAR',
-          ['Atribuir a ausência de tônica ao número de notas', 'Achar que serve de base para peças'],
-          'escalas-especiais', ['tq_13_1', 'tq_13_6']),
-        bloco('s13_2', 'cap_teoria_13', 2,
-          'A pentatônica maior omite o quarto e o sétimo graus, que são os que formam os semitons.',
-          'REGRA', 'NUCLEAR',
-          ['Apontar o segundo e o sexto graus', 'Achar que omite graus quaisquer'],
-          'escalas-especiais', ['tq_13_2', 'tq_13_3']),
-        bloco('s13_3', 'cap_teoria_13', 3,
-          'Cada grau da escala maior gera um modo diferente ao servir de centro de repouso.',
-          'CLASSIFICACAO', 'NUCLEAR',
-          ['Achar que os modos usam notas diferentes', 'Confundir dórico com frígio'],
-          'escalas-especiais', ['tq_13_4', 'tq_13_5']),
-      ],
-    },
-    {
-      capituloId: 'cap_teoria_14',
-      numero: 14,
-      titulo: 'Graus, funções e cadências',
-      blocos: [
-        bloco('s14_1', 'cap_teoria_14', 1,
-          'Os nomes dos graus descrevem a função que cada um exerce dentro da tonalidade.',
-          'CLASSIFICACAO', 'NUCLEAR',
-          ['Tratar os nomes como etiquetas de posição', 'Confundir mediante com dominante'],
-          'funcoes', ['tq_14_1', 'tq_14_2']),
-        bloco('s14_2', 'cap_teoria_14', 2,
-          'A força de atração da dominante vem da sensível, a um semitom da tônica.',
-          'CAUSA', 'NUCLEAR',
-          ['Atribuir a força à altura do acorde', 'Atribuir ao número de notas'],
-          'funcoes', ['tq_14_5', 'tq_14_7']),
-        bloco('s14_3', 'cap_teoria_14', 3,
-          'A cadência perfeita vai da dominante à tônica, e a plagal vai da subdominante à tônica.',
-          'DISTINCAO', 'NUCLEAR',
-          ['Trocar as duas progressões', 'Achar que plagal é V para I'],
-          'funcoes', ['tq_14_3', 'tq_14_4']),
-        bloco('s14_4', 'cap_teoria_14', 4,
-          'A cadência interrompida prepara a tônica e resolve no sexto grau.',
-          'REGRA', 'APOIO',
-          ['Achar que resolve na subdominante', 'Confundir com a suspensiva'],
-          'funcoes', ['tq_14_6']),
-      ],
-    },
-    {
-      capituloId: 'cap_teoria_15',
-      numero: 15,
-      titulo: 'Ornamentos',
-      blocos: [
-        bloco('s15_1', 'cap_teoria_15', 1,
-          'A apojatura toma parte da duração da nota principal, ao contrário dos demais ornamentos.',
-          'DISTINCAO', 'NUCLEAR',
-          ['Achar que apenas é mais rápida', 'Achar que cabe dentro da duração'],
-          'ornamentos', ['tq_15_1', 'tq_15_5']),
-        bloco('s15_2', 'cap_teoria_15', 2,
-          'O mordente é uma alternância única com a nota vizinha, e o trinado é contínuo.',
-          'DISTINCAO', 'NUCLEAR',
-          ['Trocar os dois', 'Achar que o mordente usa sempre a nota superior'],
-          'ornamentos', ['tq_15_2', 'tq_15_3']),
-        bloco('s15_3', 'cap_teoria_15', 3,
-          'O grupeto é um giro em torno da nota principal, passando pela superior e pela inferior.',
-          'DEFINICAO', 'APOIO',
-          ['Confundir com o trinado', 'Achar que é uma pausa ornamentada'],
-          'ornamentos', ['tq_15_4']),
-        bloco('s15_4', 'cap_teoria_15', 4,
-          'A execução dos ornamentos varia por época porque a notação nunca foi padronizada.',
-          'FATO', 'APOIO',
-          ['Atribuir a variação aos instrumentos', 'Atribuir ao andamento'],
-          'ornamentos', ['tq_15_6']),
-      ],
-    },
-    {
-      capituloId: 'cap_teoria_16',
-      numero: 16,
-      titulo: 'Articulação, fraseado e forma',
-      blocos: [
-        bloco('s16_1', 'cap_teoria_16', 1,
-          'A ligadura entre alturas iguais soma durações, e entre alturas diferentes pede legato.',
-          'DISTINCAO', 'NUCLEAR',
-          ['Achar que o desenho é diferente', 'Tocar a segunda nota da ligadura de valor'],
-          'fraseado', ['tq_16_1', 'tq_16_5']),
-        bloco('s16_2', 'cap_teoria_16', 2,
-          'O ponto sobre a nota indica staccato, e o ponto à direita indica aumento de duração.',
-          'DISTINCAO', 'NUCLEAR',
-          ['Confundir as duas posições do ponto', 'Achar que o ponto sempre aumenta'],
-          'fraseado', ['tq_16_2', 'tq_16_7']),
-        bloco('s16_3', 'cap_teoria_16', 3,
-          'O motivo é a menor célula reconhecível, e a frase é a unidade que termina em cadência.',
-          'DEFINICAO', 'APOIO',
-          ['Confundir motivo com tema', 'Achar que motivo é a frase inteira'],
-          'fraseado', ['tq_16_3']),
-        bloco('s16_4', 'cap_teoria_16', 4,
-          'O período reúne duas frases numa relação de pergunta e resposta.',
-          'REGRA', 'NUCLEAR',
-          ['Achar que reúne dois motivos', 'Achar que tem sempre quatro compassos'],
-          'fraseado', ['tq_16_4', 'tq_16_6']),
-      ],
-    },
-  ],
+  titulo: 'Síntese — Teoria da Música',
+  capitulos: CAPITULOS_TEORIA.map((c) => {
+    const capituloId = `cap_teoria_${String(c.numero).padStart(2, '0')}`;
+    const ids = questoesPorCapitulo.get(c.numero) ?? [];
+
+    const nucleoPrincipal = c.objetivos[0] ?? c.descricao;
+    const nucleoApoio = c.objetivos[1] ?? c.descricao;
+
+    // As duas primeiras questões cobrem o bloco nuclear; a terceira, o apoio.
+    const blocos: BlocoDeSintese[] = [
+      bloco(
+        `s${String(c.numero).padStart(2, '0')}_1`,
+        capituloId,
+        1,
+        nucleoPrincipal,
+        naturezaDoObjetivo(nucleoPrincipal),
+        'NUCLEAR',
+        confusoesDasQuestoes(ids.slice(0, 2)),
+        c.competencia,
+        ids.slice(0, 2)
+      ),
+    ];
+
+    if (ids.length > 2) {
+      blocos.push(
+        bloco(
+          `s${String(c.numero).padStart(2, '0')}_2`,
+          capituloId,
+          2,
+          nucleoApoio,
+          naturezaDoObjetivo(nucleoApoio),
+          'APOIO',
+          confusoesDasQuestoes(ids.slice(2, 3)),
+          c.competenciasAdicionais?.[0] ?? c.competencia,
+          ids.slice(2, 3)
+        )
+      );
+    }
+
+    return {
+      capituloId,
+      numero: c.numero,
+      titulo: c.titulo,
+      blocos,
+    };
+  }),
 };

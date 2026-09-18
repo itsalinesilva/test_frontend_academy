@@ -407,15 +407,15 @@ describe('Livreto de Teoria', () => {
     expect(erros, erros.map((e) => e.mensagem).join(' | ')).toEqual([]);
   });
 
-  it('cobre os dezesseis capítulos com quantidade equilibrada', () => {
-    // A quantidade por capítulo não é arbitrária: sai da síntese. Um capítulo
-    // com mais blocos nucleares rende mais questões — e é assim que deve ser.
-    expect(LIVRETO_TEORIA.capitulos).toHaveLength(16);
+  it('cobre os cinquenta e oito capítulos com quantidade equilibrada', () => {
+    // Três por capítulo: um bloco nuclear (duas questões) e um de apoio (uma).
+    // O equilíbrio importa — um capítulo com o triplo do outro faz o curso
+    // parecer perder o fôlego no meio.
+    expect(LIVRETO_TEORIA.capitulos).toHaveLength(58);
     for (const c of LIVRETO_TEORIA.capitulos) {
-      expect(c.questoes.length, `capítulo ${c.numero}`).toBeGreaterThanOrEqual(6);
-      expect(c.questoes.length, `capítulo ${c.numero}`).toBeLessThanOrEqual(8);
+      expect(c.questoes.length, `capítulo ${c.numero}`).toBe(3);
     }
-    expect(totalDeQuestoes(LIVRETO_TEORIA)).toBe(102);
+    expect(totalDeQuestoes(LIVRETO_TEORIA)).toBe(174);
   });
 
   it('cada capítulo do livreto aponta para a lição correspondente', () => {
@@ -447,9 +447,9 @@ describe('Livreto de Teoria', () => {
 
   it('o simulado reúne todas as questões na ordem dos capítulos', () => {
     const s = montarSimulado(LIVRETO_TEORIA);
-    expect(s.questaoIds).toHaveLength(102);
+    expect(s.questaoIds).toHaveLength(174);
     expect(s.questaoIds[0]).toBe('tq_01_1');
-    expect(s.questaoIds[s.questaoIds.length - 1]).toBe('tq_16_6');
+    expect(s.questaoIds[s.questaoIds.length - 1]).toBe('tq_58_3');
   });
 
   it('há progressão de dificuldade — não é tudo básico', () => {
@@ -479,8 +479,8 @@ import {
 describe('Síntese como base de extração de questões', () => {
   const questoesDoLivreto = LIVRETO_TEORIA.capitulos.flatMap((c) => c.questoes);
 
-  it('a síntese cobre os dezesseis capítulos', () => {
-    expect(SINTESE_TEORIA.capitulos).toHaveLength(16);
+  it('a síntese cobre os cinquenta e oito capítulos', () => {
+    expect(SINTESE_TEORIA.capitulos).toHaveLength(58);
     expect(totalDeBlocos(SINTESE_TEORIA)).toBeGreaterThanOrEqual(48);
   });
 
@@ -537,8 +537,8 @@ describe('Síntese como base de extração de questões', () => {
     const previstas = SINTESE_TEORIA.capitulos
       .flatMap((c) => c.blocos)
       .reduce((a, b) => a + QUESTOES_POR_PESO[b.peso], 0);
-    expect(previstas).toBe(102);
-    expect(questoesDoLivreto).toHaveLength(102);
+    expect(previstas).toBe(174);
+    expect(questoesDoLivreto).toHaveLength(174);
   });
 
   it('com a cobertura completa, não há nada a prescrever', () => {
@@ -548,14 +548,15 @@ describe('Síntese como base de extração de questões', () => {
   it('remover uma questão faz a lacuna aparecer na hora', () => {
     // A prova de que o mecanismo funciona: tire uma questão e o relatório
     // aponta exatamente qual bloco ficou descoberto.
+    // tq_05_3 cobre o bloco de apoio do capítulo 5 (alturas).
     const faltando = questoesDoLivreto.filter((q) => q.id !== 'tq_05_3');
     const r = conferirCobertura(SINTESE_TEORIA, faltando);
     expect(r.completa).toBe(false);
-    expect(r.lacunas.some((l) => l.blocoId === 's05_3')).toBe(true);
+    expect(r.lacunas.some((l) => l.blocoId === 's05_2')).toBe(true);
 
     const p = prescrever(SINTESE_TEORIA, faltando);
-    expect(p[0].blocoId).toBe('s05_3');
-    expect(p[0].competencia).toBe('intervalos');
+    expect(p[0].blocoId).toBe('s05_2');
+    expect(p[0].competencia).toBe('alturas');
     expect(p[0].distratoresSugeridos.length).toBeGreaterThan(0);
   });
 
@@ -563,12 +564,13 @@ describe('Síntese como base de extração de questões', () => {
     const semNada = conferirCobertura(SINTESE_TEORIA, []);
     expect(semNada.completa).toBe(false);
 
+    // A natureza do bloco é deduzida do verbo do objetivo do capítulo, e o
+    // tipo de questão decorre dela. Cap. 1 objetivo 1 começa com "Distinguir";
+    // cap. 5 objetivo 1, com "Medir"; cap. 6 objetivo 1, com "Aplicar".
     const todas = prescrever(SINTESE_TEORIA, []);
-    const regra = todas.find((p) => p.blocoId === 's03_1');
-    const distincao = todas.find((p) => p.blocoId === 's05_2');
-    const procedimento = todas.find((p) => p.blocoId === 's05_1');
+    const distincao = todas.find((p) => p.blocoId === 's01_1');
+    const procedimento = todas.find((p) => p.blocoId === 's06_1');
 
-    expect(regra?.tipoSugerido).toBe('VERDADEIRO_FALSO');
     expect(distincao?.tipoSugerido).toBe('MULTIPLA_ESCOLHA');
     expect(procedimento?.tipoSugerido).toBe('IDENTIFICACAO');
     expect(procedimento?.dificuldadeSugerida).toBe('avancada');

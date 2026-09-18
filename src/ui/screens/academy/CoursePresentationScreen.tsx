@@ -11,6 +11,7 @@ import {
   Languages,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter, useRouteParams } from '../../navigation/router';
 import { academyService } from '../../../services/application/academy.service';
 import { authService } from '../../../services/application/auth.service';
@@ -130,26 +131,23 @@ export const CoursePresentationScreen: React.FC = () => {
   const resumo = useMemo(() => resumirAvaliacoes(avaliacoes), [avaliacoes]);
   const pct = useMemo(() => percentuais(resumo), [resumo]);
 
-  if (carregando) {
+  // Esqueleto e erro vêm do PageLayout, não de um parágrafo solto.
+  if (carregando || !curso) {
     return (
-      <div className="p-8 text-sm text-stone-500" role="status">
-        Carregando o curso…
-      </div>
-    );
-  }
-
-  if (!curso) {
-    return (
-      <div className="p-8">
-        <p className="text-sm text-stone-700">Curso não encontrado.</p>
-        <button
-          type="button"
-          onClick={() => navigate('/academy')}
-          className="mt-3 text-sm font-medium text-anil-700 underline-offset-2 hover:underline"
-        >
-          Voltar ao catálogo
-        </button>
-      </div>
+      <PageLayout
+        id="course-presentation"
+        form="presentation"
+        density="editorial"
+        state={carregando ? 'loading' : 'error'}
+        loadingMessage="Carregando o curso…"
+        errorProps={{
+          title: 'Curso não encontrado',
+          message: 'Verifique o endereço ou volte ao catálogo.',
+          onRetry: () => navigate('/academy'),
+        }}
+      >
+        <PageLayout.Main>{null}</PageLayout.Main>
+      </PageLayout>
     );
   }
 
@@ -210,9 +208,9 @@ export const CoursePresentationScreen: React.FC = () => {
   };
 
   return (
-    <div id="course-presentation" className="bg-white">
-      {/* Hero */}
-      <div className="bg-anil-50">
+    <PageLayout id="course-presentation" form="presentation" density="editorial" state="content">
+      <PageLayout.Hero>
+        <div className="bg-anil-50">
         <div className="mx-auto max-w-5xl px-4 pb-24 pt-10 sm:px-6 lg:px-8">
           <p className="font-mono text-[11px] uppercase tracking-wider text-anil-700">
             {curso.categoryName}
@@ -301,15 +299,12 @@ export const CoursePresentationScreen: React.FC = () => {
         </div>
       </div>
 
-      <div ref={alvoDoHero} aria-hidden="true" className="h-px" />
+        <div ref={alvoDoHero} aria-hidden="true" className="h-px" />
+      </PageLayout.Hero>
 
-      {/* Barra de seções — gruda no topo ao rolar, com o título e o CTA */}
-      <div
-        className={clsx(
-          'z-20 border-b border-stone-200 bg-white',
-          fixo ? 'sticky top-14 shadow-sm' : ''
-        )}
-      >
+      {/* Barra de seções: o PageLayout a gruda no topo; o conteúdo dela muda
+          conforme o cabeçalho sai da tela. */}
+      <PageLayout.Toolbar>
         <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 sm:px-6 lg:px-8">
           {fixo && (
             <span className="hidden min-w-0 flex-1 truncate py-3 font-serif text-sm font-semibold text-stone-900 lg:block">
@@ -346,9 +341,9 @@ export const CoursePresentationScreen: React.FC = () => {
             </button>
           )}
         </div>
-      </div>
+      </PageLayout.Toolbar>
 
-      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+      <PageLayout.Main>
         {secao === 'sobre' && (
           <div className="grid gap-10 lg:grid-cols-[1fr_16rem]">
             <div className="space-y-10">
@@ -778,7 +773,7 @@ export const CoursePresentationScreen: React.FC = () => {
             )}
           </div>
         )}
-      </div>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

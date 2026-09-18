@@ -41,8 +41,19 @@ import type { BreadcrumbEntry } from '../../navigation/router';
  * oferece. `catalog` põe filtros à esquerda mas rola junto com a página;
  * `workspace` tem painel fixo mas é escuro e de altura travada, para
  * instrumento. A área de curso é clara, rola no conteúdo e mantém o sumário.
+ *
+ * `presentation` (F) é a vitrine: um cabeçalho que sangra até a borda, uma
+ * barra de seções que gruda no topo ao rolar levando título e ação, e o corpo
+ * centrado abaixo. Nenhuma das outras cinco tem cabeçalho de largura total —
+ * todas centram o conteúdo desde o início.
  */
-export type PageForm = 'focus' | 'catalog' | 'detail' | 'workspace' | 'course';
+export type PageForm =
+  | 'focus'
+  | 'catalog'
+  | 'detail'
+  | 'workspace'
+  | 'course'
+  | 'presentation';
 export type PageDensity = 'editorial' | 'catalog' | 'operational' | 'instrument';
 export type PageState = 'loading' | 'content' | 'empty' | 'error' | 'locked';
 
@@ -294,6 +305,32 @@ const PageLayoutRoot: React.FC<PageLayoutProps> = ({
             {slots.transport}
           </footer>
         )}
+      </div>
+    );
+  }
+
+  // ---------------------------------------------------- PRESENTATION (F) ---
+  if (form === 'presentation') {
+    return (
+      <div id={id} data-page-form="presentation" className={clsx('bg-white', className)}>
+        {slots.hero && <header className="w-full">{slots.hero}</header>}
+
+        {slots.toolbar && (
+          <div className="sticky top-14 z-20 border-b border-stone-200 bg-white">
+            {slots.toolbar}
+          </div>
+        )}
+
+        <main
+          id="main"
+          tabIndex={-1}
+          className={clsx(
+            'mx-auto w-full max-w-5xl px-4 py-10 focus:outline-none sm:px-6 lg:px-8',
+            DENSITY_CLASS[density]
+          )}
+        >
+          {mainContent}
+        </main>
       </div>
     );
   }

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, ChevronRight, Award, Lock } from 'lucide-react';
-import { clsx } from 'clsx';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter } from '../../navigation/router';
 import { academyService } from '../../../services/application/academy.service';
 import { authService } from '../../../services/application/auth.service';
@@ -100,29 +100,24 @@ export const MeuAprendizadoScreen: React.FC = () => {
     return [...mapa.entries()].sort((a, b) => b[1].feitas - a[1].feitas);
   }, [matriculas, porId]);
 
-  if (carregando) {
+  if (carregando || !usuario) {
     return (
-      <div className="p-8 text-sm text-stone-500" role="status">
-        Carregando…
-      </div>
-    );
-  }
-
-  if (!usuario) {
-    return (
-      <div className="mx-auto max-w-2xl p-8">
-        <h1 className="font-serif text-2xl font-bold text-stone-900">Meu aprendizado</h1>
-        <p className="mt-2 text-sm text-stone-600">
-          Entre na sua conta para ver seus cursos, competências e certificados.
-        </p>
-        <button
-          type="button"
-          onClick={() => navigate('/auth/login')}
-          className="mt-4 rounded-md bg-anil-800 px-4 py-2 text-sm font-medium text-white hover:bg-anil-700"
-        >
-          Entrar
-        </button>
-      </div>
+      <PageLayout
+        id="meu-aprendizado"
+        form="catalog"
+        density="catalog"
+        state={carregando ? 'loading' : 'empty'}
+        loadingMessage="Carregando seu aprendizado…"
+        emptyProps={{
+          title: 'Entre na sua conta',
+          description:
+            'Seus cursos, competências e certificados aparecem aqui depois que você entra.',
+          actionLabel: 'Entrar',
+          onAction: () => navigate('/auth/login'),
+        }}
+      >
+        <PageLayout.Main>{null}</PageLayout.Main>
+      </PageLayout>
     );
   }
 
@@ -142,8 +137,9 @@ export const MeuAprendizadoScreen: React.FC = () => {
   );
 
   return (
-    <div id="meu-aprendizado" className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <header className="flex items-center gap-4">
+    <PageLayout id="meu-aprendizado" form="catalog" density="catalog" state="content">
+      <PageLayout.Hero>
+        <div className="flex items-center gap-4">
         <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-anil-800 text-base font-semibold text-white">
           {usuario.avatarUrl ? (
             <img src={usuario.avatarUrl} alt="" className="h-full w-full object-cover" />
@@ -161,28 +157,28 @@ export const MeuAprendizadoScreen: React.FC = () => {
               : `${emAndamento.length} em andamento · ${concluidos.length} concluído${concluidos.length === 1 ? '' : 's'}`}
           </p>
         </div>
-      </header>
+        </div>
+      </PageLayout.Hero>
 
-      <nav aria-label="Seções do meu aprendizado" className="mt-8 flex gap-1 border-b border-stone-200">
-        {ABAS.map((a) => (
-          <button
-            key={a.id}
-            type="button"
-            onClick={() => setAba(a.id)}
-            aria-current={aba === a.id ? 'page' : undefined}
-            className={clsx(
-              'shrink-0 border-b-2 px-3 py-3 text-sm transition-colors',
-              aba === a.id
-                ? 'border-anil-800 font-semibold text-anil-900'
-                : 'border-transparent text-stone-600 hover:text-stone-900'
-            )}
-          >
-            {a.label}
-          </button>
-        ))}
-      </nav>
+      <PageLayout.Tabs
+        id="meu-aprendizado-abas"
+        activeTab={aba}
+        onChange={(t) => setAba(t as Aba)}
+        tabs={ABAS.map((a) => ({
+          id: a.id,
+          label: a.label,
+          badge:
+            a.id === 'andamento'
+              ? emAndamento.length || undefined
+              : a.id === 'concluido'
+                ? concluidos.length || undefined
+                : a.id === 'certificados'
+                  ? certificados.length || undefined
+                  : undefined,
+        }))}
+      />
 
-      <div className="mt-6">
+      <PageLayout.Main>
         {aba === 'andamento' &&
           (emAndamento.length === 0
             ? vazio(
@@ -345,7 +341,7 @@ export const MeuAprendizadoScreen: React.FC = () => {
                 ))}
               </ul>
             ))}
-      </div>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

@@ -221,9 +221,33 @@ e está registrada como exceção no medidor.
 Os módulos abaixo de 50 — Score, Community, Search, Notifications, Studio,
 Help, Admin, Credentials — ainda não receberam nenhum tratamento.
 
-**Duas lacunas de conteúdo:**
+## Avaliação — fechada
 
-- As provas finais dos quatro cursos estão declaradas na política e ainda não
-  foram redigidas.
-- O livreto de exercícios cobre 16 dos 58 capítulos de Teoria, e ainda não
-  existe para os outros três cursos.
+| Curso | Capítulos | Questões | Simulado | Prova final |
+|---|---:|---:|---:|---:|
+| Teoria da Música | 58 | 174 | 174 | 40 |
+| História da Música Ocidental | 20 | 60 | 60 | 20 |
+| História da Música Brasileira | 18 | 54 | 54 | 20 |
+| Violino | 16 | 48 | 48 | 20 |
+
+**Um defeito grave foi encontrado e corrigido no caminho.** O livreto de
+Teoria tinha dezesseis capítulos, herdados de quando o curso tinha dezesseis.
+Quando o curso foi para cinquenta e oito, o livreto ficou para trás — e o
+resultado era pior que a falta de exercício: o capítulo 5 do livreto
+perguntava sobre intervalos enquanto a lição 5 ensinava semitons. Os dezesseis
+estavam **todos** desalinhados, e nada no repositório acusava.
+
+Agora o livreto é montado a partir dos próprios capítulos do curso. Título,
+número e lição vêm de lá, não de uma cópia. `tests/avaliacao-dos-cursos.test.ts`
+falha se o alinhamento se perder de novo.
+
+A **prova final** não é escrita à mão: sai do livreto, sorteada com semente
+fixa, garantindo uma questão de cada competência antes de preencher o resto.
+As questões da prova são cópias congeladas — editar o livreto depois não muda
+uma prova que alguém já fez. A mesma semente produz sempre a mesma prova, o
+que a torna conferível.
+
+A **síntese** foi reconstruída pela mesma razão: ela apontava para questões
+que já não existiam. Agora nasce dos objetivos declarados de cada capítulo, e
+as confusões de cada bloco são os distratores das suas próprias questões — as
+duas pontas amarradas, sem como uma desatualizar em relação à outra.

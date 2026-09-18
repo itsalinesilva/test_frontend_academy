@@ -121,7 +121,7 @@ export class PersistentAcademyRepository implements AcademyRepository {
    *
    * Incrementar ao alterar cursos, módulos, lições, programas ou categorias.
    */
-  private static readonly VERSAO_DO_CATALOGO = 3;
+  private static readonly VERSAO_DO_CATALOGO = 4;
 
   private readonly CHAVE_DA_VERSAO = 'amd_academy_catalog_version';
 

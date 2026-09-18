@@ -376,3 +376,146 @@ export function livretoValido(livreto: Livreto): boolean {
 export function totalDeQuestoes(livreto: Livreto): number {
   return livreto.capitulos.reduce((a, c) => a + c.questoes.length, 0);
 }
+
+// ---------------------------------------------------------------------------
+// Prova final
+// ---------------------------------------------------------------------------
+
+export interface PlanoDaProva {
+  /** Quantas questões a prova terá ao todo. */
+  totalDeQuestoes: number;
+  notaDeCorte: number;
+  tempoLimiteMinutos: number;
+  /** Semente do sorteio. Mesma semente, mesma prova. */
+  semente: number;
+}
+
+export const PLANO_PADRAO: PlanoDaProva = {
+  totalDeQuestoes: 30,
+  notaDeCorte: 70,
+  tempoLimiteMinutos: 90,
+  semente: 1,
+};
+
+/**
+ * Sorteio determinístico.
+ *
+ * Gerador congruente linear simples. Não serve para criptografia e não
+ * pretende: serve para que a mesma semente produza sempre a mesma prova, o
+ * que torna a montagem testável e auditável. Uma prova que muda a cada
+ * chamada não pode ser conferida por ninguém.
+ */
+function sorteioDeterministico(semente: number): () => number {
+  let estado = semente >>> 0 || 1;
+  return () => {
+    estado = (estado * 1664525 + 1013904223) >>> 0;
+    return estado / 0x100000000;
+  };
+}
+
+function embaralhar<T>(itens: T[], proximo: () => number): T[] {
+  const copia = [...itens];
+  for (let i = copia.length - 1; i > 0; i--) {
+    const j = Math.floor(proximo() * (i + 1));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+  return copia;
+}
+
+/**
+ * Monta a prova final a partir do livreto, cobrindo todas as competências.
+ *
+ * COMO ELA DIFERE DO SIMULADO
+ * ---------------------------
+ * O simulado é o livreto inteiro, na ordem estudada: previsível de propósito,
+ * porque a função dele é revisar. A prova **sorteia** um subconjunto e o
+ * embaralha — se ela fosse o livreto na mesma ordem, decorar a posição da
+ * resposta substituiria estudar.
+ *
+ * A COBERTURA VEM ANTES DA QUANTIDADE
+ * -----------------------------------
+ * Primeiro garante-se **uma questão de cada competência** que o curso ensina.
+ * Só depois o resto das vagas é preenchido. Uma prova de trinta questões que
+ * sorteou vinte e oito de intervalos e duas de tudo o mais não mede o curso,
+ * mede um capítulo.
+ *
+ * As questões da prova são **próprias** — cópias congeladas, não referências.
+ * Editar o livreto depois não pode mudar uma prova que alguém já fez.
+ */
+export function montarProvaFinal(
+  livreto: Livreto,
+  plano: Partial<PlanoDaProva> = {}
+): Avaliacao {
+  const cfg = { ...PLANO_PADRAO, ...plano };
+  const proximo = sorteioDeterministico(cfg.semente);
+  const agora = new Date().toISOString();
+
+  const todas = livreto.capitulos
+    .slice()
+    .sort((a, b) => a.numero - b.numero)
+    .flatMap((c) => c.questoes);
+
+  // 1. uma de cada competência, para garantir que nada fique de fora
+  const porCompetencia = new Map<string, Questao[]>();
+  for (const q of todas) {
+    for (const comp of q.competencias) {
+      const lista = porCompetencia.get(comp) ?? [];
+      lista.push(q);
+      porCompetencia.set(comp, lista);
+    }
+  }
+
+  const escolhidas: Questao[] = [];
+  const jaEscolhida = new Set<string>();
+
+  for (const comp of [...porCompetencia.keys()].sort()) {
+    const candidatas = embaralhar(porCompetencia.get(comp) ?? [], proximo);
+    const escolha = candidatas.find((q) => !jaEscolhida.has(q.id));
+    if (escolha) {
+      escolhidas.push(escolha);
+      jaEscolhida.add(escolha.id);
+    }
+  }
+
+  // 2. o resto das vagas, sorteado entre o que sobrou
+  const restantes = embaralhar(
+    todas.filter((q) => !jaEscolhida.has(q.id)),
+    proximo
+  );
+  for (const q of restantes) {
+    if (escolhidas.length >= cfg.totalDeQuestoes) break;
+    escolhidas.push(q);
+    jaEscolhida.add(q.id);
+  }
+
+  // 3. embaralha a ordem final e congela as cópias
+  const finais = embaralhar(escolhidas, proximo).map((q) => ({
+    ...q,
+    id: `pf_${q.id}`,
+    alternativas: q.alternativas.map((a) => ({ ...a })),
+    competencias: [...q.competencias],
+  }));
+
+  return {
+    id: `aval_prova_${livreto.cursoId}`,
+    cursoId: livreto.cursoId,
+    livretoId: livreto.id,
+    tipo: 'PROVA',
+    titulo: `Prova final — ${livreto.titulo.replace(/^Caderno de Exercícios — /, '')}`,
+    questaoIds: [],
+    questoesProprias: finais,
+    notaDeCorte: cfg.notaDeCorte,
+    tempoLimiteMinutos: cfg.tempoLimiteMinutos,
+    criadoEm: agora,
+    atualizadoEm: agora,
+  };
+}
+
+/** Competências que a prova deixou de cobrir, se alguma. */
+export function competenciasNaoCobertas(prova: Avaliacao, livreto: Livreto): string[] {
+  const doLivreto = new Set(
+    livreto.capitulos.flatMap((c) => c.questoes.flatMap((q) => q.competencias))
+  );
+  const naProva = new Set(prova.questoesProprias.flatMap((q) => q.competencias));
+  return [...doLivreto].filter((c) => !naProva.has(c)).sort();
+}

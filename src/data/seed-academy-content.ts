@@ -14,6 +14,7 @@ import {
   AcademyQuiz,
 } from '../domain/academy';
 import { CourseLevel } from '../domain/types';
+import { PROVAS_PADRAO } from './seed-booklets';
 
 /**
  * Catálogo do Academy.
@@ -270,13 +271,37 @@ export const SEED_LESSONS: AcademyLesson[] = [
 // ---------------------------------------------------------------------------
 
 /**
- * Os exercícios do curso de Teoria vivem no livreto (`seed-booklet-theory`),
- * que é editável pelo Conservatório e alimenta o simulado. As avaliações
- * somativas dos quatro cursos ainda não foram redigidas — e não se inventa
- * prova.
+ * Os exercícios de cada curso vivem no livreto correspondente, que é editável
+ * pelo Conservatório e alimenta o simulado.
+ *
+ * A prova final **não é escrita à mão**: sai do livreto, sorteada com semente
+ * fixa e garantindo uma questão de cada competência antes de preencher o
+ * resto. Consequência prática — corrigir uma questão no livreto corrige o
+ * simulado, e a próxima geração da prova já sai correta.
  */
 export const SEED_ACTIVITIES: AcademyActivity[] = [];
 
-export const SEED_ASSESSMENTS: AcademyAssessment[] = [];
+export const SEED_ASSESSMENTS: AcademyAssessment[] = PROVAS_PADRAO.map((p) => ({
+  id: p.id,
+  courseId: p.cursoId,
+  title: p.titulo,
+  description:
+    'Prova final do curso. Cobre todas as competências, com questões sorteadas do caderno de exercícios.',
+  passingScorePercentage: p.notaDeCorte,
+  competenciesTested: Array.from(
+    new Set(p.questoesProprias.flatMap((q) => q.competencias))
+  ).sort(),
+  timeLimitMinutes: p.tempoLimiteMinutos,
+  questions: p.questoesProprias.map((q) => ({
+    id: q.id,
+    prompt: q.enunciado,
+    options: q.alternativas.map((a) => ({ id: a.id, label: a.texto, text: a.texto })),
+    correctOptionId: q.resposta,
+    explanation: q.explicacao,
+    skill: q.competencias[0] ?? 'geral',
+  })),
+  createdAt: AGORA,
+  updatedAt: AGORA,
+}));
 
 export const SEED_QUIZZES: AcademyQuiz[] = [];
