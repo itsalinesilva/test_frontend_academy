@@ -5,6 +5,7 @@ import {
   ScaleGenerationResult,
 } from './theory-engine.interface';
 import { EngineImplementationType, EngineExecutionStatus } from '../../../contracts/tool-contracts';
+import { SIMPLE_INTERVALS, absolutePitchOf, pitchClassOf } from '../../../domain/pitch';
 
 /**
  * Motor de teoria musical baseado em regras.
@@ -32,44 +33,15 @@ export class RuleBasedTheoryEngineAdapter implements TheoryEngineAdapter {
     return { status: EngineExecutionStatus.READY, latencyMs: 1 };
   }
 
-  private static readonly PITCH_CLASS: Record<string, number> = {
-    C: 0, 'C#': 1, DB: 1, D: 2, 'D#': 3, EB: 3, E: 4, 'E#': 5, FB: 4,
-    F: 5, 'F#': 6, GB: 6, G: 7, 'G#': 8, AB: 8, A: 9, 'A#': 10, BB: 10,
-    B: 11, 'B#': 0, CB: 11,
-  };
-
+  /** Delegado a `domain/pitch.ts`, que e a fonte unica. */
   private noteToPitchClass(note: string): number {
-    const clean = note.trim().toUpperCase().replace(/-?\d+$/, '');
-    return RuleBasedTheoryEngineAdapter.PITCH_CLASS[clean] ?? 0;
+    return pitchClassOf(note);
   }
 
   /** Índice absoluto em semitons. `null` quando a nota não traz oitava. */
   private noteToAbsolute(note: string): number | null {
-    const m = note.trim().toUpperCase().match(/^([A-G][#B]?)(-?\d+)$/);
-    if (!m) return null;
-    const pc = RuleBasedTheoryEngineAdapter.PITCH_CLASS[m[1]];
-    if (pc === undefined) return null;
-    return (Number(m[2]) + 1) * 12 + pc;
+    return absolutePitchOf(note);
   }
-
-  private static readonly SIMPLE_INTERVALS: Record<
-    number,
-    { quality: IntervalAnalysisResult['quality']; number: number; name: string; isConsonant: boolean }
-  > = {
-    0: { quality: 'PERFECT', number: 1, name: 'Uníssono Perfeito', isConsonant: true },
-    1: { quality: 'MINOR', number: 2, name: 'Segunda Menor', isConsonant: false },
-    2: { quality: 'MAJOR', number: 2, name: 'Segunda Maior', isConsonant: false },
-    3: { quality: 'MINOR', number: 3, name: 'Terça Menor', isConsonant: true },
-    4: { quality: 'MAJOR', number: 3, name: 'Terça Maior', isConsonant: true },
-    5: { quality: 'PERFECT', number: 4, name: 'Quarta Perfeita', isConsonant: true },
-    6: { quality: 'DIMINISHED', number: 5, name: 'Trítono (Quinta Diminuta)', isConsonant: false },
-    7: { quality: 'PERFECT', number: 5, name: 'Quinta Perfeita', isConsonant: true },
-    8: { quality: 'MINOR', number: 6, name: 'Sexta Menor', isConsonant: true },
-    9: { quality: 'MAJOR', number: 6, name: 'Sexta Maior', isConsonant: true },
-    10: { quality: 'MINOR', number: 7, name: 'Sétima Menor', isConsonant: false },
-    11: { quality: 'MAJOR', number: 7, name: 'Sétima Maior', isConsonant: false },
-    12: { quality: 'PERFECT', number: 8, name: 'Oitava Justa', isConsonant: true },
-  };
 
   /**
    * Analisa o intervalo entre duas alturas.
@@ -88,14 +60,14 @@ export class RuleBasedTheoryEngineAdapter implements TheoryEngineAdapter {
         : (this.noteToPitchClass(note2) - this.noteToPitchClass(note1) + 12) % 12;
 
     if (semitones <= 12) {
-      const e = RuleBasedTheoryEngineAdapter.SIMPLE_INTERVALS[semitones];
+      const e = SIMPLE_INTERVALS[semitones];
       return { semitones, quality: e.quality, number: e.number, name: e.name, isConsonant: e.isConsonant };
     }
 
     // Intervalo composto: reduz à oitava e acrescenta 7 graus por oitava.
     const octaves = Math.floor(semitones / 12);
     const reduced = semitones % 12;
-    const base = RuleBasedTheoryEngineAdapter.SIMPLE_INTERVALS[reduced];
+    const base = SIMPLE_INTERVALS[reduced];
     const compoundNumber = base.number + 7 * octaves;
 
     const ORDINALS: Record<number, string> = {

@@ -29,11 +29,11 @@ vi.mock('../../src/infrastructure/audio/synth', () => ({
 
 const exercise: MusicExercise = {
   id: 'e1',
-  tipo: ExerciseType.IDENTIFY_BY_EAR,
+  type: ExerciseType.IDENTIFY_BY_EAR,
   tag: 'NEW_CONTENT',
-  faixa: 'FOUNDATION',
+  band: 'FOUNDATION',
   prompt: 'Ouça e escolha a resposta',
-  audio: { frequenciesHz: [261.63, 392.0], modo: 'SEQUENCE' },
+  audio: { frequenciesHz: [261.63, 392.0], mode: 'SEQUENCE' },
   choices: [
     { id: 'a', label: 'Terça maior', frequenciesHz: [261.63, 329.63] },
     { id: 'b', label: 'Quinta justa', frequenciesHz: [261.63, 392.0] },
@@ -91,7 +91,7 @@ describe('a anatomia da tela', () => {
     for (let i = 0; i < 5; i++) lesson = responder(lesson, false);
     expect(lesson.lives).toBe(0);
     render(
-      <ExerciseScreen lesson={{ ...lesson, indice: 0 }} onAnswer={vi.fn()} onSkip={vi.fn()} onExit={vi.fn()} />
+      <ExerciseScreen lesson={{ ...lesson, index: 0 }} onAnswer={vi.fn()} onSkip={vi.fn()} onExit={vi.fn()} />
     );
     expect(screen.getByLabelText(/débito/i)).toBeInTheDocument();
   });
@@ -229,7 +229,7 @@ describe('o combo', () => {
     lesson = responder(lesson, true);
     lesson = responder(lesson, true);
     render(
-      <ExerciseScreen lesson={{ ...lesson, indice: 0 }} onAnswer={vi.fn()} onSkip={vi.fn()} onExit={vi.fn()} />
+      <ExerciseScreen lesson={{ ...lesson, index: 0 }} onAnswer={vi.fn()} onSkip={vi.fn()} onExit={vi.fn()} />
     );
     expect(screen.getByText(/2 streak/i)).toBeInTheDocument();
   });
@@ -239,7 +239,7 @@ describe('o combo', () => {
     let lesson = startLesson('lic', [exercise, exercise]);
     lesson = responder(lesson, true);
     render(
-      <ExerciseScreen lesson={{ ...lesson, indice: 0 }} onAnswer={vi.fn()} onSkip={vi.fn()} onExit={vi.fn()} />
+      <ExerciseScreen lesson={{ ...lesson, index: 0 }} onAnswer={vi.fn()} onSkip={vi.fn()} onExit={vi.fn()} />
     );
     expect(screen.queryByText(/streak/i)).not.toBeInTheDocument();
   });

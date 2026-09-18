@@ -87,11 +87,11 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
   const requestExit = () => (hasProgress ? setConfirmandoSaida(true) : onExit());
 
   const play = useCallback(
-    (frequencias: number[] | undefined, modo: 'SEQUENCE' | 'CHORD', lento = false) => {
-      if (!frequencias?.length) return;
-      const duracao = lento ? 1.4 : 0.7;
-      if (modo === 'CHORD') webAudioSynth.playChord(frequencias, duracao * 1.6);
-      else webAudioSynth.playSequence(frequencias, duracao);
+    (frequencies: number[] | undefined, mode: 'SEQUENCE' | 'CHORD', slow = false) => {
+      if (!frequencies?.length) return;
+      const duration = slow ? 1.4 : 0.7;
+      if (mode === 'CHORD') webAudioSynth.playChord(frequencies, duration * 1.6);
+      else webAudioSynth.playSequence(frequencies, duration);
     },
     []
   );
@@ -105,7 +105,7 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
   useEffect(() => {
     if (exercise?.audio) {
       const t = window.setTimeout(
-        () => play(exercise.audio!.frequenciesHz, exercise.audio!.modo),
+        () => play(exercise.audio!.frequenciesHz, exercise.audio!.mode),
         250
       );
       return () => window.clearTimeout(t);
@@ -198,7 +198,7 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
           <div className="mt-6 flex items-center gap-3">
             <button
               type="button"
-              onClick={() => play(exercise.audio!.frequenciesHz, exercise.audio!.modo)}
+              onClick={() => play(exercise.audio!.frequenciesHz, exercise.audio!.mode)}
               aria-label="Ouvir"
               className="flex h-16 w-16 items-center justify-center rounded-xl bg-anil-800 text-white transition-colors hover:bg-anil-700"
             >
@@ -206,7 +206,7 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => play(exercise.audio!.frequenciesHz, exercise.audio!.modo, true)}
+              onClick={() => play(exercise.audio!.frequenciesHz, exercise.audio!.mode, true)}
               aria-label="Ouvir a meia velocidade"
               title="Meia velocidade — é o que torna audível a condução de vozes"
               className="flex h-12 w-12 items-center justify-center rounded-lg bg-anil-100 text-anil-800 transition-colors hover:bg-anil-200"

@@ -28,9 +28,9 @@ import { COMPLETIONS_TO_JOIN_LEAGUE } from '../src/domain/progress-economy';
 
 const ex = (id: string): MusicExercise => ({
   id,
-  tipo: ExerciseType.IDENTIFY_BY_EAR,
+  type: ExerciseType.IDENTIFY_BY_EAR,
   tag: 'PRACTICE',
-  faixa: 'FOUNDATION',
+  band: 'FOUNDATION',
   prompt: 'Ouça e identifique o intervalo',
   choices: [
     { id: 'a', label: '3ª maior' },

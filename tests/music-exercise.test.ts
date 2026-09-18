@@ -31,11 +31,11 @@ import {
  * Mapeamento em `docs/paridade/VOL2_ASTRA_DUOLINGO.md` §B9.5.
  */
 
-const ex = (id: string, tipo = ExerciseType.IDENTIFY_BY_EAR): MusicExercise => ({
+const ex = (id: string, type = ExerciseType.IDENTIFY_BY_EAR): MusicExercise => ({
   id,
-  tipo,
+  type,
   tag: 'PRACTICE',
-  faixa: 'FOUNDATION',
+  band: 'FOUNDATION',
   prompt: 'Ouça e identifique o intervalo',
   choices: [
     { id: 'a', label: '3ª maior' },
@@ -83,7 +83,7 @@ describe('o erro não termina a lição', () => {
     let l = licaoDe(2);
     l = responder(l, false); // e0 errado
     l = responder(l, true); // e1 certo
-    expect(l.indice).toBe(2);
+    expect(l.index).toBe(2);
     expect(isLessonComplete(l), 'fechou com pendência aberta').toBe(false);
   });
 

@@ -66,8 +66,8 @@ export const REQUIRES_MICROPHONE: readonly ExerciseType[] = [
   ExerciseType.TAP_RHYTHM,
 ] as const;
 
-export function requiresMicrophone(tipo: ExerciseType): boolean {
-  return REQUIRES_MICROPHONE.includes(tipo);
+export function requiresMicrophone(type: ExerciseType): boolean {
+  return REQUIRES_MICROPHONE.includes(type);
 }
 
 /**
@@ -105,10 +105,10 @@ export interface Choice {
 
 export interface MusicExercise {
   id: EntityId;
-  tipo: ExerciseType;
+  type: ExerciseType;
   tag: ExerciseTag;
   /** Faixa de material — governa para quem este exercício aparece. */
-  faixa: MaterialBand;
+  band: MaterialBand;
   /** Uma linha, no imperativo: "Ouça e identifique o intervalo". */
   prompt: string;
 
@@ -116,7 +116,7 @@ export interface MusicExercise {
   audio?: {
     frequenciesHz: number[];
     /** Sequência ou simultâneo — melódico ou harmônico. */
-    modo: 'SEQUENCE' | 'CHORD';
+    mode: 'SEQUENCE' | 'CHORD';
     /** Andamento, para células rítmicas. */
     bpm?: number;
   };
@@ -130,9 +130,9 @@ export interface MusicExercise {
   /** Tonalidade do exercício — governa o som de acerto. Ver §B10.5. */
   tonicHz?: number;
   /** Tolerância em cents, nos tipos que medem altura. */
-  toleranciaCents?: number;
+  toleranceCents?: number;
   /** Tolerância em milissegundos, nos tipos que medem tempo. */
-  toleranciaMs?: number;
+  toleranceMs?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -154,7 +154,7 @@ export interface LessonInProgress {
   /** A fila, na ordem em que será apresentada. */
   queue: MusicExercise[];
   /** Posição atual na fila. */
-  indice: number;
+  index: number;
   /** Errados que ainda precisam voltar. */
   toRedo: EntityId[];
   /** Vidas restantes. Zero **não** trava — passa a acumular débito. */
@@ -181,7 +181,7 @@ export function startLesson(lessonId: EntityId, queue: MusicExercise[]): LessonI
   return {
     lessonId,
     queue,
-    indice: 0,
+    index: 0,
     toRedo: [],
     lives: LIVES_PER_LESSON,
     streak: 0,
@@ -192,7 +192,7 @@ export function startLesson(lessonId: EntityId, queue: MusicExercise[]): LessonI
 }
 
 export function currentExercise(licao: LessonInProgress): MusicExercise | null {
-  return licao.queue[licao.indice] ?? null;
+  return licao.queue[licao.index] ?? null;
 }
 
 /**
@@ -213,7 +213,7 @@ export function responder(
     const streak = licao.streak + 1;
     return {
       ...licao,
-      indice: licao.indice + 1,
+      index: licao.index + 1,
       streak,
       bestStreak: Math.max(licao.bestStreak, streak),
       correct: licao.correct + 1,
@@ -229,7 +229,7 @@ export function responder(
 
   return {
     ...licao,
-    indice: licao.indice + 1,
+    index: licao.index + 1,
     streak: 0,
     wrong: licao.wrong + 1,
     /** Vidas não ficam negativas: ao chegar a zero, o débito é que acumula. */
@@ -242,7 +242,7 @@ export function responder(
 
 /** Pular não pune, e não entra na contagem de erro — mas também não acerta. */
 export function pular(licao: LessonInProgress): LessonInProgress {
-  return { ...licao, indice: licao.indice + 1, streak: 0 };
+  return { ...licao, index: licao.index + 1, streak: 0 };
 }
 
 /**
@@ -252,7 +252,7 @@ export function pular(licao: LessonInProgress): LessonInProgress {
  * errado, ele volta. Ver `prepararRevisao`.
  */
 export function isLessonComplete(licao: LessonInProgress): boolean {
-  return licao.indice >= licao.queue.length && licao.toRedo.length === 0;
+  return licao.index >= licao.queue.length && licao.toRedo.length === 0;
 }
 
 /**
@@ -263,7 +263,7 @@ export function isLessonComplete(licao: LessonInProgress): boolean {
  * de antes".
  */
 export function queueReview(licao: LessonInProgress): LessonInProgress {
-  if (licao.indice < licao.queue.length || licao.toRedo.length === 0) return licao;
+  if (licao.index < licao.queue.length || licao.toRedo.length === 0) return licao;
 
   const paraRefazer = licao.toRedo
     .map((id) => licao.queue.find((e) => e.id === id))
@@ -286,7 +286,7 @@ export function isInCombo(licao: LessonInProgress): boolean {
  */
 export function progresso(licao: LessonInProgress): number {
   if (licao.queue.length === 0) return 1;
-  return Math.min(1, licao.indice / licao.queue.length);
+  return Math.min(1, licao.index / licao.queue.length);
 }
 
 /**

@@ -27,7 +27,7 @@ maior efeito: sem ele, todo o resto é código que ninguém roda.
 |:---|:---|:---:|
 | A-1 | **Rotas para as oito telas** — exercício, encerramento, percurso, liga, matrícula, missões, réguas, ofensiva | ⬜ |
 | A-2 | **Persistência do que elas produzem** — nós concluídos, meta de ofensiva, veredito de dificuldade. `practice-path.repository.ts` já existe e não é chamado por ninguém | ⬜ |
-| A-3 | **Gerador de exercícios** a partir das 21 dimensões. Sem ele o percurso tem forma e não tem conteúdo | ⬜ |
+| A-3 | **Gerador de exercícios** a partir das 21 dimensões. Sem ele o percurso tem forma e não tem conteúdo | 🔄 `exercise-generator.ts` cobre 6 dimensões nos níveis 0, 1 e 3 · faltam 15 dimensões e os níveis 2 e 4 |
 | A-4 | Contêiner que costura percurso → lição → encerramento → mapa atualizado | ⬜ |
 
 ## Fase B — o acervo está vazio, e é isso que trava o Laboratório
