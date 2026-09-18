@@ -6,7 +6,13 @@ import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
 import { useCapturaAcustica } from '../../hooks/useCapturaAcustica';
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
-import { notaMaisProxima, frequenciaDaNota } from '../../../domain/practice-measurement';
+import { notaMaisProxima } from '../../../domain/practice-measurement';
+import {
+  gerarQuestao,
+  acertou as acertouOIntervalo,
+  QuestaoDeIntervalo,
+  Intervalo,
+} from '../../../domain/treino-de-intervalos';
 import { Mic, ArrowLeft, Play, MicOff } from 'lucide-react';
 
 /**
@@ -35,40 +41,30 @@ import { Mic, ArrowLeft, Play, MicOff } from 'lucide-react';
  * pedida à pessoa e detecção de frequência por autocorrelação — e converte a
  * leitura em nota e cents com `notaMaisProxima`, a mesma função que mede a
  * Prática. O treino de intervalos sintetiza as duas alturas com
- * `webAudioSynth` a partir de uma raiz sorteada, confere a resposta e conta
- * acertos sobre tentativas. Zero de dez é o que aparece antes da primeira
+ * `webAudioSynth` a partir do domínio único de intervalos, confere a resposta e
+ * conta acertos sobre tentativas. Zero é o que aparece antes da primeira
  * resposta, porque é o que a pessoa tem.
  */
 
-/** Intervalos do treino, em semitons — do uníssono à oitava. */
-const INTERVALOS = [
-  { semitons: 3, nome: '3ª menor' },
-  { semitons: 4, nome: '3ª maior' },
-  { semitons: 5, nome: '4ª justa' },
-  { semitons: 7, nome: '5ª justa' },
-] as const;
-
-type Intervalo = (typeof INTERVALOS)[number];
-
-/** Raízes confortáveis para ouvir, todas na região central do teclado. */
-const RAIZES = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4'];
-
-interface Rodada {
-  raizHz: number;
-  intervalo: Intervalo;
-}
-
-function sortearRodada(): Rodada {
-  const raiz = RAIZES[Math.floor(Math.random() * RAIZES.length)];
-  const intervalo = INTERVALOS[Math.floor(Math.random() * INTERVALOS.length)];
-  return { raizHz: frequenciaDaNota(raiz) ?? 261.63, intervalo };
-}
+/**
+ * O treino de intervalos vem de `domain/treino-de-intervalos`, e não daqui.
+ *
+ * Esta tela tinha a própria lista de quatro intervalos, as próprias raízes e
+ * o próprio sorteio — e `/practice/trainer` tinha os seus. Dois lugares para
+ * corrigir o mesmo erro de teoria é um lugar que fica errado: bastaria
+ * ajustar a explicação da quarta justa num deles para os dois passarem a
+ * ensinar coisas diferentes sobre o mesmo intervalo.
+ *
+ * O domínio único também traz o que a lista local não tinha: a explicação de
+ * cada intervalo, e alternativas erradas escolhidas entre as VIZINHAS em
+ * semitons — que é onde o ouvido de fato se confunde.
+ */
 
 export const VoiceEarLabScreen: React.FC = () => {
   const { navigate } = useRouter();
   const { estado, leitura, iniciar, finalizar } = useCapturaAcustica();
 
-  const [rodada, setRodada] = useState<Rodada>(() => sortearRodada());
+  const [rodada, setRodada] = useState<QuestaoDeIntervalo>(() => gerarQuestao(Date.now()));
   const [tocou, setTocou] = useState(false);
   const [resposta, setResposta] = useState<Intervalo | null>(null);
   const [acertos, setAcertos] = useState(0);
@@ -83,9 +79,7 @@ export const VoiceEarLabScreen: React.FC = () => {
   }, [capturando, leitura.frequenciaHz]);
 
   const tocarIntervalo = useCallback(() => {
-    const { raizHz, intervalo } = rodada;
-    const segunda = raizHz * Math.pow(2, intervalo.semitons / 12);
-    webAudioSynth.playSequence([raizHz, segunda], 0.7);
+    webAudioSynth.playSequence([rodada.raizHz, rodada.segundaHz], 0.7);
     setTocou(true);
   }, [rodada]);
 
@@ -93,17 +87,17 @@ export const VoiceEarLabScreen: React.FC = () => {
     if (resposta) return; // já respondeu esta rodada
     setResposta(escolha);
     setTentativas((n) => n + 1);
-    if (escolha.semitons === rodada.intervalo.semitons) setAcertos((n) => n + 1);
+    if (acertouOIntervalo(rodada, escolha)) setAcertos((n) => n + 1);
   };
 
   const proximaRodada = () => {
-    setRodada(sortearRodada());
+    setRodada(gerarQuestao(Date.now()));
     setResposta(null);
     setTocou(false);
   };
 
   const precisao = tentativas === 0 ? null : Math.round((acertos / tentativas) * 100);
-  const acertou = resposta !== null && resposta.semitons === rodada.intervalo.semitons;
+  const acertou = resposta !== null && acertouOIntervalo(rodada, resposta);
 
   return (
     <ScreenContainer
@@ -201,7 +195,7 @@ export const VoiceEarLabScreen: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            {INTERVALOS.map((opcao) => {
+            {rodada.alternativas.map((opcao) => {
               const escolhida = resposta?.semitons === opcao.semitons;
               const eraACerta = resposta !== null && opcao.semitons === rodada.intervalo.semitons;
               return (
@@ -231,8 +225,8 @@ export const VoiceEarLabScreen: React.FC = () => {
                 role="status"
               >
                 {acertou
-                  ? 'Correto.'
-                  : `Era ${rodada.intervalo.nome}. Ouça de novo antes de seguir.`}
+                  ? `Correto. ${rodada.intervalo.explicacao}`
+                  : `Era ${rodada.intervalo.nome}. ${rodada.intervalo.explicacao}`}
               </p>
               <Button variant="primary" size="sm" onClick={proximaRodada}>
                 Próximo intervalo

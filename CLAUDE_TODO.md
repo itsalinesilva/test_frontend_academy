@@ -491,7 +491,7 @@ liam do repositório e conheciam o usuário logado. Nenhuma tinha botão falso.
 | P.1 | `/practice/trainer` com três questões fixas, e sessão abrindo com **40 XP e 7 dias de ofensiva que ninguém fez**. Nada era gravado | ✅ corrigido |
 | P.2 | Domínio `treino-de-intervalos` — questões **geradas da teoria**, um só lugar para o Practice e o laboratório do Studio | ✅ |
 | P.3 | 18 casos garantindo que a geração é musicalmente correta. **Um deles pegou defeito real no gerador**: sementes sequenciais davam sempre a mesma raiz | ✅ |
-| P.4 | Unificar o laboratório de intervalos do Studio com o mesmo domínio — hoje ele tem a própria lista | ⬜ |
+| P.4 | Unificar o laboratório de intervalos do Studio com o mesmo domínio | ✅ |
 | P.5 | A aba de ritmo do trainer: o metrônomo toca, mas não mede nem grava a execução | ⬜ |
 | P.6 | A aba de acordes está declarada no seletor e não existe | ⬜ |
 | P.7 | Ligar a tentativa gravada à ofensiva, à meta do dia e ao domínio de habilidade — hoje grava, mas não alimenta os três | ⬜ |
