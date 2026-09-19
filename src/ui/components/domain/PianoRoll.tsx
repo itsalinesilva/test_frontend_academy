@@ -97,7 +97,16 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
           return (
             <div
               key={note.id}
+              role={onNoteClick ? 'button' : undefined}
+              tabIndex={onNoteClick ? 0 : undefined}
+              aria-label={`Nota ${getPitchLabel(note.pitch)}, velocidade ${note.velocity}`}
               onClick={() => onNoteClick && onNoteClick(note)}
+              onKeyDown={(e) => {
+                if (onNoteClick && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  onNoteClick(note);
+                }
+              }}
               style={{
                 top: `calc(${pitchIndex * 20}px + 1px)`,
                 left: `${leftPercent}%`,
@@ -105,7 +114,7 @@ export const PianoRoll: React.FC<PianoRollProps> = ({
                 height: '18px',
               }}
               title={`Nota: ${getPitchLabel(note.pitch)} | Velocidade: ${note.velocity}`}
-              className="absolute bg-red-700 hover:bg-red-600 border border-red-500 rounded-xs shadow-xs cursor-pointer z-10 flex items-center px-1 text-[9px] text-white font-bold truncate"
+              className="absolute bg-anil-700 hover:bg-red-600 border border-red-500 rounded-xs shadow-xs cursor-pointer z-10 flex items-center px-1 text-[9px] text-white font-bold truncate"
             >
               {getPitchLabel(note.pitch)}
             </div>

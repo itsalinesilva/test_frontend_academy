@@ -12,21 +12,27 @@ import {
 import { ExerciseAttempt, Exercise } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
+import { MeasurementPanel } from '../../components/practice/MeasurementPanel';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { PageLayout } from '../../components/layout/PageLayout';
 
 export const AttemptDetailScreen: React.FC = () => {
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const params = useRouteParams();
   const attemptId = params.id || '';
 
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [attempt, setAttempt] = useState<ExerciseAttempt | null>(null);
   const [exercise, setExercise] = useState<Exercise | null>(null);
 
   useEffect(() => {
     async function loadData() {
+      if (!userId) return;
       try {
         setLoading(true);
-        const att = await practiceService.getAttempt(attemptId);
+        const att = await practiceService.getAttempt(attemptId, userId ?? "");
         setAttempt(att);
         if (att) {
           const ex = await practiceService.getExercise(att.exerciseId);
@@ -35,6 +41,7 @@ export const AttemptDetailScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load attempt detail', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -61,10 +68,17 @@ export const AttemptDetailScreen: React.FC = () => {
     );
   }
 
-  const { measurement, immediateFeedback, isCorrect } = attempt;
+  const { medicao, immediateFeedback, isCorrect } = attempt;
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="attemptdetail"
+      form="focus"
+      density="editorial"
+      state={isLoading ? 'loading' : !attempt ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Main>
       {/* Back Button */}
       <div>
         <button
@@ -110,8 +124,8 @@ export const AttemptDetailScreen: React.FC = () => {
 
           <div className="text-right font-mono">
             <span className="text-xs text-stone-400 block">Pontuação Final</span>
-            <span className="text-2xl font-bold text-red-900">
-              {measurement.score}/1000
+            <span className="text-2xl font-bold text-anil-900">
+              {medicao.notaGlobal !== null ? `${medicao.notaGlobal}/100` : 'não medida'}
             </span>
           </div>
         </div>
@@ -127,73 +141,17 @@ export const AttemptDetailScreen: React.FC = () => {
       {/* 10 Measurements Grid */}
       <section className="space-y-4">
         <h2 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-red-800" />
+          <Activity className="w-5 h-5 text-anil-800" />
           <span>Telemetria Acústica & Medições Canônicas</span>
         </h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">1. Pitch / Afinação</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.pitch.centsAccuracy}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">{measurement.pitch.deviationCents} cents</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">2. Timing</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.timing.timingScore}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">{measurement.timing.deviationMs} ms</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">3. Ritmo</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.rhythm.stabilityScore}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Estabilidade</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">4. Tempo / BPM</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.tempo.recordedBpm}</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Alvo: {measurement.tempo.targetBpm}</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">5. Acurácia</span>
-            <span className="font-mono text-lg font-bold text-red-900">{measurement.accuracy}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Global</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">6. Entonação</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.intonation}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Pureza acústica</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">7. Duração</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.duration.recordedSeconds}s</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Sustain {measurement.duration.sustainScore}%</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">8. Consistência</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.consistency}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Linearidade</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">9. Dificuldade</span>
-            <span className="font-mono text-sm font-bold text-stone-800 capitalize mt-1 block">
-              {measurement.difficulty}
-            </span>
-            <span className="text-[10px] font-mono text-stone-400 block">Calibração</span>
-          </div>
-
-          <div className="p-3 bg-red-50 rounded-xl border border-red-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-red-800 block font-bold">10. Score Final</span>
-            <span className="font-mono text-lg font-bold text-red-900">{measurement.score}</span>
-            <span className="text-[10px] font-mono text-red-700 block">Escala 0..1000</span>
-          </div>
-        </div>
+        {/*
+          Aqui havia dez células fixas — afinação, timing, ritmo, BPM,
+          acurácia, entoação, duração, consistência, dificuldade e score —
+          todas sempre preenchidas, inclusive quando não havia o que medir.
+          O painel único mostra o que foi medido e diz o que não foi.
+        */}
+        <MeasurementPanel medicao={medicao} variante="completo" id="attempt-medicao" />
       </section>
 
       {/* Action Footer */}
@@ -210,8 +168,9 @@ export const AttemptDetailScreen: React.FC = () => {
             variant="primary"
             size="md"
             onClick={async () => {
+              if (!userId) return;
               const session = await practiceService.startSession(
-                'usr_founder_1',
+                userId,
                 exercise.modality,
                 exercise.id,
                 exercise.skillId
@@ -225,6 +184,7 @@ export const AttemptDetailScreen: React.FC = () => {
           </Button>
         )}
       </div>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

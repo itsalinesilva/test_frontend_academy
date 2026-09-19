@@ -66,7 +66,7 @@ export const TimelineContainer: React.FC<TimelineContainerProps> = ({
       isMuted: false,
       isSolo: false,
       volumePercent: 90,
-      blocks: [{ startBar: 1, durationBars: 6, label: 'Harmonia Edinburgh L1', type: 'midi' }],
+      blocks: [{ startBar: 1, durationBars: 6, label: 'Harmonia I', type: 'midi' }],
     },
     {
       id: 't-3',
@@ -159,7 +159,7 @@ export const TimelineContainer: React.FC<TimelineContainerProps> = ({
               className={clsx(
                 'p-1.5 rounded transition-colors flex items-center gap-1 font-mono text-xs px-2.5',
                 isRecording
-                  ? 'bg-red-900/80 text-red-100 border border-red-700'
+                  ? 'bg-anil-900/80 text-red-100 border border-red-700'
                   : 'text-stone-400 hover:bg-stone-800 hover:text-red-400'
               )}
             >
@@ -184,7 +184,7 @@ export const TimelineContainer: React.FC<TimelineContainerProps> = ({
                 id={`${id}-ruler-bar-${bar}`}
                 className={clsx(
                   'px-2 py-1 flex items-center justify-between',
-                  bar === currentBar && 'bg-red-950/30 text-red-400 font-bold'
+                  bar === currentBar && 'bg-anil-950/30 text-red-400 font-bold'
                 )}
               >
                 <span>Compasso {bar}</span>
@@ -259,7 +259,7 @@ export const TimelineContainer: React.FC<TimelineContainerProps> = ({
                           ? 'bg-stone-800 border-stone-700 text-stone-500 opacity-60'
                           : block.type === 'midi'
                           ? 'bg-stone-800/90 border-stone-600 text-stone-100'
-                          : 'bg-red-950/70 border-red-800 text-red-100'
+                          : 'bg-anil-950/70 border-anil-800 text-red-100'
                       )}
                     >
                       <span className="text-[10px] font-medium truncate">{block.label}</span>

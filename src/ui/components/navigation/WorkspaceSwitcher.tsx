@@ -131,14 +131,14 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
         aria-haspopup="true"
         aria-expanded={isOpen}
         className={clsx(
-          'inline-flex items-center gap-2 rounded-lg border transition-all focus:outline-none focus:ring-2 focus:ring-red-800 cursor-pointer',
+          'inline-flex items-center gap-2 rounded-lg border transition-all focus:outline-none focus:ring-2 focus:ring-anil-800 cursor-pointer',
           compact
             ? 'p-1.5 bg-stone-800 text-stone-200 border-stone-700 hover:bg-stone-700'
             : 'px-3 py-1.5 bg-stone-100/90 text-stone-800 border-stone-200/90 hover:bg-stone-200/80 hover:border-stone-300 text-xs font-semibold'
         )}
       >
         <Briefcase className="w-3.5 h-3.5 text-stone-500 shrink-0" />
-        <ActiveIcon className="w-3.5 h-3.5 text-red-800 shrink-0" />
+        <ActiveIcon className="w-3.5 h-3.5 text-anil-800 shrink-0" />
         <span className="hidden sm:inline font-sans truncate max-w-[140px] text-left">
           {activeWorkspace.label.replace('Workspace ', '')}
         </span>
@@ -154,7 +154,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
         >
           <div className="px-3 py-2 text-[11px] font-mono uppercase tracking-wider text-stone-400 flex items-center justify-between">
             <span>Alternar Workspace</span>
-            <span className="text-red-800 font-bold font-sans lowercase text-xs">6 Modos Ativos</span>
+            <span className="text-anil-800 font-bold font-sans lowercase text-xs">6 Modos Ativos</span>
           </div>
 
           <div className="py-1 space-y-0.5 max-h-[380px] overflow-y-auto">
@@ -179,7 +179,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
                   <div
                     className={clsx(
                       'p-2 rounded-md shrink-0 mt-0.5',
-                      isCurrent ? 'bg-red-800 text-white' : 'bg-stone-100 text-stone-600'
+                      isCurrent ? 'bg-anil-800 text-white' : 'bg-stone-100 text-stone-600'
                     )}
                   >
                     <IconComp className="w-4 h-4" />
@@ -188,9 +188,9 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1">
                       <span className="text-xs font-bold truncate text-stone-900">{ws.label}</span>
-                      {isCurrent && <Check className="w-3.5 h-3.5 text-red-800 shrink-0" />}
+                      {isCurrent && <Check className="w-3.5 h-3.5 text-anil-800 shrink-0" />}
                     </div>
-                    <span className="inline-block text-[10px] font-mono text-red-800 uppercase tracking-wide">
+                    <span className="inline-block text-[10px] font-mono text-anil-800 uppercase tracking-wide">
                       {ws.badge}
                     </span>
                     <p className="text-[11px] text-stone-500 leading-snug line-clamp-2 mt-0.5">

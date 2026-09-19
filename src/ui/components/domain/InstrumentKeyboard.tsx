@@ -105,7 +105,7 @@ export const InstrumentKeyboard: React.FC<InstrumentKeyboardProps> = ({
               className={clsx(
                 'relative w-10 sm:w-11 h-36 sm:h-40 border border-stone-300 rounded-b-md transition-colors cursor-pointer flex flex-col justify-end items-center pb-2 shrink-0 focus:outline-none',
                 active
-                  ? 'bg-red-800 text-white shadow-inner'
+                  ? 'bg-anil-800 text-white shadow-inner'
                   : 'bg-stone-50 hover:bg-stone-100 active:bg-stone-200 text-stone-700 shadow-xs'
               )}
             >
@@ -149,7 +149,7 @@ export const InstrumentKeyboard: React.FC<InstrumentKeyboardProps> = ({
               className={clsx(
                 'absolute top-0 z-10 w-6 sm:w-7 h-22 sm:h-24 rounded-b-md transition-colors cursor-pointer flex flex-col justify-end items-center pb-1.5 focus:outline-none shadow-md',
                 active
-                  ? 'bg-red-600 text-white border-2 border-red-800'
+                  ? 'bg-red-600 text-white border-2 border-anil-800'
                   : 'bg-stone-950 hover:bg-stone-900 border border-stone-800 text-stone-400'
               )}
             >

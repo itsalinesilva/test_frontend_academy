@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
@@ -26,6 +26,7 @@ export const AcademicProfileScreen: React.FC = () => {
   const { navigate } = useRouter();
 
   const [courses, setCourses] = useState<AcademyCourse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [progresses, setProgresses] = useState<UserAcademyProgress[]>([]);
   const [certificates, setCertificates] = useState<AcademicCertificateRecord[]>([]);
   const [userProfile, setUserProfile] = useState<{
@@ -39,17 +40,16 @@ export const AcademicProfileScreen: React.FC = () => {
     const loadAcademicProfile = async () => {
       try {
         const session = await authService.getActiveSession();
-        const user = session?.user || {
-          id: 'usr_founder_1',
-          name: 'Acadêmico de Música',
-          email: 'academico@conservatorio.org',
-        };
-        setUserProfile(user);
+        // Sem sessão não há perfil acadêmico. O objeto de reserva anterior
+        // apresentava a identidade da fundadora — com nome e e-mail
+        // inventados — a qualquer visitante (CLAUDE_AUDIT.md T-05/K-05).
+        if (!session) return;
+        setUserProfile(session.user);
 
         const [allCourses, allProgresses, certs] = await Promise.all([
           academyService.getCourses(),
-          academyService.getAllUserProgress(user.id),
-          academyService.getUserCertificates(user.id),
+          academyService.getAllUserProgress(session.user.id),
+          academyService.getUserCertificates(session.user.id),
         ]);
 
         setCourses(allCourses);
@@ -58,6 +58,7 @@ export const AcademicProfileScreen: React.FC = () => {
       } catch (err) {
         console.error('Error loading academic profile:', err);
       }
+      setIsLoading(false);
     };
 
     loadAcademicProfile();
@@ -74,23 +75,26 @@ export const AcademicProfileScreen: React.FC = () => {
   ).length;
 
   return (
-    <ScreenContainer
-      id="academic-profile-screen"
-      title="Perfil & Transcrição Acadêmica"
-      subtitle="Registro Canônico de Aprendizagem, Competências e Certificações Oficiais"
-      badgeLabel="Registro Verificado"
-      badgeVariant="brand"
-      secondaryActions={[
-        {
-          label: 'Explorar Cursos',
-          onClick: () => navigate('/academy/catalog'),
-        },
-        {
-          label: 'Histórico Completo',
-          onClick: () => navigate('/academy/history'),
-        },
-      ]}
+    <PageLayout
+      id="academicprofile"
+      form="catalog"
+      density="operational"
+      asideLabel="Resumo academico"
+      state={isLoading ? 'loading' : 'content'}
+      loadingMessage="Carregando..."
     >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-2">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Registro
+          </p>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academy/history')}>
+            Historico completo
+          </Button>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       <div className="space-y-8 max-w-6xl mx-auto">
         {/* Profile Card / Header Banner */}
         <Card variant="muted" padding="lg" className="border-stone-200">
@@ -131,7 +135,7 @@ export const AcademicProfileScreen: React.FC = () => {
                 <span className="text-[11px] font-mono text-stone-500 uppercase">Concluídos</span>
               </div>
               <div className="text-center">
-                <span className="font-serif font-bold text-2xl text-red-800 block">
+                <span className="font-serif font-bold text-2xl text-anil-800 block">
                   {certificates.length}
                 </span>
                 <span className="text-[11px] font-mono text-stone-500 uppercase">Diplomas</span>
@@ -150,7 +154,7 @@ export const AcademicProfileScreen: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-red-800" />
+              <GraduationCap className="w-5 h-5 text-anil-800" />
               Certificados e Títulos Digitais Concedidos ({certificates.length})
             </h3>
           </div>
@@ -193,7 +197,7 @@ export const AcademicProfileScreen: React.FC = () => {
                           Carga Horária: {cert.workloadHours} horas • Nível {crs?.level || 'Universitário'}
                         </span>
                       </div>
-                      <Award className="w-6 h-6 text-red-800 shrink-0" />
+                      <Award className="w-6 h-6 text-anil-800 shrink-0" />
                     </div>
 
                     <div className="p-2.5 bg-stone-50 rounded border border-stone-100 font-mono text-[10px] text-stone-600 break-all">
@@ -254,7 +258,7 @@ export const AcademicProfileScreen: React.FC = () => {
                       </div>
                       <h4
                         onClick={() => navigate(`/academy/course/${prog.courseId}`)}
-                        className="font-serif font-bold text-base text-stone-950 hover:text-red-800 cursor-pointer mt-1"
+                        className="font-serif font-bold text-base text-stone-950 hover:text-anil-800 cursor-pointer mt-1"
                       >
                         {crs?.title || prog.courseId}
                       </h4>
@@ -304,7 +308,7 @@ export const AcademicProfileScreen: React.FC = () => {
         {/* Competencies & Skills Portfolio */}
         <Card variant="default" padding="lg" className="space-y-4 border-stone-200">
           <h3 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-red-800" />
+            <Sparkles className="w-5 h-5 text-anil-800" />
             Matriz de Competências & Habilidades Adquiridas
           </h3>
           <p className="text-xs text-stone-600">
@@ -333,6 +337,7 @@ export const AcademicProfileScreen: React.FC = () => {
           </div>
         </Card>
       </div>
-    </ScreenContainer>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

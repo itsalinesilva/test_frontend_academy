@@ -3,19 +3,19 @@ import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
 import {
-  Lock,
-  Unlock,
-  Star,
-  ArrowRight,
   Filter,
 } from 'lucide-react';
 import { SkillTree, SkillCategory } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { SkillNode } from '../../components/domain/SkillNode';
+import { LockedState } from '../../components/feedback/LockedState';
 
 export const SkillTreeScreen: React.FC = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [trees, setTrees] = useState<SkillTree[]>([]);
   const [selectedTreeId, setSelectedTreeId] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
@@ -32,6 +32,7 @@ export const SkillTreeScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load skill trees', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -67,12 +68,47 @@ export const SkillTreeScreen: React.FC = () => {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="skilltree"
+      form="detail"
+      density="operational"
+      asideLabel="Trilhas"
+      state={isLoading ? 'loading' : trees.length === 0 ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-2">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Árvores
+          </p>
+          <dl className="space-y-1.5 text-xs text-stone-700">
+            <div className="flex items-center justify-between">
+              <dt>Trilhas</dt>
+              <dd className="font-mono font-bold">{trees.length}</dd>
+            </div>
+          </dl>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => router.navigate('/practice')}>
+            Voltar ao treino
+          </Button>
+        </Card>
+
+        {/* Uma habilidade esmaecida nao diz POR QUE esta esmaecida. */}
+        <Card variant="default" padding="md">
+          <LockedState
+            id="skill-tree-locked"
+            title="Habilidades bloqueadas"
+            description="Cada habilidade abre quando os pré-requisitos dela são dominados."
+            requirementText="Domine as habilidades anteriores para liberar as seguintes."
+          />
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-200 pb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-mono tracking-wider uppercase text-red-800 font-semibold">
+            <span className="text-xs font-mono tracking-wider uppercase text-anil-800 font-semibold">
               Currículo Gamificado
             </span>
             <span className="text-stone-400">•</span>
@@ -107,7 +143,7 @@ export const SkillTreeScreen: React.FC = () => {
               onClick={() => setSelectedCategory(cat)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 selectedCategory === cat
-                  ? 'bg-red-800 text-white shadow-xs'
+                  ? 'bg-anil-800 text-white shadow-xs'
                   : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
               }`}
             >
@@ -124,7 +160,7 @@ export const SkillTreeScreen: React.FC = () => {
               onClick={() => setSelectedTreeId(t.id)}
               className={`px-4 py-2 rounded-xl text-xs font-medium transition-all border ${
                 selectedTreeId === t.id
-                  ? 'bg-white border-red-800 text-red-900 shadow-sm font-semibold'
+                  ? 'bg-white border-anil-800 text-red-900 shadow-sm font-semibold'
                   : 'bg-stone-50 border-stone-200 text-stone-600 hover:bg-white'
               }`}
             >
@@ -167,70 +203,22 @@ export const SkillTreeScreen: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {nodes.map((node) => {
-                  const isUnlocked = node.unlockedByDefault || (node.masteryLevel || 0) > 0;
-                  const mastery = node.masteryLevel || 0;
-
+                  const desbloqueado = node.unlockedByDefault || (node.masteryLevel || 0) > 0;
                   return (
-                    <Card
+                    <SkillNode
                       key={node.skillId}
-                      variant="default"
-                      padding="lg"
-                      className={`relative flex flex-col justify-between space-y-4 transition-all ${
-                        isUnlocked
-                          ? 'hover:border-red-800 cursor-pointer shadow-xs hover:shadow-md'
-                          : 'opacity-75 bg-stone-50 border-dashed border-stone-300'
-                      }`}
-                      onClick={() => router.navigate(`/practice/skill/${node.skillId}`)}
-                    >
-                      <div className="space-y-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-stone-100 text-stone-700">
-                            {node.code}
-                          </span>
-                          <div className="flex items-center gap-1">
-                            {isUnlocked ? (
-                              <Unlock className="w-4 h-4 text-emerald-600" />
-                            ) : (
-                              <Lock className="w-4 h-4 text-stone-400" />
-                            )}
-                          </div>
-                        </div>
-
-                        <h3 className="font-serif font-bold text-stone-900 text-base leading-snug">
-                          {node.name}
-                        </h3>
-
-                        {node.prerequisites.length > 0 && (
-                          <div className="text-[11px] text-stone-500 font-sans">
-                            <span className="font-medium text-stone-700">Pré-requisitos: </span>
-                            {node.prerequisites.join(', ')}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Mastery Stars */}
-                      <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
-                        <div className="flex items-center gap-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className={`w-3.5 h-3.5 ${
-                                star <= mastery
-                                  ? 'fill-amber-400 text-amber-500'
-                                  : 'text-stone-300'
-                              }`}
-                            />
-                          ))}
-                          <span className="text-[10px] font-mono text-stone-500 ml-1">
-                            {mastery}/5
-                          </span>
-                        </div>
-
-                        <span className="text-xs font-medium text-red-800 flex items-center gap-1">
-                          Ver Detalhes <ArrowRight className="w-3 h-3" />
-                        </span>
-                      </div>
-                    </Card>
+                      id={`skill-node-${node.skillId}`}
+                      title={node.name}
+                      level={node.masteryLevel || 0}
+                      maxLevel={5}
+                      progressPercentage={((node.masteryLevel || 0) / 5) * 100}
+                      isLocked={!desbloqueado}
+                      onClick={
+                        desbloqueado
+                          ? () => router.navigate(`/practice/skill/${node.skillId}`)
+                          : undefined
+                      }
+                    />
                   );
                 })}
               </div>
@@ -238,6 +226,7 @@ export const SkillTreeScreen: React.FC = () => {
           );
         })}
       </div>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

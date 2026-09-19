@@ -60,6 +60,7 @@ export const Dialog: React.FC<DialogProps> = ({
   return (
     <div
       id={`${id}-backdrop`}
+      role="presentation"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-in fade-in duration-150"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -98,7 +99,7 @@ export const Dialog: React.FC<DialogProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Fechar diálogo"
-            className="text-stone-400 hover:text-stone-700 p-1 rounded hover:bg-stone-100 transition-colors focus:outline-none focus:ring-2 focus:ring-red-800"
+            className="text-stone-400 hover:text-stone-700 p-1 rounded hover:bg-stone-100 transition-colors focus:outline-none focus:ring-2 focus:ring-anil-800"
           >
             <X className="w-5 h-5" aria-hidden="true" />
           </button>

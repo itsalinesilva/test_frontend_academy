@@ -29,8 +29,13 @@ import { practiceService } from '../../../services/application/practice.service'
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
 import { ImmediateFeedbackModal } from '../../components/practice/ImmediateFeedbackModal';
 import { useRouter, useRouteParams } from '../../navigation/router';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { useAudioCapture } from '../../hooks/useAudioCapture';
+import { CapturePanel } from '../../components/practice/CapturePanel';
 
 export const ExerciseSessionScreen: React.FC = () => {
+  const { userId } = useCurrentUser();
+  const captura = useAudioCapture();
   const router = useRouter();
   const params = useRouteParams();
   const sessionId = params.id || '';
@@ -291,6 +296,7 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   // Submit attempt for evaluation across all 10 modalities
   const handleSubmitAttempt = async (customResponse?: string) => {
+    if (!userId) return;
     if (!exercise) return;
     try {
       let responseToEvaluate = customResponse;
@@ -331,20 +337,31 @@ export const ExerciseSessionScreen: React.FC = () => {
         }
       }
 
-      const offsetMs = timingOffsets.length > 0
-        ? Math.round(timingOffsets.reduce((a, b) => a + Math.abs(b), 0) / timingOffsets.length)
-        : Math.floor(Math.random() * 8) - 4;
+      // Sinal REAL da execucao.
+      //
+      // Se o microfone esteve aberto, vem dele: frequencias detectadas pelo
+      // motor de autocorrelacao e instantes dos ataques. Caso contrario, vem
+      // do que a pessoa tocou no teclado da tela — os ataques sao os toques.
+      //
+      // O que nao existir fica de fora. Antes, um desvio de tempo ausente
+      // virava `Math.random() * 8 - 4`: um numero entre -4 e +4 ms, sempre
+      // excelente, que ninguem produziu.
+      const sinalCapturado = captura.estado === 'capturando' ? captura.finalizar() : null;
+
+      const sinal = sinalCapturado ?? {
+        ataquesMs: timingOffsets.length > 0 ? [...timingOffsets] : undefined,
+      };
 
       const attempt = await practiceService.evaluateAttempt({
         exerciseId: exercise.id,
-        userId: 'usr_founder_1',
+        userId: userId,
         sessionId: session?.id,
         givenResponse: responseToEvaluate,
-        detectedPitch: detectedVoicePitch || playedNotes[playedNotes.length - 1] || 'C4',
-        targetPitch: exercise.targetPitch || 'C4',
-        timingDeviationMs: offsetMs,
-        targetBpm: bpm,
-        recordedBpm: bpm,
+        sinal: {
+          ...sinal,
+          notaAlvo: exercise.targetPitch ?? undefined,
+          bpmAlvo: bpm,
+        },
       });
 
       setLatestAttempt(attempt);
@@ -357,10 +374,11 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   // Complete session & create evidence
   const handleFinishSession = async () => {
+    if (!userId) return;
     if (!session) return;
     try {
       if (metronomeIntervalRef.current) clearInterval(metronomeIntervalRef.current);
-      const result = await practiceService.finishSession(session.id, 'usr_founder_1');
+      const result = await practiceService.finishSession(session.id, userId);
       router.navigate(`/practice/result/${result.id}`);
     } catch (e) {
       console.error('Failed to finish session', e);
@@ -430,7 +448,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                 key={b}
                 className={`w-2 h-2 rounded-full transition-all ${
                   metronomeActive && currentBeat === b
-                    ? b === 1 ? 'bg-red-800 scale-125' : 'bg-stone-800 scale-110'
+                    ? b === 1 ? 'bg-anil-800 scale-125' : 'bg-stone-800 scale-110'
                     : 'bg-stone-300'
                 }`}
               />
@@ -441,7 +459,7 @@ export const ExerciseSessionScreen: React.FC = () => {
             id="btn-toggle-metronome"
             onClick={toggleMetronome}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-mono font-bold ${
-              metronomeActive ? 'bg-red-800 text-white' : 'bg-white text-stone-700 hover:bg-stone-200'
+              metronomeActive ? 'bg-anil-800 text-white' : 'bg-white text-stone-700 hover:bg-stone-200'
             }`}
           >
             {metronomeActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
@@ -450,11 +468,12 @@ export const ExerciseSessionScreen: React.FC = () => {
 
           <input
             type="range"
+            aria-label="Andamento do metrônomo, em batidas por minuto"
             min="40"
             max="200"
             value={bpm}
             onChange={(e) => setBpm(Number(e.target.value))}
-            className="w-20 accent-red-800 cursor-pointer"
+            className="w-20 accent-anil-800 cursor-pointer"
           />
 
           <Button
@@ -462,12 +481,25 @@ export const ExerciseSessionScreen: React.FC = () => {
             variant="primary"
             size="sm"
             onClick={handleFinishSession}
-            className="text-xs ml-1 bg-red-800 hover:bg-red-700 text-white"
+            className="text-xs ml-1 bg-anil-800 hover:bg-anil-700 text-white"
           >
             Concluir Sessão
           </Button>
         </div>
       </div>
+
+      {/*
+        Captura acustica. Fica ACIMA do seletor de modalidade, antes de
+        qualquer controle de execucao, porque e a condicao para que a
+        tentativa seja medida — e nao um extra opcional escondido no rodape.
+      */}
+      <CapturePanel
+        estado={captura.estado}
+        leitura={captura.leitura}
+        notaAlvo={exercise.targetPitch ?? undefined}
+        onIniciar={() => void captura.iniciar()}
+        onCancelar={captura.cancelar}
+      />
 
       {/* 10 Modality Selector Tabs */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-stone-200">
@@ -525,7 +557,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               }}
               className="p-2 bg-white rounded-lg border border-stone-200 hover:bg-stone-100 text-stone-700 flex items-center gap-1.5 text-xs font-mono"
             >
-              <Volume2 className="w-4 h-4 text-red-800" />
+              <Volume2 className="w-4 h-4 text-anil-800" />
               <span>Ouvir Alvo</span>
             </button>
           </div>
@@ -580,7 +612,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                     key={key.note}
                     onClick={() => handleKeyPress(key.note, key.freq)}
                     className={`w-7 h-24 -mx-3.5 z-10 rounded-b transition-transform active:translate-y-1 shadow-md flex flex-col items-center justify-end pb-1 text-[9px] font-mono font-bold ${
-                      isPlayed ? 'bg-red-800 text-white' : 'bg-stone-900 text-stone-400 hover:bg-stone-800'
+                      isPlayed ? 'bg-anil-800 text-white' : 'bg-stone-900 text-stone-400 hover:bg-stone-800'
                     }`}
                   >
                     <span>{key.note}</span>
@@ -613,7 +645,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(playedNotes.join(' '))}
               disabled={playedNotes.length === 0}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Avaliar Execução no Teclado
             </Button>
@@ -689,7 +721,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(virtualNotes.join(' '))}
               disabled={virtualNotes.length === 0}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Avaliar Instrumento Virtual
             </Button>
@@ -774,7 +806,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(detectedVoicePitch)}
               disabled={!micActive}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Avaliar Afinação Vocal
             </Button>
@@ -823,7 +855,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt('TAP_SEQUENCE_80BPM')}
               disabled={timingOffsets.length === 0}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Medir Precisão Rítmica
             </Button>
@@ -853,7 +885,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               <div className="absolute left-4 top-1 text-2xl font-serif text-stone-800 select-none">
                 𝄞
               </div>
-              <div className="absolute left-28 top-5 w-4 h-3 bg-red-900 rounded-full shadow-xs flex items-center justify-center text-[8px] text-white font-mono font-bold">
+              <div className="absolute left-28 top-5 w-4 h-3 bg-anil-900 rounded-full shadow-xs flex items-center justify-center text-[8px] text-white font-mono font-bold">
                 •
               </div>
             </div>
@@ -884,7 +916,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(readingAnswers.join(' '))}
               disabled={readingAnswers.length === 0}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Validar Leitura Urtext
             </Button>
@@ -907,7 +939,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               className="px-3 py-1.5 bg-teal-50 border border-teal-200 text-teal-900 rounded-lg text-xs font-mono font-bold hover:bg-teal-100 flex items-center gap-1.5"
             >
               <Volume2 className="w-3.5 h-3.5 text-teal-700" />
-              <span>Ouvir Intervalo Modelo</span>
+              <span>Ouvir Interval Modelo</span>
             </button>
           </div>
 
@@ -938,7 +970,7 @@ export const ExerciseSessionScreen: React.FC = () => {
 
           <div className="flex items-center justify-between pt-2">
             <span className="text-xs font-mono text-stone-500">
-              Intervalo Escolhido: <strong>{selectedInterval || 'Nenhum'}</strong>
+              Interval Escolhido: <strong>{selectedInterval || 'Nenhum'}</strong>
             </span>
             <Button
               id="btn-evaluate-perception"
@@ -946,7 +978,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(selectedInterval)}
               disabled={!selectedInterval}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Submeter Percepção Auditiva
             </Button>
@@ -1008,7 +1040,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(selectedTheoryAnswer)}
               disabled={!selectedTheoryAnswer}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Verificar Resolução Teórica
             </Button>
@@ -1066,7 +1098,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(earSequence.join(' '))}
               disabled={earSequence.length === 0}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Validar Ditado Melódico
             </Button>
@@ -1088,7 +1120,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               onClick={handlePlayRepertoirePhrase}
               className="px-3 py-1.5 bg-stone-100 border border-stone-300 rounded-lg text-xs font-mono font-bold hover:bg-stone-200 flex items-center gap-1.5 text-stone-800"
             >
-              <Volume2 className="w-3.5 h-3.5 text-red-800" />
+              <Volume2 className="w-3.5 h-3.5 text-anil-800" />
               <span>Ouvir Frase Modelo</span>
             </button>
           </div>
@@ -1136,7 +1168,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(repertoirePlayed.join(' '))}
               disabled={repertoirePlayed.length === 0}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Avaliar Frase de Repertório
             </Button>
@@ -1193,7 +1225,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                     setFingerStep(f.finger);
                   }}
                   className={`p-3 bg-white hover:bg-red-50 border rounded-lg text-center active:scale-95 transition-transform ${
-                    fingerStep === f.finger ? 'border-red-800 ring-2 ring-red-200' : 'border-stone-200'
+                    fingerStep === f.finger ? 'border-anil-800 ring-2 ring-red-200' : 'border-stone-200'
                   }`}
                 >
                   <span className="text-[10px] font-mono text-stone-400 block">Dedo {f.finger}</span>
@@ -1213,7 +1245,7 @@ export const ExerciseSessionScreen: React.FC = () => {
               size="sm"
               onClick={() => handleSubmitAttempt(techniquePlayedNotes.join(' '))}
               disabled={techniquePlayedNotes.length === 0}
-              className="bg-red-800 hover:bg-red-700 text-white"
+              className="bg-anil-800 hover:bg-anil-700 text-white"
             >
               Medir Articulação & Isocronia
             </Button>

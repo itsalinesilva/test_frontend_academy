@@ -29,24 +29,32 @@ import {
 } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { ProgressRing } from '../../components/data-display/ProgressRing';
+import { XPIndicator } from '../../components/data-display/XPIndicator';
+import { PracticeCard } from '../../components/domain/PracticeCard';
 
 export const PracticeHomeScreen: React.FC = () => {
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [trees, setTrees] = useState<SkillTree[]>([]);
   const [streak, setStreak] = useState<StreakTracker | null>(null);
   const [dailyGoal, setDailyGoal] = useState<DailyGoal | null>(null);
   const [leaderboard, setLeaderboard] = useState<RankingLeaderboardEntry[]>([]);
-  const currentUserId = 'usr_founder_1';
+  const currentUserId = userId;
 
   useEffect(() => {
     async function loadPracticeHome() {
+      if (!userId) return;
       try {
         setLoading(true);
         const [treesData, streakData, goalData, rankData] = await Promise.all([
           practiceService.listSkillTrees(),
-          practiceService.getStreak(currentUserId),
-          practiceService.getDailyGoal(currentUserId),
+          practiceService.getStreak(userId),
+          practiceService.getDailyGoal(userId),
           practiceService.getLeaderboard(),
         ]);
         setTrees(treesData);
@@ -56,6 +64,7 @@ export const PracticeHomeScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load practice home', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -141,15 +150,17 @@ export const PracticeHomeScreen: React.FC = () => {
       desc: 'Exercícios Hanon, agilidade e dinâmica.',
       icon: TrendingUp,
       badge: 'Velocidade',
-      color: 'bg-red-50 text-red-800 border-red-200',
+      color: 'bg-red-50 text-anil-800 border-red-200',
     },
   ];
 
   const handleStartTraining = async (modality: PracticeModality) => {
+    if (!userId) return;
+    if (!userId) return;
     try {
       const exercises = await practiceService.listExercises();
       const match = exercises.find((e) => e.modality === modality) || exercises[0];
-      const session = await practiceService.startSession(currentUserId, modality, match.id, match.skillId);
+      const session = await practiceService.startSession(userId, modality, match.id, match.skillId);
       router.navigate(`/practice/session/${session.id}`);
     } catch (e) {
       console.error('Failed to start session', e);
@@ -174,12 +185,78 @@ export const PracticeHomeScreen: React.FC = () => {
     : 0;
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="practicehome"
+      form="detail"
+      density="operational"
+      asideLabel="Seu treino"
+      state={isLoading ? 'loading' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-3">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Hoje
+          </p>
+          {dailyGoal && (
+            <div className="flex items-center gap-3">
+              <ProgressRing
+                id="home-meta-ring"
+                value={Math.min(100, Math.round((dailyGoal.completedXp / Math.max(1, dailyGoal.targetXp)) * 100))}
+                size={52}
+                showLabel
+              />
+              <div className="text-xs text-stone-600">
+                <p className="font-semibold text-stone-900">Meta diária</p>
+                <p>{dailyGoal.completedXp} de {dailyGoal.targetXp} XP</p>
+              </div>
+            </div>
+          )}
+          {streak && (
+            <div className="space-y-1.5">
+              <XPIndicator id="home-xp" totalXp={dailyGoal?.completedXp ?? 0} compact />
+              <p className="font-mono text-[10px] text-stone-500">
+                ofensiva: {streak.currentStreakDays} {streak.currentStreakDays === 1 ? 'dia' : 'dias'}
+              </p>
+            </div>
+          )}
+          <Button variant="outline" size="sm" className="w-full" onClick={() => router.navigate('/practice/skill-tree')}>
+            Árvore de habilidades
+          </Button>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Tabs
+        id="practice-home-tabs"
+        tabs={[
+          { id: 'treino', label: 'Treinar' },
+          { id: 'arvore', label: 'Árvore de habilidades' },
+          { id: 'maestria', label: 'Maestria' },
+          { id: 'historico', label: 'Histórico' },
+          { id: 'ranking', label: 'Classificação' },
+        ]}
+        activeTab="treino"
+        onChange={(id) =>
+          router.navigate(
+            id === 'arvore'
+              ? '/practice/skill-tree'
+              : id === 'maestria'
+                ? '/practice/mastery'
+                : id === 'historico'
+                  ? '/practice/history'
+                  : id === 'ranking'
+                    ? '/practice/ranking'
+                    : '/practice'
+          )
+        }
+      />
+
+      <PageLayout.Main>
       {/* Top Banner: Training Hero & Gamification Ticker */}
       <div className="flex flex-col lg:flex-row items-stretch justify-between gap-6 bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900 text-stone-100 p-6 md:p-8 rounded-2xl shadow-xl border border-stone-800">
         <div className="space-y-3 max-w-2xl">
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono tracking-wide uppercase bg-red-950/80 text-red-300 border border-red-800">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono tracking-wide uppercase bg-anil-950/80 text-red-300 border border-anil-800">
               Laboratório de Alta Performance
             </span>
             <span className="text-xs text-stone-400 font-serif italic">
@@ -198,7 +275,7 @@ export const PracticeHomeScreen: React.FC = () => {
               variant="primary"
               size="lg"
               onClick={() => handleStartTraining(PracticeModality.KEYBOARD)}
-              className="flex items-center gap-2 bg-red-800 hover:bg-red-700 text-white"
+              className="flex items-center gap-2 bg-anil-800 hover:bg-anil-700 text-white"
             >
               <Play className="w-4 h-4 fill-white" />
               <span>Iniciar Sessão Recomendada</span>
@@ -219,9 +296,10 @@ export const PracticeHomeScreen: React.FC = () => {
         {/* Quick Gamification Counters */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 shrink-0 lg:w-72">
           {/* Streak */}
-          <div
+          <button
+            type="button"
             onClick={() => router.navigate('/practice/streak')}
-            className="cursor-pointer bg-stone-800/80 hover:bg-stone-800 p-3 rounded-xl border border-stone-700 flex items-center gap-3 transition-colors"
+            className="w-full text-left cursor-pointer bg-stone-800/80 hover:bg-stone-800 p-3 rounded-xl border border-stone-700 flex items-center gap-3 transition-colors"
           >
             <div className="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
               <Flame className="w-5 h-5 fill-amber-400" />
@@ -232,12 +310,13 @@ export const PracticeHomeScreen: React.FC = () => {
                 {streak?.currentStreakDays || 0} Dias
               </span>
             </div>
-          </div>
+          </button>
 
           {/* Daily Goal */}
-          <div
+          <button
+            type="button"
             onClick={() => router.navigate('/practice/daily-goal')}
-            className="cursor-pointer bg-stone-800/80 hover:bg-stone-800 p-3 rounded-xl border border-stone-700 flex items-center gap-3 transition-colors"
+            className="w-full text-left cursor-pointer bg-stone-800/80 hover:bg-stone-800 p-3 rounded-xl border border-stone-700 flex items-center gap-3 transition-colors"
           >
             <div className="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
               <Target className="w-5 h-5" />
@@ -254,12 +333,13 @@ export const PracticeHomeScreen: React.FC = () => {
                 />
               </div>
             </div>
-          </div>
+          </button>
 
           {/* League */}
-          <div
+          <button
+            type="button"
             onClick={() => router.navigate('/practice/ranking')}
-            className="cursor-pointer bg-stone-800/80 hover:bg-stone-800 p-3 rounded-xl border border-stone-700 flex items-center gap-3 transition-colors col-span-2 sm:col-span-1"
+            className="w-full text-left cursor-pointer bg-stone-800/80 hover:bg-stone-800 p-3 rounded-xl border border-stone-700 flex items-center gap-3 transition-colors col-span-2 sm:col-span-1"
           >
             <div className="w-10 h-10 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
               <Trophy className="w-5 h-5" />
@@ -270,7 +350,7 @@ export const PracticeHomeScreen: React.FC = () => {
                 Conservatório (#{leaderboard.find((l) => l.userId === currentUserId)?.rankPosition || 3})
               </span>
             </div>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -331,41 +411,17 @@ export const PracticeHomeScreen: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {modalitiesList.map((m) => {
-            const Icon = m.icon;
-            return (
-              <Card
-                key={m.id}
-                variant="default"
-                padding="md"
-                onClick={() => handleStartTraining(m.id)}
-                className="cursor-pointer hover:border-red-800 transition-all hover:shadow-md flex flex-col justify-between space-y-3 group"
-              >
-                <div className="flex items-start justify-between">
-                  <div className={`p-2.5 rounded-lg border ${m.color}`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <Badge variant="neutral" className="text-[10px]">
-                    {m.badge}
-                  </Badge>
-                </div>
-
-                <div>
-                  <h3 className="font-serif font-bold text-stone-900 group-hover:text-red-900 transition-colors">
-                    {m.title}
-                  </h3>
-                  <p className="text-xs text-stone-500 mt-1 line-clamp-2 leading-relaxed font-sans">
-                    {m.desc}
-                  </p>
-                </div>
-
-                <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs font-medium text-stone-700 group-hover:text-red-800">
-                  <span>Praticar</span>
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                </div>
-              </Card>
-            );
-          })}
+          {modalitiesList.map((m) => (
+            <PracticeCard
+              key={m.id}
+              id={`modalidade-${m.id}`}
+              title={m.title}
+              skillName={m.desc}
+              category={m.id}
+              estimatedMinutes={10}
+              onStart={() => handleStartTraining(m.id)}
+            />
+          ))}
         </div>
       </section>
 
@@ -428,7 +484,7 @@ export const PracticeHomeScreen: React.FC = () => {
                   </div>
                   <div className="w-full bg-stone-100 h-2 rounded-full overflow-hidden">
                     <div
-                      className="bg-red-800 h-full rounded-full transition-all"
+                      className="bg-anil-800 h-full rounded-full transition-all"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -436,7 +492,7 @@ export const PracticeHomeScreen: React.FC = () => {
 
                 <div className="flex items-center justify-between text-xs text-stone-600 pt-1">
                   <span>{tree.nodes.length} nós pedagógicos</span>
-                  <span className="font-medium text-red-800 flex items-center gap-1">
+                  <span className="font-medium text-anil-800 flex items-center gap-1">
                     Abrir Árvore <ArrowRight className="w-3.5 h-3.5" />
                   </span>
                 </div>
@@ -484,7 +540,7 @@ export const PracticeHomeScreen: React.FC = () => {
                 size="sm"
                 variant="primary"
                 onClick={() => handleStartTraining(PracticeModality.THEORY)}
-                className="text-xs bg-red-800 hover:bg-red-700 text-white"
+                className="text-xs bg-anil-800 hover:bg-anil-700 text-white"
               >
                 Praticar Agora
               </Button>
@@ -508,7 +564,7 @@ export const PracticeHomeScreen: React.FC = () => {
                 size="sm"
                 variant="primary"
                 onClick={() => handleStartTraining(PracticeModality.EAR_TRAINING)}
-                className="text-xs bg-red-800 hover:bg-red-700 text-white"
+                className="text-xs bg-anil-800 hover:bg-anil-700 text-white"
               >
                 Praticar Agora
               </Button>
@@ -516,6 +572,7 @@ export const PracticeHomeScreen: React.FC = () => {
           </Card>
         </div>
       </section>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

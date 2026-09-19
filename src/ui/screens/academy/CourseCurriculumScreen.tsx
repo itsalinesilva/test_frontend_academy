@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { LockedState } from '../../components/feedback/LockedState';
+import { ProgressBar } from '../../components/data-display/Progress';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
@@ -18,7 +20,6 @@ import {
   Clock,
   Layers,
   ArrowRight,
-  Play,
   HelpCircle,
   Volume2,
   Music,
@@ -26,7 +27,7 @@ import {
 
 export const CourseCurriculumScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const courseId = params.id || 'crs_fomt_01';
+  const courseId = params.id;
 
   const [course, setCourse] = useState<AcademyCourse | null>(null);
   const [modules, setModules] = useState<AcademyModule[]>([]);
@@ -34,12 +35,19 @@ export const CourseCurriculumScreen: React.FC = () => {
   const [quizzes, setQuizzes] = useState<AcademyQuiz[]>([]);
   const [finalAssessment, setFinalAssessment] = useState<AcademyAssessment | null>(null);
   const [progress, setProgress] = useState<UserAcademyProgress | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadCurriculum = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!courseId) return;
       try {
         const session = await authService.getActiveSession();
-        const userId = session?.user.id || 'usr_founder_1';
+        // O catalogo e publico; so o progresso exige sessao. A guarda anterior
+        // bloqueava ambos, escondendo o catalogo de visitantes anonimos.
+        const userId = session?.user.id;
 
         const [c, qzs] = await Promise.all([
           academyService.getCourse(courseId),
@@ -67,12 +75,13 @@ export const CourseCurriculumScreen: React.FC = () => {
             setFinalAssessment(asm);
           }
 
-          const prog = await academyService.getUserProgress(userId, c.id);
+          const prog = userId ? await academyService.getUserProgress(userId, c.id) : null;
           setProgress(prog);
         }
       } catch (err) {
         console.error('Error loading curriculum:', err);
       }
+      setIsLoading(false);
     };
 
     loadCurriculum();
@@ -81,28 +90,68 @@ export const CourseCurriculumScreen: React.FC = () => {
   const totalLessons = Object.values(moduleLessons).reduce((acc, curr) => acc + curr.length, 0);
 
   return (
-    <ScreenContainer
-      id={`course-curriculum-${courseId}`}
-      title={`Ementa & Grade Curricular Completa`}
-      subtitle={`${course?.title || 'Curso Acadêmico'} • ${course?.workloadHours}h Totais`}
-      badgeLabel="Programa Curricular Oficial"
-      badgeVariant="brand"
-      primaryAction={{
-        label: progress ? 'Continuar Curso' : 'Ir para Detalhes do Curso',
-        icon: Play,
-        onClick: () => navigate(`/academy/course/${courseId}`),
-      }}
-      secondaryActions={[
-        {
-          label: 'Ver Detalhes do Curso',
-          onClick: () => navigate(`/academy/course/${courseId}`),
-        },
-        {
-          label: 'Meu Progresso',
-          onClick: () => navigate(`/academy/course/${courseId}/progress`),
-        },
-      ]}
+    <PageLayout
+      id="coursecurriculum"
+      form="detail"
+      density="catalog"
+      asideLabel="Grade curricular"
+      state={isLoading ? 'loading' : !course ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
     >
+      <PageLayout.Aside>
+        <div className="space-y-3">
+          <Card variant="default" padding="md" className="space-y-3">
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+              Estrutura da disciplina
+            </p>
+            <dl className="space-y-1.5 text-xs text-stone-700">
+              <div className="flex items-center justify-between">
+                <dt>Modulos</dt>
+                <dd className="font-mono font-bold">{modules.length}</dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt>Quizzes</dt>
+                <dd className="font-mono font-bold">{quizzes.length}</dd>
+              </div>
+              {course && (
+                <div className="flex items-center justify-between border-t border-stone-100 pt-1.5">
+                  <dt>Carga horaria</dt>
+                  <dd className="font-mono font-bold">{course.workloadHours}h</dd>
+                </div>
+              )}
+            </dl>
+            {progress ? (
+              <>
+                <ProgressBar
+                  id="curriculum-progress"
+                  value={progress.progressPercentage}
+                  max={100}
+                  label={`Progresso: ${progress.progressPercentage}%`}
+                />
+                <Button variant="primary" size="sm" className="w-full" onClick={() => course && navigate(`/academy/course/${course.id}`)}>
+                  Voltar a disciplina
+                </Button>
+              </>
+            ) : (
+              <>
+                {/* Sem matricula a grade fica VISIVEL — e ela que sustenta a
+                    decisão de se matricular (wireframes/01 §4). */}
+                <LockedState
+                  id="curriculum-locked"
+                  title="Conteúdo bloqueado"
+                  description="A grade está visível, mas as lições exigem matrícula."
+                  requirementText="Matricule-se para liberar as lições e a avaliação."
+                />
+                <Button variant="primary" size="sm" className="w-full" onClick={() => course && navigate(`/academy/course/${course.id}`)}>
+                  Ver a disciplina
+                </Button>
+              </>
+            )}
+          </Card>
+        </div>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       <div className="space-y-8">
         {/* Header Summary Banner */}
         <Card variant="muted" padding="lg" className="border-stone-200">
@@ -193,11 +242,12 @@ export const CourseCurriculumScreen: React.FC = () => {
                   {lessons.map((les, lesIdx) => {
                     const isDone = progress?.completedLessonIds.includes(les.id);
                     return (
-                      <div
+                      <button
                         key={les.id}
+                        type="button"
                         id={`curriculum-lesson-${les.id}`}
                         onClick={() => navigate(`/academy/lesson/${les.id}`)}
-                        className="p-3.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer transition-all"
+                        className="w-full p-3.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg text-left flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer transition-all"
                       >
                         <div className="flex items-start gap-3">
                           <span
@@ -221,7 +271,7 @@ export const CourseCurriculumScreen: React.FC = () => {
                                 Áudio Guiado
                               </span>
                               {les.variants.TRADITIONAL.scoreSnippet && (
-                                <span className="flex items-center gap-1 text-red-800">
+                                <span className="flex items-center gap-1 text-anil-800">
                                   <Music className="w-3.5 h-3.5" />
                                   Partitura
                                 </span>
@@ -247,7 +297,7 @@ export const CourseCurriculumScreen: React.FC = () => {
                             <ArrowRight className="w-3 h-3 ml-1" />
                           </Button>
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -290,7 +340,7 @@ export const CourseCurriculumScreen: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <span className="text-xs font-mono text-stone-500 block">Corte Mínimo</span>
-                  <span className="font-mono font-bold text-red-800 text-lg">
+                  <span className="font-mono font-bold text-anil-800 text-lg">
                     {finalAssessment.passingScorePercentage}%
                   </span>
                 </div>
@@ -311,6 +361,7 @@ export const CourseCurriculumScreen: React.FC = () => {
           )}
         </div>
       </div>
-    </ScreenContainer>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

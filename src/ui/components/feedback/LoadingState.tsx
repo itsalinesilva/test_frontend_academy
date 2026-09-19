@@ -9,7 +9,7 @@ export interface LoadingStateProps {
 
 export const LoadingState: React.FC<LoadingStateProps> = ({
   id = 'loading-state-container',
-  message = 'Carregando dados acadêmicos...',
+  message = 'Carregando dados acadêmicos…',
   description,
 }) => {
   return (

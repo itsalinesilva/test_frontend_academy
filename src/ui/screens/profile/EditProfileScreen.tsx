@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { authService } from '../../../services/application/auth.service';
 import { profileService } from '../../../services/application/profile.service';
-import { ArrowLeft, Save, CheckCircle2 } from 'lucide-react';
+import { Save, CheckCircle2 } from 'lucide-react';
 
 export const EditProfileScreen: React.FC = () => {
   const { navigate } = useRouter();
@@ -19,9 +19,14 @@ export const EditProfileScreen: React.FC = () => {
   const [visibility, setVisibility] = useState<'public' | 'institutional' | 'private'>('institutional');
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  // Antes, um erro ao salvar so aparecia no console: a pessoa via o botao
+  // voltar de "Salvando…" ao normal e nada mais, sem saber se gravou.
+  const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
+      try {
       const session = await authService.getActiveSession();
       if (session?.profile) {
         const p = session.profile;
@@ -33,6 +38,11 @@ export const EditProfileScreen: React.FC = () => {
         setInterestsInput((p.musicalInterests || []).join(', '));
         if (p.experienceLevel) setExperienceLevel(p.experienceLevel);
         if (p.privacySettings?.visibility) setVisibility(p.privacySettings.visibility);
+      }
+      } catch (e) {
+        setErro(e instanceof Error ? e.message : 'Nao foi possivel carregar seu perfil.');
+      } finally {
+        setIsLoading(false);
       }
     }
     load();
@@ -75,53 +85,68 @@ export const EditProfileScreen: React.FC = () => {
       }, 500);
     } catch (err) {
       console.error(err);
+      setErro(err instanceof Error ? err.message : 'Nao foi possivel salvar as alteracoes.');
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <ScreenContainer
+    <PageLayout
       id="edit-profile"
-      title="Editar Perfil do Músico"
-      subtitle="Atualize suas informações biográficas, instrumentos e visibilidade institucional."
-      badgeLabel="Edição Canônica"
-      badgeVariant="neutral"
-      primaryAction={{
-        label: 'Voltar ao Perfil',
-        icon: ArrowLeft,
-        onClick: () => navigate('/profile'),
-      }}
+      form="focus"
+      density="editorial"
+      state={isLoading ? 'loading' : 'content'}
+      loadingMessage="Carregando seu perfil…"
     >
+      <PageLayout.Hero>
+        <div className="space-y-1">
+          <h1 className="font-serif text-2xl font-bold text-stone-900">Editar perfil</h1>
+          <p className="text-sm leading-relaxed text-stone-600">
+            Biografia, instrumentos e visibilidade institucional.
+          </p>
+        </div>
+      </PageLayout.Hero>
+
+      <PageLayout.Main>
       <div className="max-w-2xl mx-auto space-y-4">
+        {erro && (
+          <div
+            role="alert"
+            className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-900"
+          >
+            <span>{erro}</span>
+          </div>
+        )}
+
         {savedSuccess && (
           <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-md text-xs flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-            <span>Perfil acadêmico atualizado com sucesso! Redirecionando...</span>
+            <span>Perfil acadêmico atualizado com sucesso! Redirecionando…</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
           <Card variant="default" padding="lg" className="space-y-4">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-nome-de-exibicao-academico">
                 Nome de Exibição Acadêmico *
               </label>
-              <input
+              <input id="edit-profile-screen-nome-de-exibicao-academico"
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full text-sm p-2.5 rounded border border-stone-300 focus:outline-none focus:ring-1 focus:ring-red-800"
+                className="w-full text-sm p-2.5 rounded border border-stone-300 focus:outline-none focus:ring-1 focus:ring-anil-800"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-stone-700 block">
+                <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-titulo-musical-ou-academico">
                   Título Musical ou Acadêmico
                 </label>
-                <input
+                <input id="edit-profile-screen-titulo-musical-ou-academico"
                   type="text"
                   value={title}
                   placeholder="Ex: Pianista, Pesquisador, Mestre"
@@ -131,10 +156,10 @@ export const EditProfileScreen: React.FC = () => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-stone-700 block">
+                <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-nivel-de-formacao">
                   Nível de Formação
                 </label>
-                <select
+                <select id="edit-profile-screen-nivel-de-formacao"
                   value={experienceLevel}
                   onChange={(e) => setExperienceLevel(e.target.value as any)}
                   className="w-full text-sm p-2.5 rounded border border-stone-300 bg-white"
@@ -148,10 +173,10 @@ export const EditProfileScreen: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-linha-de-pesquisa-headline">
                 Linha de Pesquisa / Headline
               </label>
-              <input
+              <input id="edit-profile-screen-linha-de-pesquisa-headline"
                 type="text"
                 value={headline}
                 placeholder="Ex: Contraponto Barroco e Prática Pianística"
@@ -161,10 +186,10 @@ export const EditProfileScreen: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-biografia-academica">
                 Biografia Acadêmica
               </label>
-              <textarea
+              <textarea id="edit-profile-screen-biografia-academica"
                 rows={3}
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
@@ -173,10 +198,10 @@ export const EditProfileScreen: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-instrumentos-separados-por-virgula">
                 Instrumentos (separados por vírgula)
               </label>
-              <input
+              <input id="edit-profile-screen-instrumentos-separados-por-virgula"
                 type="text"
                 value={instrumentsInput}
                 placeholder="Ex: Piano Clássico, Cravo, Violino"
@@ -186,10 +211,10 @@ export const EditProfileScreen: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-areas-de-interesse-separadas-por-virgula">
                 Áreas de Interesse (separadas por vírgula)
               </label>
-              <input
+              <input id="edit-profile-screen-areas-de-interesse-separadas-por-virgula"
                 type="text"
                 value={interestsInput}
                 placeholder="Ex: Harmonia Funcional, Fuga, Solfejo"
@@ -199,10 +224,10 @@ export const EditProfileScreen: React.FC = () => {
             </div>
 
             <div className="space-y-1 pt-2 border-t border-stone-100">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-profile-screen-privacidade-visibilidade-do-perfil">
                 Privacidade & Visibilidade do Perfil
               </label>
-              <select
+              <select id="edit-profile-screen-privacidade-visibilidade-do-perfil"
                 value={visibility}
                 onChange={(e) => setVisibility(e.target.value as any)}
                 className="w-full text-sm p-2.5 rounded border border-stone-300 bg-white"
@@ -219,12 +244,13 @@ export const EditProfileScreen: React.FC = () => {
               </Button>
               <Button variant="primary" size="md" type="submit" disabled={isSaving}>
                 <Save className="w-4 h-4 mr-1.5" />
-                {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+                {isSaving ? 'Salvando…' : 'Salvar Alterações'}
               </Button>
             </div>
           </Card>
         </form>
       </div>
-    </ScreenContainer>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

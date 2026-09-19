@@ -48,7 +48,7 @@ export const Topbar: React.FC<TopbarProps> = ({
             type="button"
             onClick={onMenuToggle}
             aria-label="Abrir menu lateral"
-            className="md:hidden p-1.5 text-stone-600 hover:text-stone-900 rounded hover:bg-stone-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800"
+            className="md:hidden p-1.5 text-stone-600 hover:text-stone-900 rounded hover:bg-stone-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -80,7 +80,7 @@ export const Topbar: React.FC<TopbarProps> = ({
             title={`${totalXp} Pontos de Experiência acumulados`}
             className="hidden sm:flex items-center gap-1 px-2 py-1 bg-stone-100 border border-stone-200 rounded text-xs font-semibold text-stone-800"
           >
-            <Zap className="w-3.5 h-3.5 text-red-800 fill-red-800" />
+            <Zap className="w-3.5 h-3.5 text-anil-800 fill-anil-800" />
             <span>{totalXp} XP</span>
           </div>
         )}
@@ -102,11 +102,11 @@ export const Topbar: React.FC<TopbarProps> = ({
             type="button"
             onClick={onNotificationsClick}
             aria-label={`Notificações (${notificationCount} não lidas)`}
-            className="relative p-1.5 text-stone-500 hover:text-stone-900 rounded hover:bg-stone-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800"
+            className="relative p-1.5 text-stone-500 hover:text-stone-900 rounded hover:bg-stone-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800"
           >
             <Bell className="w-4 h-4" />
             {notificationCount > 0 && (
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-800 ring-2 ring-white" />
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-anil-800 ring-2 ring-white" />
             )}
           </button>
         )}
@@ -117,7 +117,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           onClick={onAvatarClick}
           role={onAvatarClick ? 'button' : undefined}
           tabIndex={onAvatarClick ? 0 : undefined}
-          className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800 rounded-full"
+          className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800 rounded-full"
         >
           <Avatar
             id={`${id}-user-avatar`}

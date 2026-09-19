@@ -11,7 +11,7 @@ import { Award, CheckCircle2, GraduationCap, ArrowRight, BookOpen } from 'lucide
 
 export const CourseCompletionScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const courseId = params.id || 'crs_fomt_01';
+  const courseId = params.id;
 
   const [course, setCourse] = useState<AcademyCourse | null>(null);
   const [certificate, setCertificate] = useState<AcademyCertificate | null>(null);
@@ -20,14 +20,24 @@ export const CourseCompletionScreen: React.FC = () => {
 
   useEffect(() => {
     const loadCompletionData = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!courseId) return;
       try {
         const session = await authService.getActiveSession();
-        const userId = session?.user.id || 'usr_founder_1';
+        // O catalogo e publico; so o progresso exige sessao. A guarda anterior
+        // bloqueava ambos, escondendo o catalogo de visitantes anonimos.
+        const userId = session?.user.id;
 
         const [c, prog, certs] = await Promise.all([
           academyService.getCourse(courseId),
-          academyService.getUserProgress(userId, courseId),
-          academyService.listUserCertificates(userId),
+          userId
+            ? academyService.getUserProgress(userId, courseId)
+            : Promise.resolve(null),
+          userId
+            ? academyService.listUserCertificates(userId)
+            : Promise.resolve([]),
         ]);
 
         setCourse(c);
@@ -86,8 +96,8 @@ export const CourseCompletionScreen: React.FC = () => {
     >
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Celebration Banner */}
-        <Card variant="default" padding="xl" className="text-center space-y-6 border-red-800/30 bg-red-50/10">
-          <div className="mx-auto w-16 h-16 rounded-full bg-red-900 text-white flex items-center justify-center shadow-md">
+        <Card variant="default" padding="xl" className="text-center space-y-6 border-anil-800/30 bg-red-50/10">
+          <div className="mx-auto w-16 h-16 rounded-full bg-anil-900 text-white flex items-center justify-center shadow-md">
             <Award className="w-8 h-8" />
           </div>
 
@@ -144,7 +154,7 @@ export const CourseCompletionScreen: React.FC = () => {
           <Card variant="muted" padding="lg" className="space-y-3 border-stone-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <GraduationCap className="w-5 h-5 text-red-800" />
+                <GraduationCap className="w-5 h-5 text-anil-800" />
                 <h4 className="font-serif font-bold text-base text-stone-900">
                   Certificado Canônico Registrado
                 </h4>

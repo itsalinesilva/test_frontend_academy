@@ -1,4 +1,4 @@
-// Design System Barrel Exports - Academia Musical Digital
+// Design System Barrel Exports - Conservatório Muscicapa
 
 // 1. Tokens & Utilities
 export * from './tokens';

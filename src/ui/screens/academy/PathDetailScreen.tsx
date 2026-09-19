@@ -12,7 +12,7 @@ import { Award, Clock, ArrowRight, CheckCircle2, GraduationCap, ArrowLeft } from
 
 export const PathDetailScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const pathId = params.id || 'pth_teoria_gramatica';
+  const pathId = params.id;
 
   const [path, setPath] = useState<LearningPath | null>(null);
   const [courses, setCourses] = useState<AcademyCourse[]>([]);
@@ -21,9 +21,15 @@ export const PathDetailScreen: React.FC = () => {
 
   useEffect(() => {
     const loadPathData = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!pathId) return;
       try {
         const session = await authService.getActiveSession();
-        const userId = session?.user.id || 'usr_founder_1';
+        // O catalogo e publico; so o progresso exige sessao. A guarda anterior
+        // bloqueava ambos, escondendo o catalogo de visitantes anonimos.
+        const userId = session?.user.id;
 
         const p = await academyService.getPath(pathId);
         if (p) {
@@ -32,7 +38,7 @@ export const PathDetailScreen: React.FC = () => {
           const matched = allCourses.filter((c) => p.courseIds.includes(c.id));
           setCourses(matched);
 
-          const userProgresses = await academyService.listUserEnrollments(userId);
+          const userProgresses = userId ? await academyService.listUserEnrollments(userId) : [];
           const map: Record<string, UserAcademyProgress> = {};
           userProgresses.forEach((up) => {
             map[up.courseId] = up;
@@ -115,7 +121,7 @@ export const PathDetailScreen: React.FC = () => {
           {/* Courses List */}
           <div className="space-y-4">
             <h2 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-red-800" />
+              <GraduationCap className="w-5 h-5 text-anil-800" />
               Disciplinas da Trilha
             </h2>
 
@@ -194,7 +200,7 @@ export const PathDetailScreen: React.FC = () => {
         <div className="space-y-6">
           <Card variant="default" padding="md" className="space-y-3">
             <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-              <Award className="w-4 h-4 text-red-800" />
+              <Award className="w-4 h-4 text-anil-800" />
               Competências Desenvolvidas
             </h3>
             <div className="space-y-2">

@@ -15,6 +15,7 @@ import {
   AcademicCertificateRecord,
   AcademicHistoryEntry,
 } from '../domain/academy';
+import { applyEdits, applyEditsToMany, EditorialEdit } from '../domain/editorial-edit';
 import {
   SEED_CATEGORIES,
   SEED_PROGRAMS,
@@ -46,7 +47,9 @@ export interface AcademyRepository {
   findModuleById(id: string): Promise<AcademyModule | null>;
 
   // Lessons
+  listLessons(): Promise<AcademyLesson[]>;
   listLessonsByModule(moduleId: string): Promise<AcademyLesson[]>;
+  listLessonsByCourse(courseId: string): Promise<AcademyLesson[]>;
   findLessonById(id: string): Promise<AcademyLesson | null>;
 
   // Activities, Quizzes & Assessments
@@ -106,33 +109,57 @@ export class PersistentAcademyRepository implements AcademyRepository {
     this.initializeSeedData();
   }
 
+  /**
+   * Versão do catálogo publicado.
+   *
+   * POR QUE ISTO EXISTE
+   * -------------------
+   * O catálogo era gravado no localStorage apenas quando a chave não existia.
+   * Consequência: quem já tinha aberto a plataforma continuava vendo o
+   * catálogo antigo para sempre — inclusive três cursos fabricados que foram
+   * apagados do código e permaneceram na tela, porque a chave já estava lá.
+   *
+   * Agora o catálogo carrega uma versão. Quando ela muda, o conteúdo
+   * publicado é reescrito por cima do que estava gravado.
+   *
+   * Incrementar ao alterar cursos, módulos, lições, programas ou categorias.
+   */
+  private static readonly VERSAO_DO_CATALOGO = 5;
+
+  private readonly CHAVE_DA_VERSAO = 'amd_academy_catalog_version';
+
+  /**
+   * Chaves de CONTEÚDO — o que o Conservatório publica. São reescritas a cada
+   * versão nova. As chaves de PROGRESSO, TENTATIVAS, SUBMISSÕES, CERTIFICADOS
+   * e HISTÓRICO nunca aparecem aqui: são do aluno, e nenhuma publicação de
+   * conteúdo pode apagá-las.
+   */
+  private conteudoPublicado(): [string, unknown][] {
+    return [
+      [this.STORAGE_KEYS.CATEGORIES, SEED_CATEGORIES],
+      [this.STORAGE_KEYS.PROGRAMS, SEED_PROGRAMS],
+      [this.STORAGE_KEYS.PATHS, SEED_PATHS],
+      [this.STORAGE_KEYS.COURSES, SEED_COURSES],
+      [this.STORAGE_KEYS.MODULES, SEED_MODULES],
+      [this.STORAGE_KEYS.LESSONS, SEED_LESSONS],
+      [this.STORAGE_KEYS.ACTIVITIES, SEED_ACTIVITIES],
+      [this.STORAGE_KEYS.QUIZZES, SEED_QUIZZES],
+      [this.STORAGE_KEYS.ASSESSMENTS, SEED_ASSESSMENTS],
+    ];
+  }
+
   private initializeSeedData(): void {
-    if (!this.storage.get<AcademyCategory[]>(this.STORAGE_KEYS.CATEGORIES)) {
-      this.storage.set(this.STORAGE_KEYS.CATEGORIES, SEED_CATEGORIES);
+    const gravada = this.storage.get<number>(this.CHAVE_DA_VERSAO);
+    const desatualizado = gravada !== PersistentAcademyRepository.VERSAO_DO_CATALOGO;
+
+    for (const [chave, valor] of this.conteudoPublicado()) {
+      if (desatualizado || !this.storage.get(chave)) {
+        this.storage.set(chave, valor);
+      }
     }
-    if (!this.storage.get<Program[]>(this.STORAGE_KEYS.PROGRAMS)) {
-      this.storage.set(this.STORAGE_KEYS.PROGRAMS, SEED_PROGRAMS);
-    }
-    if (!this.storage.get<LearningPath[]>(this.STORAGE_KEYS.PATHS)) {
-      this.storage.set(this.STORAGE_KEYS.PATHS, SEED_PATHS);
-    }
-    if (!this.storage.get<AcademyCourse[]>(this.STORAGE_KEYS.COURSES)) {
-      this.storage.set(this.STORAGE_KEYS.COURSES, SEED_COURSES);
-    }
-    if (!this.storage.get<AcademyModule[]>(this.STORAGE_KEYS.MODULES)) {
-      this.storage.set(this.STORAGE_KEYS.MODULES, SEED_MODULES);
-    }
-    if (!this.storage.get<AcademyLesson[]>(this.STORAGE_KEYS.LESSONS)) {
-      this.storage.set(this.STORAGE_KEYS.LESSONS, SEED_LESSONS);
-    }
-    if (!this.storage.get<AcademyActivity[]>(this.STORAGE_KEYS.ACTIVITIES)) {
-      this.storage.set(this.STORAGE_KEYS.ACTIVITIES, SEED_ACTIVITIES);
-    }
-    if (!this.storage.get<AcademyQuiz[]>(this.STORAGE_KEYS.QUIZZES)) {
-      this.storage.set(this.STORAGE_KEYS.QUIZZES, SEED_QUIZZES);
-    }
-    if (!this.storage.get<AcademyAssessment[]>(this.STORAGE_KEYS.ASSESSMENTS)) {
-      this.storage.set(this.STORAGE_KEYS.ASSESSMENTS, SEED_ASSESSMENTS);
+
+    if (desatualizado) {
+      this.storage.set(this.CHAVE_DA_VERSAO, PersistentAcademyRepository.VERSAO_DO_CATALOGO);
     }
   }
 
@@ -201,16 +228,46 @@ export class PersistentAcademyRepository implements AcademyRepository {
   // -------------------------------------------------------------------------
   // Lessons
   // -------------------------------------------------------------------------
+  /**
+   * Lições publicadas, JÁ COM a camada editorial aplicada.
+   *
+   * Toda leitura passa por aqui, e é de propósito: se a aplicação da camada
+   * ficasse a cargo de quem chama, bastaria uma tela esquecer de aplicá-la
+   * para o aluno ler o texto errado que alguém já corrigiu — e para o livro
+   * da biblioteca divergir da lição, sem ninguém saber qual dos dois vale.
+   *
+   * A chave editorial NÃO está em `conteudoPublicado()`. Publicar uma versão
+   * nova do catálogo não apaga correção de texto.
+   */
+  private edicoes(): EditorialEdit[] {
+    return this.storage.get<EditorialEdit[]>('amd_academy_editorial_v1') ?? [];
+  }
+
+  private licoesPublicadas(): AcademyLesson[] {
+    return this.storage.get<AcademyLesson[]>(this.STORAGE_KEYS.LESSONS) || SEED_LESSONS;
+  }
+
+  public async listLessons(): Promise<AcademyLesson[]> {
+    return applyEditsToMany(this.licoesPublicadas(), this.edicoes());
+  }
+
   public async listLessonsByModule(moduleId: string): Promise<AcademyLesson[]> {
-    const list = this.storage.get<AcademyLesson[]>(this.STORAGE_KEYS.LESSONS) || SEED_LESSONS;
-    return list
-      .filter((l) => l.moduleId === moduleId)
-      .sort((a, b) => a.order - b.order);
+    return applyEditsToMany(
+      this.licoesPublicadas().filter((l) => l.moduleId === moduleId),
+      this.edicoes()
+    ).sort((a, b) => a.order - b.order);
+  }
+
+  public async listLessonsByCourse(courseId: string): Promise<AcademyLesson[]> {
+    return applyEditsToMany(
+      this.licoesPublicadas().filter((l) => l.courseId === courseId),
+      this.edicoes()
+    ).sort((a, b) => a.order - b.order);
   }
 
   public async findLessonById(id: string): Promise<AcademyLesson | null> {
-    const list = this.storage.get<AcademyLesson[]>(this.STORAGE_KEYS.LESSONS) || SEED_LESSONS;
-    return list.find((l) => l.id === id) || null;
+    const licao = this.licoesPublicadas().find((l) => l.id === id);
+    return licao ? applyEdits(licao, this.edicoes()) : null;
   }
 
   // -------------------------------------------------------------------------

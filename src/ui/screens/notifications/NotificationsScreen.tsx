@@ -102,7 +102,7 @@ export const NotificationsScreen: React.FC = () => {
                   item.unread ? 'border-red-200 bg-red-50/10' : ''
                 }`}
               >
-                <div className={`p-2 rounded-full mt-0.5 shrink-0 ${item.unread ? 'bg-red-100 text-red-800' : 'bg-stone-200 text-stone-600'}`}>
+                <div className={`p-2 rounded-full mt-0.5 shrink-0 ${item.unread ? 'bg-red-100 text-anil-800' : 'bg-stone-200 text-stone-600'}`}>
                   <IconComp className="w-4 h-4" />
                 </div>
 
@@ -111,7 +111,7 @@ export const NotificationsScreen: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-stone-900">{item.title}</span>
                       {item.unread && (
-                        <span className="w-2 h-2 rounded-full bg-red-800 shrink-0" />
+                        <span className="w-2 h-2 rounded-full bg-anil-800 shrink-0" />
                       )}
                     </div>
                     <span className="text-[11px] font-mono text-stone-400 flex items-center gap-1">

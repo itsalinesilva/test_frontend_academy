@@ -33,7 +33,7 @@ export const Certificate: React.FC<CertificateProps> = ({
   instructorName,
   instructorTitle,
   competencies,
-  institution = 'Academia Musical Digital',
+  institution = 'Conservatório Muscicapa',
   onPrint,
   onShare,
   className,
@@ -46,14 +46,14 @@ export const Certificate: React.FC<CertificateProps> = ({
         className="relative bg-white border-8 border-double border-stone-800 p-8 sm:p-12 shadow-md rounded-xs flex flex-col justify-between text-center overflow-hidden"
       >
         {/* Subtle Watermark Corner Seals */}
-        <div className="absolute top-4 left-4 w-12 h-12 border-t-2 border-l-2 border-red-800/40 pointer-events-none" />
-        <div className="absolute top-4 right-4 w-12 h-12 border-t-2 border-r-2 border-red-800/40 pointer-events-none" />
-        <div className="absolute bottom-4 left-4 w-12 h-12 border-b-2 border-l-2 border-red-800/40 pointer-events-none" />
-        <div className="absolute bottom-4 right-4 w-12 h-12 border-b-2 border-r-2 border-red-800/40 pointer-events-none" />
+        <div className="absolute top-4 left-4 w-12 h-12 border-t-2 border-l-2 border-anil-800/40 pointer-events-none" />
+        <div className="absolute top-4 right-4 w-12 h-12 border-t-2 border-r-2 border-anil-800/40 pointer-events-none" />
+        <div className="absolute bottom-4 left-4 w-12 h-12 border-b-2 border-l-2 border-anil-800/40 pointer-events-none" />
+        <div className="absolute bottom-4 right-4 w-12 h-12 border-b-2 border-r-2 border-anil-800/40 pointer-events-none" />
 
         {/* Header & Crest */}
         <div className="flex flex-col items-center gap-2">
-          <div className="w-14 h-14 rounded-full bg-red-800 text-white flex items-center justify-center shadow-xs">
+          <div className="w-14 h-14 rounded-full bg-anil-800 text-white flex items-center justify-center shadow-xs">
             <Award className="w-8 h-8" />
           </div>
           <span className="font-serif tracking-widest text-xs uppercase font-bold text-stone-600 mt-2">
@@ -62,7 +62,7 @@ export const Certificate: React.FC<CertificateProps> = ({
           <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 tracking-wide">
             CERTIFICADO DE CONCLUSÃO
           </h2>
-          <div className="w-24 h-0.5 bg-red-800 mx-auto mt-1" />
+          <div className="w-24 h-0.5 bg-anil-800 mx-auto mt-1" />
         </div>
 
         {/* Body Text */}

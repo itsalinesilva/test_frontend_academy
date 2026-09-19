@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Badge } from '../../components/base/Badge';
@@ -51,19 +51,29 @@ export const AcademySearchScreen: React.FC = () => {
   ];
 
   return (
-    <ScreenContainer
-      id="academy-search-screen"
-      title="Busca Curricular & Competências"
-      subtitle="Localize disciplinas, trilhas formativas, programas e conceitos teóricos em toda a Academia."
-      badgeLabel="Motor de Busca"
-      badgeVariant="neutral"
-      secondaryActions={[
-        {
-          label: 'Ver Catálogo Completo',
-          onClick: () => navigate('/academy/catalog'),
-        },
-      ]}
+    <PageLayout
+      id="academysearch"
+      form="catalog"
+      density="catalog"
+      asideLabel="Refinar busca"
+      state={'content'}
+      loadingMessage="Carregando…"
     >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-2">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Busca academica
+          </p>
+          <p className="text-xs leading-relaxed text-stone-600">
+            Busque por disciplina, trilha, competencia ou obra do acervo.
+          </p>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academy/catalog')}>
+            Ver catalogo completo
+          </Button>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       <div className="space-y-6">
         {/* Search Bar & Quick Tags */}
         <div className="space-y-3 bg-white p-4 border border-stone-200 rounded-xl shadow-2xs">
@@ -72,7 +82,8 @@ export const AcademySearchScreen: React.FC = () => {
             <input
               id="academy-main-search-input"
               type="text"
-              placeholder="Digite um conceito, nota, escala, regra ou professor (ex: oitava, tríade, Schumann, Fux)..."
+              aria-label="Buscar um conceito musical"
+              placeholder="Digite um conceito, nota, escala, regra ou professor (ex: oitava, tríade, Schumann, Fux)…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="bg-transparent text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none w-full font-sans"
@@ -132,7 +143,7 @@ export const AcademySearchScreen: React.FC = () => {
         {/* Results Counter */}
         <div className="flex items-center justify-between text-xs text-stone-500 font-mono">
           <span>{totalResults} resultado(s) localizado(s)</span>
-          {isSearching && <span>Buscando...</span>}
+          {isSearching && <span>Buscando…</span>}
         </div>
 
         {/* Results List */}
@@ -162,7 +173,7 @@ export const AcademySearchScreen: React.FC = () => {
             {courses.length > 0 && (
               <div className="space-y-3">
                 <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4 text-red-800" />
+                  <GraduationCap className="w-4 h-4 text-anil-800" />
                   Disciplinas Acadêmicas ({courses.length})
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -183,7 +194,7 @@ export const AcademySearchScreen: React.FC = () => {
                         <p className="text-xs text-stone-600 line-clamp-2">{course.subtitle}</p>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs text-red-800 font-medium pt-2 border-t border-stone-100">
+                      <div className="flex items-center justify-between text-xs text-anil-800 font-medium pt-2 border-t border-stone-100">
                         <span>Acessar Disciplina</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </div>
@@ -231,7 +242,7 @@ export const AcademySearchScreen: React.FC = () => {
             {programs.length > 0 && (
               <div className="space-y-3">
                 <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-red-800" />
+                  <Layers className="w-4 h-4 text-anil-800" />
                   Programas Integrados ({programs.length})
                 </h3>
                 <div className="space-y-3">
@@ -260,6 +271,7 @@ export const AcademySearchScreen: React.FC = () => {
           </div>
         )}
       </div>
-    </ScreenContainer>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

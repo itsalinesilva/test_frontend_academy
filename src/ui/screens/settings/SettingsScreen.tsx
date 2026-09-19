@@ -16,7 +16,6 @@ import {
   Baby,
 } from 'lucide-react';
 import { authService } from '../../../services/application/auth.service';
-import { GoogleOAuthModal } from '../../components/auth/GoogleOAuthModal';
 import { AuthSessionResponse } from '../../../contracts/auth-contracts';
 import { AppMode, UserRole } from '../../../domain/types';
 
@@ -36,13 +35,9 @@ export const SettingsScreen: React.FC = () => {
   const [dyslexicFont, setDyslexicFont] = useState(false);
 
   // Account Linking
-  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
-  const [linkingMessage, setLinkingMessage] = useState<string | null>(null);
-  const [isLinking, setIsLinking] = useState(false);
+  const [linkingMessage] = useState<string | null>(null);
 
   // Email password setting
-  const [newPassword, setNewPassword] = useState('');
-  const [isSettingPassword, setIsSettingPassword] = useState(false);
 
   useEffect(() => {
     async function loadSession() {
@@ -57,63 +52,10 @@ export const SettingsScreen: React.FC = () => {
     setTimeout(() => setSavedSuccess(false), 2000);
   };
 
-  const handleLinkGoogle = async (googleAccount: { email: string; name: string; avatarUrl?: string }) => {
-    if (!session) return;
-    setIsGoogleModalOpen(false);
-    setIsLinking(true);
-    setLinkingMessage(null);
-
-    try {
-      const res = await authService.linkAccount({
-        userId: session.user.id,
-        provider: 'google',
-        email: googleAccount.email,
-        name: googleAccount.name,
-        avatarUrl: googleAccount.avatarUrl,
-      });
-
-      setLinkingMessage(res.message);
-      const refreshed = await authService.getActiveSession();
-      setSession(refreshed);
-    } catch (err: any) {
-      setLinkingMessage(err.message || 'Falha ao vincular conta Google.');
-    } finally {
-      setIsLinking(false);
-    }
-  };
-
-  const handleSetEmailPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!session || !newPassword) return;
-
-    setIsLinking(true);
-    try {
-      const res = await authService.linkAccount({
-        userId: session.user.id,
-        provider: 'email',
-        email: session.user.email,
-        password: newPassword,
-      });
-      setLinkingMessage(res.message);
-      setIsSettingPassword(false);
-      setNewPassword('');
-      const refreshed = await authService.getActiveSession();
-      setSession(refreshed);
-    } catch (err: any) {
-      setLinkingMessage(err.message || 'Falha ao salvar senha.');
-    } finally {
-      setIsLinking(false);
-    }
-  };
-
   const isGoogleLinked =
     session?.user.authProvider === 'google' ||
     session?.user.linkedAccounts?.some((la) => la.provider === 'google');
 
-  const isEmailLinked =
-    session?.user.authProvider === 'email' ||
-    Boolean(session?.user.passwordHash) ||
-    session?.user.linkedAccounts?.some((la) => la.provider === 'email');
 
   const hasTeacherCapability =
     session?.user.primaryRole === UserRole.PROFESSOR ||
@@ -173,10 +115,10 @@ export const SettingsScreen: React.FC = () => {
 
               <div className="space-y-3 text-xs">
                 <div className="space-y-1">
-                  <label className="font-semibold text-stone-700 block">
+                  <label className="font-semibold text-stone-700 block" htmlFor="settings-screen-dispositivo-de-entrada-do-microfone">
                     Dispositivo de Entrada do Microfone
                   </label>
-                  <select
+                  <select id="settings-screen-dispositivo-de-entrada-do-microfone"
                     value={inputDevice}
                     onChange={(e) => setInputDevice(e.target.value)}
                     className="w-full p-2 rounded border border-stone-300 bg-white"
@@ -188,10 +130,10 @@ export const SettingsScreen: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="font-semibold text-stone-700 block">
+                    <label className="font-semibold text-stone-700 block" htmlFor="settings-screen-taxa-de-amostragem-sample-rate">
                       Taxa de Amostragem (Sample Rate)
                     </label>
-                    <select
+                    <select id="settings-screen-taxa-de-amostragem-sample-rate"
                       value={sampleRate}
                       onChange={(e) => setSampleRate(e.target.value)}
                       className="w-full p-2 rounded border border-stone-300 bg-white font-mono"
@@ -203,10 +145,10 @@ export const SettingsScreen: React.FC = () => {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-semibold text-stone-700 block">
+                    <label className="font-semibold text-stone-700 block" htmlFor="settings-screen-tamanho-do-buffer-de-latencia">
                       Tamanho do Buffer de Latência
                     </label>
-                    <select
+                    <select id="settings-screen-tamanho-do-buffer-de-latencia"
                       value={bufferSize}
                       onChange={(e) => setBufferSize(e.target.value)}
                       className="w-full p-2 rounded border border-stone-300 bg-white font-mono"
@@ -240,7 +182,7 @@ export const SettingsScreen: React.FC = () => {
               {/* Account Linking Section */}
               <Card variant="default" padding="lg" className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <Link className="w-5 h-5 text-red-800" />
+                  <Link className="w-5 h-5 text-anil-800" />
                   <h3 className="font-serif font-bold text-base text-stone-900">
                     Vinculação de Contas (Account Linking)
                   </h3>
@@ -290,71 +232,27 @@ export const SettingsScreen: React.FC = () => {
                       </div>
                     </div>
 
-                    {!isGoogleLinked ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setIsGoogleModalOpen(true)}
-                        disabled={isLinking}
-                      >
-                        Vincular Google
-                      </Button>
-                    ) : (
-                      <span className="text-xs font-semibold text-emerald-700 flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Ativo
-                      </span>
-                    )}
+                    <span className="text-xs font-semibold text-emerald-700 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
+                      {isGoogleLinked ? 'Ativo' : 'Provedor único'}
+                    </span>
                   </div>
 
-                  {/* Email & Password Status */}
-                  <div className="p-3.5 rounded-lg border border-stone-200 bg-stone-50/60 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-white border border-stone-300 flex items-center justify-center shrink-0">
-                          <KeyRound className="w-4 h-4 text-stone-700" />
-                        </div>
-                        <div>
-                          <div className="text-xs font-bold text-stone-900 flex items-center gap-2">
-                            <span>E-mail & Senha Local</span>
-                            {isEmailLinked && (
-                              <Badge variant="neutral" size="sm">
-                                Configurada
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-stone-500 font-mono">
-                            {session?.user.email || 'Não configurado'}
-                          </p>
-                        </div>
+                  {/* Sem senha: a plataforma autentica exclusivamente via Google (ADR-001.A). */}
+                  <div className="p-3.5 rounded-lg border border-stone-200 bg-stone-50/60">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-white border border-stone-300 flex items-center justify-center shrink-0">
+                        <KeyRound className="w-4 h-4 text-stone-700" aria-hidden="true" />
                       </div>
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setIsSettingPassword((prev) => !prev)}
-                      >
-                        {isEmailLinked ? 'Alterar Senha' : 'Definir Senha'}
-                      </Button>
+                      <div className="space-y-1">
+                        <p className="text-xs font-bold text-stone-900">Sem senha institucional</p>
+                        <p className="text-[11px] leading-relaxed text-stone-600">
+                          A Academia não cria, armazena nem redefine senhas. Seu acesso é governado
+                          inteiramente pela sua Conta Google, inclusive verificação em duas etapas
+                          e recuperação.
+                        </p>
+                      </div>
                     </div>
-
-                    {isSettingPassword && (
-                      <form
-                        onSubmit={handleSetEmailPassword}
-                        className="pt-2 border-t border-stone-200 flex items-center gap-2"
-                      >
-                        <input
-                          type="password"
-                          required
-                          placeholder="Digite a nova senha"
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          className="flex-1 text-xs p-2 rounded border border-stone-300 bg-white"
-                        />
-                        <Button variant="primary" size="sm" type="submit" disabled={isLinking}>
-                          Salvar Senha
-                        </Button>
-                      </form>
-                    )}
                   </div>
                 </div>
               </Card>
@@ -362,13 +260,13 @@ export const SettingsScreen: React.FC = () => {
               {/* Teacher Capability & Academic Standing */}
               <Card variant="default" padding="lg" className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-red-800" />
+                  <GraduationCap className="w-5 h-5 text-anil-800" />
                   <h3 className="font-serif font-bold text-base text-stone-900">
                     Cátedra Docente (Teacher Capability)
                   </h3>
                 </div>
                 <p className="text-xs text-stone-600 leading-relaxed">
-                  Na Academia Musical Digital, <strong>Professor não é um mundo separado</strong>.
+                  Na Conservatório Muscicapa, <strong>Professor não é um mundo separado</strong>.
                   Professor é uma <strong>capability adquirida</strong> que concede ferramentas para abrir novas salas de aula virtuais (Rooms) e orientar discípulos.
                 </p>
 
@@ -429,7 +327,7 @@ export const SettingsScreen: React.FC = () => {
           {activeTab === 'privacidade' && (
             <Card variant="default" padding="lg" className="space-y-4">
               <div className="flex items-center gap-2">
-                <Eye className="w-5 h-5 text-red-800" />
+                <Eye className="w-5 h-5 text-anil-800" />
                 <h3 className="font-serif font-bold text-base text-stone-900">
                   Privacidade, Modos & Proteção Parental
                 </h3>
@@ -463,11 +361,11 @@ export const SettingsScreen: React.FC = () => {
                 </div>
 
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="accent-red-800" />
+                  <input type="checkbox" defaultChecked className="accent-anil-800" />
                   <span>Exibir histórico de estudos para colegas de turma</span>
                 </label>
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="accent-red-800" />
+                  <input type="checkbox" defaultChecked className="accent-anil-800" />
                   <span>Notificar por e-mail sobre correções e avaliações de professores</span>
                 </label>
               </div>
@@ -490,7 +388,7 @@ export const SettingsScreen: React.FC = () => {
                     type="checkbox"
                     checked={highContrast}
                     onChange={(e) => setHighContrast(e.target.checked)}
-                    className="accent-red-800"
+                    className="accent-anil-800"
                   />
                 </label>
 
@@ -503,7 +401,7 @@ export const SettingsScreen: React.FC = () => {
                     type="checkbox"
                     checked={reduceMotion}
                     onChange={(e) => setReduceMotion(e.target.checked)}
-                    className="accent-red-800"
+                    className="accent-anil-800"
                   />
                 </label>
 
@@ -516,7 +414,7 @@ export const SettingsScreen: React.FC = () => {
                     type="checkbox"
                     checked={dyslexicFont}
                     onChange={(e) => setDyslexicFont(e.target.checked)}
-                    className="accent-red-800"
+                    className="accent-anil-800"
                   />
                 </label>
               </div>
@@ -525,11 +423,6 @@ export const SettingsScreen: React.FC = () => {
         </div>
       </div>
 
-      <GoogleOAuthModal
-        isOpen={isGoogleModalOpen}
-        onClose={() => setIsGoogleModalOpen(false)}
-        onSelectAccount={handleLinkGoogle}
-      />
     </ScreenContainer>
   );
 };

@@ -23,7 +23,7 @@ export const Search: React.FC<SearchProps> = ({
   isLoading = false,
   shortcutHint,
   size = 'md',
-  placeholder = 'Buscar cursos, obras, professores, ferramentas...',
+  placeholder = 'Buscar cursos, obras, professores, ferramentas…',
   disabled = false,
   className,
   ...props
@@ -62,7 +62,7 @@ export const Search: React.FC<SearchProps> = ({
         )}
       >
         {isLoading ? (
-          <Loader2 id={`${id}-loading`} className="animate-spin w-4 h-4 text-red-800" />
+          <Loader2 id={`${id}-loading`} className="animate-spin w-4 h-4 text-anil-800" />
         ) : (
           <SearchIcon id={`${id}-search-icon`} className="w-full h-full" aria-hidden="true" />
         )}
@@ -79,7 +79,7 @@ export const Search: React.FC<SearchProps> = ({
         onChange={(e) => onValueChange(e.target.value)}
         placeholder={placeholder}
         className={clsx(
-          'w-full bg-white border border-stone-200 rounded text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-red-800 focus:border-red-800 transition-colors',
+          'w-full bg-white border border-stone-200 rounded text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-anil-800 focus:border-anil-800 transition-colors',
           'disabled:bg-stone-50 disabled:text-stone-400 disabled:cursor-not-allowed',
           sizeClasses[size]
         )}
@@ -92,7 +92,7 @@ export const Search: React.FC<SearchProps> = ({
           type="button"
           onClick={handleClear}
           aria-label="Limpar campo de busca"
-          className="absolute right-2.5 p-1 text-stone-400 hover:text-stone-700 rounded focus:outline-none focus:ring-2 focus:ring-red-800 cursor-pointer"
+          className="absolute right-2.5 p-1 text-stone-400 hover:text-stone-700 rounded focus:outline-none focus:ring-2 focus:ring-anil-800 cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>

@@ -114,10 +114,10 @@ export const Tuner: React.FC<TunerProps> = ({
           type="button"
           onClick={onToggleListening}
           className={clsx(
-            'mt-5 w-full py-2 px-4 rounded text-xs font-bold transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800',
+            'mt-5 w-full py-2 px-4 rounded text-xs font-bold transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800',
             isListening
               ? 'bg-stone-800 text-stone-200 hover:bg-stone-700'
-              : 'bg-red-800 text-white hover:bg-red-900'
+              : 'bg-anil-800 text-white hover:bg-anil-900'
           )}
         >
           {isListening ? 'Desativar Afinador' : 'Iniciar Escuta'}

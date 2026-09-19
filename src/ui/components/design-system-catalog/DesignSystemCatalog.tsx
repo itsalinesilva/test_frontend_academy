@@ -77,11 +77,14 @@ export const DesignSystemCatalog: React.FC = () => {
   const [isMediaPlaying, setIsMediaPlaying] = useState(false);
 
   // Sample table data
+  // A coluna de proveniencia citava uma catedra estrangeira em todas as linhas.
+  // Trocada pelo capitulo do proprio curso onde o intervalo e ensinado, que e
+  // a proveniencia que a plataforma de fato tem.
   const sampleTableData = [
-    { id: '1', interval: 'Segunda Maior (M2)', semitones: 2, ratio: '9:8', frequencyC4: '293.66 Hz', provenance: 'Edimburgo L1' },
-    { id: '2', interval: 'Terça Maior (M3)', semitones: 4, ratio: '5:4', frequencyC4: '329.63 Hz', provenance: 'Edimburgo L2' },
-    { id: '3', interval: 'Quinta Justa (P5)', semitones: 7, ratio: '3:2', frequencyC4: '392.00 Hz', provenance: 'Edimburgo L3' },
-    { id: '4', interval: 'Oitava Justa (P8)', semitones: 12, ratio: '2:1', frequencyC4: '523.25 Hz', provenance: 'Edimburgo L4' },
+    { id: '1', interval: 'Segunda Maior (M2)', semitones: 2, ratio: '9:8', frequencyC4: '293.66 Hz', provenance: 'Teoria, cap. X' },
+    { id: '2', interval: 'Terça Maior (M3)', semitones: 4, ratio: '5:4', frequencyC4: '329.63 Hz', provenance: 'Teoria, cap. X' },
+    { id: '3', interval: 'Quinta Justa (P5)', semitones: 7, ratio: '3:2', frequencyC4: '392.00 Hz', provenance: 'Teoria, cap. XVII' },
+    { id: '4', interval: 'Oitava Justa (P8)', semitones: 12, ratio: '2:1', frequencyC4: '523.25 Hz', provenance: 'Teoria, cap. XVII' },
   ];
 
   return (
@@ -93,7 +96,7 @@ export const DesignSystemCatalog: React.FC = () => {
       >
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-800" aria-hidden="true" />
+            <span className="w-2.5 h-2.5 rounded-full bg-anil-800" aria-hidden="true" />
             <h1 className="text-base font-bold font-sans tracking-tight text-stone-900 uppercase">
               Design System Oficial • 17_DESIGN_SYSTEM.md
             </h1>
@@ -243,8 +246,8 @@ export const DesignSystemCatalog: React.FC = () => {
                 {/* Primary / Action (Red Signal) */}
                 <div id="token-color-primary" className="p-3 bg-red-50/50 border border-red-200 rounded">
                   <div className="h-10 rounded bg-[#991b1b] mb-2" />
-                  <span className="font-semibold text-red-950 block">primary / accent</span>
-                  <span className="text-[10px] font-mono text-red-800">#991b1b / red-800</span>
+                  <span className="font-semibold text-anil-950 block">primary / accent</span>
+                  <span className="text-[10px] font-mono text-anil-800">#991b1b / anil-800</span>
                   <p className="text-[10px] text-red-700 mt-1">Ação/sinal semântico estrito</p>
                 </div>
 
@@ -311,7 +314,7 @@ export const DesignSystemCatalog: React.FC = () => {
                   <div className="p-3 bg-stone-50 rounded border border-stone-200 space-y-1">
                     <span className="text-[11px] font-mono text-stone-400 uppercase">Serif Display (Institucional)</span>
                     <h2 className="text-xl font-serif font-bold text-stone-900">
-                      Academia Musical Digital
+                      Conservatório Muscicapa
                     </h2>
                     <p className="text-[11px] text-stone-500">Cinzel / Playfair Display / Georgia</p>
                   </div>
@@ -326,7 +329,7 @@ export const DesignSystemCatalog: React.FC = () => {
                   <div className="p-3 bg-stone-50 rounded border border-stone-200 space-y-1">
                     <span className="text-[11px] font-mono text-stone-400 uppercase">Monospace (Teoria Musical & DSP)</span>
                     <p className="text-xs font-mono text-stone-800">
-                      C4 (261.63 Hz) → G4 (392.00 Hz) • [Intervalo: 7 semitons (P5)]
+                      C4 (261.63 Hz) → G4 (392.00 Hz) • [Interval: 7 semitons (P5)]
                     </p>
                   </div>
                 </div>
@@ -522,9 +525,9 @@ export const DesignSystemCatalog: React.FC = () => {
                 <Breadcrumbs
                   id="demo-breadcrumbs"
                   items={[
-                    { id: 'acad', label: 'Academia Musical', onClick: () => {} },
-                    { id: 'prog', label: 'Harmonia & Teoria', onClick: () => {} },
-                    { id: 'curr', label: 'Edimburgo: Palestra 3', isCurrent: true },
+                    { id: 'acad', label: 'Academy', onClick: () => {} },
+                    { id: 'prog', label: 'Teoria da Música', onClick: () => {} },
+                    { id: 'curr', label: 'X. Intervalos', isCurrent: true },
                   ]}
                 />
 
@@ -623,7 +626,7 @@ export const DesignSystemCatalog: React.FC = () => {
                     A avaliação acústica considerará pitch, timing rítmico e cobertura harmônica com base no motor calibrado.
                   </p>
                   <p className="font-mono text-stone-500 bg-stone-100 p-2 rounded">
-                    Audit Token: 0x7f4b89 • Proveniência: Edinburgh Lecture 1
+                    Audit Token: 0x7f4b89 • Conteúdo autoral
                   </p>
                 </div>
               </Dialog>
@@ -648,12 +651,12 @@ export const DesignSystemCatalog: React.FC = () => {
               >
                 <div className="space-y-4 text-xs">
                   <div>
-                    <label className="font-semibold text-stone-800 block mb-1">Volume da Trilha (Ganho)</label>
-                    <input type="range" min="0" max="100" defaultValue="80" className="w-full accent-red-800" />
+                    <label className="font-semibold text-stone-800 block mb-1" htmlFor="design-system-catalog-volume-da-trilha-ganho">Volume da Trilha (Ganho)</label>
+                    <input id="design-system-catalog-volume-da-trilha-ganho" type="range" min="0" max="100" defaultValue="80" className="w-full accent-anil-800" />
                   </div>
                   <div>
-                    <label className="font-semibold text-stone-800 block mb-1">Panorâmica Estéreo (Pan)</label>
-                    <input type="range" min="-50" max="50" defaultValue="0" className="w-full accent-red-800" />
+                    <label className="font-semibold text-stone-800 block mb-1" htmlFor="design-system-catalog-panoramica-estereo-pan">Panorâmica Estéreo (Pan)</label>
+                    <input id="design-system-catalog-panoramica-estereo-pan" type="range" min="-50" max="50" defaultValue="0" className="w-full accent-anil-800" />
                   </div>
                 </div>
               </Drawer>
@@ -777,9 +780,9 @@ export const DesignSystemCatalog: React.FC = () => {
                     </div>
 
                     <CredentialChip
-                      id="cred-chip-edinburgh"
+                      id="cred-chip-teoria"
                       title="Teoria Musical"
-                      institution="Univ. Edinburgh"
+                      institution="Conservatório Muscicapa"
                       level="L1-5"
                       isVerified
                     />
@@ -802,7 +805,7 @@ export const DesignSystemCatalog: React.FC = () => {
               </h3>
               <ScoreContainer
                 id="score-demo-viewer"
-                title="Estudo em Dó Maior (Edinburgh Lecture 1)"
+                title="Estudo em Dó Maior"
                 composer="Tradição Acadêmica Clássica"
                 clef="treble"
                 keySignature="C Maior (0♯, 0♭)"
@@ -821,7 +824,7 @@ export const DesignSystemCatalog: React.FC = () => {
               </h3>
               <TimelineContainer
                 id="timeline-demo-studio"
-                projectName="Projeto #01: Arranjo Coral Edinburgh"
+                projectName="Projeto #01: Arranjo Coral"
                 bpm={120}
                 timecode="00:01:12.04"
                 currentBar={3}
@@ -862,7 +865,14 @@ export const DesignSystemCatalog: React.FC = () => {
                         <span>Filtro Cutoff (Low-pass)</span>
                         <span className="font-mono">2400 Hz</span>
                       </div>
-                      <input type="range" min="200" max="8000" defaultValue="2400" className="w-full accent-red-800" />
+                      <input
+                        type="range"
+                        aria-label="Frequência de corte do filtro, em hertz"
+                        min="200"
+                        max="8000"
+                        defaultValue="2400"
+                        className="w-full accent-anil-800"
+                      />
                     </div>
                   </div>
                 </ToolPanel>
@@ -902,7 +912,6 @@ export const DesignSystemCatalog: React.FC = () => {
                   level="Fundamentos Acadêmicos"
                   durationHours={18}
                   modulesCount={5}
-                  provenanceCitation="University of Edinburgh (Lectures 1–5)"
                   progressPercent={60}
                   isEnrolled={true}
                   onActionClick={() => {}}
@@ -960,10 +969,9 @@ export const DesignSystemCatalog: React.FC = () => {
                 <MediaCard
                   id="media-card-demo"
                   title="Palestra 1: A Natureza Física do Som & Alturas"
-                  performerOrLecturer="University of Edinburgh Lecture Series"
+                  performerOrLecturer="Conservatório Muscicapa"
                   mediaType="palestra"
                   durationText="24:18"
-                  provenanceCitation="Edinburgh Online Open Resource"
                   isPlaying={isMediaPlaying}
                   onTogglePlay={() => setIsMediaPlaying(!isMediaPlaying)}
                 />
@@ -978,9 +986,9 @@ export const DesignSystemCatalog: React.FC = () => {
               <ProfileCard
                 id="profile-card-demo"
                 name="Aline Silva"
-                email="office.alinesilva@gmail.com"
+                email="maria.aparecida@exemplo.org"
                 role={UserRole.ADMIN}
-                bio="Administradora Fundadora da Academia Musical Digital. Pesquisadora em pedagogia musical contemporânea e interfaces digitais de partitura."
+                bio="Administradora Fundadora da Conservatório Muscicapa. Pesquisadora em pedagogia musical contemporânea e interfaces digitais de partitura."
                 isOwner={true}
                 onEditProfile={() => {}}
               />
@@ -1029,7 +1037,7 @@ export const DesignSystemCatalog: React.FC = () => {
                 {demoState === 'loading' && (
                   <LoadingState
                     id="loader-demo"
-                    message="Sincronizando partitura com o motor de análise teórica..."
+                    message="Sincronizando partitura com o motor de análise teórica…"
                   />
                 )}
 

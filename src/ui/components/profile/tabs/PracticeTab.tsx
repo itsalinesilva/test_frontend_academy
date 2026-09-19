@@ -82,7 +82,7 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
             <span className="text-xs text-emerald-700">consecutivos</span>
           </div>
           <span className="text-[11px] text-stone-600 mt-2 block">
-            Recorde histórico: {practice.longestStreakDays} dias seguidos
+            Recorde histórico: {practice.longestStreakDays} dias streak
           </span>
         </Card>
 

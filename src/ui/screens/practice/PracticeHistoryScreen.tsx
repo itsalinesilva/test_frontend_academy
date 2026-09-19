@@ -1,32 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
-import { Badge } from '../../components/base/Badge';
 import {
   History,
   ChevronLeft,
-  Calendar,
-  Clock,
-  ArrowRight,
 } from 'lucide-react';
 import { PracticeResult } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { DataGrid } from '../../components/data-display/DataGrid';
 
 export const PracticeHistoryScreen: React.FC = () => {
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [history, setHistory] = useState<PracticeResult[]>([]);
 
   useEffect(() => {
     async function loadHistory() {
+      if (!userId) return;
       try {
         setLoading(true);
-        const results = await practiceService.getPracticeHistory('usr_founder_1');
+        const results = await practiceService.getPracticeHistory(userId);
         setHistory(results.reverse());
       } catch (err) {
         console.error('Failed to load history', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -43,7 +46,29 @@ export const PracticeHistoryScreen: React.FC = () => {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="practicehistory"
+      form="catalog"
+      density="operational"
+      asideLabel="Filtros"
+      state={isLoading ? 'loading' : history.length === 0 ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-2">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Histórico
+          </p>
+          <dl className="space-y-1.5 text-xs text-stone-700">
+            <div className="flex items-center justify-between">
+              <dt>Sessões</dt>
+              <dd className="font-mono font-bold">{history.length}</dd>
+            </div>
+          </dl>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 pb-6">
         <div>
@@ -90,61 +115,40 @@ export const PracticeHistoryScreen: React.FC = () => {
         </Card>
       ) : (
         <div className="space-y-4">
-          {history.map((item) => (
-            <Card
-              key={item.id}
-              variant="default"
-              padding="md"
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-red-800 transition-all cursor-pointer"
-              onClick={() => router.navigate(`/practice/result/${item.id}`)}
-            >
-              <div className="space-y-1.5 flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <Badge variant="neutral">{item.modality}</Badge>
-                  <span className="text-xs font-mono text-stone-500 flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    {new Date(item.createdAt).toLocaleDateString('pt-BR')}
-                  </span>
-                  <span className="text-xs font-mono text-stone-500 flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    {Math.round(item.durationSeconds / 60)} min
-                  </span>
-                </div>
-
-                <h3 className="font-serif font-bold text-base text-stone-900 truncate">
-                  {item.exerciseTitle}
-                </h3>
-
-                <div className="flex items-center gap-4 text-xs font-mono text-stone-600">
-                  <span>Acurácia: {item.pitchAccuracy}%</span>
-                  <span>•</span>
-                  <span>Ritmo: {item.rhythmAccuracy}%</span>
-                  <span>•</span>
-                  <span className="text-emerald-700 font-bold">+{item.xpGained} XP</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 shrink-0">
-                <div className="text-right">
-                  <span className="text-[10px] font-mono text-stone-400 block">Score</span>
-                  <span className="font-mono text-xl font-bold text-red-900">
-                    {item.summaryScore}
-                  </span>
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1.5 text-xs"
-                >
-                  <span>Ver Detalhes</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            </Card>
-          ))}
+          <DataGrid
+            id="historico-pratica"
+            searchable
+            pageSize={12}
+            data={history}
+            emptyMessage="Nenhuma sessão registrada ainda."
+            onRowClick={(item) => router.navigate(`/practice/result/${item.id}`)}
+            columns={[
+              {
+                key: 'createdAt',
+                header: 'Data',
+                render: (item) => new Date(item.createdAt).toLocaleDateString('pt-BR'),
+              },
+              { key: 'modality', header: 'Modalidade' },
+              { key: 'exerciseTitle', header: 'Exercício' },
+              {
+                key: 'durationSeconds',
+                header: 'Duração',
+                render: (item) => `${Math.round(item.durationSeconds / 60)} min`,
+              },
+              {
+                key: 'summaryScore',
+                header: 'Nota',
+                render: (item) =>
+                  item.medicao?.notaGlobal !== null && item.medicao?.notaGlobal !== undefined
+                    ? `${item.medicao.notaGlobal}/100`
+                    : 'não medida',
+              },
+              { key: 'xpGained', header: 'XP' },
+            ]}
+          />
         </div>
       )}
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

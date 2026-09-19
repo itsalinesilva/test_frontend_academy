@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Badge } from '../../components/base/Badge';
 import { Button } from '../../components/base/Button';
 import { academyService } from '../../../services/application/academy.service';
-import { LearningPath, AcademyCourse, AcademyCategory } from '../../../domain/academy';
+import { AcademyCourse, AcademyCategory } from '../../../domain/academy';
 import {
   Search,
   Clock,
@@ -31,7 +31,6 @@ export const AcademySearchResultsScreen: React.FC = () => {
   const [sortBy, setSortBy] = useState<'relevance' | 'workload' | 'name'>('relevance');
 
   const [courses, setCourses] = useState<AcademyCourse[]>([]);
-  const [paths, setPaths] = useState<LearningPath[]>([]);
   const [categories, setCategories] = useState<AcademyCategory[]>([]);
 
   useEffect(() => {
@@ -43,7 +42,6 @@ export const AcademySearchResultsScreen: React.FC = () => {
         ]);
         setCategories(cats);
         setCourses(searchRes.courses);
-        setPaths(searchRes.paths);
       } catch (err) {
         console.error('Error in search results:', err);
       }
@@ -63,29 +61,33 @@ export const AcademySearchResultsScreen: React.FC = () => {
   });
 
   return (
-    <ScreenContainer
-      id="academy-search-results-screen"
-      title="Resultados da Busca Acadêmica"
-      subtitle={`Exibindo resultados para: "${searchQuery || 'Todos os Cursos'}"`}
-      badgeLabel={`${filteredCourses.length + paths.length} Encontrados`}
-      badgeVariant="brand"
-      secondaryActions={[
-        {
-          label: 'Nova Pesquisa',
-          onClick: () => navigate('/academy/search'),
-        },
-        {
-          label: 'Ver Catálogo Geral',
-          onClick: () => navigate('/academy/catalog'),
-        },
-      ]}
+    <PageLayout
+      id="academysearchresults"
+      form="catalog"
+      density="catalog"
+      asideLabel="Filtrar resultados"
+      state={'content'}
+      loadingMessage="Carregando..."
     >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-2">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Resultados
+          </p>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academy/search')}>
+            Nova busca
+          </Button>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       <div className="space-y-6">
         {/* Top Search Filter Bar */}
         <div className="p-4 bg-white border border-stone-200 rounded-xl shadow-xs space-y-3">
           <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 rounded-lg px-3 py-2">
             <Search className="w-4 h-4 text-stone-400 shrink-0" />
             <input
+        aria-label="Refinar termo de busca"
               type="text"
               placeholder="Refinar termo de busca..."
               value={searchQuery}
@@ -108,6 +110,7 @@ export const AcademySearchResultsScreen: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="font-mono uppercase text-stone-500 font-semibold">Cátedra:</span>
               <select
+        aria-label="Cátedra"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="bg-stone-50 border border-stone-200 rounded px-2.5 py-1 text-xs text-stone-800"
@@ -125,6 +128,7 @@ export const AcademySearchResultsScreen: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="font-mono uppercase text-stone-500 font-semibold">Nível:</span>
               <select
+        aria-label="Nível"
                 value={selectedLevel}
                 onChange={(e) => setSelectedLevel(e.target.value)}
                 className="bg-stone-50 border border-stone-200 rounded px-2.5 py-1 text-xs text-stone-800"
@@ -140,6 +144,7 @@ export const AcademySearchResultsScreen: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="font-mono uppercase text-stone-500 font-semibold">Ordenar:</span>
               <select
+        aria-label="Ordenar"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'relevance' | 'workload' | 'name')}
                 className="bg-stone-50 border border-stone-200 rounded px-2.5 py-1 text-xs text-stone-800"
@@ -202,7 +207,7 @@ export const AcademySearchResultsScreen: React.FC = () => {
 
                     <h4
                       onClick={() => navigate(`/academy/course/${crs.id}`)}
-                      className="font-serif font-bold text-base text-stone-950 hover:text-red-800 cursor-pointer"
+                      className="font-serif font-bold text-base text-stone-950 hover:text-anil-800 cursor-pointer"
                     >
                       {crs.title}
                     </h4>
@@ -239,6 +244,7 @@ export const AcademySearchResultsScreen: React.FC = () => {
           )}
         </div>
       </div>
-    </ScreenContainer>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

@@ -12,19 +12,27 @@ import { Exercise, Skill } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { PageLayout } from '../../components/layout/PageLayout';
 
 export const ExerciseDetailScreen: React.FC = () => {
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const params = useRouteParams();
-  const exerciseId = params.id || 'ex_keyboard_hanon_1';
+  const exerciseId = params.id;
 
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [skill, setSkill] = useState<Skill | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   useEffect(() => {
     async function loadData() {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!exerciseId) return;
       try {
         setLoading(true);
         const ex = await practiceService.getExercise(exerciseId);
@@ -36,6 +44,7 @@ export const ExerciseDetailScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load exercise detail', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -43,10 +52,11 @@ export const ExerciseDetailScreen: React.FC = () => {
   }, [exerciseId]);
 
   const handleStartSession = async () => {
+    if (!userId) return;
     if (!exercise) return;
     try {
       const session = await practiceService.startSession(
-        'usr_founder_1',
+        userId,
         exercise.modality,
         exercise.id,
         exercise.skillId
@@ -91,7 +101,14 @@ export const ExerciseDetailScreen: React.FC = () => {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="exercisedetail"
+      form="focus"
+      density="editorial"
+      state={isLoading ? 'loading' : !exercise ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Main>
       {/* Back Button */}
       <div>
         <button
@@ -124,7 +141,7 @@ export const ExerciseDetailScreen: React.FC = () => {
 
           <div className="text-right">
             <span className="text-xs font-mono text-stone-400 block">Recompensa</span>
-            <span className="text-lg font-bold font-mono text-red-800">
+            <span className="text-lg font-bold font-mono text-anil-800">
               +{exercise.xpAwarded} XP
             </span>
           </div>
@@ -189,13 +206,14 @@ export const ExerciseDetailScreen: React.FC = () => {
             variant="primary"
             size="lg"
             onClick={handleStartSession}
-            className="flex items-center gap-2 bg-red-800 hover:bg-red-700 text-white"
+            className="flex items-center gap-2 bg-anil-800 hover:bg-anil-700 text-white"
           >
             <Play className="w-4 h-4 fill-white" />
             <span>Iniciar Prática</span>
           </Button>
         </div>
       </Card>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

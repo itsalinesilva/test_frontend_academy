@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
-import { Button } from '../../components/base/Button';
 import { ScoreContainer } from '../../components/domain/ScoreContainer';
-import { ArrowLeft, Save, Download, Upload } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 export const ScoreEditorScreen: React.FC = () => {
   const { navigate } = useRouter();
@@ -20,22 +19,10 @@ export const ScoreEditorScreen: React.FC = () => {
       badgeLabel="Motor de Notação"
       badgeVariant="neutral"
       primaryAction={{
-        label: 'Salvar Partitura',
-        icon: Save,
-        onClick: () => alert('Partitura salva com sucesso no formato canônico da Academia.'),
+        label: 'Voltar ao estúdio',
+        icon: ArrowLeft,
+        onClick: () => navigate('/studio'),
       }}
-      secondaryActions={[
-        {
-          label: 'Exportar MusicXML',
-          icon: Download,
-          onClick: () => alert('Arquivo MusicXML gerado para download.'),
-        },
-        {
-          label: 'Voltar ao Estúdio',
-          icon: ArrowLeft,
-          onClick: () => navigate('/studio'),
-        },
-      ]}
       emptyProps={{
         title: 'Nenhuma partitura carregada',
         description: 'Crie uma nova pauta para iniciar a edição ou importe um arquivo MusicXML existente.',
@@ -50,6 +37,7 @@ export const ScoreEditorScreen: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-stone-700">Clave:</span>
               <select
+        aria-label="Clave"
                 value={clef}
                 onChange={(e) => setClef(e.target.value as any)}
                 className="bg-stone-50 border border-stone-300 rounded px-2 py-1 text-xs"
@@ -63,6 +51,7 @@ export const ScoreEditorScreen: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-stone-700">Armadura:</span>
               <select
+        aria-label="Armadura"
                 value={keySignature}
                 onChange={(e) => setKeySignature(e.target.value)}
                 className="bg-stone-50 border border-stone-300 rounded px-2 py-1 text-xs"
@@ -77,6 +66,7 @@ export const ScoreEditorScreen: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-stone-700">Fórmula:</span>
               <select
+        aria-label="Fórmula"
                 value={timeSignature}
                 onChange={(e) => setTimeSignature(e.target.value)}
                 className="bg-stone-50 border border-stone-300 rounded px-2 py-1 text-xs font-mono"
@@ -91,6 +81,7 @@ export const ScoreEditorScreen: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-stone-700">Tempo:</span>
               <input
+        aria-label="Tempo"
                 type="number"
                 min="40"
                 max="240"
@@ -102,11 +93,6 @@ export const ScoreEditorScreen: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => alert('Importar arquivo MusicXML ou MIDI local')}>
-              <Upload className="w-3.5 h-3.5 mr-1" /> Importar MusicXML
-            </Button>
-          </div>
         </div>
 
         {/* The Interactive Canonical Score Component */}

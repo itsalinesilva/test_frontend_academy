@@ -67,7 +67,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
             disabled={opt.disabled}
             onClick={() => onChange(opt.id)}
             className={clsx(
-              'inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-all duration-150 whitespace-nowrap cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-red-800 disabled:opacity-40 disabled:cursor-not-allowed',
+              'inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-all duration-150 whitespace-nowrap cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-anil-800 disabled:opacity-40 disabled:cursor-not-allowed',
               itemSizeClasses[sizeVariant],
               isSelected
                 ? 'bg-white text-stone-900 shadow-xs font-semibold'

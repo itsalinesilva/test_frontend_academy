@@ -65,6 +65,7 @@ export const Drawer: React.FC<DrawerProps> = ({
   return (
     <div
       id={`${id}-backdrop`}
+      role="presentation"
       className="fixed inset-0 z-50 bg-stone-900/50 backdrop-blur-xs transition-opacity duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -100,7 +101,7 @@ export const Drawer: React.FC<DrawerProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Fechar painel"
-            className="text-stone-400 hover:text-stone-700 p-1 rounded hover:bg-stone-100 transition-colors focus:outline-none focus:ring-2 focus:ring-red-800"
+            className="text-stone-400 hover:text-stone-700 p-1 rounded hover:bg-stone-100 transition-colors focus:outline-none focus:ring-2 focus:ring-anil-800"
           >
             <X className="w-5 h-5" aria-hidden="true" />
           </button>

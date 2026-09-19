@@ -228,12 +228,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             ref={inputRef}
             id="command-palette-input"
             type="text"
+            aria-label="Buscar comando ou tela"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
               setSelectedIndex(0);
             }}
-            placeholder="Navegar para Academy, Practice, Score, Studio, Profile..."
+            placeholder="Navegar para Academy, Practice, Score, Studio, Profile…"
             className="w-full text-sm sm:text-base text-stone-900 placeholder:text-stone-400 bg-transparent focus:outline-none"
           />
           <kbd className="text-[10px] font-mono text-stone-400 bg-stone-100 border border-stone-200 px-1.5 py-0.5 rounded">
@@ -254,15 +255,17 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 <div
                   key={item.id}
                   id={`cmd-item-${item.id}`}
+                  role="option"
+                  aria-selected={isSelected}
                   onClick={() => item.action()}
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={clsx(
                     'flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-colors',
-                    isSelected ? 'bg-red-50 text-red-950 font-medium' : 'text-stone-700 hover:bg-stone-50'
+                    isSelected ? 'bg-red-50 text-anil-950 font-medium' : 'text-stone-700 hover:bg-stone-50'
                   )}
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className={clsx('shrink-0', isSelected ? 'text-red-800' : 'text-stone-400')}>
+                    <span className={clsx('shrink-0', isSelected ? 'text-anil-800' : 'text-stone-400')}>
                       {item.icon}
                     </span>
                     <span className="text-xs sm:text-sm">{item.title}</span>
@@ -272,7 +275,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider">
                       {item.category}
                     </span>
-                    {isSelected && <ArrowRight className="w-3.5 h-3.5 text-red-800" />}
+                    {isSelected && <ArrowRight className="w-3.5 h-3.5 text-anil-800" />}
                   </div>
                 </div>
               );
@@ -287,8 +290,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             <span>↵ Abrir</span>
             <span>ESC Fechar</span>
           </div>
-          <span className="hidden sm:inline text-red-800 font-sans font-semibold">
-            Academia Musical Digital
+          <span className="hidden sm:inline text-anil-800 font-sans font-semibold">
+            Conservatório Muscicapa
           </span>
         </div>
       </div>

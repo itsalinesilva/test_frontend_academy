@@ -13,9 +13,18 @@ export interface RouteAuthorizationResult {
   requiredCapability?: string;
 }
 
+/** Parâmetros extraídos da rota. Ausência é explícita. */
+export type RouteParams = Record<string, string | undefined>;
+
 export interface RouterContextValue {
   currentPath: string;
-  params: Record<string, string>;
+  /**
+   * Parâmetros da rota. `string | undefined` deliberadamente: o tipo
+   * anterior (`Record<string, string>`) afirmava presença que a rota não
+   * garante, e foi o que permitiu as 18 telas com id fixo de reserva (R-02).
+   * Com a ausência no tipo, o compilador exige que ela seja tratada.
+   */
+  params: RouteParams;
   breadcrumbs: BreadcrumbEntry[];
   navigate: (path: string) => void;
   replace: (path: string) => void;
@@ -102,6 +111,13 @@ export const CANONICAL_ROUTES = {
   PROFILE: '/profile',
   PROFILE_PORTFOLIO: '/profile/portfolio',
   PROFILE_EDIT: '/profile/edit',
+  PROFILE_NETWORK: '/profile/network',
+  // Perfil de OUTRA pessoa. Sem esta rota a premissa "LinkedIn de musicos"
+  // era estruturalmente vazia: existia tela de perfil, e ela so conseguia
+  // exibir o proprio. As rotas estaticas acima tem precedencia sobre este
+  // padrao (resolveRouteParams), entao /profile/edit continua sendo a edicao
+  // e nao um usuario chamado "edit".
+  PROFILE_MEMBER: '/profile/:userId',
 
   // Admin Governance (Protected)
   ADMIN: '/admin',
@@ -110,6 +126,23 @@ export const CANONICAL_ROUTES = {
   ADMIN_CONTENT: '/admin/content',
   ADMIN_MODERATION: '/admin/moderation',
   ADMIN_AUDIT: '/admin/audit',
+  ADMIN_CREDENTIALS: '/admin/credentials',
+  ADMIN_BOOKLETS: '/admin/booklets',
+  ADMIN_LIBRARY: '/admin/biblioteca',
+
+  // Simulador de violino com acompanhamento de partitura.
+  VIOLIN_SIMULATOR: '/violin/simulator',
+  VIOLIN_SIMULATOR_SCORE: '/violin/simulator/:id',
+
+  // Conta infantil: criacao e acompanhamento parental.
+  KIDS_CREATE: '/kids/create',
+  KIDS_MANAGE: '/kids/manage',
+
+  // Verificacao publica de documento. NAO exige sessao: quem confere um
+  // certificado e um empregador, uma banca, uma secretaria — gente que nao
+  // tem conta e nao vai criar uma para conferir um documento.
+  CREDENTIAL_VERIFY: '/credential',
+  CREDENTIAL_BY_CODE: '/credential/:codigo',
 } as const;
 
 function getInitialPath(): string {
@@ -139,7 +172,7 @@ function parseParams(pattern: string, path: string): Record<string, string> | nu
   return params;
 }
 
-function deriveBreadcrumbs(path: string, params: Record<string, string>): BreadcrumbEntry[] {
+function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[] {
   const crumbs: BreadcrumbEntry[] = [{ label: 'Início', path: '/' }];
 
   if (path === '/' || path === '/overview') {
@@ -265,11 +298,34 @@ function deriveBreadcrumbs(path: string, params: Record<string, string>): Breadc
     return crumbs;
   }
 
+  // Violino
+  if (path.startsWith('/violin')) {
+    crumbs.push({ label: 'Violino', path: '/violin/simulator' });
+    if (params.id) crumbs.push({ label: 'Simulador' });
+    return crumbs;
+  }
+
+  // Conta infantil
+  if (path.startsWith('/kids')) {
+    crumbs.push({ label: 'Conta infantil', path: '/kids/manage' });
+    if (path === '/kids/create') crumbs.push({ label: 'Criar perfil' });
+    return crumbs;
+  }
+
   // Profile
   if (path.startsWith('/profile')) {
+    // O perfil de outra pessoa nao pende de "Meu Perfil" — pende da Rede,
+    // que e por onde se chega ate ele.
+    if (params.userId) {
+      crumbs.push({ label: 'Rede', path: '/profile/network' });
+      crumbs.push({ label: 'Perfil' });
+      return crumbs;
+    }
     crumbs.push({ label: 'Meu Perfil', path: '/profile' });
     if (path === '/profile/portfolio') {
       crumbs.push({ label: 'Portfólio de Evidências' });
+    } else if (path === '/profile/network') {
+      crumbs.push({ label: 'Rede' });
     } else if (path === '/profile/edit') {
       crumbs.push({ label: 'Editar Perfil' });
     }
@@ -279,7 +335,10 @@ function deriveBreadcrumbs(path: string, params: Record<string, string>): Breadc
   // Admin
   if (path.startsWith('/admin')) {
     crumbs.push({ label: 'Governança Admin', path: '/admin' });
-    if (path === '/admin/users') crumbs.push({ label: 'Usuários & Papéis' });
+    if (path === '/admin/biblioteca') crumbs.push({ label: 'Biblioteca Oficial' });
+    else if (path === '/admin/booklets') crumbs.push({ label: 'Livretos de Exercício' });
+    else if (path === '/admin/credentials') crumbs.push({ label: 'Estúdio de Credenciais' });
+    else if (path === '/admin/users') crumbs.push({ label: 'Usuários & Papéis' });
     else if (path === '/admin/engines') crumbs.push({ label: 'Engines & Gateway' });
     else if (path === '/admin/content') crumbs.push({ label: 'Conteúdo & Currículo' });
     else if (path === '/admin/moderation') crumbs.push({ label: 'Moderação' });
@@ -297,6 +356,45 @@ function deriveBreadcrumbs(path: string, params: Record<string, string>): Breadc
   else if (path.startsWith('/auth')) crumbs.push({ label: 'Autenticação' });
 
   return crumbs;
+}
+
+/**
+ * Rotas estáticas e dinâmicas, DERIVADAS de `CANONICAL_ROUTES`.
+ *
+ * A versão anterior mantinha à mão uma lista de 20 padrões dinâmicos, e ela
+ * estava incompleta: `/academy/course/:id/curriculum`, `/.../progress`,
+ * `/academy/lesson/:id/interactive`, `/academy/quiz/:id`,
+ * `/academy/category/:id` e `/practice/feedback/:id` ficaram de fora. Como
+ * `parseParams` exige igualdade de número de segmentos, nenhum padrão casava
+ * e essas 6 rotas recebiam `params = {}` — defeito R-01 do
+ * 01_REPOSITORY_AUDIT. Dezoito telas mascaravam isso com um id fixo de
+ * reserva, de modo que as rotas quebradas PARECIAM funcionar, sempre
+ * exibindo a mesma entidade.
+ *
+ * Derivar elimina a classe inteira do defeito: qualquer rota acrescentada a
+ * `CANONICAL_ROUTES` passa a resolver parâmetros sem edição adicional.
+ */
+const ALL_ROUTES = Object.values(CANONICAL_ROUTES) as string[];
+const STATIC_ROUTES = new Set(ALL_ROUTES.filter((r) => !r.includes(':')));
+
+/**
+ * Padrões dinâmicos ordenados por especificidade: mais segmentos literais
+ * primeiro. Sem isso, `/rooms/:id` capturaria `/rooms/create`.
+ */
+const DYNAMIC_ROUTES = ALL_ROUTES.filter((r) => r.includes(':')).sort((a, b) => {
+  const literals = (r: string) => r.split('/').filter((seg) => seg && !seg.startsWith(':')).length;
+  return literals(b) - literals(a);
+});
+
+export function resolveRouteParams(path: string): RouteParams {
+  // Rota estática tem precedência absoluta sobre padrão dinâmico.
+  if (STATIC_ROUTES.has(path)) return {};
+
+  for (const pattern of DYNAMIC_ROUTES) {
+    const matched = parseParams(pattern, path);
+    if (matched) return matched;
+  }
+  return {};
 }
 
 export interface RouterProviderProps {
@@ -330,11 +428,24 @@ export const RouterProvider: React.FC<RouterProviderProps> = ({ currentUser = nu
     [checkAuth]
   );
 
+  /**
+   * Substitui a entrada atual do histórico, em vez de empilhar uma nova.
+   *
+   * A versão anterior apenas delegava a `navigate`, de modo que um
+   * redirecionamento deixava a página de origem no histórico — e o botão
+   * "voltar" devolvia o usuário à tela da qual ele acabara de ser
+   * redirecionado, num laço. Defeito R-04 do 01_REPOSITORY_AUDIT.
+   */
   const replace = useCallback(
     (newPath: string) => {
-      navigate(newPath);
+      const sanitized = newPath.startsWith('/') ? newPath : `/${newPath}`;
+      setCurrentPath(sanitized);
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(null, '', `#${sanitized}`);
+      }
+      checkAuth(sanitized);
     },
-    [navigate]
+    [checkAuth]
   );
 
   // Sync with browser hash changes (e.g. back/forward button)
@@ -355,36 +466,7 @@ export const RouterProvider: React.FC<RouterProviderProps> = ({ currentUser = nu
   }, [currentUser, currentPath, checkAuth]);
 
   // Calculate params based on known dynamic routes
-  const params = useMemo(() => {
-    const dynamicPatterns = [
-      CANONICAL_ROUTES.ACADEMY_MODULE,
-      CANONICAL_ROUTES.ACADEMY_PROGRAM,
-      CANONICAL_ROUTES.ACADEMY_PATH,
-      CANONICAL_ROUTES.ACADEMY_COURSE,
-      CANONICAL_ROUTES.ACADEMY_LESSON,
-      CANONICAL_ROUTES.ACADEMY_ACTIVITY,
-      CANONICAL_ROUTES.ACADEMY_ASSESSMENT,
-      CANONICAL_ROUTES.ACADEMY_RESULT,
-      CANONICAL_ROUTES.ACADEMY_COMPLETION,
-      CANONICAL_ROUTES.ACADEMY_CERTIFICATE,
-      CANONICAL_ROUTES.WORLDS_WORK,
-      CANONICAL_ROUTES.COMMUNITY_TOPIC,
-      CANONICAL_ROUTES.STUDIO_PROJECT,
-      CANONICAL_ROUTES.ROOMS_DETAIL,
-      CANONICAL_ROUTES.PRACTICE_SKILL,
-      CANONICAL_ROUTES.PRACTICE_MICRO_SKILL,
-      CANONICAL_ROUTES.PRACTICE_EXERCISE,
-      CANONICAL_ROUTES.PRACTICE_SESSION,
-      CANONICAL_ROUTES.PRACTICE_ATTEMPT,
-      CANONICAL_ROUTES.PRACTICE_RESULT,
-    ];
-
-    for (const pattern of dynamicPatterns) {
-      const matched = parseParams(pattern, currentPath);
-      if (matched) return matched;
-    }
-    return {};
-  }, [currentPath]);
+  const params = useMemo(() => resolveRouteParams(currentPath), [currentPath]);
 
   const breadcrumbs = useMemo(() => {
     return deriveBreadcrumbs(currentPath, params);
@@ -411,7 +493,7 @@ export const useRouter = (): RouterContextValue => {
   return ctx;
 };
 
-export const useRouteParams = (): Record<string, string> => {
+export const useRouteParams = (): RouteParams => {
   const router = useRouter();
   return router.params;
 };

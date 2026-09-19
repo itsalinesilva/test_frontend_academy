@@ -1,105 +1,176 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Badge } from '../../components/base/Badge';
-import { ArrowLeft, RefreshCw, Cpu } from 'lucide-react';
+import { ArrowLeft, RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
+
+/**
+ * Diagnóstico de capacidades.
+ *
+ * Esta tela listava quatro "motores" com número de versão, latência em
+ * milissegundos e saúde em porcentagem — "Motor de Áudio v1.8.2, 4,8 ms,
+ * 99,8%". Nada disso era medido, nenhum desses componentes reporta versão, e
+ * um deles citava uma biblioteca que o projeto nem usa. O botão "Executar
+ * diagnóstico geral" respondia `alert('Todos os 4 motores responderam em
+ * menos de 10ms')` sem consultar coisa alguma.
+ *
+ * Painel de infraestrutura inventado é pior que painel ausente: ele existe
+ * justamente para alguém decidir se há problema, e responde "está tudo bem"
+ * sem ter olhado.
+ *
+ * O que dá para verificar de verdade, aqui, é OUTRA COISA — e é a que
+ * importa para um produto que roda inteiro no navegador: quais recursos este
+ * navegador concede. Sem WebAudio não há laboratório de som; sem Web Crypto
+ * não há assinatura de certificado; sem localStorage não há persistência
+ * nenhuma. Isso é medido, agora, neste dispositivo.
+ */
+interface Capacidade {
+  id: string;
+  nome: string;
+  porQueImporta: string;
+  disponivel: boolean;
+  detalhe: string;
+}
+
+function medirCapacidades(): Capacidade[] {
+  const checar = (fn: () => string): { ok: boolean; detalhe: string } => {
+    try {
+      return { ok: true, detalhe: fn() };
+    } catch (e) {
+      return { ok: false, detalhe: e instanceof Error ? e.message : 'indisponível' };
+    }
+  };
+
+  const audio = checar(() => {
+    const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctor) throw new Error('AudioContext não existe neste navegador');
+    const ctx = new Ctor();
+    const taxa = ctx.sampleRate;
+    void ctx.close();
+    return `taxa de amostragem ${taxa} Hz`;
+  });
+
+  const microfone = checar(() => {
+    if (!navigator.mediaDevices?.getUserMedia) throw new Error('captura de áudio não exposta');
+    return 'disponível mediante permissão da pessoa';
+  });
+
+  const cripto = checar(() => {
+    if (!window.crypto?.subtle) throw new Error('Web Crypto exige contexto seguro (HTTPS)');
+    return 'SHA-256 disponível para assinar credenciais';
+  });
+
+  const armazenamento = checar(() => {
+    const chave = '__amd_diagnostico__';
+    window.localStorage.setItem(chave, '1');
+    window.localStorage.removeItem(chave);
+    return 'leitura e escrita confirmadas';
+  });
+
+  return [
+    {
+      id: 'webaudio',
+      nome: 'Síntese e análise de áudio (WebAudio)',
+      porQueImporta: 'Sustenta o laboratório de som das lições e a reprodução do repertório.',
+      disponivel: audio.ok,
+      detalhe: audio.detalhe,
+    },
+    {
+      id: 'microfone',
+      nome: 'Captura pelo microfone',
+      porQueImporta: 'Necessária para a medição de afinação e de tempo na Prática.',
+      disponivel: microfone.ok,
+      detalhe: microfone.detalhe,
+    },
+    {
+      id: 'webcrypto',
+      nome: 'Criptografia (Web Crypto)',
+      porQueImporta: 'Assina a impressão dos certificados e deriva a senha das contas infantis.',
+      disponivel: cripto.ok,
+      detalhe: cripto.detalhe,
+    },
+    {
+      id: 'localstorage',
+      nome: 'Armazenamento local',
+      porQueImporta: 'É onde todo o progresso do aluno vive. Sem ele, nada persiste.',
+      disponivel: armazenamento.ok,
+      detalhe: armazenamento.detalhe,
+    },
+  ];
+}
 
 export const AdminEnginesScreen: React.FC = () => {
   const { navigate } = useRouter();
+  const [capacidades, setCapacidades] = useState<Capacidade[] | null>(null);
 
-  const engines = [
-    {
-      id: 'theory-engine',
-      name: 'Motor de Teoria Musical & SATB',
-      version: 'v2.4.0 (Canônico)',
-      latency: '1.2 ms',
-      status: 'Operacional',
-      health: '100%',
-      description: 'Validação de regras harmônicas, detecção de paralelismos proibidos e cálculo de acordes.',
-    },
-    {
-      id: 'audio-dsp-engine',
-      name: 'Motor de Áudio & Pitch DSP',
-      version: 'v1.8.2 (WebAudio)',
-      latency: '4.8 ms',
-      status: 'Operacional',
-      health: '99.8%',
-      description: 'Detecção de frequência fundamental (YIN/Autocorrelação) e análise espectral de áudio.',
-    },
-    {
-      id: 'score-notation-engine',
-      name: 'Motor de Partituras & Notação',
-      version: 'v3.1.0 (VexFlow Core)',
-      latency: '2.5 ms',
-      status: 'Operacional',
-      health: '100%',
-      description: 'Renderização vetorial SVG de partituras e importação/exportação de arquivos MusicXML.',
-    },
-    {
-      id: 'knowledge-graph-engine',
-      name: 'Grafo de Conhecimento Musicológico',
-      version: 'v1.2.0',
-      latency: '8.4 ms',
-      status: 'Operacional',
-      health: '100%',
-      description: 'Indexação semântica de compositores, obras, épocas históricas e linhagens pedagógicas.',
-    },
-  ];
+  const medir = useCallback(() => {
+    setCapacidades(null);
+    // um quadro depois, para o estado de carregamento chegar a aparecer
+    window.setTimeout(() => setCapacidades(medirCapacidades()), 0);
+  }, []);
+
+  useEffect(medir, [medir]);
+
+  const faltando = (capacidades ?? []).filter((c) => !c.disponivel).length;
 
   return (
     <ScreenContainer
       id="admin-engines"
-      title="Gateway de Motores Analíticos"
-      subtitle="Monitoramento em tempo real da integridade, latência e disponibilidade dos motores de cálculo musical."
-      badgeLabel="Engines Gateway"
-      badgeVariant="brand"
+      title="Diagnóstico de capacidades"
+      subtitle="Recursos que este navegador concede à plataforma, verificados agora neste dispositivo."
+      badgeLabel={
+        capacidades === null
+          ? undefined
+          : faltando === 0
+            ? 'Tudo disponível'
+            : `${faltando} indisponível${faltando > 1 ? 'eis' : ''}`
+      }
+      badgeVariant={faltando === 0 ? 'neutral' : 'accent'}
       primaryAction={{
-        label: 'Executar Diagnóstico Geral',
+        label: 'Verificar de novo',
         icon: RefreshCw,
-        onClick: () => alert('Diagnóstico executado: Todos os 4 motores responderam em menos de 10ms.'),
+        onClick: medir,
       }}
       secondaryActions={[
         {
-          label: 'Voltar ao Console',
+          label: 'Voltar ao console',
           icon: ArrowLeft,
           onClick: () => navigate('/admin'),
         },
       ]}
+      state={capacidades === null ? 'loading' : 'populated'}
+      loadingMessage="Verificando o que este navegador concede…"
     >
       <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {engines.map((eng) => (
-            <Card key={eng.id} variant="default" padding="lg" className="space-y-3">
-              <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-                <div className="flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-red-800" />
-                  <h3 className="font-serif font-bold text-sm text-stone-900">{eng.name}</h3>
-                </div>
-                <Badge variant="brand" size="sm">
-                  {eng.status}
-                </Badge>
-              </div>
+        <p className="text-xs text-stone-600">
+          Cada linha é uma verificação executada neste navegador ao abrir a tela. O resultado vale
+          para este dispositivo — outro aparelho pode responder diferente.
+        </p>
 
-              <p className="text-xs text-stone-600">{eng.description}</p>
-
-              <div className="pt-2 border-t border-stone-100 grid grid-cols-3 gap-2 text-[11px] font-mono text-stone-500">
+        {(capacidades ?? []).map((c) => (
+          <Card key={c.id} variant="default" padding="lg" className="space-y-2">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2">
+                {c.disponivel ? (
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" aria-hidden="true" />
+                ) : (
+                  <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-700" aria-hidden="true" />
+                )}
                 <div>
-                  <span className="block text-stone-400">Versão</span>
-                  <span className="text-stone-800">{eng.version}</span>
-                </div>
-                <div>
-                  <span className="block text-stone-400">Latência</span>
-                  <span className="text-emerald-700 font-bold">{eng.latency}</span>
-                </div>
-                <div>
-                  <span className="block text-stone-400">Disponibilidade</span>
-                  <span className="text-stone-800">{eng.health}</span>
+                  <h3 className="font-serif text-base font-bold text-stone-900">{c.nome}</h3>
+                  <p className="mt-0.5 text-xs text-stone-600">{c.porQueImporta}</p>
                 </div>
               </div>
-            </Card>
-          ))}
-        </div>
+              <Badge variant={c.disponivel ? 'neutral' : 'accent'} size="sm">
+                {c.disponivel ? 'Disponível' : 'Indisponível'}
+              </Badge>
+            </div>
+            <p className="border-t border-stone-100 pt-2 font-mono text-xs text-stone-500">
+              {c.detalhe}
+            </p>
+          </Card>
+        ))}
       </div>
     </ScreenContainer>
   );

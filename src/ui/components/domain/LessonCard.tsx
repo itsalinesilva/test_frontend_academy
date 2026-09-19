@@ -47,8 +47,8 @@ export const LessonCard: React.FC<LessonCardProps> = ({
           'flex items-center justify-between p-3.5 bg-white border rounded-lg transition-all select-none gap-3',
           isLocked
             ? 'border-stone-200 bg-stone-50/70 text-stone-400 opacity-80 cursor-not-allowed'
-            : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800',
-          isInProgress && 'border-red-300 ring-1 ring-red-800/20 bg-red-50/10'
+            : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800',
+          isInProgress && 'border-red-300 ring-1 ring-anil-800/20 bg-red-50/10'
         ),
         className
       )}
@@ -60,7 +60,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
             'w-8 h-8 rounded-full flex items-center justify-center font-mono text-xs font-bold shrink-0',
             isLocked && 'bg-stone-200 text-stone-500',
             isCompleted && 'bg-emerald-100 text-emerald-800',
-            isInProgress && 'bg-red-800 text-white',
+            isInProgress && 'bg-anil-800 text-white',
             status === 'NOT_STARTED' && 'bg-stone-100 text-stone-700 border border-stone-300'
           )}
         >
@@ -103,7 +103,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
           <span className="font-semibold text-emerald-700 text-xs">Concluída</span>
         )}
         {isInProgress && (
-          <span className="font-semibold text-red-800 text-xs">Em andamento</span>
+          <span className="font-semibold text-anil-800 text-xs">Em andamento</span>
         )}
       </div>
     </div>

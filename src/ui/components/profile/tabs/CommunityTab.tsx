@@ -105,7 +105,7 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({
                 </div>
                 {forum.isAcceptedAnswer && (
                   <span className="text-[10px] font-mono bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded font-medium flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3" /> Resposta Canônica Aceita
+                    <ShieldCheck className="w-3 h-3" /> ResponseMode Canônica Aceita
                   </span>
                 )}
               </div>

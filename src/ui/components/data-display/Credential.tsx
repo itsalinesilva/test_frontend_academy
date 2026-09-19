@@ -40,13 +40,13 @@ export const Credential: React.FC<CredentialProps> = ({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg bg-red-50 border border-red-200/80 flex items-center justify-center text-red-800 shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-red-50 border border-red-200/80 flex items-center justify-center text-anil-800 shrink-0">
             <Award className="w-5 h-5" />
           </div>
 
           <div>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-red-800 bg-red-50 border border-red-200/60 px-1.5 py-0.5 rounded">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-anil-800 bg-red-50 border border-red-200/60 px-1.5 py-0.5 rounded">
                 {type}
               </span>
               {isVerified && (
@@ -99,7 +99,7 @@ export const Credential: React.FC<CredentialProps> = ({
               href={verificationUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-red-800 hover:text-red-900 font-medium"
+              className="inline-flex items-center gap-1 text-anil-800 hover:text-anil-900 font-medium"
             >
               <span>Verificar</span>
               <ExternalLink className="w-3 h-3" />

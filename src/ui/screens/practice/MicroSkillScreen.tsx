@@ -12,19 +12,28 @@ import {
 import { MicroSkill, Skill, Exercise } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { ProgressRing } from '../../components/data-display/ProgressRing';
 
 export const MicroSkillScreen: React.FC = () => {
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const params = useRouteParams();
-  const microId = params.id || 'msk_ear_01_01';
+  const microId = params.id;
 
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [microSkill, setMicroSkill] = useState<MicroSkill | null>(null);
   const [parentSkill, setParentSkill] = useState<Skill | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
 
   useEffect(() => {
     async function loadData() {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!microId) return;
       try {
         setLoading(true);
         const ms = await practiceService.getMicroSkill(microId);
@@ -40,6 +49,7 @@ export const MicroSkillScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load microskill', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -47,9 +57,10 @@ export const MicroSkillScreen: React.FC = () => {
   }, [microId]);
 
   const handleStartExercise = async (ex: Exercise) => {
+    if (!userId) return;
     try {
       const session = await practiceService.startSession(
-        'usr_founder_1',
+        userId,
         ex.modality,
         ex.id,
         parentSkill?.id
@@ -81,7 +92,32 @@ export const MicroSkillScreen: React.FC = () => {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="microskill"
+      form="detail"
+      density="operational"
+      asideLabel="Micro-habilidade"
+      state={isLoading ? 'loading' : !microSkill ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-3">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Progresso
+          </p>
+          {microSkill && (
+            <div className="flex items-center gap-3">
+              <ProgressRing id="micro-ring" value={exercises.length > 0 ? 100 : 0} size={52} showLabel />
+              <div className="text-xs text-stone-600">
+                <p className="font-semibold text-stone-900">{exercises.length} exercícios</p>
+                <p>{microSkill.targetMetric}</p>
+              </div>
+            </div>
+          )}
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       {/* Breadcrumb Back */}
       <div>
         <button
@@ -134,7 +170,7 @@ export const MicroSkillScreen: React.FC = () => {
             <span className="text-[10px] uppercase font-mono text-stone-500 block mb-1">
               Métrica Alvo de Desempenho
             </span>
-            <p className="text-xs text-red-800 font-mono font-bold leading-relaxed flex items-center gap-1.5">
+            <p className="text-xs text-anil-800 font-mono font-bold leading-relaxed flex items-center gap-1.5">
               <Target className="w-4 h-4 text-red-700" />
               {microSkill.targetMetric}
             </p>
@@ -160,7 +196,7 @@ export const MicroSkillScreen: React.FC = () => {
       {/* Target Drills */}
       <section className="space-y-4">
         <h2 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-red-800" />
+          <Sparkles className="w-5 h-5 text-anil-800" />
           <span>Exercícios Recomendados para esta Microcompetência</span>
         </h2>
 
@@ -170,7 +206,7 @@ export const MicroSkillScreen: React.FC = () => {
               key={ex.id}
               variant="default"
               padding="md"
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-red-800 transition-all"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-anil-800 transition-all"
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
@@ -208,6 +244,7 @@ export const MicroSkillScreen: React.FC = () => {
           ))}
         </div>
       </section>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

@@ -35,12 +35,27 @@ export interface TeacherProfile {
   updatedAt: ISOTimestamp;
 }
 
+/**
+ * Modalidade pedagógica da sala.
+ *
+ * A turma infantil é uma modalidade à parte porque o que vale nela é
+ * diferente: exige supervisão e herda as restrições do modo Kids.
+ */
+export type ModalidadeDeSala =
+  | 'CLASSE_REGULAR'
+  | 'MASTERCLASS'
+  | 'LABORATORIO'
+  | 'TURMA_INFANTIL';
+
 export interface TeacherRoomDetail {
   id: EntityId;
   teacherId: EntityId;
   teacherName: string;
   name: string;
   slug: string;
+  modalidade: ModalidadeDeSala;
+  /** Teto de alunos. A matrícula pára aqui, senão a sala deixa de ser turma. */
+  capacidade: number;
   description: string;
   bannerUrl?: string;
   welcomeMessage: string;

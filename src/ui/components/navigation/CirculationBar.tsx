@@ -144,7 +144,7 @@ export const CirculationBar: React.FC<CirculationBarProps> = ({
           <span className="text-[11px] font-mono text-stone-400 uppercase tracking-wide">
             Elo {activeIdx + 1} de {CIRCULATION_CHAIN.length}:
           </span>
-          <span className="font-semibold text-white bg-red-900/60 px-2 py-0.5 rounded border border-red-700/50">
+          <span className="font-semibold text-white bg-anil-900/60 px-2 py-0.5 rounded border border-red-700/50">
             {CIRCULATION_CHAIN[activeIdx]?.label}
           </span>
         </div>
@@ -152,7 +152,7 @@ export const CirculationBar: React.FC<CirculationBarProps> = ({
         <button
           type="button"
           onClick={() => navigate(nextStep.path)}
-          className="flex items-center gap-1 text-stone-100 hover:text-white px-2.5 py-1 rounded bg-red-800 hover:bg-red-700 transition-colors font-medium"
+          className="flex items-center gap-1 text-stone-100 hover:text-white px-2.5 py-1 rounded bg-anil-800 hover:bg-anil-700 transition-colors font-medium"
           title={`Avançar para ${nextStep.label}: ${nextStep.description}`}
         >
           <span className="hidden sm:inline">Próximo ({nextStep.label})</span>
@@ -173,7 +173,7 @@ export const CirculationBar: React.FC<CirculationBarProps> = ({
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-stone-100 text-xs">
         <div className="flex items-center gap-2">
-          <RefreshCw className="w-3.5 h-3.5 text-red-800 shrink-0" />
+          <RefreshCw className="w-3.5 h-3.5 text-anil-800 shrink-0" />
           <span className="font-serif font-bold text-stone-900 tracking-tight">
             Circulação Soberana • Modos Integrados
           </span>
@@ -194,7 +194,7 @@ export const CirculationBar: React.FC<CirculationBarProps> = ({
           <button
             type="button"
             onClick={() => navigate(nextStep.path)}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-white bg-red-800 hover:bg-red-700 rounded transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-white bg-anil-800 hover:bg-anil-700 rounded transition-colors"
           >
             <span>Avançar ({nextStep.label})</span>
             <ArrowRight className="w-3 h-3" />
@@ -215,7 +215,7 @@ export const CirculationBar: React.FC<CirculationBarProps> = ({
                 onClick={() => navigate(step.path)}
                 title={`${step.label}: ${step.description}`}
                 className={clsx(
-                  'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-all cursor-pointer whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-red-800',
+                  'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-all cursor-pointer whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-anil-800',
                   isActive
                     ? 'bg-stone-900 text-white shadow-xs font-semibold scale-105'
                     : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100 bg-stone-50 border border-stone-200/70'

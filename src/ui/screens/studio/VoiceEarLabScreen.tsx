@@ -1,142 +1,254 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
-import { Mic, ArrowLeft, Play } from 'lucide-react';
+import { useAudioCapture } from '../../hooks/useAudioCapture';
+import { webAudioSynth } from '../../../infrastructure/audio/synth';
+import { notaMaisProxima } from '../../../domain/practice-measurement';
+import {
+  generateQuestion,
+  isAnswerCorrect as isIntervalCorrect,
+  IntervalQuestion,
+  Interval,
+} from '../../../domain/interval-training';
+import { Mic, ArrowLeft, Play, MicOff } from 'lucide-react';
+
+/**
+ * Laboratório de voz, afinação e percepção.
+ *
+ * O QUE HAVIA AQUI
+ * ----------------
+ * Nada disto funcionava, e tudo parecia funcionar:
+ *
+ *   - o "afinador" exibia `'A4 (440.0 Hz)'` e desvio de +2 cents escritos no
+ *     código; ligar o microfone apenas trocava os dois valores por outros
+ *     dois igualmente fixos — sem pedir permissão, sem ouvir nada;
+ *   - "Tocar intervalo misterioso" chamava `alert('Reproduzindo intervalo
+ *     acústico…')`, sem emitir som;
+ *   - escolher a resposta chamava `alert('Você selecionou: 3ª menor')`, sem
+ *     dizer se estava certa;
+ *   - o rodapé afirmava "Sequência de treino: 4/10" e "85% de precisão" de
+ *     uma pessoa que nunca respondeu nada.
+ *
+ * Uma tela de treino auditivo que não toca som e não corrige a resposta não é
+ * uma versão inicial do recurso: é o contrário dele.
+ *
+ * O QUE HÁ AGORA
+ * --------------
+ * O afinador usa `useCapturaAcustica` — microfone de verdade, com permissão
+ * pedida à pessoa e detecção de frequência por autocorrelação — e converte a
+ * leitura em nota e cents com `notaMaisProxima`, a mesma função que mede a
+ * Prática. O treino de intervalos sintetiza as duas alturas com
+ * `webAudioSynth` a partir do domínio único de intervalos, confere a resposta e
+ * conta acertos sobre tentativas. Zero é o que aparece antes da primeira
+ * resposta, porque é o que a pessoa tem.
+ */
+
+/**
+ * O treino de intervalos vem de `domain/treino-de-intervalos`, e não daqui.
+ *
+ * Esta tela tinha a própria lista de quatro intervalos, as próprias raízes e
+ * o próprio sorteio — e `/practice/trainer` tinha os seus. Dois lugares para
+ * corrigir o mesmo erro de teoria é um lugar que fica errado: bastaria
+ * ajustar a explicação da quarta justa num deles para os dois passarem a
+ * ensinar coisas diferentes sobre o mesmo intervalo.
+ *
+ * O domínio único também traz o que a lista local não tinha: a explicação de
+ * cada intervalo, e alternativas erradas escolhidas entre as VIZINHAS em
+ * semitons — que é onde o ouvido de fato se confunde.
+ */
 
 export const VoiceEarLabScreen: React.FC = () => {
   const { navigate } = useRouter();
-  const [isListening, setIsListening] = useState(false);
-  const [detectedPitch, setDetectedPitch] = useState('A4 (440.0 Hz)');
-  const [centsDeviation, setCentsDeviation] = useState(+2);
+  const { estado, leitura, iniciar, finalizar } = useAudioCapture();
 
-  const handleToggleListening = () => {
-    const nextState = !isListening;
-    setIsListening(nextState);
-    if (nextState) {
-      setDetectedPitch('C4 (261.63 Hz)');
-      setCentsDeviation(0);
-    } else {
-      setDetectedPitch('A4 (440.0 Hz)');
-      setCentsDeviation(+2);
-    }
+  const [rodada, setRodada] = useState<IntervalQuestion>(() => generateQuestion(Date.now()));
+  const [tocou, setTocou] = useState(false);
+  const [resposta, setResposta] = useState<Interval | null>(null);
+  const [correct, setAcertos] = useState(0);
+  const [tentativas, setTentativas] = useState(0);
+
+  const capturando = estado === 'capturando';
+
+  /** Leitura do afinador: nota e cents, ou silêncio. */
+  const afinacao = useMemo(() => {
+    if (!capturando || leitura.frequenciaHz === null) return null;
+    return notaMaisProxima(leitura.frequenciaHz);
+  }, [capturando, leitura.frequenciaHz]);
+
+  const tocarIntervalo = useCallback(() => {
+    webAudioSynth.playSequence([rodada.raizHz, rodada.segundaHz], 0.7);
+    setTocou(true);
+  }, [rodada]);
+
+  const responder = (escolha: Interval) => {
+    if (resposta) return; // já respondeu esta rodada
+    setResposta(escolha);
+    setTentativas((n) => n + 1);
+    if (isIntervalCorrect(rodada, escolha)) setAcertos((n) => n + 1);
   };
+
+  const proximaRodada = () => {
+    setRodada(generateQuestion(Date.now()));
+    setResposta(null);
+    setTocou(false);
+  };
+
+  const precisao = tentativas === 0 ? null : Math.round((correct / tentativas) * 100);
+  const isCorrect = resposta !== null && isIntervalCorrect(rodada, resposta);
 
   return (
     <ScreenContainer
       id="voice-ear-lab"
-      title="Laboratório de Voz, Pitch & Percepção"
-      subtitle="Treinamento de afinação, detecção de notas em tempo real e percepção de intervalos acústicos."
-      badgeLabel="Motor de Áudio"
+      title="Laboratório de voz, afinação e percepção"
+      subtitle="Afinador por microfone e treino de reconhecimento de intervalos."
+      badgeLabel="Áudio"
       badgeVariant="neutral"
       primaryAction={{
-        label: isListening ? 'Interromper Captação' : 'Iniciar Microfone & Afinador',
-        icon: Mic,
-        onClick: handleToggleListening,
+        label: capturando ? 'Parar o afinador' : 'Ligar o afinador',
+        icon: capturando ? MicOff : Mic,
+        onClick: () => (capturando ? finalizar() : iniciar()),
       }}
       secondaryActions={[
         {
-          label: 'Voltar ao Estúdio',
+          label: 'Voltar ao estúdio',
           icon: ArrowLeft,
           onClick: () => navigate('/studio'),
         },
       ]}
-      emptyProps={{
-        title: 'Dispositivo de microfone desconectado',
-        description: 'Verifique as permissões do navegador ou conecte uma interface de áudio nas Configurações.',
-        actionLabel: 'Ver Configurações de Áudio',
-        onAction: () => navigate('/settings'),
-      }}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-        {/* Tuner / Pitch Visualizer Card */}
-        <Card variant="default" padding="lg" className="space-y-6 flex flex-col justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-serif font-bold text-stone-900">
-                Afinador Cromático de Alta Precisão
-              </span>
-              <Badge variant={isListening ? 'brand' : 'neutral'}>
-                {isListening ? 'Captação Ativa' : 'Em Espera'}
-              </Badge>
-            </div>
-
-            <div className="my-8 text-center space-y-2">
-              <span className="text-4xl sm:text-5xl font-serif font-bold text-stone-900 tracking-tight">
-                {isListening ? 'Lá 4' : '--'}
-              </span>
-              <p className="text-xs font-mono text-stone-500">
-                {isListening ? detectedPitch : 'Aguardando sinal de entrada (Microfone)'}
-              </p>
-            </div>
-
-            {/* Cents meter */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px] font-mono text-stone-400">
-                <span>-50 cents</span>
-                <span className="text-emerald-700 font-bold">Perfeito (0)</span>
-                <span>+50 cents</span>
-              </div>
-              <div className="w-full bg-stone-200 h-2 rounded-full relative overflow-hidden">
-                <div
-                  className="h-full bg-emerald-600 rounded-full transition-all duration-200"
-                  style={{ width: isListening ? '52%' : '50%' }}
-                />
-              </div>
-              {isListening && (
-                <p className="text-center text-xs font-mono text-emerald-800">
-                  Desvio: {centsDeviation > 0 ? `+${centsDeviation}` : centsDeviation} cents
-                </p>
-              )}
-            </div>
+      <div className="mx-auto max-w-3xl space-y-6">
+        <Card variant="default" padding="lg" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-serif text-base font-bold text-stone-900">Afinador</h2>
+            <Badge variant={capturando ? 'brand' : 'neutral'} size="sm">
+              {capturando ? 'Ouvindo' : 'Parado'}
+            </Badge>
           </div>
 
-          <div className="pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500 font-mono">
-            <span>Padrão de Calibração: A4 = 440 Hz</span>
-            <span>Temperamento Igual</span>
+          {estado === 'negado' && (
+            <p className="rounded border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+              O navegador não liberou o microfone. Autorize o acesso nas permissões do site para
+              usar o afinador.
+            </p>
+          )}
+
+          {estado === 'indisponivel' && (
+            <p className="rounded border border-stone-200 bg-stone-50 p-3 text-xs text-stone-700">
+              Este navegador não expõe captura de áudio. O treino de intervalos abaixo continua
+              funcionando, porque só depende de reprodução.
+            </p>
+          )}
+
+          <div className="rounded-md border border-stone-200 bg-stone-50 p-6 text-center">
+            {!capturando ? (
+              <p className="text-sm text-stone-600">
+                Ligue o afinador e cante ou toque uma nota sustentada.
+              </p>
+            ) : afinacao ? (
+              <>
+                <p className="font-serif text-4xl font-bold text-stone-900">{afinacao.nota}</p>
+                <p className="mt-1 font-mono text-sm text-stone-600">
+                  {leitura.frequenciaHz?.toFixed(1)} Hz
+                </p>
+                <p
+                  className={`mt-2 font-mono text-sm font-semibold ${
+                    Math.abs(afinacao.deviationCents) <= 5
+                      ? 'text-emerald-700'
+                      : Math.abs(afinacao.deviationCents) <= 20
+                        ? 'text-amber-700'
+                        : 'text-red-700'
+                  }`}
+                >
+                  {afinacao.deviationCents > 0 ? '+' : ''}
+                  {afinacao.deviationCents} cents
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-stone-500">Silêncio — nenhuma altura detected.</p>
+            )}
           </div>
         </Card>
 
-        {/* Ear Training Interval Card */}
-        <Card variant="default" padding="lg" className="space-y-6 flex flex-col justify-between">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-serif font-bold text-stone-900">
-                Treinamento de Intervalos Auditivos
-              </span>
-              <Badge variant="neutral">Percepção I</Badge>
-            </div>
-
-            <p className="text-xs text-stone-600">
-              Ouça o intervalo sonoro executado por sintetizador analítico e identifique sua classificação intervalar:
-            </p>
-
-            <div className="p-4 bg-stone-50 border border-stone-200 rounded-md flex items-center justify-center">
-              <Button variant="outline" size="sm" onClick={() => alert('Reproduzindo intervalo acústico...')}>
-                <Play className="w-3.5 h-3.5 mr-1.5 text-red-800" />
-                Tocar Intervalo Misterioso
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              {['3ª Menor', '3ª Maior', '4ª Justa', '5ª Justa'].map((interval) => (
-                <button
-                  key={interval}
-                  type="button"
-                  onClick={() => alert(`Você selecionou: ${interval}`)}
-                  className="p-2 text-xs font-mono rounded border border-stone-200 bg-white hover:bg-stone-50 text-stone-800 text-center transition-colors"
-                >
-                  {interval}
-                </button>
-              ))}
-            </div>
+        <Card variant="default" padding="lg" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-serif text-base font-bold text-stone-900">
+              Reconhecimento de intervalos
+            </h2>
+            <Badge variant="neutral" size="sm">
+              Percepção
+            </Badge>
           </div>
 
-          <div className="pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
-            <span>Sequência de Treino: 4/10</span>
-            <span className="text-emerald-700 font-mono font-semibold">85% de Precisão</span>
+          <p className="text-xs text-stone-600">
+            Ouça as duas notas e identifique a distância entre elas. A raiz muda a cada rodada,
+            para que o reconhecimento não se apoie na altura absoluta.
+          </p>
+
+          <div className="flex items-center justify-center rounded-md border border-stone-200 bg-stone-50 p-4">
+            <Button variant="outline" size="sm" onClick={tocarIntervalo}>
+              <Play className="mr-1.5 h-3.5 w-3.5 text-anil-800" aria-hidden="true" />
+              {tocou ? 'Ouvir de novo' : 'Tocar o intervalo'}
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            {rodada.choices.map((opcao) => {
+              const escolhida = resposta?.semitons === opcao.semitons;
+              const eraACerta = resposta !== null && opcao.semitons === rodada.intervalo.semitons;
+              return (
+                <button
+                  key={opcao.semitons}
+                  type="button"
+                  disabled={!tocou || resposta !== null}
+                  onClick={() => responder(opcao)}
+                  className={`rounded border p-2 text-center font-mono text-xs transition-colors ${
+                    eraACerta
+                      ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
+                      : escolhida
+                        ? 'border-red-300 bg-red-50 text-red-900'
+                        : 'border-stone-200 bg-white text-stone-800 hover:bg-stone-50 disabled:opacity-50'
+                  }`}
+                >
+                  {opcao.nome}
+                </button>
+              );
+            })}
+          </div>
+
+          {resposta && (
+            <div className="space-y-2">
+              <p
+                className={`text-xs font-semibold ${isCorrect ? 'text-emerald-700' : 'text-red-700'}`}
+                role="status"
+              >
+                {isCorrect
+                  ? `Correto. ${rodada.intervalo.explanation}`
+                  : `Era ${rodada.intervalo.nome}. ${rodada.intervalo.explanation}`}
+              </p>
+              <Button variant="primary" size="sm" onClick={proximaRodada}>
+                Próximo intervalo
+              </Button>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between border-t border-stone-100 pt-3 text-xs text-stone-500">
+            <span>
+              {tentativas === 0
+                ? 'Nenhuma resposta ainda'
+                : `${correct} de ${tentativas} corretas`}
+            </span>
+            {precisao !== null && (
+              <span
+                className={`font-mono font-semibold ${
+                  precisao >= 70 ? 'text-emerald-700' : 'text-stone-600'
+                }`}
+              >
+                {precisao}% de acerto
+              </span>
+            )}
           </div>
         </Card>
       </div>

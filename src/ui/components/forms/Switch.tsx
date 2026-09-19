@@ -88,9 +88,9 @@ export const Switch: React.FC<SwitchProps> = ({
         onClick={() => onChange(!checked)}
         onKeyDown={handleKeyDown}
         className={clsx(
-          'relative inline-flex items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-800 focus:ring-offset-2 shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50',
+          'relative inline-flex items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-anil-800 focus:ring-offset-2 shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50',
           trackClasses[sizeVariant],
-          checked ? 'bg-red-800' : 'bg-stone-300 hover:bg-stone-400'
+          checked ? 'bg-anil-800' : 'bg-stone-300 hover:bg-stone-400'
         )}
       >
         <span

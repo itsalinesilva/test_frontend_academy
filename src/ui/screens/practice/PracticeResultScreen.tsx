@@ -16,24 +16,30 @@ import {
 import { PracticeResult } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { MeasurementPanel } from '../../components/practice/MeasurementPanel';
+import { PageLayout } from '../../components/layout/PageLayout';
 
 export const PracticeResultScreen: React.FC = () => {
   const router = useRouter();
+  const { userId } = useCurrentUser();
   const params = useRouteParams();
   const resultId = params.id || '';
 
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<PracticeResult | null>(null);
 
   useEffect(() => {
     async function loadResult() {
       try {
         setLoading(true);
-        const res = await practiceService.getResult(resultId);
+        const res = await practiceService.getResult(resultId, userId ?? "");
         setResult(res);
       } catch (err) {
         console.error('Failed to load practice result', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -60,16 +66,23 @@ export const PracticeResultScreen: React.FC = () => {
     );
   }
 
-  const { measurement, masteryAdvancement } = result;
+  const { medicao, masteryAdvancement } = result;
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="practiceresult"
+      form="focus"
+      density="editorial"
+      state={isLoading ? 'loading' : !result ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Main>
       {/* Top Victory Banner */}
       <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900 text-white shadow-xl border border-stone-800 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-red-950 text-red-300 border border-red-800">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-anil-950 text-red-300 border border-anil-800">
                 Sessão Concluída
               </span>
               <Badge variant="neutral">{result.modality}</Badge>
@@ -163,73 +176,16 @@ export const PracticeResultScreen: React.FC = () => {
       {/* 10 Measurements Grid */}
       <section className="space-y-4">
         <h2 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-red-800" />
+          <Activity className="w-5 h-5 text-anil-800" />
           <span>Medições Acústicas & Telemetria</span>
         </h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Afinação</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.pitch.centsAccuracy}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">±{Math.abs(measurement.pitch.deviationCents)} cents</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Timing</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.timing.timingScore}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">{measurement.timing.deviationMs} ms</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Ritmo</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.rhythm.stabilityScore}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Estabilidade</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Tempo</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.tempo.recordedBpm}</span>
-            <span className="text-[10px] font-mono text-stone-500 block">BPM</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Acurácia</span>
-            <span className="font-mono text-lg font-bold text-red-900">{measurement.accuracy}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Global</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Entonação</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.intonation}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Pureza</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Duração</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.duration.recordedSeconds}s</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Sustain</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Consistência</span>
-            <span className="font-mono text-lg font-bold text-stone-900">{measurement.consistency}%</span>
-            <span className="text-[10px] font-mono text-stone-500 block">Linearidade</span>
-          </div>
-
-          <div className="p-3 bg-white rounded-xl border border-stone-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-stone-400 block">Dificuldade</span>
-            <span className="font-mono text-sm font-bold text-stone-800 capitalize mt-1 block">
-              {measurement.difficulty}
-            </span>
-            <span className="text-[10px] font-mono text-stone-400 block">Grau</span>
-          </div>
-
-          <div className="p-3 bg-red-50 rounded-xl border border-red-200 text-center">
-            <span className="text-[10px] uppercase font-mono text-red-800 block font-bold">Score</span>
-            <span className="font-mono text-lg font-bold text-red-900">{measurement.score}</span>
-            <span className="text-[10px] font-mono text-red-700 block">/1000</span>
-          </div>
-        </div>
+        {/*
+          Aqui havia dez celulas fixas, todas sempre preenchidas — inclusive
+          quando nao havia o que medir. O painel unico mostra o que foi medido
+          e diz, com a razao, o que nao foi.
+        */}
+        <MeasurementPanel medicao={medicao} variante="completo" id="resultado-medicao" />
       </section>
 
       {/* Recommendations & Feedback points */}
@@ -255,7 +211,7 @@ export const PracticeResultScreen: React.FC = () => {
           <ul className="space-y-2">
             {result.recommendations.map((rec, idx) => (
               <li key={idx} className="flex items-start gap-2 text-xs text-stone-600">
-                <TrendingUp className="w-4 h-4 text-red-800 shrink-0 mt-0.5" />
+                <TrendingUp className="w-4 h-4 text-anil-800 shrink-0 mt-0.5" />
                 <span className="leading-relaxed">{rec}</span>
               </li>
             ))}
@@ -288,13 +244,14 @@ export const PracticeResultScreen: React.FC = () => {
             variant="primary"
             size="md"
             onClick={() => router.navigate('/practice')}
-            className="flex items-center gap-2 bg-red-800 hover:bg-red-700 text-white"
+            className="flex items-center gap-2 bg-anil-800 hover:bg-anil-700 text-white"
           >
             <RotateCcw className="w-4 h-4" />
             <span>Iniciar Próximo Ciclo</span>
           </Button>
         </div>
       </div>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

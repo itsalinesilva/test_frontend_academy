@@ -97,8 +97,8 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
 
         {/* Gamification micro-bar */}
         <div className="mt-3 p-2 bg-white rounded-lg border border-stone-200 flex items-center justify-around text-xs font-mono">
-          <div className="flex items-center gap-1 text-red-800">
-            <Flame className="w-3.5 h-3.5 fill-red-800" />
+          <div className="flex items-center gap-1 text-anil-800">
+            <Flame className="w-3.5 h-3.5 fill-anil-800" />
             <span className="font-bold">7 dias</span>
             <span className="text-[10px] text-stone-400 font-sans">streak</span>
           </div>
@@ -149,7 +149,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
             onClick={() => handleNavigate('/rooms')}
             className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors"
           >
-            <BookOpen className="w-4 h-4 text-red-800" />
+            <BookOpen className="w-4 h-4 text-anil-800" />
             <span className="font-medium text-red-900">Salas de Aula & Cátedras</span>
           </button>
         )}
@@ -159,9 +159,9 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
             type="button"
             role="menuitem"
             onClick={() => handleNavigate('/admin')}
-            className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-red-800 bg-red-50/50 hover:bg-red-100 transition-colors font-semibold"
+            className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-anil-800 bg-red-50/50 hover:bg-red-100 transition-colors font-semibold"
           >
-            <Shield className="w-4 h-4 text-red-800" />
+            <Shield className="w-4 h-4 text-anil-800" />
             <span>Governança & Administração</span>
           </button>
         )}
@@ -180,7 +180,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
               onSwitchRole(e.target.value as UserRole);
               onClose();
             }}
-            className="w-full text-xs bg-white border border-stone-300 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-red-800"
+            className="w-full text-xs bg-white border border-stone-300 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-anil-800"
           >
             <option value={UserRole.ADMIN}>ADMIN (Fundador)</option>
             <option value={UserRole.PROFESSOR}>PROFESSOR (Cátedra & Salas)</option>
@@ -220,7 +220,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
             onClose();
             onLogout();
           }}
-          className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-red-700 hover:bg-red-50 hover:text-red-900 transition-colors font-medium border-t border-stone-100"
+          className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-red-700 hover:bg-red-50 hover:text-anil-900 transition-colors font-medium border-t border-stone-100"
         >
           <LogOut className="w-4 h-4 text-red-700" />
           <span>Encerrar Sessão</span>

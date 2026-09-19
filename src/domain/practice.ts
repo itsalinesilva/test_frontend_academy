@@ -1,3 +1,4 @@
+import { MedicaoReal } from './practice-measurement';
 import { EntityId, ISOTimestamp } from './types';
 
 /**
@@ -46,7 +47,7 @@ export enum RankingLeague {
   GOLD = 'GOLD',
   PLATINUM = 'PLATINUM',
   DIAMOND = 'DIAMOND',
-  CONSERVATORIO = 'CONSERVATORIO',
+  CONSERVATORY = 'CONSERVATORY',
 }
 
 export interface PracticeMeasurement {
@@ -179,7 +180,14 @@ export interface ExerciseAttempt {
   accuracyScore: number; // 0..100
   timingDeviationMs?: number;
   pitchDeviationCents?: number;
-  measurement: PracticeMeasurement;
+  /**
+   * @deprecated Estrutura antiga, em que toda dimensao era um numero — o que
+   * obrigava a inventar um valor quando nao havia o que medir. Substituida
+   * por `medicao`, onde ausencia e representavel.
+   */
+  measurement?: PracticeMeasurement;
+  /** Medicao real. `null` em qualquer dimensao significa "nao medida". */
+  medicao: MedicaoReal;
   immediateFeedback: {
     headline: string;
     details: string;
@@ -192,6 +200,14 @@ export interface ExerciseAttempt {
 }
 
 export interface PracticeSession {
+  /**
+   * Quantas tentativas entraram na media de acuracia.
+   *
+   * Diferente de `attemptsCount`: tentativas sem medicao nao entram na media,
+   * porque inclui-las como zero rebaixaria a sessao por uma falha de
+   * captacao — de microfone mudo, por exemplo.
+   */
+  attemptsMeasured?: number;
   id: EntityId;
   userId: EntityId;
   modality: PracticeModality;
@@ -218,7 +234,14 @@ export interface PracticeResult {
   exerciseTitle: string;
   modality: PracticeModality;
   summaryScore: number; // 0..1000
-  measurement: PracticeMeasurement;
+  /**
+   * @deprecated Estrutura antiga, em que toda dimensao era um numero — o que
+   * obrigava a inventar um valor quando nao havia o que medir. Substituida
+   * por `medicao`, onde ausencia e representavel.
+   */
+  measurement?: PracticeMeasurement;
+  /** Medicao real. `null` em qualquer dimensao significa "nao medida". */
+  medicao: MedicaoReal;
   pitchAccuracy: number;
   rhythmAccuracy: number;
   tempoStability: number;
@@ -286,7 +309,8 @@ export interface UserExperiencePoints {
   level: number;
   currentLevelXp: number;
   nextLevelXp: number;
-  lastEarnedAt: ISOTimestamp;
+  /** `null` enquanto nada foi ganho. */
+  lastEarnedAt: ISOTimestamp | null;
 }
 
 export interface RankingLeaderboardEntry {
@@ -302,14 +326,26 @@ export interface RankingLeaderboardEntry {
   computedAt: ISOTimestamp;
 }
 
+/**
+ * O retrato de quem pratica.
+ *
+ * Tres campos admitem ausencia, e isso e o contrato: este perfil ja anunciou
+ * 86% de precisao, liga Conservatorio e nivel 12 a uma conta recem-criada,
+ * porque o tipo obrigava a preencher tudo. Onde nao houve pratica nao ha
+ * numero — e a tela precisa poder dizer isso.
+ *
+ * O nome de quem pratica NAO mora aqui: o perfil de pratica nao e a
+ * identidade. Quem exibe o nome le da sessao.
+ */
 export interface PracticeProfile {
   userId: EntityId;
-  displayName: string;
   totalPracticeTimeMinutes: number;
   totalSessionsCount: number;
   totalAttemptsCount: number;
-  overallAccuracyPercentage: number;
-  currentLeague: RankingLeague;
+  /** `null` enquanto nao houve resultado — diferente de ter errado tudo. */
+  overallAccuracyPercentage: number | null;
+  /** `null` antes de `CONCLUSOES_PARA_ENTRAR_NA_LIGA` conclusoes (§6). */
+  currentLeague: RankingLeague | null;
   streak: StreakTracker;
   dailyGoal: DailyGoal;
   experience: UserExperiencePoints;

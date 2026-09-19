@@ -18,7 +18,7 @@ import {
 
 export const AcademyQuizScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const quizId = params.id || 'quiz_fomt_01_check';
+  const quizId = params.id;
 
   const [quiz, setQuiz] = useState<AcademyQuiz | null>(null);
   const [course, setCourse] = useState<AcademyCourse | null>(null);
@@ -35,6 +35,10 @@ export const AcademyQuizScreen: React.FC = () => {
 
   useEffect(() => {
     const loadQuiz = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!quizId) return;
       try {
         const q = await academyService.getQuiz(quizId);
         if (q) {
@@ -63,7 +67,11 @@ export const AcademyQuizScreen: React.FC = () => {
   const handleSubmit = async () => {
     if (!quiz) return;
     const session = await authService.getActiveSession();
-    const userId = session?.user.id || 'usr_founder_1';
+    // Sem sessao nao ha progresso a carregar nem a gravar: o fallback
+    // anterior misturava dados de visitantes anonimos com os da
+    // fundadora (CLAUDE_AUDIT.md T-05).
+    if (!session) return;
+    const userId = session.user.id;
 
     setIsSubmitting(true);
     try {
@@ -260,7 +268,7 @@ export const AcademyQuizScreen: React.FC = () => {
                       if (isCorrectAnswer) {
                         optionStyle = 'bg-emerald-50 border-emerald-400 text-emerald-950 font-semibold';
                       } else if (isWrongAnswer) {
-                        optionStyle = 'bg-red-50 border-red-300 text-red-950';
+                        optionStyle = 'bg-red-50 border-red-300 text-anil-950';
                       } else {
                         optionStyle = 'bg-stone-50 border-stone-200 text-stone-400 opacity-60';
                       }
@@ -269,11 +277,13 @@ export const AcademyQuizScreen: React.FC = () => {
                     }
 
                     return (
-                      <div
+                      <button
                         key={opt.id}
+                        type="button"
                         id={`quiz-option-${opt.id}`}
+                        aria-pressed={isSelected}
                         onClick={() => handleSelectOption(q.id, opt.id)}
-                        className={`p-3.5 rounded-lg border text-xs flex items-center justify-between cursor-pointer transition-all ${optionStyle}`}
+                        className={`w-full p-3.5 rounded-lg border text-xs text-left flex items-center justify-between cursor-pointer transition-all ${optionStyle}`}
                       >
                         <div className="flex items-center gap-3">
                           <span
@@ -294,7 +304,7 @@ export const AcademyQuizScreen: React.FC = () => {
                         {result && isWrongAnswer && (
                           <XCircle className="w-4 h-4 text-red-600 shrink-0" />
                         )}
-                      </div>
+                      </button>
                     );
                   })}
                 </div>

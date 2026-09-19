@@ -1,98 +1,128 @@
 import React from 'react';
-import { UnifiedProfileRecord } from '../../../../domain/profile';
+import { UnifiedProfileRecord, ProfileEventItem } from '../../../../domain/profile';
 import { Card } from '../../base/Card';
-import { Calendar, MapPin } from 'lucide-react';
+import { EmptyState } from '../../feedback/EmptyState';
+import { Calendar, MapPin, ExternalLink, Mic2 } from 'lucide-react';
 
 interface EventsTabProps {
-  profile?: UnifiedProfileRecord;
+  profile: UnifiedProfileRecord;
 }
 
-export const EventsTab: React.FC<EventsTabProps> = () => {
-  const events = [
-    {
-      id: 'evt-1',
-      title: 'Recital Integral do Cravo Bem Temperado (Livro I - Prelúdios & Fugas 1 a 12)',
-      type: 'Recital Solo',
-      role: 'Cravista Solista',
-      date: '18 de Outubro de 2024, 20:00',
-      venue: 'Auditório Clara Schumann / Transmissão em Alta Definição',
-      status: 'proximo',
-      description: 'Execução comentada ao cravo flamengo com temperamento Valotti a 415Hz.',
-    },
-    {
-      id: 'evt-2',
-      title: 'Simpósio Ibero-Americano de Práticas Interpretativas do Século XVIII',
-      type: 'Conferência Acadêmica',
-      role: 'Palestrante Convidada',
-      date: '12 de Setembro de 2024, 14:30',
-      venue: 'Universidade de São Paulo (USP) - Sala de Música Antiga',
-      status: 'proximo',
-      description: 'Mesa-redonda sobre "Tratados de Ornamentação e a Retórica das Fugas Bachianas".',
-    },
-    {
-      id: 'evt-3',
-      title: 'Concerto de Abertura do Festival de Música Barroca',
-      type: 'Concerto Orquestral',
-      role: 'Continuísta Convidada',
-      date: '20 de Março de 2024, 19:30',
-      venue: 'Theatro Municipal / Orquestra Barroca',
-      status: 'concluido',
-      description: 'Execução de baixo cifrado nos Concertos de Brandenburgo nº 3 e 5 de J.S. Bach.',
-    },
-  ];
+/**
+ * Eventos do perfil.
+ *
+ * Esta aba trazia três apresentações escritas no código — um recital de cravo,
+ * um simpósio na USP e um concerto no Theatro Municipal —, e as exibia em
+ * TODO perfil, inclusive no de quem tinha criado a conta cinco minutos antes.
+ * Era a plataforma atribuindo a uma pessoa uma carreira que não é dela.
+ *
+ * Agora a aba lê `profile.eventsList`. Enquanto o músico não registrar nada,
+ * ela diz que não há nada — e é isso que faz o primeiro registro dele
+ * significar alguma coisa.
+ */
+const formatarData = (iso: string): string => {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+/**
+ * Já aconteceu ou ainda vai acontecer.
+ *
+ * A distinção sai da data, não de um campo `status` gravado à mão — que
+ * envelhece sozinho e passa a mentir no dia seguinte.
+ */
+const jaAconteceu = (evento: ProfileEventItem): boolean => {
+  const d = new Date(evento.date);
+  return !Number.isNaN(d.getTime()) && d.getTime() < Date.now();
+};
+
+export const EventsTab: React.FC<EventsTabProps> = ({ profile }) => {
+  const eventos = [...(profile.eventsList ?? [])].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
 
   return (
     <div id="profile-events-tab" className="space-y-6">
       <div className="pb-3 border-b border-stone-200">
         <h2 className="font-serif text-base font-bold text-stone-900">
-          Eventos, Recitais & Masterclasses
+          Eventos, recitais e masterclasses
         </h2>
         <p className="text-xs text-stone-600">
-          Programação de recitais públicos, conferências de musicologia e apresentações camerísticas
+          Recitais públicos, conferências e apresentações camerísticas registrados por este perfil.
         </p>
       </div>
 
-      <div className="space-y-4">
-        {events.map((evt) => (
-          <Card key={evt.id} variant="default" padding="lg">
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-3 border-b border-stone-100">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-serif font-bold text-sm text-stone-900">{evt.title}</h3>
-                  <span
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded capitalize font-medium ${
-                      evt.status === 'proximo'
-                        ? 'bg-amber-100 text-amber-900 border border-amber-200'
-                        : 'bg-stone-100 text-stone-700'
-                    }`}
-                  >
-                    {evt.status === 'proximo' ? 'Em Breve' : 'Realizado'}
+      {eventos.length === 0 ? (
+        <EmptyState
+          id="profile-events-empty"
+          icon={<Mic2 className="w-8 h-8 stroke-1" aria-hidden="true" />}
+          title="Nenhuma apresentação registrada"
+          description="Recitais, masterclasses e conferências registrados aqui aparecem no perfil público e podem ser citados como evidência de atuação."
+        />
+      ) : (
+        <div className="space-y-4">
+          {eventos.map((evt) => {
+            const passado = jaAconteceu(evt);
+            return (
+              <Card key={evt.id} variant="default" padding="lg">
+                <div className="flex flex-col gap-2 border-b border-stone-100 pb-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-serif text-sm font-bold text-stone-900">{evt.title}</h3>
+                      <span
+                        className={`rounded px-2 py-0.5 font-mono text-[10px] font-medium ${
+                          passado
+                            ? 'bg-stone-100 text-stone-700'
+                            : 'border border-amber-200 bg-amber-100 text-amber-900'
+                        }`}
+                      >
+                        {passado ? 'Realizado' : 'Programado'}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center gap-2 text-xs text-stone-600">
+                      <span className="font-medium text-stone-800">{evt.kind}</span>
+                      <span aria-hidden="true">•</span>
+                      <span>Papel: {evt.role}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 font-mono text-xs text-stone-500">
+                    <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
+                    <time dateTime={evt.date}>{formatarData(evt.date)}</time>
+                  </div>
+                </div>
+
+                <p className="mt-3 text-xs leading-relaxed text-stone-700">{evt.description}</p>
+
+                <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-3 text-xs text-stone-500">
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5 text-stone-400" aria-hidden="true" />
+                    {evt.venue}
                   </span>
+                  {evt.referenceUrl && (
+                    <a
+                      href={evt.referenceUrl}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-stone-800"
+                    >
+                      Programa
+                      <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                    </a>
+                  )}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-stone-600 mt-1">
-                  <span className="font-medium text-stone-800">{evt.type}</span>
-                  <span>•</span>
-                  <span>Papel: {evt.role}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1.5 text-xs text-stone-500 font-mono">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>{evt.date}</span>
-              </div>
-            </div>
-
-            <p className="text-xs text-stone-700 mt-3 leading-relaxed">{evt.description}</p>
-
-            <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
-              <span className="flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-stone-400" />
-                {evt.venue}
-              </span>
-            </div>
-          </Card>
-        ))}
-      </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

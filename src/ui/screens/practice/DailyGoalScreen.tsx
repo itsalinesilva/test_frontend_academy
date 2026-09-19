@@ -13,21 +13,28 @@ import {
 import { DailyGoal } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { ProgressRing } from '../../components/data-display/ProgressRing';
 
 export const DailyGoalScreen: React.FC = () => {
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [dailyGoal, setDailyGoal] = useState<DailyGoal | null>(null);
 
   useEffect(() => {
     async function loadGoal() {
+      if (!userId) return;
       try {
         setLoading(true);
-        const goal = await practiceService.getDailyGoal('usr_founder_1');
+        const goal = await practiceService.getDailyGoal(userId);
         setDailyGoal(goal);
       } catch (err) {
         console.error('Failed to load daily goal', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -42,10 +49,11 @@ export const DailyGoalScreen: React.FC = () => {
   ];
 
   const handleSelectTier = async (tier: typeof goalTiers[0]) => {
+    if (!userId) return;
     if (!dailyGoal) return;
     try {
       const updated = await practiceService.updateDailyGoal(
-        'usr_founder_1',
+        userId,
         tier.minutes,
         tier.xp,
         tier.exercises
@@ -72,7 +80,34 @@ export const DailyGoalScreen: React.FC = () => {
   const exPct = Math.min(100, Math.round((dailyGoal.completedExercises / dailyGoal.targetExercises) * 100));
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="dailygoal"
+      form="focus"
+      density="editorial"
+      state={isLoading ? 'loading' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Main>
+      {dailyGoal && (
+        <div className="mb-6 flex items-center justify-center gap-4">
+          <ProgressRing
+            id="meta-diaria-ring"
+            value={Math.min(100, Math.round((dailyGoal.completedXp / Math.max(1, dailyGoal.targetXp)) * 100))}
+            size={96}
+            strokeWidth={7}
+            showLabel
+            isCompleted={dailyGoal.isCompleted}
+          />
+          <div className="text-sm text-stone-700">
+            <p className="font-serif text-lg font-bold text-stone-900">
+              {dailyGoal.completedXp} de {dailyGoal.targetXp} XP
+            </p>
+            <p className="text-xs text-stone-500">
+              {dailyGoal.completedMinutes} de {dailyGoal.targetMinutes} minutos
+            </p>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div>
         <button
@@ -122,7 +157,7 @@ export const DailyGoalScreen: React.FC = () => {
             </div>
             <div className="w-full bg-stone-100 h-2.5 rounded-full overflow-hidden">
               <div
-                className="bg-red-800 h-full rounded-full transition-all"
+                className="bg-anil-800 h-full rounded-full transition-all"
                 style={{ width: `${minutesPct}%` }}
               />
             </div>
@@ -183,7 +218,7 @@ export const DailyGoalScreen: React.FC = () => {
                 padding="md"
                 className={`cursor-pointer transition-all flex flex-col justify-between space-y-3 ${
                   isSelected
-                    ? 'border-2 border-red-800 bg-red-50/20 shadow-xs'
+                    ? 'border-2 border-anil-800 bg-red-50/20 shadow-xs'
                     : 'hover:border-stone-400 bg-white'
                 }`}
                 onClick={() => handleSelectTier(tier)}
@@ -196,7 +231,7 @@ export const DailyGoalScreen: React.FC = () => {
                     <p className="text-xs text-stone-500 mt-0.5">{tier.desc}</p>
                   </div>
                   {isSelected && (
-                    <CheckCircle2 className="w-5 h-5 text-red-800 shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-anil-800 shrink-0" />
                   )}
                 </div>
 
@@ -217,12 +252,13 @@ export const DailyGoalScreen: React.FC = () => {
           variant="primary"
           size="lg"
           onClick={() => router.navigate('/practice')}
-          className="flex items-center gap-2 bg-red-800 hover:bg-red-700 text-white"
+          className="flex items-center gap-2 bg-anil-800 hover:bg-anil-700 text-white"
         >
           <Sparkles className="w-4 h-4" />
           <span>Continuar Treinamento do Dia</span>
         </Button>
       </div>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

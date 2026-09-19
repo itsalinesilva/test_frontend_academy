@@ -63,10 +63,10 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
       {/* Header */}
       <div className="p-3 bg-stone-50 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Bell className="w-4 h-4 text-red-800" />
+          <Bell className="w-4 h-4 text-anil-800" />
           <span className="font-serif font-bold text-xs text-stone-900">Notificações</span>
           {unreadCount > 0 && (
-            <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-red-800 text-white rounded-full">
+            <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-anil-800 text-white rounded-full">
               {unreadCount}
             </span>
           )}
@@ -93,18 +93,19 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
           notifications.slice(0, 4).map((item) => {
             const IconComp = item.icon;
             return (
-              <div
+              <button
                 key={item.id}
+                type="button"
                 onClick={() => handleNotificationClick(item.link)}
                 className={clsx(
-                  'p-3 hover:bg-stone-50 cursor-pointer transition-colors flex items-start gap-3',
+                  'w-full p-3 text-left hover:bg-stone-50 cursor-pointer transition-colors flex items-start gap-3',
                   item.unread && 'bg-red-50/20'
                 )}
               >
                 <div
                   className={clsx(
                     'p-1.5 rounded-full shrink-0 mt-0.5',
-                    item.unread ? 'bg-red-100 text-red-800' : 'bg-stone-100 text-stone-500'
+                    item.unread ? 'bg-red-100 text-anil-800' : 'bg-stone-100 text-stone-500'
                   )}
                 >
                   <IconComp className="w-3.5 h-3.5" />
@@ -113,7 +114,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
                 <div className="flex-1 min-w-0 space-y-0.5">
                   <div className="flex items-center justify-between gap-1">
                     <p className="text-xs font-bold text-stone-900 truncate">{item.title}</p>
-                    {item.unread && <span className="w-1.5 h-1.5 rounded-full bg-red-800 shrink-0" />}
+                    {item.unread && <span className="w-1.5 h-1.5 rounded-full bg-anil-800 shrink-0" />}
                   </div>
                   <p className="text-[11px] text-stone-600 leading-snug line-clamp-2">
                     {item.message}
@@ -122,7 +123,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
                     <Clock className="w-2.5 h-2.5" /> {item.time}
                   </span>
                 </div>
-              </div>
+              </button>
             );
           })
         )}
@@ -136,7 +137,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
             onClose();
             navigate('/notifications');
           }}
-          className="inline-flex items-center gap-1 text-xs font-semibold text-red-800 hover:text-red-900 hover:underline cursor-pointer"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-anil-800 hover:text-anil-900 hover:underline cursor-pointer"
         >
           <span>Abrir Central de Notificações Completa</span>
           <ArrowRight className="w-3 h-3" />

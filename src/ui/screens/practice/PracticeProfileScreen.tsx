@@ -14,23 +14,30 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { PracticeProfile } from '../../../domain/practice';
+import { COMPLETIONS_TO_JOIN_LEAGUE } from '../../../domain/progress-economy';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { PageLayout } from '../../components/layout/PageLayout';
 
 export const PracticeProfileScreen: React.FC = () => {
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<PracticeProfile | null>(null);
 
   useEffect(() => {
     async function loadProfile() {
+      if (!userId) return;
       try {
         setLoading(true);
-        const data = await practiceService.getPracticeProfile('usr_founder_1');
+        const data = await practiceService.getPracticeProfile(userId);
         setProfile(data);
       } catch (err) {
         console.error('Failed to load practice profile', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -49,7 +56,26 @@ export const PracticeProfileScreen: React.FC = () => {
   if (!profile) return null;
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="practiceprofile"
+      form="detail"
+      density="operational"
+      asideLabel="Resumo"
+      state={isLoading ? 'loading' : !profile ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-2">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Perfil de prática
+          </p>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => router.navigate('/practice/history')}>
+            Ver histórico
+          </Button>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 pb-6">
         <div>
@@ -71,7 +97,7 @@ export const PracticeProfileScreen: React.FC = () => {
           variant="primary"
           size="sm"
           onClick={() => router.navigate('/practice')}
-          className="bg-red-800 hover:bg-red-700 text-white"
+          className="bg-anil-800 hover:bg-anil-700 text-white"
         >
           Praticar Agora
         </Button>
@@ -93,7 +119,12 @@ export const PracticeProfileScreen: React.FC = () => {
             <Activity className="w-3.5 h-3.5 text-red-600" /> Acurácia Global
           </span>
           <div className="font-mono text-2xl font-bold text-red-900">
-            {profile.overallAccuracyPercentage}%
+            {/* `null` e "ainda nao praticou", e nao zero por cento. */}
+            {profile.overallAccuracyPercentage === null ? (
+              <span className="text-base font-normal text-stone-400">sem medição ainda</span>
+            ) : (
+              `${profile.overallAccuracyPercentage}%`
+            )}
           </div>
         </Card>
 
@@ -111,7 +142,11 @@ export const PracticeProfileScreen: React.FC = () => {
             <Trophy className="w-3.5 h-3.5 text-purple-600" /> Liga Atual
           </span>
           <div className="font-serif text-lg font-bold text-purple-900 truncate">
-            {profile.currentLeague}
+            {profile.currentLeague ?? (
+              <span className="text-sm font-normal text-stone-400">
+                entra após {COMPLETIONS_TO_JOIN_LEAGUE} conclusões
+              </span>
+            )}
           </div>
         </Card>
       </div>
@@ -121,14 +156,14 @@ export const PracticeProfileScreen: React.FC = () => {
         {/* Mastery Distribution */}
         <Card variant="default" padding="md" className="space-y-4 bg-white border border-stone-200">
           <h2 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-            <Award className="w-4 h-4 text-red-800" />
+            <Award className="w-4 h-4 text-anil-800" />
             <span>Distribuição de Níveis de Maestria</span>
           </h2>
 
           <div className="space-y-3">
             {[
               { label: 'Nível 5: Virtuoso', count: profile.masteryCount.virtuoso, color: 'bg-purple-600' },
-              { label: 'Nível 4: Mestre', count: profile.masteryCount.mestre, color: 'bg-red-800' },
+              { label: 'Nível 4: Mestre', count: profile.masteryCount.mestre, color: 'bg-anil-800' },
               { label: 'Nível 3: Competente', count: profile.masteryCount.competente, color: 'bg-amber-600' },
               { label: 'Nível 2: Aprendiz', count: profile.masteryCount.aprendiz, color: 'bg-blue-600' },
               { label: 'Nível 1: Novato', count: profile.masteryCount.novato, color: 'bg-stone-500' },
@@ -162,6 +197,13 @@ export const PracticeProfileScreen: React.FC = () => {
           </h2>
 
           <div className="space-y-3">
+            {/* Sem sessao nao ha preferencia: dizer isso e melhor que um grafico vazio. */}
+            {profile.preferredModalities.length === 0 && (
+              <p className="text-xs leading-relaxed text-stone-500">
+                Aparece assim que você praticar — é medido pelas sessões que você fizer,
+                não escolhido antes.
+              </p>
+            )}
             {profile.preferredModalities.map((item) => (
               <div key={item.modality} className="space-y-1">
                 <div className="flex justify-between text-xs font-mono">
@@ -170,7 +212,7 @@ export const PracticeProfileScreen: React.FC = () => {
                 </div>
                 <div className="w-full bg-stone-100 h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-red-800 h-full rounded-full transition-all"
+                    className="bg-anil-800 h-full rounded-full transition-all"
                     style={{ width: `${item.percentage}%` }}
                   />
                 </div>
@@ -194,7 +236,7 @@ export const PracticeProfileScreen: React.FC = () => {
       {/* Recent Practice Results */}
       <section className="space-y-4">
         <h2 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-red-800" />
+          <TrendingUp className="w-5 h-5 text-anil-800" />
           <span>Sessões Recentes & Evidências Geradas</span>
         </h2>
 
@@ -204,7 +246,7 @@ export const PracticeProfileScreen: React.FC = () => {
               key={result.id}
               variant="default"
               padding="md"
-              className="flex items-center justify-between gap-4 hover:border-red-800 transition-all cursor-pointer"
+              className="flex items-center justify-between gap-4 hover:border-anil-800 transition-all cursor-pointer"
               onClick={() => router.navigate(`/practice/result/${result.id}`)}
             >
               <div className="space-y-1">
@@ -234,6 +276,7 @@ export const PracticeProfileScreen: React.FC = () => {
           ))}
         </div>
       </section>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

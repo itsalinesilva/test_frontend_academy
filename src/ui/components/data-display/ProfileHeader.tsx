@@ -56,7 +56,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       {/* Cover Banner */}
       <div
         id={`${id}-cover`}
-        className="h-32 sm:h-44 bg-gradient-to-r from-stone-800 via-stone-900 to-red-950 relative"
+        className="h-32 sm:h-44 bg-gradient-to-r from-stone-800 via-stone-900 to-anil-950 relative"
       >
         {coverUrl && (
           <img src={coverUrl} alt="Capa de perfil" className="w-full h-full object-cover opacity-60" />

@@ -1,36 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import { Card } from '../../components/base/Card';
-import { Button } from '../../components/base/Button';
-import { Badge } from '../../components/base/Badge';
 import {
   Star,
   ChevronLeft,
-  ArrowRight,
   ShieldCheck,
 } from 'lucide-react';
 import { Skill, MasteryRecord } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { DataGrid } from '../../components/data-display/DataGrid';
 
 export const MasteryScreen: React.FC = () => {
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [masteries, setMasteries] = useState<MasteryRecord[]>([]);
 
   useEffect(() => {
     async function loadMastery() {
+      if (!userId) return;
       try {
         setLoading(true);
         const [allSkills, overview] = await Promise.all([
           practiceService.listSkills(),
-          practiceService.getMasteryOverview('usr_founder_1'),
+          practiceService.getMasteryOverview(userId),
         ]);
         setSkills(allSkills);
         setMasteries(overview.masteries);
       } catch (err) {
         console.error('Failed to load mastery data', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -52,7 +56,26 @@ export const MasteryScreen: React.FC = () => {
   const inProgressCount = masteries.filter((m) => m.level >= 1 && m.level < 4).length;
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="mastery"
+      form="catalog"
+      density="operational"
+      asideLabel="Domínio"
+      state={isLoading ? 'loading' : masteries.length === 0 ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-2">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Domínio
+          </p>
+          <p className="text-xs leading-relaxed text-stone-600">
+            Domínio exige três execuções seguidas acima do limiar — não um pico isolado.
+          </p>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 pb-6">
         <div>
@@ -101,73 +124,43 @@ export const MasteryScreen: React.FC = () => {
       {/* Skills Mastery List */}
       <section className="space-y-4">
         <h2 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
-          <ShieldCheck className="w-5 h-5 text-red-800" />
+          <ShieldCheck className="w-5 h-5 text-anil-800" />
           <span>Habilidades Auditadas</span>
         </h2>
 
         <div className="space-y-3">
-          {skills.map((skill) => {
-            const mastery = masteries.find((m) => m.skillId === skill.id);
-            const level = mastery?.level || 1;
-            const scorePct = mastery?.scorePercentage || 75;
-            const totalAttempts = mastery?.totalAttempts || 12;
-
-            return (
-              <Card
-                key={skill.id}
-                variant="default"
-                padding="md"
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-stone-400 transition-all"
-              >
-                <div className="space-y-1.5 flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-bold text-stone-700 bg-stone-100 px-2 py-0.5 rounded">
-                      {skill.code}
-                    </span>
-                    <Badge variant="brand">{skill.category}</Badge>
-                    <span className="text-xs font-serif font-semibold text-red-900">
-                      Nível {level} - {levelLabels[level]}
-                    </span>
-                  </div>
-
-                  <h3 className="font-serif font-bold text-base text-stone-900 truncate">
-                    {skill.name}
-                  </h3>
-
-                  <div className="flex items-center gap-4 text-xs font-mono text-stone-500">
-                    <span>Acurácia Média: {scorePct}%</span>
-                    <span>•</span>
-                    <span>Tentativas: {totalAttempts}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 shrink-0">
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={`w-4 h-4 ${
-                          star <= level ? 'fill-amber-400 text-amber-500' : 'text-stone-200'
-                        }`}
-                      />
-                    ))}
-                  </div>
-
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => router.navigate(`/practice/skill/${skill.id}`)}
-                    className="flex items-center gap-1 text-xs"
-                  >
-                    <span>Praticar</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-              </Card>
-            );
-          })}
+          <DataGrid
+            id="dominio-habilidades"
+            searchable
+            pageSize={15}
+            data={skills}
+            emptyMessage="Nenhuma habilidade registrada ainda."
+            onRowClick={(skill) => router.navigate(`/practice/skill/${skill.id}`)}
+            columns={[
+              { key: 'code', header: 'Código' },
+              { key: 'name', header: 'Habilidade' },
+              { key: 'category', header: 'Categoria' },
+              {
+                key: 'id',
+                header: 'Domínio',
+                render: (skill) => {
+                  const m = masteries.find((x) => x.skillId === skill.id);
+                  return m ? `nível ${m.level} · ${m.scorePercentage}%` : 'não iniciada';
+                },
+              },
+              {
+                key: 'maxMasteryLevel',
+                header: 'Tentativas',
+                render: (skill) => {
+                  const m = masteries.find((x) => x.skillId === skill.id);
+                  return m ? `${m.successfulAttempts}/${m.totalAttempts}` : '—';
+                },
+              },
+            ]}
+          />
         </div>
       </section>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

@@ -67,7 +67,7 @@ export const MusicGraphScreen: React.FC = () => {
                     onClick={() => setSelectedNode(node.id)}
                     className={`p-3 rounded-lg border transition-all text-left max-w-xs ${
                       isSelected
-                        ? 'bg-red-950/80 border-red-700 ring-2 ring-red-600 text-white shadow-lg'
+                        ? 'bg-anil-950/80 border-red-700 ring-2 ring-anil-500 text-white shadow-lg'
                         : 'bg-stone-800/90 border-stone-700 text-stone-300 hover:bg-stone-800 hover:border-stone-500'
                     }`}
                   >

@@ -35,7 +35,6 @@ export interface Program {
   isPublished: boolean;
   status?: PublicationStatus;
   version?: string;
-  provenanceRef: string;
   createdAt: ISOTimestamp;
   updatedAt: ISOTimestamp;
   isDeleted?: boolean;
@@ -104,12 +103,6 @@ export interface AcademyCourse {
   skills?: string[];
   prerequisites: string[];
   materials: CourseMaterial[];
-  references?: {
-    title: string;
-    author: string;
-    year?: string;
-    citation: string;
-  }[];
   curriculumSummary: string;
   assessmentPolicy: string;
   certificatePolicy: string;
@@ -144,11 +137,6 @@ export interface AcademyCourse {
     composer: string;
     clef: string;
   };
-  provenance: {
-    source: string;
-    citation: string;
-    curatorNotes: string;
-  };
   createdAt: ISOTimestamp;
   updatedAt: ISOTimestamp;
   isDeleted?: boolean;
@@ -172,15 +160,79 @@ export interface AcademyModule {
 // 3. Lesson (Content vs Presentation Separation)
 // ---------------------------------------------------------------------------
 
+/**
+ * Blocos interativos intercalados no corpo da lição.
+ *
+ * MOTIVO: até aqui `LessonSection` só tinha `contentMarkdown`, e toda a
+ * mídia vivia no nível da LIÇÃO — os exemplos sonoros, a pauta e as
+ * ilustrações eram empilhados à parte, depois do texto. O resultado é uma
+ * leitura corrida e pesada, com a demonstração longe da afirmação que ela
+ * demonstra.
+ *
+ * Com blocos, o laboratório fica ONDE o conceito é apresentado: o parágrafo
+ * que define a terça maior é seguido imediatamente pelo laboratório em que
+ * o aluno ouve, compara e verifica no motor de teoria real.
+ *
+ * Todo bloco é servido por um motor que JÁ EXISTE no repositório
+ * (`adapters/engines/`) — nenhum deles simula resultado.
+ */
+export type LessonBlock =
+  /** Prosa acadêmica. */
+  | { kind: 'MARKDOWN'; id: string; markdown: string }
+  /** Destaque contextual: nota histórica, atenção, dica. */
+  | { kind: 'CALLOUT'; id: string; type: 'info' | 'historical' | 'warning' | 'tip'; title: string; text: string }
+  /** Exemplo sonoro sintetizado em tempo real (WebAudio). */
+  | { kind: 'AUDIO_EXAMPLE'; id: string; title: string; description?: string; notes: string[]; playMode: 'SEQUENCE' | 'CHORD'; bpm?: number }
+  /** Laboratório de intervalo: ouvir, comparar e analisar no motor de teoria. */
+  | { kind: 'INTERVAL_LAB'; id: string; title: string; lowerNote: string; upperNote: string; prompt?: string }
+  /** Laboratório de acorde: identificação de tríade e inversão. */
+  | { kind: 'CHORD_LAB'; id: string; title: string; notes: string[]; prompt?: string }
+  /** Laboratório de escala: geração pela fórmula T-T-st-T-T-T-st. */
+  | { kind: 'SCALE_LAB'; id: string; title: string; tonic: string; mode: 'MAJOR' | 'NATURAL_MINOR' | 'HARMONIC_MINOR' }
+  /** Teclado tocável, com teclas em destaque. */
+  | { kind: 'KEYBOARD'; id: string; title?: string; highlightNotes?: string[]; startOctave?: number; octaves?: number }
+  /** Pauta canônica renderizada. */
+  | { kind: 'STAFF'; id: string; title?: string; clef: 'treble' | 'bass' | 'alto'; timeSignature?: string; notes: string[]; caption?: string }
+  /** Diagrama gerado programaticamente (SVG), sem dependência de imagem. */
+  | { kind: 'DIAGRAM'; id: string; title: string; diagram: 'CIRCLE_OF_FIFTHS' | 'TONE_SEMITONE' | 'INTERVAL_RULER'; highlight?: string[]; caption?: string }
+  /**
+   * Verificação de leitura no meio do texto — não ao final.
+   * Conteudo autoral da Academia.
+   */
+  | { kind: 'CHECKPOINT'; id: string; question: string; options: string[]; correctIndex: number; explanation: string }
+  /**
+   * Sequência de lâminas navegáveis — o equivalente ao deck de slides das
+   * plataformas acadêmicas. Serve para decompor um raciocínio em passos, sem
+   * transformar a página numa parede de texto.
+   */
+  | { kind: 'SLIDES'; id: string; title: string; slides: Array<{ heading: string; body: string; note?: string }> }
+  /**
+   * Marcador discreto de aula em vídeo.
+   *
+   * A plataforma ainda não hospeda vídeo (ADR-004: mídia vive no Drive do
+   * autor, e aula institucional em vídeo é plano futuro). Em vez de omitir o
+   * ponto ou — pior — fingir um player, registramos com sobriedade onde a
+   * aula gravada entrará. Deve ser visualmente discreto: uma linha, nunca um
+   * card grande que sugira conteúdo ausente.
+   */
+  | { kind: 'VIDEO_PLACEHOLDER'; id: string; topic: string };
+
 export interface LessonSection {
   id: string;
   title: string;
+  /**
+   * @deprecated Preferir `blocks`. Mantido para não quebrar as lições já
+   * semeadas: quando `blocks` está ausente, o leitor renderiza este campo
+   * como um único bloco MARKDOWN.
+   */
   contentMarkdown: string;
   callout?: {
     type: 'info' | 'historical' | 'warning' | 'tip';
     title: string;
     text: string;
   };
+  /** Sequência interativa da seção. Quando presente, prevalece. */
+  blocks?: LessonBlock[];
 }
 
 export interface AudioSample {
@@ -226,12 +278,6 @@ export interface LessonPresentationContent {
   audioSamples: AudioSample[];
   scoreSnippet?: ScoreSnippet;
   illustrations: MediaIllustration[];
-  references: {
-    title: string;
-    author: string;
-    chapterOrLecture: string;
-    sourceType: 'book' | 'lecture' | 'open_courseware';
-  }[];
 }
 
 export interface AcademyLesson {
@@ -243,7 +289,6 @@ export interface AcademyLesson {
   durationMinutes: number;
   objectives: string[];
   skills: string[];
-  provenanceRef: string;
   activityIds: EntityId[];
   variants: Record<AudienceVariant, LessonPresentationContent>;
   status?: PublicationStatus;

@@ -81,7 +81,6 @@ export interface RepertoireWork {
   publicDomainStatus: boolean;
   scoreUrl?: string;
   audioReferenceUrl?: string;
-  provenanceCitation: string;
 }
 
 export interface PedagogicalMethod {

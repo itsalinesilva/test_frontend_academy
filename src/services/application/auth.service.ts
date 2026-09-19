@@ -1,25 +1,44 @@
+import { isGoogleSignInConfigured } from '../../infrastructure/auth/google-identity-client';
 import { User, Profile, UserRole, AppMode } from '../../domain/types';
 import {
-  LoginRequest,
-  RegisterRequest,
-  GoogleOAuthRequest,
+  GoogleAuthenticationRequest,
   OnboardingCompletionRequest,
   AuthSessionResponse,
   PostAuthResult,
   LinkAccountRequest,
-  ResetPasswordRequest,
 } from '../../contracts/auth-contracts';
+import { AuthoritySessionDto } from '../../contracts/admin-contracts';
 import { UserRepository, PersistentUserRepository } from '../../repositories/user.repository';
 import { ProfileRepository, PersistentProfileRepository } from '../../repositories/profile.repository';
-import { isFounderAdminEmail } from '../../domain/capabilities';
 import { entitlementService } from '../../infrastructure/entitlements/entitlement-service';
 import { auditService } from '../../infrastructure/telemetry/audit-service';
 import { AuditAction, AuditSeverity } from '../../domain/audit';
 import { ValidationError, UnauthorizedError, ForbiddenError } from '../../domain/errors';
 import { apiClient } from '../../infrastructure/api/api-client';
 import { StorageAdapter, LocalStorageAdapter } from '../../infrastructure/storage/storage-adapter';
-import { adminService } from './admin.service';
+import { disableGoogleAutoSelect } from '../../infrastructure/auth/google-identity-client';
 
+const AUTHORITY_BASE = '/api/v1';
+
+/**
+ * Orquestração de autenticação.
+ *
+ * ARQUITETURA (ADR-001.A): a plataforma é local-first e autentica
+ * exclusivamente via Google. A IDENTIDADE é resolvida pelo servidor de
+ * autoridade, que verifica a assinatura do ID token contra o JWKS do Google;
+ * os DADOS do usuário permanecem locais (`localStorage`), com backup no
+ * Drive do próprio usuário.
+ *
+ * O que foi removido, e por quê (CLAUDE_AUDIT.md):
+ *  - `login(email, password)` — S-03: só verificava a senha quando ambos
+ *    existiam, de modo que `login({email})` autenticava qualquer usuário.
+ *  - `register()` com senha, `recoverPassword()`, `resetPassword()` — S-05:
+ *    senha em texto claro (`"pwd_"+senha`), token de reset nunca validado e
+ *    devolvido na própria resposta. Com login só por Google, toda essa
+ *    superfície deixa de existir em vez de ser remendada.
+ *  - Emissão local de token — S-05: `token_${id}_${Date.now()}` era forjável.
+ *    O token agora é um JWS HS256 assinado pelo servidor.
+ */
 export class AuthService {
   private userRepo: UserRepository;
   private profileRepo: ProfileRepository;
@@ -36,524 +55,365 @@ export class AuthService {
     this.storage = storage;
   }
 
+  // ------------------------------------------------------------- SESSÃO ---
+
   /**
-   * Retrieves active session with persisted storage verification and entitlement hydration.
+   * Recupera a sessão ativa e a REVALIDA contra o servidor de autoridade.
+   *
+   * Não basta existir um objeto no `localStorage`: ele poderia ter sido
+   * escrito à mão pelo usuário. O servidor confere a assinatura do token e
+   * devolve o privilégio administrativo vigente.
    */
   public async getActiveSession(): Promise<AuthSessionResponse | null> {
-    const session = await this.storage.getItem<AuthSessionResponse>(this.sessionKey);
-    if (!session) return null;
+    const stored = await this.storage.getItem<AuthSessionResponse>(this.sessionKey);
+    if (!stored?.accessToken) return null;
 
-    // Verify token expiration
-    if (new Date(session.expiresAt) <= new Date()) {
-      await this.logout();
+    if (new Date(stored.expiresAt) <= new Date()) {
+      await this.clearLocalSession();
       return null;
     }
 
-    // Refresh user from authoritative repository
-    const dbUser = await this.userRepo.findById(session.user.id);
+    let authority: AuthoritySessionDto['admin'] | null = null;
+    try {
+      const response = await fetch(`${AUTHORITY_BASE}/auth/session`, {
+        headers: { Authorization: `Bearer ${stored.accessToken}` },
+      });
+      if (!response.ok) {
+        await this.clearLocalSession();
+        return null;
+      }
+      const body = (await response.json()) as { data: { admin: AuthoritySessionDto['admin'] } };
+      authority = body.data.admin;
+    } catch {
+      // Autoridade inacessível: a sessão não pode ser confirmada.
+      // Falha fechada — melhor pedir novo login do que operar com
+      // privilégio não verificado.
+      return null;
+    }
+
+    const dbUser = await this.userRepo.findById(stored.user.id);
     if (!dbUser) {
-      await this.logout();
+      await this.clearLocalSession();
       return null;
     }
 
-    const capabilities = entitlementService.getEffectiveCapabilities(dbUser);
-    const entitlements = entitlementService.getEffectiveEntitlements(dbUser);
-    const mode = this.resolveUserMode(dbUser, session.profile);
+    // O papel ADMIN só sobrevive se o servidor continuar concedendo.
+    const reconciledUser = this.reconcileAdminRole(dbUser, authority.isAdmin);
+    if (reconciledUser !== dbUser) {
+      await this.userRepo.save(reconciledUser);
+    }
 
-    const refreshedSession: AuthSessionResponse = {
-      ...session,
-      user: dbUser,
-      capabilities,
-      entitlements,
-      mode,
+    const profile = await this.profileRepo.findByUserId(reconciledUser.id);
+    const refreshed: AuthSessionResponse = {
+      ...stored,
+      user: reconciledUser,
+      profile: profile || stored.profile,
+      capabilities: entitlementService.getEffectiveCapabilities(reconciledUser),
+      entitlements: entitlementService.getEffectiveEntitlements(reconciledUser),
+      mode: this.resolveUserMode(reconciledUser, profile),
+      isAdmin: authority.isAdmin,
+      adminCapabilities: authority.capabilities,
     };
 
-    apiClient.setAuthToken(refreshedSession.accessToken);
-    return refreshedSession;
+    await this.storage.setItem(this.sessionKey, refreshed);
+    apiClient.setAuthToken(refreshed.accessToken);
+    return refreshed;
   }
 
   /**
-   * Resolves whether the application should operate in Traditional or Kids mode.
-   * "MODOS: Traditional, Kids. Professor não é escolhido como um mundo separado. Professor é capability adquirida."
+   * Remove o papel ADMIN de um usuário local quando o servidor não o concede.
+   * Impede que alguém edite o `localStorage` e se promova a administrador.
    */
+  private reconcileAdminRole(user: User, serverGrantsAdmin: boolean): User {
+    const claimsAdmin = user.primaryRole === UserRole.ADMIN || user.assignedRoles.includes(UserRole.ADMIN);
+    if (serverGrantsAdmin || !claimsAdmin) return user;
+
+    return {
+      ...user,
+      primaryRole: user.primaryRole === UserRole.ADMIN ? UserRole.ALUNO : user.primaryRole,
+      assignedRoles: user.assignedRoles.filter((r) => r !== UserRole.ADMIN),
+      isFounderAdmin: false,
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
   public resolveUserMode(user: User, profile?: Profile | null): AppMode {
-    if (user.primaryRole === UserRole.CRIANCA) {
-      return AppMode.KIDS;
-    }
-    if (profile?.childControls?.isKidModeActive || profile?.mode === AppMode.KIDS) {
-      return AppMode.KIDS;
-    }
+    if (user.primaryRole === UserRole.CRIANCA) return AppMode.KIDS;
+    if (profile?.childControls?.isKidModeActive || profile?.mode === AppMode.KIDS) return AppMode.KIDS;
     return AppMode.TRADITIONAL;
   }
 
-  private async createSession(user: User, explicitProfile?: Profile): Promise<AuthSessionResponse> {
-    let profile = explicitProfile || (await this.profileRepo.findByUserId(user.id));
-    if (!profile) {
-      profile = {
-        userId: user.id,
-        displayName: user.name,
-        title: isFounderAdminEmail(user.email) ? 'Fundadora & Curadora' : 'Estudante de Música',
-        biography: 'Músico e estudante da Academia Musical Digital.',
-        avatarSource: user.avatarUrl ? 'google' : 'initials',
-        avatarUrl: user.avatarUrl,
-        mode: this.resolveUserMode(user),
-        instruments: ['Piano'],
-        musicalInterests: ['Teoria Musical', 'Harmonia'],
-        experienceLevel: 'iniciante',
-        isPublic: user.primaryRole !== UserRole.CRIANCA,
-        academicProgressSummary: { coursesEnrolled: 0, coursesCompleted: 0, totalStudyHours: 0 },
-        practiceSummary: { totalSessions: 0, streakDays: 0 },
-        updatedAt: new Date().toISOString(),
+  private async clearLocalSession(): Promise<void> {
+    await this.storage.removeItem(this.sessionKey);
+    apiClient.setAuthToken(null);
+  }
+
+  // ------------------------------------------------------ AUTENTICAÇÃO ---
+
+  /**
+   * Único caminho de autenticação da plataforma.
+   *
+   * O ID token é enviado ao servidor, que verifica a assinatura RS256 contra
+   * o JWKS do Google, valida `iss`/`aud`/`exp`/`nonce` e devolve a identidade
+   * verificada mais a concessão administrativa. O cliente nunca decide quem
+   * é quem, nem quem é admin.
+   */
+  /**
+   * Conta local — SÓ EM DESENVOLVIMENTO.
+   *
+   * POR QUE ISTO EXISTE
+   * -------------------
+   * A plataforma autentica exclusivamente por Google (ADR-001.A), o que é a
+   * decisão certa em produção. Em desenvolvimento, porém, ela tornava a
+   * plataforma **impossível de usar**: sem `VITE_GOOGLE_OAUTH_CLIENT_ID`
+   * configurado, não havia como criar conta, e portanto não havia como ver
+   * nenhuma tela na versão logada.
+   *
+   * TRÊS TRAVAS, E POR QUE CADA UMA
+   * -------------------------------
+   * 1. `import.meta.env.DEV` — o Vite elimina este método do bundle de
+   *    produção por eliminação de código morto. Ele não existe no build.
+   * 2. Google configurado desativa o atalho — se há o caminho real, usa-se o
+   *    real.
+   * 3. A conta criada **nunca recebe privilégio de admin**. Privilégio segue
+   *    a outorga assinada pelo servidor, e um atalho local não é servidor.
+   *    Foi exatamente assim que o mock anterior deixou qualquer um entrar
+   *    como fundadora (CLAUDE_AUDIT.md S-03/S-04).
+   */
+  public async authenticateLocalDevelopment(
+    nome: string,
+    email: string
+  ): Promise<AuthSessionResponse> {
+    if (!import.meta.env.DEV) {
+      throw new UnauthorizedError('Conta local existe apenas em desenvolvimento.');
+    }
+    if (isGoogleSignInConfigured()) {
+      throw new UnauthorizedError(
+        'Google Sign-In está configurado neste ambiente; use a entrada federada.'
+      );
+    }
+
+    const limpo = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(limpo)) {
+      throw new UnauthorizedError('Informe um e-mail válido.');
+    }
+
+    const agora = new Date().toISOString();
+    let user = await this.userRepo.findByEmail(limpo);
+
+    if (!user) {
+      user = {
+        id: `usr_local_${limpo.replace(/[^a-z0-9]/g, '_')}`,
+        email: limpo,
+        name: nome.trim() || limpo.split('@')[0],
+        primaryRole: UserRole.ALUNO,
+        assignedRoles: [UserRole.ALUNO],
+        isEmailVerified: false,
+        authProvider: 'google',
+        isFounderAdmin: false,
+        linkedAccounts: [],
+        createdAt: agora,
+        updatedAt: agora,
       };
-      await this.profileRepo.save(profile);
+      await this.userRepo.save(user);
     }
 
-    // Ensure Google avatar is used when available
-    if (user.avatarUrl && !profile.avatarUrl) {
-      profile.avatarUrl = user.avatarUrl;
-      profile.avatarSource = 'google';
-      await this.profileRepo.save(profile);
-    }
-
-    const capabilities = entitlementService.getEffectiveCapabilities(user);
-    const entitlements = entitlementService.getEffectiveEntitlements(user);
-    const mode = this.resolveUserMode(user, profile);
+    const profile = await this.ensureProfile(user);
 
     const session: AuthSessionResponse = {
       user,
       profile,
-      capabilities,
-      entitlements,
-      mode,
-      accessToken: `token_${user.id}_${Date.now()}`,
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(), // 7 days
+      capabilities: entitlementService.getEffectiveCapabilities(user),
+      entitlements: entitlementService.getEffectiveEntitlements(user),
+      mode: this.resolveUserMode(user, profile),
+      // Token de desenvolvimento: não vale contra o servidor de autoridade, e
+      // é isso mesmo. Nenhuma rota protegida do servidor o aceita.
+      accessToken: 'dev-local-session',
+      expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
+      isAdmin: false,
+      adminCapabilities: [],
     };
 
     await this.storage.setItem(this.sessionKey, session);
-    apiClient.setAuthToken(session.accessToken);
     return session;
   }
 
-  /**
-   * CANONICAL PIPELINE:
-   * Após autenticação:
-   * 1. identificar usuário;
-   * 2. carregar profile;
-   * 3. carregar capabilities;
-   * 4. carregar entitlements;
-   * 5. carregar modo;
-   * 6. carregar progresso;
-   * 7. direcionar para Home.
-   */
-  public async executePostAuthPipeline(user: User): Promise<PostAuthResult> {
-    // 1. Identificar usuário
-    const dbUser = (await this.userRepo.findById(user.id)) || user;
+  public async authenticateWithGoogle(req: GoogleAuthenticationRequest): Promise<AuthSessionResponse> {
+    const response = await fetch(`${AUTHORITY_BASE}/auth/session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken: req.idToken, nonce: req.nonce }),
+    });
 
-    // 2. Carregar profile
-    let profile = await this.profileRepo.findByUserId(dbUser.id);
-    if (!profile) {
-      profile = {
-        userId: dbUser.id,
-        displayName: dbUser.name,
-        title: isFounderAdminEmail(dbUser.email) ? 'Fundadora & Curadora' : 'Estudante de Música',
-        biography: 'Músico e estudante da Academia Musical Digital.',
-        avatarSource: dbUser.avatarUrl ? 'google' : 'initials',
-        avatarUrl: dbUser.avatarUrl,
-        mode: this.resolveUserMode(dbUser),
-        instruments: ['Piano'],
-        musicalInterests: ['Teoria Musical', 'Harmonia'],
-        experienceLevel: 'iniciante',
-        isPublic: dbUser.primaryRole !== UserRole.CRIANCA,
-        onboardingCompleted: isFounderAdminEmail(dbUser.email),
-        academicProgressSummary: { coursesEnrolled: 1, coursesCompleted: 0, totalStudyHours: 2 },
-        practiceSummary: { totalSessions: 4, streakDays: 3 },
-        updatedAt: new Date().toISOString(),
-      };
-      await this.profileRepo.save(profile);
+    if (!response.ok) {
+      const errorBody = (await response.json().catch(() => null)) as
+        | { error?: { code?: string; message?: string } }
+        | null;
+      throw new UnauthorizedError(
+        errorBody?.error?.message || 'Não foi possível validar sua identidade Google.'
+      );
     }
 
-    // Google Avatar preference
-    if (dbUser.avatarUrl && (!profile.avatarUrl || profile.avatarSource !== 'google')) {
-      profile.avatarUrl = dbUser.avatarUrl;
-      profile.avatarSource = 'google';
-      await this.profileRepo.save(profile);
-    }
+    const { data } = (await response.json()) as { data: AuthoritySessionDto };
+    const { identity, admin, accessToken, expiresAt } = data;
 
-    // 3. Carregar capabilities
-    const capabilities = entitlementService.getEffectiveCapabilities(dbUser);
-
-    // 4. Carregar entitlements
-    const entitlements = entitlementService.getEffectiveEntitlements(dbUser);
-
-    // 5. Carregar modo (Traditional vs Kids)
-    const mode = this.resolveUserMode(dbUser, profile);
-
-    // 6. Carregar progresso
-    const progress = {
-      coursesEnrolled: profile.academicProgressSummary?.coursesEnrolled || 0,
-      coursesCompleted: profile.academicProgressSummary?.coursesCompleted || 0,
-      totalStudyHours: profile.academicProgressSummary?.totalStudyHours || 0,
-      streakDays: profile.practiceSummary?.streakDays || 0,
-      totalSessions: profile.practiceSummary?.totalSessions || 0,
-    };
-
-    // 7. Direcionar para Home (se onboarding já concluído, senão '/onboarding')
-    const destination = profile.onboardingCompleted ? '/' : '/onboarding';
-
-    return {
-      user: dbUser,
-      profile,
-      capabilities,
-      entitlements,
-      mode,
-      progress,
-      destination,
-    };
-  }
-
-  /**
-   * Authentication with Email + Password.
-   */
-  public async login(req: LoginRequest): Promise<AuthSessionResponse> {
-    const email = req.email.trim().toLowerCase();
-    let user = await this.userRepo.findByEmail(email);
-
+    // Provisionamento local, chaveado pelo `sub` do Google — estável mesmo
+    // que o usuário troque o e-mail da conta.
+    let user = await this.userRepo.findByGoogleSubject(identity.subject);
     if (!user) {
-      // Auto-provision if it's one of the founder emails
-      if (isFounderAdminEmail(email)) {
-        user = {
-          id: `usr_founder_${Date.now()}`,
-          email,
-          name: email.includes('office') ? 'Office Aline Silva (Admin)' : 'Aline Silva (Fundadora)',
-          primaryRole: UserRole.ADMIN,
-          assignedRoles: [UserRole.ADMIN, UserRole.PROFESSOR, UserRole.MUSICO, UserRole.ALUNO],
-          isEmailVerified: true,
-          isFounderAdmin: true,
-          authProvider: 'email',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        await this.userRepo.save(user);
-      } else {
-        throw new UnauthorizedError('Credenciais inválidas ou usuário não cadastrado.');
-      }
+      user = await this.userRepo.findByEmail(identity.email);
     }
 
-    // Password verification check
-    if (user.passwordHash && req.password) {
-      if (user.passwordHash !== `pwd_${req.password}` && user.passwordHash !== req.password) {
-        throw new UnauthorizedError('Senha incorreta.');
-      }
-    }
-
-    const session = await this.createSession(user);
-
-    await auditService.logEvent(
-      AuditAction.USER_LOGIN,
-      { id: user.id, email: user.email },
-      AuditSeverity.INFO,
-      { metadata: { role: user.primaryRole, method: 'email' } }
-    );
-
-    return session;
-  }
-
-  /**
-   * Authentication with Google OAuth.
-   * "Avatar do Google deve ser utilizado quando disponível."
-   */
-  public async loginWithGoogle(req: GoogleOAuthRequest): Promise<AuthSessionResponse> {
-    const email = req.email.trim().toLowerCase();
-    let user = await this.userRepo.findByEmail(email);
-    const isFounder = isFounderAdminEmail(email);
-
+    const now = new Date().toISOString();
     if (!user) {
-      // Provision user with Google Identity
       user = {
-        id: isFounder
-          ? `usr_founder_${Date.now()}`
-          : `usr_g_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-        email,
-        name: req.name || email.split('@')[0],
-        avatarUrl: req.avatarUrl,
-        primaryRole: isFounder ? UserRole.ADMIN : UserRole.ALUNO,
-        assignedRoles: isFounder
+        id: `usr_${identity.subject}`,
+        googleSubject: identity.subject,
+        email: identity.email,
+        name: identity.name || identity.email.split('@')[0],
+        avatarUrl: identity.pictureUrl,
+        primaryRole: admin.isAdmin ? UserRole.ADMIN : UserRole.ALUNO,
+        assignedRoles: admin.isAdmin
           ? [UserRole.ADMIN, UserRole.PROFESSOR, UserRole.MUSICO, UserRole.ALUNO]
           : [UserRole.ALUNO],
         isEmailVerified: true,
         authProvider: 'google',
-        isFounderAdmin: isFounder,
-        linkedAccounts: [
-          {
-            provider: 'google',
-            email,
-            linkedAt: new Date().toISOString(),
-          },
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        isFounderAdmin: admin.isAdmin,
+        linkedAccounts: [{ provider: 'google', email: identity.email, linkedAt: now }],
+        createdAt: now,
+        updatedAt: now,
       };
       await this.userRepo.save(user);
-
-      const profile: Profile = {
-        userId: user.id,
-        displayName: user.name,
-        title: isFounder ? 'Fundadora & Curadora Artística' : 'Estudante de Música',
-        biography: isFounder
-          ? 'Direção Artística e Preservação Histórica da Academia.'
-          : 'Estudante na Academia Musical Digital.',
-        avatarSource: 'google',
-        avatarUrl: req.avatarUrl,
-        mode: AppMode.TRADITIONAL,
-        instruments: ['Piano'],
-        musicalInterests: ['Teoria Musical', 'Harmonia'],
-        experienceLevel: isFounder ? 'conservatorio' : 'iniciante',
-        isPublic: true,
-        privacySettings: {
-          visibility: 'public',
-          showAcademicHistory: true,
-          showPracticeLog: true,
-          showPortfolio: true,
-          allowCommunityInteraction: true,
-        },
-        onboardingCompleted: isFounder,
-        academicProgressSummary: { coursesEnrolled: 1, coursesCompleted: 0, totalStudyHours: 0 },
-        practiceSummary: { totalSessions: 0, streakDays: 0 },
-        updatedAt: new Date().toISOString(),
-      };
-      await this.profileRepo.save(profile);
     } else {
-      // User exists: update Google avatar when available and link account
-      let changed = false;
-      if (req.avatarUrl && req.avatarUrl !== user.avatarUrl) {
-        user.avatarUrl = req.avatarUrl;
-        changed = true;
-      }
-      if (!user.linkedAccounts?.some((la) => la.provider === 'google')) {
-        user.linkedAccounts = [
-          ...(user.linkedAccounts || []),
-          { provider: 'google', email, linkedAt: new Date().toISOString() },
-        ];
-        changed = true;
-      }
-      if (changed) {
-        await this.userRepo.save(user);
-      }
-
-      // Sync avatar to profile
-      const profile = await this.profileRepo.findByUserId(user.id);
-      if (profile && req.avatarUrl && profile.avatarUrl !== req.avatarUrl) {
-        profile.avatarUrl = req.avatarUrl;
-        profile.avatarSource = 'google';
-        await this.profileRepo.save(profile);
-      }
+      const updated: User = {
+        ...user,
+        googleSubject: identity.subject,
+        email: identity.email,
+        name: identity.name || user.name,
+        avatarUrl: identity.pictureUrl || user.avatarUrl,
+        isEmailVerified: true,
+        updatedAt: now,
+      };
+      // O privilégio segue sempre a decisão do servidor, nos dois sentidos.
+      const withAdmin = admin.isAdmin
+        ? {
+            ...updated,
+            isFounderAdmin: true,
+            assignedRoles: updated.assignedRoles.includes(UserRole.ADMIN)
+              ? updated.assignedRoles
+              : [...updated.assignedRoles, UserRole.ADMIN],
+          }
+        : this.reconcileAdminRole(updated, false);
+      user = withAdmin;
+      await this.userRepo.save(user);
     }
+
+    const profile = await this.ensureProfile(user, identity.pictureUrl);
+
+    const session: AuthSessionResponse = {
+      user,
+      profile,
+      capabilities: entitlementService.getEffectiveCapabilities(user),
+      entitlements: entitlementService.getEffectiveEntitlements(user),
+      mode: this.resolveUserMode(user, profile),
+      accessToken,
+      expiresAt,
+      isAdmin: admin.isAdmin,
+      adminCapabilities: admin.capabilities,
+    };
+
+    await this.storage.setItem(this.sessionKey, session);
+    apiClient.setAuthToken(accessToken);
 
     await auditService.logEvent(
       AuditAction.GOOGLE_OAUTH_LOGIN,
       { id: user.id, email: user.email },
       AuditSeverity.INFO,
-      { metadata: { provider: 'google', isFounder, hasAvatar: Boolean(req.avatarUrl) } }
+      { metadata: { provider: 'google', isAdmin: admin.isAdmin } }
     );
 
-    return this.createSession(user);
+    return session;
   }
 
-  /**
-   * User Registration with Initial Mode.
-   */
-  public async register(req: RegisterRequest): Promise<AuthSessionResponse> {
-    const email = req.email.trim().toLowerCase();
-    const existing = await this.userRepo.findByEmail(email);
+  private async ensureProfile(user: User, pictureUrl?: string): Promise<Profile> {
+    const existing = await this.profileRepo.findByUserId(user.id);
     if (existing) {
-      throw new ValidationError('Email já cadastrado.', { email: ['Este e-mail já está em uso.'] });
+      if (pictureUrl && existing.avatarUrl !== pictureUrl) {
+        const synced: Profile = { ...existing, avatarUrl: pictureUrl, avatarSource: 'google' };
+        await this.profileRepo.save(synced);
+        return synced;
+      }
+      return existing;
     }
 
-    const isFounder = isFounderAdminEmail(email);
-    const initialMode = req.initialMode || AppMode.TRADITIONAL;
-    const role = isFounder
-      ? UserRole.ADMIN
-      : initialMode === AppMode.KIDS
-      ? UserRole.CRIANCA
-      : req.selectedRole || UserRole.ALUNO;
-
-    if (role === UserRole.CRIANCA && (!req.guardianEmail || !req.guardianEmail.includes('@'))) {
-      throw new ValidationError('Contas infantis requerem e-mail de responsável legal válido.', {
-        guardianEmail: ['E-mail do responsável é obrigatório.'],
-      });
-    }
-
-    const user: User = {
-      id: `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      email,
-      name: req.name.trim(),
-      avatarUrl: req.avatarUrl,
-      primaryRole: role,
-      assignedRoles: isFounder
-        ? [UserRole.ADMIN, UserRole.PROFESSOR, UserRole.MUSICO, UserRole.ALUNO]
-        : [role],
-      isEmailVerified: req.authProvider === 'google',
-      authProvider: req.authProvider || 'email',
-      passwordHash: req.password ? `pwd_${req.password}` : undefined,
-      linkedAccounts: [
-        {
-          provider: req.authProvider || 'email',
-          email,
-          linkedAt: new Date().toISOString(),
-        },
-      ],
-      guardianId: req.guardianEmail ? `guardian_${req.guardianEmail}` : undefined,
-      isFounderAdmin: isFounder,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    await this.userRepo.save(user);
-
-    const isChild = role === UserRole.CRIANCA;
     const profile: Profile = {
       userId: user.id,
       displayName: user.name,
-      title: isChild ? 'Iniciação Musical Kids' : 'Estudante da Academia',
-      biography: `Perfil de ${user.primaryRole} na Academia Musical Digital.`,
-      avatarSource: req.avatarUrl ? 'google' : 'initials',
-      avatarUrl: req.avatarUrl,
-      mode: initialMode,
-      instruments: ['Piano'],
-      musicalInterests: ['Teoria Musical'],
+      title: 'Estudante da Academia',
+      biography: 'Músico e estudante da Conservatório Muscicapa.',
+      avatarSource: pictureUrl ? 'google' : 'initials',
+      avatarUrl: pictureUrl,
+      mode: this.resolveUserMode(user),
+      instruments: [],
+      musicalInterests: [],
       experienceLevel: 'iniciante',
-      isPublic: !isChild,
-      privacySettings: {
-        visibility: isChild ? 'private' : 'public',
-        showAcademicHistory: !isChild,
-        showPracticeLog: !isChild,
-        showPortfolio: !isChild,
-        allowCommunityInteraction: !isChild,
-      },
-      guardian:
-        isChild && req.guardianEmail
-          ? {
-              guardianEmail: req.guardianEmail,
-              parentalConsentGiven: true,
-              consentTimestamp: new Date().toISOString(),
-            }
-          : undefined,
-      childControls: isChild
-        ? {
-            isKidModeActive: true,
-            restrictedChat: true,
-            contentFilterLevel: 'strict',
-            maxDailyScreenMinutes: 45,
-          }
-        : undefined,
-      onboardingCompleted: false, // New registration must proceed to onboarding
+      isPublic: user.primaryRole !== UserRole.CRIANCA,
+      onboardingCompleted: false,
+      // Zeros honestos: nada de progresso inventado para a tela parecer viva.
       academicProgressSummary: { coursesEnrolled: 0, coursesCompleted: 0, totalStudyHours: 0 },
       practiceSummary: { totalSessions: 0, streakDays: 0 },
       updatedAt: new Date().toISOString(),
     };
     await this.profileRepo.save(profile);
-
-    await auditService.logEvent(
-      AuditAction.USER_REGISTER,
-      { id: user.id, email: user.email },
-      AuditSeverity.INFO,
-      { metadata: { role: user.primaryRole, mode: initialMode, provider: user.authProvider } }
-    );
-
-    return this.createSession(user, profile);
+    return profile;
   }
 
-  /**
-   * Account Linking
-   * "account linking"
-   * Links a secondary provider (Google or Email) to an existing user account.
-   */
-  public async linkAccount(req: LinkAccountRequest): Promise<{ success: boolean; user: User; profile: Profile; message: string }> {
-    const user = await this.userRepo.findById(req.userId);
-    if (!user) {
-      throw new UnauthorizedError('Usuário não localizado.');
-    }
-
-    const linkedAccounts = user.linkedAccounts || [];
-    const alreadyLinked = linkedAccounts.some((la) => la.provider === req.provider && la.email === req.email);
-
-    if (alreadyLinked) {
-      const profile = (await this.profileRepo.findByUserId(user.id))!;
-      return { success: true, user, profile, message: 'Conta já vinculada.' };
-    }
-
-    user.linkedAccounts = [
-      ...linkedAccounts,
-      {
-        provider: req.provider,
-        email: req.email,
-        linkedAt: new Date().toISOString(),
-      },
-    ];
-
-    if (req.provider === 'google' && req.avatarUrl) {
-      user.avatarUrl = req.avatarUrl;
-    }
-    if (req.provider === 'email' && req.password) {
-      user.passwordHash = `pwd_${req.password}`;
-    }
-
-    await this.userRepo.save(user);
-
-    const profile = await this.profileRepo.findByUserId(user.id);
-    if (profile && req.provider === 'google' && req.avatarUrl) {
-      profile.avatarUrl = req.avatarUrl;
-      profile.avatarSource = 'google';
-      await this.profileRepo.save(profile);
-    }
-
-    await auditService.logEvent(
-      AuditAction.ACCOUNT_LINKED,
-      { id: user.id, email: user.email },
-      AuditSeverity.INFO,
-      { metadata: { linkedProvider: req.provider, linkedEmail: req.email } }
-    );
+  public async executePostAuthPipeline(user: User): Promise<PostAuthResult> {
+    const dbUser = (await this.userRepo.findById(user.id)) || user;
+    const profile = await this.ensureProfile(dbUser, dbUser.avatarUrl);
 
     return {
-      success: true,
-      user,
-      profile: profile!,
-      message: `Conta ${req.provider === 'google' ? 'Google' : 'E-mail'} vinculada com sucesso.`,
+      user: dbUser,
+      profile,
+      capabilities: entitlementService.getEffectiveCapabilities(dbUser),
+      entitlements: entitlementService.getEffectiveEntitlements(dbUser),
+      mode: this.resolveUserMode(dbUser, profile),
+      progress: {
+        coursesEnrolled: profile.academicProgressSummary?.coursesEnrolled || 0,
+        coursesCompleted: profile.academicProgressSummary?.coursesCompleted || 0,
+        totalStudyHours: profile.academicProgressSummary?.totalStudyHours || 0,
+        streakDays: profile.practiceSummary?.streakDays || 0,
+        totalSessions: profile.practiceSummary?.totalSessions || 0,
+      },
+      destination: profile.onboardingCompleted ? '/' : '/onboarding',
     };
   }
 
-  /**
-   * Completes Onboarding with canonical fields and mode.
-   * "ONBOARDING: Nome, Avatar, Tipo inicial de experiência, Instrumentos, Nível, Objetivos, Interesses, Preferências, Kids Mode quando aplicável.
-   * MODOS: Traditional, Kids. Professor não é escolhido como um mundo separado. Professor é capability adquirida."
-   */
+  // -------------------------------------------------------- ONBOARDING ---
+
   public async completeOnboarding(req: OnboardingCompletionRequest): Promise<AuthSessionResponse> {
     const session = await this.getActiveSession();
     if (!session) {
       throw new UnauthorizedError('Sessão expirada ou não autenticada.');
     }
 
-    const currentUserId = session.user.id;
-    const dbUser = await this.userRepo.findById(currentUserId);
+    const dbUser = await this.userRepo.findById(session.user.id);
     if (!dbUser) {
       throw new UnauthorizedError('Usuário não localizado no registro canônico.');
     }
 
-    const isFounder = isFounderAdminEmail(dbUser.email);
     const targetMode = req.mode || AppMode.TRADITIONAL;
     const isKidsMode = targetMode === AppMode.KIDS;
-
-    // "Professor não é escolhido como um mundo separado. Professor é capability adquirida."
-    const targetRole = isFounder
-      ? UserRole.ADMIN
-      : isKidsMode
-      ? UserRole.CRIANCA
-      : UserRole.ALUNO;
 
     if (isKidsMode && (!req.guardian?.guardianEmail || !req.guardian.guardianEmail.includes('@'))) {
       throw new ValidationError('O Modo Kids exige o e-mail verificado de um responsável legal.', {
         guardianEmail: ['E-mail do responsável legal é obrigatório.'],
       });
     }
+
+    // "Professor não é escolhido como um mundo separado; é capability adquirida."
+    // ADMIN nunca é atribuído aqui: vem exclusivamente do servidor.
+    const targetRole = session.isAdmin ? UserRole.ADMIN : isKidsMode ? UserRole.CRIANCA : UserRole.ALUNO;
 
     dbUser.primaryRole = targetRole;
     if (!dbUser.assignedRoles.includes(targetRole)) {
@@ -562,41 +422,32 @@ export class AuthService {
     if (isKidsMode && req.guardian?.guardianEmail) {
       dbUser.guardianId = `guardian_${req.guardian.guardianEmail}`;
     }
-    if (req.avatarUrl && !dbUser.avatarUrl) {
-      dbUser.avatarUrl = req.avatarUrl;
-    }
+    dbUser.updatedAt = new Date().toISOString();
     await this.userRepo.save(dbUser);
 
     const existingProfile = await this.profileRepo.findByUserId(dbUser.id);
     const updatedProfile: Profile = {
-      ...(existingProfile || {
-        userId: dbUser.id,
-        academicProgressSummary: { coursesEnrolled: 1, coursesCompleted: 0, totalStudyHours: 0 },
-        practiceSummary: { totalSessions: 0, streakDays: 0 },
-      }),
+      ...(existingProfile || { userId: dbUser.id }),
       displayName: req.displayName.trim() || dbUser.name,
       title: req.title?.trim() || (isKidsMode ? 'Iniciação Musical Kids' : 'Estudante da Academia'),
-      biography: req.biography || `Trajetória no modo ${targetMode} da Academia Musical Digital.`,
-      avatarSource: req.avatarSource || (req.avatarUrl ? 'google' : 'initials'),
+      biography: req.biography || `Trajetória no modo ${targetMode} da Conservatório Muscicapa.`,
+      avatarSource: req.avatarSource || (dbUser.avatarUrl ? 'google' : 'initials'),
       avatarUrl: req.avatarUrl || dbUser.avatarUrl,
       mode: targetMode,
-      instruments: req.instruments.length > 0 ? req.instruments : ['Piano'],
-      musicalInterests: req.musicalInterests.length > 0 ? req.musicalInterests : ['Teoria Musical'],
-      goals: req.goals || ['Aprimoramento Musical'],
+      instruments: req.instruments,
+      musicalInterests: req.musicalInterests,
+      goals: req.goals,
       experienceLevel: req.experienceLevel || 'iniciante',
-      preferences: req.preferences || {
-        tuningStandard: '440hz',
-        notationSystem: 'syllabic',
-        preferredClef: 'g_treble',
-        notificationsEnabled: true,
-      },
-      isPublic: !isKidsMode && (req.privacySettings?.visibility === 'public'),
+      preferences: req.preferences,
+      isPublic: !isKidsMode && req.privacySettings?.visibility === 'public',
       privacySettings: {
-        visibility: isKidsMode ? 'private' : (req.privacySettings?.visibility || 'public'),
-        showAcademicHistory: isKidsMode ? false : (req.privacySettings?.showAcademicHistory ?? true),
-        showPracticeLog: isKidsMode ? false : (req.privacySettings?.showPracticeLog ?? true),
-        showPortfolio: isKidsMode ? false : (req.privacySettings?.showPortfolio ?? true),
-        allowCommunityInteraction: isKidsMode ? false : (req.privacySettings?.allowCommunityInteraction ?? true),
+        visibility: isKidsMode ? 'private' : req.privacySettings?.visibility || 'public',
+        showAcademicHistory: isKidsMode ? false : req.privacySettings?.showAcademicHistory ?? true,
+        showPracticeLog: isKidsMode ? false : req.privacySettings?.showPracticeLog ?? true,
+        showPortfolio: isKidsMode ? false : req.privacySettings?.showPortfolio ?? true,
+        allowCommunityInteraction: isKidsMode
+          ? false
+          : req.privacySettings?.allowCommunityInteraction ?? true,
       },
       guardian: isKidsMode ? req.guardian : undefined,
       childControls: isKidsMode
@@ -607,6 +458,12 @@ export class AuthService {
             maxDailyScreenMinutes: 45,
           }
         : undefined,
+      academicProgressSummary: existingProfile?.academicProgressSummary || {
+        coursesEnrolled: 0,
+        coursesCompleted: 0,
+        totalStudyHours: 0,
+      },
+      practiceSummary: existingProfile?.practiceSummary || { totalSessions: 0, streakDays: 0 },
       onboardingCompleted: true,
       updatedAt: new Date().toISOString(),
     };
@@ -620,41 +477,37 @@ export class AuthService {
       { metadata: { mode: targetMode, role: targetRole, isKidsMode } }
     );
 
-    if (isKidsMode && req.guardian) {
-      await auditService.logEvent(
-        AuditAction.GUARDIAN_LINKED,
-        { id: dbUser.id, email: dbUser.email },
-        AuditSeverity.SECURITY,
-        { metadata: { guardianEmail: req.guardian.guardianEmail } }
-      );
-    }
-
-    return this.createSession(dbUser, updatedProfile);
+    const refreshed: AuthSessionResponse = { ...session, user: dbUser, profile: updatedProfile };
+    await this.storage.setItem(this.sessionKey, refreshed);
+    return refreshed;
   }
 
+  // ------------------------------------------------------------- PAPÉIS ---
+
+  /**
+   * Alterna o papel ativo entre as capacidades JÁ ATRIBUÍDAS ao usuário.
+   * ADMIN exige concessão do servidor — não é auto-atribuível.
+   */
   public async switchRole(newRole: UserRole): Promise<AuthSessionResponse> {
     const session = await this.getActiveSession();
     if (!session) {
       throw new UnauthorizedError('Sessão expirada.');
     }
 
+    if (newRole === UserRole.ADMIN && !session.isAdmin) {
+      throw new ForbiddenError('O papel administrativo não é concedido a esta identidade pelo servidor.');
+    }
+
     const dbUser = await this.userRepo.findById(session.user.id);
     if (!dbUser) {
       throw new UnauthorizedError('Usuário não localizado.');
     }
-
-    // Server-side check for ADMIN
-    if (newRole === UserRole.ADMIN) {
-      const serverCheck = await adminService.verifyAuthorization(dbUser.email);
-      if (!serverCheck.authorized) {
-        throw new ForbiddenError(serverCheck.reason || 'Papel administrativo recusado pelo servidor.');
-      }
+    if (!dbUser.assignedRoles.includes(newRole)) {
+      throw new ForbiddenError(`O papel ${newRole} não está atribuído a esta conta.`);
     }
 
     dbUser.primaryRole = newRole;
-    if (!dbUser.assignedRoles.includes(newRole)) {
-      dbUser.assignedRoles.push(newRole);
-    }
+    dbUser.updatedAt = new Date().toISOString();
     await this.userRepo.save(dbUser);
 
     await auditService.logEvent(
@@ -664,53 +517,96 @@ export class AuthService {
       { metadata: { switchedTo: newRole } }
     );
 
-    return this.createSession(dbUser);
+    const refreshed: AuthSessionResponse = {
+      ...session,
+      user: dbUser,
+      capabilities: entitlementService.getEffectiveCapabilities(dbUser),
+      mode: this.resolveUserMode(dbUser, session.profile),
+    };
+    await this.storage.setItem(this.sessionKey, refreshed);
+    return refreshed;
   }
+
+  /** Vincula um provedor adicional. Sem senha: a plataforma não tem senhas. */
+  public async linkAccount(req: LinkAccountRequest): Promise<{ success: boolean; user: User; message: string }> {
+    const user = await this.userRepo.findById(req.userId);
+    if (!user) {
+      throw new UnauthorizedError('Usuário não localizado.');
+    }
+
+    const linked = user.linkedAccounts || [];
+    if (linked.some((la) => la.provider === req.provider && la.email === req.email)) {
+      return { success: true, user, message: 'Conta já vinculada.' };
+    }
+
+    user.linkedAccounts = [...linked, { provider: req.provider, email: req.email, linkedAt: new Date().toISOString() }];
+    user.updatedAt = new Date().toISOString();
+    await this.userRepo.save(user);
+
+    await auditService.logEvent(
+      AuditAction.ACCOUNT_LINKED,
+      { id: user.id, email: user.email },
+      AuditSeverity.INFO,
+      { metadata: { linkedProvider: req.provider } }
+    );
+
+    return { success: true, user, message: 'Conta vinculada com sucesso.' };
+  }
+
+  // ------------------------------------------------------------- LOGOUT ---
 
   public async logout(): Promise<void> {
-    const session = await this.getActiveSession();
-    if (session) {
+    const stored = await this.storage.getItem<AuthSessionResponse>(this.sessionKey);
+
+    if (stored?.accessToken) {
       await auditService.logEvent(
         AuditAction.USER_LOGOUT,
-        { id: session.user.id, email: session.user.email },
+        { id: stored.user.id, email: stored.user.email },
         AuditSeverity.INFO
       );
+      try {
+        await fetch(`${AUTHORITY_BASE}/auth/session`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${stored.accessToken}` },
+        });
+      } catch {
+        // Encerramento local prossegue mesmo sem a autoridade.
+      }
     }
-    await this.storage.removeItem(this.sessionKey);
-    apiClient.setAuthToken(null);
+
+    disableGoogleAutoSelect();
+    await this.clearLocalSession();
   }
 
+  // ------------------------------------------------------ GUARDA DE ROTA ---
+
   /**
-   * Evaluates server-side authorization for routes.
-   * "A resolução de admin deve acontecer SERVER-SIDE. Nunca confiar apenas no frontend."
+   * Avalia acesso a rota. A decisão sobre `/admin` vem do campo `isAdmin` da
+   * sessão, que só existe porque o servidor o assinou — nunca de estado local.
    */
   public async checkRouteAccess(
     routePath: string,
     sessionUser: User | null
   ): Promise<{ authorized: boolean; reason?: string; requiredCapability?: string }> {
-    // Admin routes require verified SERVER-SIDE authorization
     if (routePath.startsWith('/admin')) {
-      if (!sessionUser) {
+      const session = await this.getActiveSession();
+      if (!session) {
         return {
           authorized: false,
-          reason: 'Acesso restrito. Faça login com credenciais de administrador.',
+          reason: 'Acesso restrito. Autentique-se com uma conta institucional.',
           requiredCapability: 'admin.console.access',
         };
       }
-
-      // Delegate directly to server authority
-      const serverEvaluation = await adminService.verifyAuthorization(sessionUser.email, routePath);
-      if (!serverEvaluation.authorized) {
+      if (!session.isAdmin) {
         return {
           authorized: false,
-          reason: serverEvaluation.reason || 'Acesso institucional recusado pelo servidor de segurança.',
+          reason: 'Esta identidade não possui outorga administrativa no servidor.',
           requiredCapability: 'admin.console.access',
         };
       }
       return { authorized: true };
     }
 
-    // Room creation requires professor capability (acquired)
     if (routePath === '/rooms/create') {
       if (!sessionUser) {
         return {
@@ -719,81 +615,24 @@ export class AuthService {
           requiredCapability: 'room.management.create',
         };
       }
-      const verifiedDbUser = await this.userRepo.findById(sessionUser.id);
+      const dbUser = await this.userRepo.findById(sessionUser.id);
       const isTeacher =
-        verifiedDbUser &&
-        (isFounderAdminEmail(verifiedDbUser.email) ||
-          verifiedDbUser.primaryRole === UserRole.PROFESSOR ||
-          verifiedDbUser.assignedRoles.includes(UserRole.PROFESSOR) ||
-          verifiedDbUser.primaryRole === UserRole.ADMIN);
+        dbUser &&
+        (dbUser.primaryRole === UserRole.PROFESSOR ||
+          dbUser.assignedRoles.includes(UserRole.PROFESSOR) ||
+          dbUser.primaryRole === UserRole.ADMIN);
 
       if (!isTeacher) {
         return {
           authorized: false,
-          reason: 'A cátedra de Professor é uma capability adquirida. Habilite sua cátedra pedagógica nas configurações.',
+          reason:
+            'A cátedra de Professor é uma capability adquirida. Habilite sua cátedra pedagógica nas configurações.',
           requiredCapability: 'room.management.create',
         };
       }
     }
 
     return { authorized: true };
-  }
-
-  /**
-   * Account Recovery
-   */
-  public async recoverPassword(email: string): Promise<{ success: boolean; message: string; resetToken?: string }> {
-    const cleanEmail = email.trim().toLowerCase();
-    const user = await this.userRepo.findByEmail(cleanEmail);
-
-    const resetToken = `rst_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-
-    if (!user) {
-      return {
-        success: true,
-        message: 'Se este e-mail estiver cadastrado na Academia, um código de redefinição foi gerado.',
-        resetToken,
-      };
-    }
-
-    await auditService.logEvent(
-      AuditAction.USER_LOGIN,
-      { id: user.id, email: user.email },
-      AuditSeverity.INFO,
-      { metadata: { action: 'password_recovery_requested', token: resetToken } }
-    );
-
-    return {
-      success: true,
-      message: `Instruções e token de redefinição gerados para ${cleanEmail}.`,
-      resetToken,
-    };
-  }
-
-  /**
-   * Password Reset Completion
-   */
-  public async resetPassword(req: ResetPasswordRequest): Promise<{ success: boolean; message: string }> {
-    const cleanEmail = req.email.trim().toLowerCase();
-    const user = await this.userRepo.findByEmail(cleanEmail);
-    if (!user) {
-      throw new UnauthorizedError('Usuário não localizado para redefinição de senha.');
-    }
-
-    user.passwordHash = `pwd_${req.newPassword}`;
-    await this.userRepo.save(user);
-
-    await auditService.logEvent(
-      AuditAction.PASSWORD_RESET,
-      { id: user.id, email: user.email },
-      AuditSeverity.SECURITY,
-      { metadata: { tokenUsed: req.token } }
-    );
-
-    return {
-      success: true,
-      message: 'Senha redefinida com sucesso. Faça login com sua nova credencial.',
-    };
   }
 }
 

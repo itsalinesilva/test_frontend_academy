@@ -27,7 +27,7 @@ import {
 
 export const ActivityScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const activityId = params.id || 'act_fomt_101_1_1';
+  const activityId = params.id;
 
   const [activity, setActivity] = useState<AcademyActivity | null>(null);
   const [lesson, setLesson] = useState<AcademyLesson | null>(null);
@@ -39,6 +39,10 @@ export const ActivityScreen: React.FC = () => {
 
   useEffect(() => {
     const loadActivityData = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!activityId) return;
       try {
         const act = await academyService.getActivity(activityId);
         if (act) {
@@ -58,7 +62,11 @@ export const ActivityScreen: React.FC = () => {
     if (!selectedOptionId || !activity) return;
 
     const session = await authService.getActiveSession();
-    const userId = session?.user.id || 'usr_founder_1';
+    // Sem sessao nao ha progresso a carregar nem a gravar: o fallback
+    // anterior misturava dados de visitantes anonimos com os da
+    // fundadora (CLAUDE_AUDIT.md T-05).
+    if (!session) return;
+    const userId = session.user.id;
 
     setIsSubmitting(true);
     try {
@@ -137,7 +145,7 @@ export const ActivityScreen: React.FC = () => {
                 Instrução Pedagógica:
               </span>
               <span className="text-xs font-mono text-stone-500">
-                {activity.maxScore} pontos
+                {activity.maxScore} points
               </span>
             </div>
             <p className="text-sm text-stone-600 leading-relaxed font-sans bg-stone-50 p-3 rounded-lg border border-stone-200">
@@ -156,7 +164,7 @@ export const ActivityScreen: React.FC = () => {
               variant="outline"
               onClick={playPitchStimulus}
             >
-              <Volume2 className="w-3.5 h-3.5 mr-1 text-red-800" />
+              <Volume2 className="w-3.5 h-3.5 mr-1 text-anil-800" />
               Ouvir Tom de Referência (440Hz)
             </Button>
           </div>
@@ -178,25 +186,28 @@ export const ActivityScreen: React.FC = () => {
 
               let borderClass = 'border-stone-200 hover:border-stone-400 bg-white';
               if (isSelected && !isSubmitted) {
-                borderClass = 'border-red-800 bg-red-50/20 text-red-950 font-medium';
+                borderClass = 'border-anil-800 bg-red-50/20 text-anil-950 font-medium';
               } else if (isSubmitted) {
                 if (isCorrectOpt) {
                   borderClass = 'border-emerald-600 bg-emerald-50/40 text-emerald-950 font-medium';
                 } else if (isSelected && !isCorrectOpt) {
-                  borderClass = 'border-red-600 bg-red-50/40 text-red-950 font-medium';
+                  borderClass = 'border-red-600 bg-red-50/40 text-anil-950 font-medium';
                 } else {
                   borderClass = 'border-stone-200 opacity-60';
                 }
               }
 
               return (
-                <div
+                <button
                   key={opt.id}
+                  type="button"
                   id={`activity-option-${opt.id}`}
+                  aria-pressed={selectedOptionId === opt.id}
+                  disabled={isSubmitted}
                   onClick={() => {
                     if (!isSubmitted) setSelectedOptionId(opt.id);
                   }}
-                  className={`p-4 border rounded-xl flex items-center justify-between cursor-pointer transition-all ${borderClass}`}
+                  className={`w-full p-4 border rounded-xl text-left flex items-center justify-between cursor-pointer transition-all ${borderClass}`}
                 >
                   <div className="flex items-center gap-3">
                     <span className="w-7 h-7 rounded-full bg-stone-100 border border-stone-300 flex items-center justify-center text-xs font-mono font-bold text-stone-700 shrink-0">
@@ -213,7 +224,7 @@ export const ActivityScreen: React.FC = () => {
                   {isSubmitted && isSelected && !isCorrectOpt && (
                     <XCircle className="w-5 h-5 text-red-700 shrink-0" />
                   )}
-                </div>
+                </button>
               );
             })}
           </div>
@@ -225,7 +236,7 @@ export const ActivityScreen: React.FC = () => {
               className={`p-5 rounded-xl border space-y-3 ${
                 attemptResult.passed
                   ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
-                  : 'bg-red-50 border-red-300 text-red-950'
+                  : 'bg-red-50 border-red-300 text-anil-950'
               }`}
             >
               <div className="flex items-center justify-between">

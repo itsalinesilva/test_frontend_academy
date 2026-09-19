@@ -25,6 +25,7 @@ import { auditService } from '../../infrastructure/telemetry/audit-service';
 import { AuditAction, AuditSeverity } from '../../domain/audit';
 import { authService } from './auth.service';
 import { NotFoundError, UnauthorizedError } from '../../domain/errors';
+import { computeEvidenceHash } from '../../domain/integrity';
 
 export class ProfileService {
   private profileRepo: ProfileRepository;
@@ -118,7 +119,13 @@ export class ProfileService {
   // ---------------------------------------------------------
   public async getUnifiedProfile(targetUserId?: string): Promise<UnifiedProfileRecord> {
     const session = await authService.getActiveSession();
-    const userId = targetUserId || session?.user.id || 'usr_founder_1';
+    // Sem alvo explícito e sem sessão não há perfil a devolver. O fallback
+    // anterior entregava o perfil da fundadora a qualquer visitante anônimo
+    // (CLAUDE_AUDIT.md T-05).
+    const userId = targetUserId || session?.user.id;
+    if (!userId) {
+      throw new UnauthorizedError('Nenhum perfil identificado. Autentique-se para acessar o seu.');
+    }
 
     let record = await this.unifiedRepo.findByUserId(userId);
 
@@ -131,26 +138,26 @@ export class ProfileService {
         userId,
         displayName: basicProfile?.displayName || user?.name || 'Músico Acadêmico',
         title: basicProfile?.title || 'Estudante da Academia',
-        headline: basicProfile?.headline || 'Música de Concerto • Investigação Tonal',
-        biography: basicProfile?.biography || 'Estudante de música e performance na Academia Musical Digital.',
+        headline: basicProfile?.headline || '',
+        biography: basicProfile?.biography || '',
         avatarUrl: basicProfile?.avatarUrl || user?.avatarUrl,
         avatarSource: basicProfile?.avatarSource || 'google',
         primaryRole: user?.primaryRole || UserRole.ALUNO,
         assignedRoles: user?.assignedRoles || [UserRole.ALUNO],
-        instruments: basicProfile?.instruments || ['Piano', 'Violino'],
-        musicalInterests: basicProfile?.musicalInterests || ['Harmonia Funcional', 'Contraponto'],
-        experienceLevel: basicProfile?.experienceLevel || 'intermediario',
+        // Quem acabou de se cadastrar nao toca nenhum instrumento "por
+        // padrao". Os valores anteriores — Piano, Violino, Harmonia Funcional,
+        // Contraponto, nivel intermediario — apareciam no perfil de alguem
+        // que nunca os informou.
+        instruments: basicProfile?.instruments || [],
+        musicalInterests: basicProfile?.musicalInterests || [],
+        experienceLevel: basicProfile?.experienceLevel || 'iniciante',
+        // Privado por padrao: aparecer no diretorio publico e opt-in.
         overallVisibility: basicProfile?.isPublic ? 'public' : 'private',
         officialLinks: [],
-        sectionsConfig: [
-          { key: 'academic', label: 'Academia & Cursos', enabled: true, visibility: 'public', order: 1 },
-          { key: 'practice', label: 'Prática & Habilidades', enabled: true, visibility: 'public', order: 2 },
-          { key: 'studio', label: 'Estúdio & Portfólio', enabled: true, visibility: 'public', order: 3 },
-          { key: 'worlds', label: 'Mundos & Passaportes', enabled: true, visibility: 'public', order: 4 },
-          { key: 'community', label: 'Comunidade & Conexões', enabled: true, visibility: 'public', order: 5 },
-          { key: 'rooms', label: 'Salas & Cátedras', enabled: true, visibility: 'public', order: 6 },
-          { key: 'teacher', label: 'Cátedra Docente', enabled: user?.assignedRoles?.includes(UserRole.PROFESSOR) || false, visibility: 'public', order: 7 },
-        ],
+        // Configuracao unica, vinda do repositorio. Aqui havia uma segunda
+        // copia com 7 secoes enquanto o repositorio definia 23 — as telas
+        // mostravam conjuntos diferentes conforme o caminho de criacao.
+        sectionsConfig: this.unifiedRepo.getDefaultSectionsConfig(),
         academic: {
           totalStudyHours: basicProfile?.academicProgressSummary?.totalStudyHours || 32,
           enrolledCourses: [],
@@ -195,7 +202,31 @@ export class ProfileService {
       record.assignedRoles = session.user.assignedRoles;
     }
 
+    // Quem NAO e o dono recebe a projecao filtrada, nunca o registro cru.
+    // Antes, `getUnifiedProfile('id_de_outra_pessoa')` devolvia o registro
+    // completo — biografia privada, evidencias privadas, portfolio nao
+    // publicado — a qualquer visitante. Nao dava para alcancar isso pela UI
+    // porque /profile/:userId nao existia; com a rota criada seria um
+    // vazamento por URL (CLAUDE_AUDIT.md P-02).
+    if (!session || session.user.id !== userId) {
+      const projecao = await this.unifiedRepo.getPublicProjection(userId);
+      if (!projecao) {
+        throw new NotFoundError('Perfil', userId);
+      }
+      return projecao;
+    }
+
     return record;
+  }
+
+  /**
+   * Diretorio de pessoas visiveis publicamente.
+   *
+   * Sem isto a premissa "LinkedIn de musicos" nao fecha: havia rota de perfil
+   * proprio, mas nenhum caminho para encontrar outra pessoa.
+   */
+  public async listDirectory(): Promise<UnifiedProfileRecord[]> {
+    return this.unifiedRepo.listPublicDirectory();
   }
 
   /**
@@ -453,7 +484,25 @@ export class ProfileService {
   // Prepared for Academy, Practice, Studio, Rooms, Community
   // ---------------------------------------------------------
   public async ingestEvidence(request: IngestEvidenceRequest): Promise<IngestEvidenceResponse> {
-    const integrityHash = `sha256:${Math.random().toString(16).substring(2, 10)}${Math.random().toString(16).substring(2, 10)}${Date.now().toString(16)}`;
+    const createdAt = new Date().toISOString();
+
+    // O hash e calculado SOBRE O CONTEUDO, com Web Crypto. O valor anterior
+    // era `Math.random()` com "sha256:" na frente: nao derivava do registro,
+    // nao detectava adulteracao e ainda assim a UI o anunciava como "prova
+    // matematica de integridade" (CLAUDE_AUDIT.md P-07).
+    const integrityHash = await computeEvidenceHash({
+      userId: request.userId,
+      source: request.source,
+      sourceEntityId: request.sourceEntityId,
+      title: request.title,
+      description: request.description,
+      artifactType: request.artifactType,
+      artifactUrl: request.artifactUrl,
+      skills: request.skills || [],
+      instruments: request.instruments || [],
+      evaluator: request.evaluator,
+      createdAt,
+    });
 
     const evidence: Evidence = {
       id: `evi_${request.source}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -470,7 +519,7 @@ export class ProfileService {
       instruments: request.instruments || [],
       metadata: request.metadata || {},
       visibility: request.visibility || 'public',
-      createdAt: new Date().toISOString(),
+      createdAt,
     };
 
     await this.unifiedRepo.addEvidence(evidence);
@@ -498,7 +547,10 @@ export class ProfileService {
 
   public async toggleConnection(targetUserId: string): Promise<{ connected: boolean; count: number }> {
     const session = await authService.getActiveSession();
-    const currentUserId = session?.user.id || 'usr_founder_1';
+    if (!session) {
+      throw new UnauthorizedError('Autentique-se para gerenciar conexões.');
+    }
+    const currentUserId = session.user.id;
     const profile = await this.getUnifiedProfile(currentUserId);
 
     if (!profile.connectionsList) {
@@ -512,13 +564,22 @@ export class ProfileService {
       profile.connectionsList.splice(existingIdx, 1);
       connected = false;
     } else {
+      // A identidade vem do perfil de destino. A versao anterior gravava
+      // 'Musico Academico Conectado' / 'Interprete & Pesquisador' / 'Violino /
+      // Teclado' para QUALQUER pessoa conectada: a lista de conexoes parecia
+      // povoada e nenhum nome ali era real (CLAUDE_AUDIT.md P-03).
+      const alvo = await this.unifiedRepo.getPublicProjection(targetUserId);
+      if (!alvo) {
+        throw new NotFoundError('Perfil', targetUserId);
+      }
       profile.connectionsList.push({
         id: `conn_${Date.now()}`,
         targetUserId,
-        name: 'Músico Acadêmico Conectado',
-        headline: 'Intérprete & Pesquisador',
-        primaryInstrument: 'Violino / Teclado',
-        role: 'Colega de Concerto',
+        name: alvo.displayName,
+        headline: alvo.headline,
+        avatarUrl: alvo.avatarUrl,
+        primaryInstrument: alvo.instruments[0] ?? 'Nao informado',
+        role: alvo.title,
         connectedAt: new Date().toISOString(),
         status: 'connected',
       });

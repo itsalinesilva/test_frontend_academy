@@ -20,6 +20,7 @@ import { AcademyRepository, academyRepository } from '../../repositories/academy
 import { profileService, ProfileService } from './profile.service';
 import { analyticsService } from '../../infrastructure/telemetry/analytics-service';
 import { AnalyticsEventType } from '../../domain/analytics';
+import { canonicalJson, sha256Hex } from '../../domain/integrity';
 import { NotFoundError } from '../../domain/errors';
 
 export class AcademyService {
@@ -415,7 +416,7 @@ export class AcademyService {
           evaluator: {
             id: 'eval_auto_validator',
             name: 'Motor Canônico de Validação Teórica',
-            title: 'Sistema de Avaliação Automatizada da Academia Musical Digital',
+            title: 'Sistema de Avaliação Automatizada da Conservatório Muscicapa',
             decision: 'aprovado_com_louvor',
             feedbackNotes: feedback,
           },
@@ -584,9 +585,26 @@ export class AcademyService {
       return existing;
     }
 
-    // Generate deterministic verification code and SHA-256 hash
-    const verificationCode = `AMD-${new Date().getFullYear()}-${course.slug.substring(0, 3).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const integrityHash = `sha256:amd_${Date.now().toString(16)}_${Math.random().toString(16).substring(2, 10)}`;
+    // O codigo de verificacao identifica o documento; o hash prova o conteudo.
+    const verificationCode = `CMU-${new Date().getFullYear()}-${course.slug.substring(0, 3).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const issuedAt = new Date().toISOString();
+
+    // Hash real, sobre os campos do certificado. O comentario acima desta
+    // linha dizia "deterministic" enquanto o valor vinha de `Math.random()`:
+    // dois certificados identicos recebiam hashes diferentes e um certificado
+    // adulterado mantinha o seu (CLAUDE_AUDIT.md P-07).
+    const integrityHash = `sha256:${await sha256Hex(
+      canonicalJson({
+        userId,
+        courseId,
+        courseTitle: course.title,
+        workloadHours: course.workloadHours,
+        verificationCode,
+        competencies: [...course.competencies].sort(),
+        instructorName: course.authorName,
+        issuedAt,
+      })
+    )}`;
 
     const cert: AcademicCertificateRecord = {
       id: `cert_${courseId}_${Date.now()}`,
@@ -598,11 +616,11 @@ export class AcademyService {
       workloadHours: course.workloadHours,
       verificationCode,
       sha256Hash: integrityHash,
-      issuedAt: new Date().toISOString(),
+      issuedAt,
       instructorName: course.authorName,
       instructorTitle: course.authorTitle,
       competencies: course.competencies,
-      institution: 'Academia Musical Digital - Cátedra Livre de Teoria e Prática',
+      institution: 'Conservatório Muscicapa - Cátedra Livre de Teoria e Prática',
     };
 
     // Enrich with user name if available
@@ -637,7 +655,7 @@ export class AcademyService {
         source: 'academy',
         sourceEntityId: savedCert.id,
         title: `Certificado de Conclusão: ${course.title}`,
-        description: `Certificado oficial conferido pela Academia Musical Digital. Carga horária auditada de ${course.workloadHours} horas. Código: ${verificationCode}`,
+        description: `Certificado oficial conferido pela Conservatório Muscicapa. Carga horária auditada de ${course.workloadHours} horas. Código: ${verificationCode}`,
         artifactType: 'document',
         artifactUrl: `/academy/certificate/${savedCert.id}`,
         skills: course.competencies,
@@ -656,8 +674,20 @@ export class AcademyService {
     return savedCert;
   }
 
-  public async getCertificate(certificateId: string): Promise<AcademicCertificateRecord | null> {
-    return this.repo.findCertificateById(certificateId);
+  /**
+   * O certificado de alguem, para esse alguem.
+   *
+   * A verificacao PUBLICA de autenticidade tem rota propria — `/credential` —
+   * e mostra so o que prova o registro. Esta aqui e a via do titular, dentro
+   * da Academia, e por isso exige dono.
+   */
+  public async getCertificate(
+    certificateId: string,
+    userId: string
+  ): Promise<AcademicCertificateRecord | null> {
+    const cert = await this.repo.findCertificateById(certificateId);
+    if (!cert || cert.userId !== userId) return null;
+    return cert;
   }
 
   public async listUserCertificates(userId: string): Promise<AcademicCertificateRecord[]> {
@@ -668,8 +698,19 @@ export class AcademyService {
     return this.repo.listHistoryByUser(userId);
   }
 
-  public async getAssessmentSubmission(submissionId: string): Promise<AssessmentSubmission | null> {
-    return this.repo.getAssessmentSubmission(submissionId);
+  /**
+   * A submissao de alguem, para esse alguem.
+   *
+   * Identificador unico da a sensacao de ja ser credencial, quando e so um
+   * endereco. Quem tem o endereco nao e, por isso, o dono.
+   */
+  public async getAssessmentSubmission(
+    submissionId: string,
+    userId: string
+  ): Promise<AssessmentSubmission | null> {
+    const found = await this.repo.getAssessmentSubmission(submissionId);
+    if (!found || found.userId !== userId) return null;
+    return found;
   }
 
   public async getAllUserProgress(userId: string): Promise<UserAcademyProgress[]> {
@@ -717,8 +758,23 @@ export class AcademyService {
     return this.submitActivity(userId, activityId, givenAnswer, variant);
   }
 
-  public async getAssessmentAttempt(submissionId: string): Promise<AssessmentSubmission | null> {
-    return this.getAssessmentSubmission(submissionId);
+  /**
+   * A prova de alguem, para esse alguem.
+   *
+   * O `userId` e OBRIGATORIO, e nao por formalidade: esta leitura buscava so
+   * pelo identificador da submissao, e a tela que a usa esta em rota publica.
+   * Quem tivesse — ou adivinhasse — um identificador via a nota, a aprovacao e
+   * o numero de certificado de outra pessoa.
+   *
+   * Devolver `null` em vez de lancar e deliberado: a tela ja sabe mostrar
+   * "nao encontrado", e distinguir "nao existe" de "existe e nao e sua"
+   * confirmaria a existencia do registro a quem nao deveria saber dele.
+   */
+  public async getAssessmentAttempt(
+    submissionId: string,
+    userId: string
+  ): Promise<AssessmentSubmission | null> {
+    return this.getAssessmentSubmission(submissionId, userId);
   }
 
   public async submitAssessmentAttempt(

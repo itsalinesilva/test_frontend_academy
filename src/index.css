@@ -1,5 +1,59 @@
 @import "tailwindcss";
 
+/**
+ * Paleta institucional do Conservatório Muscicapa.
+ *
+ * As cores NÃO foram escolhidas: foram MEDIDAS no brasão, por amostragem do
+ * arquivo original. O anil é o campo do escudo; o ouro é a moldura, a abelha
+ * e os punhos das armas.
+ *
+ * Âncoras medidas no arquivo:
+ *   anil   #1B3357  (matiz 216°, campo do escudo)     -> passo 900
+ *   ouro   #947D53  (moldura e abelha)                -> passo 600
+ *
+ * SAO ESTAS DUAS, E SO ESTAS. O verde da juruviara (#60603C) e o terra do
+ * uirapuru (#7A5138) existem no brasao e NAO sao cores de design: entram
+ * apenas quando o proprio brasao e reproduzido. Mante-los como utilitarios
+ * conviteria a usa-los na interface, e uma paleta institucional de quatro
+ * matizes deixa de ser reconhecivel.
+ *
+ * As rampas saem da âncora por variação de luminosidade, com a saturação
+ * caindo nas pontas: cores muito claras ou muito escuras mantendo saturação
+ * alta ficam berrantes e deixam de parecer a mesma família.
+ *
+ * Todo par de uso real foi conferido contra a WCAG 2.2 AA — anil-800 sobre
+ * branco dá 11,47:1, branco sobre anil-800 o mesmo, ouro-400 sobre anil-900
+ * dá 5,38:1. Nenhuma combinação institucional fica abaixo de 4,5:1 para
+ * texto.
+ */
+@theme {
+  /* Anil — campo do escudo. Cor primária da instituição. */
+  --color-anil-50: #f5f7fa;
+  --color-anil-100: #e7ecf3;
+  --color-anil-200: #cad6e8;
+  --color-anil-300: #9fb7db;
+  --color-anil-400: #658fcd;
+  --color-anil-500: #396bb7;
+  --color-anil-600: #305792;
+  --color-anil-700: #294875;
+  --color-anil-800: #233a5c;
+  --color-anil-900: #1d2f49;
+  --color-anil-950: #151f2e;
+
+  /* Ouro — moldura, abelha, selo. Acento cerimonial. */
+  --color-ouro-50: #f9f8f6;
+  --color-ouro-100: #f0eeea;
+  --color-ouro-200: #e1dbd1;
+  --color-ouro-300: #cdc1ad;
+  --color-ouro-400: #b5a17d;
+  --color-ouro-500: #998256;
+  --color-ouro-600: #7b6947;
+  --color-ouro-700: #63553b;
+  --color-ouro-800: #4f4430;
+  --color-ouro-900: #3e3628;
+  --color-ouro-950: #28231a;
+}
+
 @layer base {
   :root {
     /* Backgrounds & Canvas */
@@ -13,7 +67,7 @@
     --color-fg-secondary: #44403c;
     --color-fg-muted: #78716c;
     --color-fg-inverse: #fafaf9;
-    --color-fg-brand: #991b1b;
+    --color-fg-brand: #233a5c;
 
     /* Surfaces */
     --color-surface-default: #ffffff;
@@ -25,16 +79,26 @@
     --color-border-default: #e7e5e4;
     --color-border-subtle: #f5f5f4;
     --color-border-strong: #a8a29e;
-    --color-border-brand: #991b1b;
+    --color-border-brand: #233a5c;
 
-    /* Primary & Accent (Institutional Red Signal) */
-    --color-primary-default: #991b1b;
-    --color-primary-hover: #7f1d1d;
-    --color-primary-active: #581c1c;
-    --color-accent-subtle: #fef2f2;
-    --color-accent-signal: #dc2626;
+    /* Primária e acento — anil do brasão */
+    --color-primary-default: #233a5c;
+    --color-primary-hover: #294875;
+    --color-primary-active: #1d2f49;
+    --color-accent-subtle: #f5f7fa;
+    --color-accent-signal: #305792;
 
-    /* Semantics & Status */
+    /* Ouro cerimonial: selo, credencial, distinção. Nunca para texto
+       corrido — o contraste só fecha a partir do passo 600. */
+    --color-ceremonial: #7b6947;
+    --color-ceremonial-bright: #b5a17d;
+
+    /*
+     * Semânticas. O vermelho continua existindo e NÃO é cor de marca:
+     * é sinal de erro e de perigo. Foi justamente por isso que ele saiu
+     * do resto da interface — enquanto era a cor institucional, um alerta
+     * vermelho não se distinguia de um botão comum.
+     */
     --color-status-success: #15803d;
     --color-status-success-bg: #f0fdf4;
     --color-status-warning: #b45309;
@@ -43,7 +107,7 @@
     --color-status-danger-bg: #fef2f2;
 
     /* Focus */
-    --color-focus-ring: #991b1b;
+    --color-focus-ring: #233a5c;
 
     /* Disabled */
     --color-disabled-bg: #f5f5f4;

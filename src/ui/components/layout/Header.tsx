@@ -1,231 +1,127 @@
 import React, { useState } from 'react';
 import { User, UserRole } from '../../../domain/types';
-import { Badge } from '../base/Badge';
-import {
-  LogIn,
-  Search,
-  Bell,
-  Music2,
-  Menu,
-  CheckCircle2,
-  BookOpen,
-  MessageSquare,
-} from 'lucide-react';
-import { useRouter } from '../../navigation/router';
-import { WorkspaceSwitcher } from '../navigation/WorkspaceSwitcher';
-import { NotificationsPopover, QuickNotification } from '../overlays/NotificationsPopover';
-import { ProfileMenu } from '../overlays/ProfileMenu';
+import { LogIn, Music2 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useRouter } from '../../navigation/router';
+import { ExplorarMenu } from './ExplorarMenu';
+import { HeaderSearch } from './HeaderSearch';
+import { ProfileMenu } from '../overlays/ProfileMenu';
 
 export interface HeaderProps {
   currentUser: User | null;
   onLoginClick?: () => void;
   onLogoutClick: () => void;
   onSwitchRole?: (role: UserRole) => void;
-  onOpenCommandPalette?: () => void;
   onTogglePlayer?: () => void;
   isPlayerOpen?: boolean;
-  onToggleMobileMenu?: () => void;
+  showAdminTab?: boolean;
 }
 
+/**
+ * A navbar.
+ *
+ * Cinco elementos, e nada mais: a marca, que leva à home; **Explorar**, que
+ * abre o painel com tudo o que a plataforma tem; **Meu aprendizado**, que leva
+ * ao que o aluno já fez; a **lupa**; e o **avatar**.
+ *
+ * Tudo o que não é um desses cinco vive dentro de Explorar ou dentro da
+ * própria tela. Uma barra com dez itens expostos não ajuda a navegar — obriga
+ * a ler dez itens toda vez.
+ */
 export const Header: React.FC<HeaderProps> = ({
   currentUser,
   onLoginClick,
   onLogoutClick,
   onSwitchRole,
-  onOpenCommandPalette,
   onTogglePlayer,
   isPlayerOpen = false,
-  onToggleMobileMenu,
+  showAdminTab = false,
 }) => {
-  const { navigate } = useRouter();
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const { currentPath, navigate } = useRouter();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
-  const [notifications, setNotifications] = useState<QuickNotification[]>([
-    {
-      id: 'notif-1',
-      title: 'Nova Lição Desbloqueada',
-      message: 'Módulo de Contraponto a 2 Vozes disponível na Cátedra de Bach.',
-      time: 'Há 12 min',
-      unread: true,
-      link: '/academy/course/contraponto-fundamental',
-      icon: BookOpen,
-    },
-    {
-      id: 'notif-2',
-      title: 'Resposta no Fórum',
-      message: 'Prof. Gabriel comentou sua análise da Sonata em Dó Maior.',
-      time: 'Há 1 hora',
-      unread: true,
-      link: '/community/topic/analise-sonata-k545',
-      icon: MessageSquare,
-    },
-    {
-      id: 'notif-3',
-      title: 'Avaliação Registrada no Portfólio',
-      message: 'Seu áudio do exercício de 3ª Maior recebeu pontuação 100%.',
-      time: 'Ontem',
-      unread: false,
-      link: '/profile/portfolio',
-      icon: CheckCircle2,
-    },
-  ]);
-
-  const handleLogin = () => {
-    if (onLoginClick) {
-      onLoginClick();
-    } else {
-      navigate('/auth/login');
-    }
-  };
-
-  const handleMarkAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
-  };
-
-  const unreadCount = notifications.filter((n) => n.unread).length;
+  const emAprendizado = currentPath.startsWith('/academy/meu-aprendizado');
 
   return (
     <header
-      id="app-institutional-header"
-      className="bg-stone-900 text-stone-100 border-b border-stone-800 py-2 px-3 sm:px-6 lg:px-8 select-none relative z-30"
+      id="app-header"
+      className="sticky top-0 z-30 select-none border-b border-stone-200 bg-white"
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between text-xs gap-2">
-        {/* Left Side: Mobile Menu Button + Institutional Tag + Workspace Switcher */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          {onToggleMobileMenu && (
-            <button
-              id="header-mobile-menu-btn"
-              type="button"
-              onClick={onToggleMobileMenu}
-              aria-label="Abrir menu de navegação móvel"
-              className="lg:hidden p-1.5 text-stone-400 hover:text-white rounded hover:bg-stone-800 focus:outline-none focus:ring-1 focus:ring-red-800 shrink-0"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-          )}
+      <div className="mx-auto flex h-14 max-w-7xl items-center gap-1 px-3 sm:gap-3 sm:px-6 lg:px-8">
+        <button
+          type="button"
+          id="header-brand"
+          onClick={() => navigate('/')}
+          aria-label="Conservatório Muscicapa, ir para a página inicial"
+          className="flex shrink-0 items-center gap-2 rounded px-1 focus:outline-none focus-visible:ring-1 focus-visible:ring-anil-700"
+        >
+          <span aria-hidden="true" className="h-2 w-2 rounded-full bg-ouro-500" />
+          <span className="font-serif text-base font-bold tracking-tight text-anil-900">
+            Muscicapa
+          </span>
+        </button>
 
-          <div id="header-institutional-tag" className="flex items-center gap-2 truncate">
-            <span className="w-2 h-2 rounded-full bg-red-600 shrink-0" aria-hidden="true" />
-            <span className="text-red-400 font-mono text-[11px] tracking-wider uppercase font-bold truncate">
-              Academia Musical Digital
-            </span>
-            <span className="hidden xl:inline text-stone-600">|</span>
-            <span className="hidden xl:inline text-stone-400 text-[11px]">
-              Plataforma Soberana de Educação e Criação
-            </span>
-          </div>
-
-          {/* Integrated Workspace Switcher */}
-          <div className="hidden md:block ml-1">
-            <WorkspaceSwitcher id="header-workspace-switcher" />
-          </div>
+        <div className="hidden sm:block">
+          <ExplorarMenu
+            id="header-explorar"
+            currentUserRole={currentUser?.primaryRole}
+            showAdminTab={showAdminTab}
+          />
         </div>
 
-        {/* Right Side: Command Shortcut + Audio Player + Notifications + User Menu */}
-        <div id="header-actions-section" className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Global Audio Player Trigger */}
+        {currentUser && (
+          <button
+            type="button"
+            id="header-meu-aprendizado"
+            onClick={() => navigate('/academy/meu-aprendizado')}
+            aria-current={emAprendizado ? 'page' : undefined}
+            className={clsx(
+              'hidden shrink-0 rounded px-2 py-1.5 text-sm transition-colors sm:block',
+              'focus:outline-none focus-visible:ring-1 focus-visible:ring-anil-700',
+              emAprendizado ? 'font-semibold text-anil-800' : 'text-stone-700 hover:text-anil-800'
+            )}
+          >
+            Meu aprendizado
+          </button>
+        )}
+
+        <div className="flex-1" />
+
+        <div id="header-actions" className="flex shrink-0 items-center gap-0.5">
+          <HeaderSearch />
+
           {onTogglePlayer && (
             <button
-              id="header-player-btn"
               type="button"
+              id="header-player-btn"
               onClick={onTogglePlayer}
-              title="Player Canônico Auditivo (J.S. Bach, Mozart, Beethoven, Lá 440)"
+              aria-pressed={isPlayerOpen}
+              title="Player de referência"
+              aria-label="Player de referência"
               className={clsx(
-                'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-colors focus:outline-none focus:ring-1 focus:ring-red-800',
-                isPlayerOpen
-                  ? 'bg-red-900/70 text-white border-red-700'
-                  : 'bg-stone-800 hover:bg-stone-700 text-stone-300 border-stone-700'
+                'rounded-md p-2 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-anil-700',
+                isPlayerOpen ? 'bg-anil-50 text-anil-800' : 'text-stone-500 hover:text-stone-900'
               )}
             >
-              <Music2 className="w-3.5 h-3.5 text-red-400" />
-              <span className="hidden sm:inline">Player</span>
-              {isPlayerOpen && (
-                <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping shrink-0" />
-              )}
+              <Music2 className="h-4 w-4" />
             </button>
           )}
 
-          {/* Command Palette Trigger */}
-          <button
-            id="header-command-palette-btn"
-            type="button"
-            onClick={onOpenCommandPalette}
-            title="Abrir busca e comandos rápidos (Ctrl + K)"
-            className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 bg-stone-800 hover:bg-stone-700 text-stone-300 border border-stone-700 rounded-md text-xs transition-colors focus:outline-none focus:ring-1 focus:ring-red-800"
-          >
-            <Search className="w-3.5 h-3.5 text-stone-400" />
-            <span className="text-stone-400">Buscar...</span>
-            <kbd className="text-[10px] font-mono text-stone-400 bg-stone-900 px-1.5 py-0.2 rounded border border-stone-700">
-              ⌘K
-            </kbd>
-          </button>
-
-          {/* Notifications Flyout Trigger */}
-          <div className="relative">
-            <button
-              id="header-notifications-btn"
-              type="button"
-              onClick={() => {
-                setIsNotificationsOpen((prev) => !prev);
-                setIsProfileMenuOpen(false);
-              }}
-              title="Central de Notificações"
-              aria-expanded={isNotificationsOpen}
-              className={clsx(
-                'p-1.5 sm:p-2 rounded-md transition-colors relative focus:outline-none focus:ring-1 focus:ring-red-800',
-                isNotificationsOpen ? 'bg-stone-800 text-white' : 'text-stone-300 hover:bg-stone-800'
-              )}
-            >
-              <Bell className="w-4 h-4" />
-              {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-600 ring-2 ring-stone-900" />
-              )}
-            </button>
-
-            <NotificationsPopover
-              isOpen={isNotificationsOpen}
-              onClose={() => setIsNotificationsOpen(false)}
-              notifications={notifications}
-              onMarkAllAsRead={handleMarkAllAsRead}
-            />
-          </div>
-
-          {/* Profile / Auth Menu */}
           {currentUser ? (
             <div className="relative">
               <button
-                id="header-profile-btn"
                 type="button"
-                onClick={() => {
-                  setIsProfileMenuOpen((prev) => !prev);
-                  setIsNotificationsOpen(false);
-                }}
+                id="header-profile-btn"
+                onClick={() => setIsProfileMenuOpen((v) => !v)}
                 aria-expanded={isProfileMenuOpen}
-                className="flex items-center gap-2 p-1 pl-1.5 rounded-lg hover:bg-stone-800 transition-colors focus:outline-none focus:ring-1 focus:ring-red-800"
+                aria-label={`Conta de ${currentUser.name}`}
+                className="ml-0.5 flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-anil-800 text-xs font-semibold text-white transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-anil-700 focus-visible:ring-offset-1"
               >
-                <div className="w-6 h-6 rounded-full overflow-hidden bg-stone-700 text-stone-100 flex items-center justify-center font-bold text-xs shrink-0 border border-stone-600">
-                  {currentUser.avatarUrl ? (
-                    <img
-                      src={currentUser.avatarUrl}
-                      alt={currentUser.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span>{currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}</span>
-                  )}
-                </div>
-                <span className="hidden md:inline font-medium text-stone-200 truncate max-w-[100px]">
-                  {currentUser.name.split(' ')[0]}
-                </span>
-                <Badge
-                  variant={currentUser.primaryRole === UserRole.ADMIN ? 'brand' : 'neutral'}
-                  size="sm"
-                  className="hidden sm:inline-flex"
-                >
-                  {currentUser.primaryRole}
-                </Badge>
+                {currentUser.avatarUrl ? (
+                  <img src={currentUser.avatarUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  currentUser.name?.charAt(0).toUpperCase() || 'U'
+                )}
               </button>
 
               <ProfileMenu
@@ -238,13 +134,13 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           ) : (
             <button
-              id="header-login-button"
               type="button"
-              onClick={handleLogin}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-800 hover:bg-red-700 text-white rounded-md font-medium transition-colors"
+              id="header-login-button"
+              onClick={() => (onLoginClick ? onLoginClick() : navigate('/auth/login'))}
+              className="ml-1 inline-flex items-center gap-1.5 rounded-md bg-anil-800 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-anil-700"
             >
-              <LogIn className="w-3.5 h-3.5" />
-              <span>Acessar Conta</span>
+              <LogIn className="h-3.5 w-3.5" />
+              Entrar
             </button>
           )}
         </div>

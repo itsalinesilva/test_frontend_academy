@@ -9,11 +9,8 @@ import { webAudioSynth } from '../../../infrastructure/audio/synth';
 import {
   FileMusic,
   Play,
-  Save,
-  Download,
   ArrowRight,
   BookOpen,
-  Check,
 } from 'lucide-react';
 
 export const ScoreScreen: React.FC = () => {
@@ -24,7 +21,6 @@ export const ScoreScreen: React.FC = () => {
   const [tempo, setTempo] = useState(72);
   const [activeScoreTitle, setActiveScoreTitle] = useState('Estudo Contrapontístico em Dó Maior');
   const [composerName, setComposerName] = useState('Johann Sebastian Bach (Revisão Urtext)');
-  const [isSaved, setIsSaved] = useState(false);
 
   const urtextCatalog = [
     {
@@ -63,7 +59,6 @@ export const ScoreScreen: React.FC = () => {
     setTimeSignature(item.time);
     setTempo(item.tempo);
     setClef(item.clef as 'treble' | 'bass');
-    setIsSaved(false);
   };
 
   const handleAuditionScore = () => {
@@ -71,10 +66,16 @@ export const ScoreScreen: React.FC = () => {
     webAudioSynth.playSequence([261.63, 293.66, 329.63, 349.23, 293.66, 329.63, 261.63, 392.00], 0.3);
   };
 
-  const handleSaveScore = () => {
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 3000);
-  };
+  /*
+    Aqui existia `handleSaveScore`: acendia "Salvo!" em verde por tres
+    segundos e apagava. Nao gravava a partitura em lugar nenhum — e quem
+    usava nao tinha como distinguir isso de ter salvado, ate voltar e nao
+    encontrar nada.
+
+    Guardar partitura de verdade exige um repositorio de partituras e uma
+    serializacao do que o editor tem na tela. Nenhum dos dois existe hoje;
+    esta aberto em CLAUDE_TODO.md. Ate la, o botao nao esta aqui.
+  */
 
   return (
     <ScreenContainer
@@ -93,11 +94,6 @@ export const ScoreScreen: React.FC = () => {
           label: 'Voltar para Prática',
           onClick: () => navigate('/practice'),
         },
-        {
-          label: 'Exportar MusicXML',
-          icon: Download,
-          onClick: () => alert('Arquivo MusicXML canônico preparado para download.'),
-        },
       ]}
       emptyProps={{
         title: 'Nenhuma partitura aberta',
@@ -114,7 +110,7 @@ export const ScoreScreen: React.FC = () => {
         <div className="p-4 bg-white border border-stone-200 rounded-xl space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-red-800" />
+              <BookOpen className="w-4 h-4 text-anil-800" />
               <h3 className="text-xs font-bold text-stone-900 font-serif">
                 Repertório Canônico Urtext Disponível
               </h3>
@@ -130,7 +126,7 @@ export const ScoreScreen: React.FC = () => {
                 onClick={() => handleSelectRepertoire(item)}
                 className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
                   activeScoreTitle === item.title
-                    ? 'border-red-800 bg-red-50/50 shadow-xs'
+                    ? 'border-anil-800 bg-red-50/50 shadow-xs'
                     : 'border-stone-200 hover:border-stone-400 bg-stone-50/50'
                 }`}
               >
@@ -157,9 +153,10 @@ export const ScoreScreen: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-stone-700">Clave:</span>
               <select
+        aria-label="Clave"
                 value={clef}
                 onChange={(e) => setClef(e.target.value as 'treble' | 'bass')}
-                className="bg-stone-50 border border-stone-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-red-800"
+                className="bg-stone-50 border border-stone-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-anil-800"
               >
                 <option value="treble">Sol (2ª Linha - Treble)</option>
                 <option value="bass">Fá (4ª Linha - Bass)</option>
@@ -169,9 +166,10 @@ export const ScoreScreen: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-stone-700">Armadura:</span>
               <select
+        aria-label="Armadura"
                 value={keySignature}
                 onChange={(e) => setKeySignature(e.target.value)}
-                className="bg-stone-50 border border-stone-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-red-800"
+                className="bg-stone-50 border border-stone-300 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-anil-800"
               >
                 <option value="C Major">Dó Maior / Lá menor (0 acidentes)</option>
                 <option value="G Major">Sol Maior / Mi menor (1 sustenido)</option>
@@ -183,9 +181,10 @@ export const ScoreScreen: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-stone-700">Fórmula:</span>
               <select
+        aria-label="Fórmula"
                 value={timeSignature}
                 onChange={(e) => setTimeSignature(e.target.value)}
-                className="bg-stone-50 border border-stone-300 rounded px-2 py-1 text-xs font-mono focus:ring-1 focus:ring-red-800"
+                className="bg-stone-50 border border-stone-300 rounded px-2 py-1 text-xs font-mono focus:ring-1 focus:ring-anil-800"
               >
                 <option value="4/4">4/4 (Quaternário)</option>
                 <option value="3/4">3/4 (Ternário)</option>
@@ -197,6 +196,7 @@ export const ScoreScreen: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-stone-700">Tempo:</span>
               <input
+        aria-label="Tempo"
                 type="number"
                 min="40"
                 max="240"
@@ -213,19 +213,11 @@ export const ScoreScreen: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={handleAuditionScore}
-              leadingIcon={<Play className="w-3.5 h-3.5 text-red-800" />}
+              leadingIcon={<Play className="w-3.5 h-3.5 text-anil-800" />}
             >
               Auditar Partitura
             </Button>
 
-            <Button
-              variant={isSaved ? 'outline' : 'primary'}
-              size="sm"
-              onClick={handleSaveScore}
-              leadingIcon={isSaved ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Save className="w-3.5 h-3.5" />}
-            >
-              {isSaved ? 'Salvo!' : 'Salvar Partitura'}
-            </Button>
           </div>
         </div>
 
@@ -242,7 +234,7 @@ export const ScoreScreen: React.FC = () => {
         {/* Next step in circulation prompt */}
         <div className="p-4 bg-stone-100 border border-stone-200 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-red-100 text-red-800 shrink-0">
+            <div className="p-2 rounded-full bg-red-100 text-anil-800 shrink-0">
               <FileMusic className="w-4 h-4" />
             </div>
             <div>

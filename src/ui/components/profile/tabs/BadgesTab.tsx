@@ -55,7 +55,7 @@ export const BadgesTab: React.FC<BadgesTabProps> = () => {
     <div id="profile-badges-tab" className="space-y-6">
       <div className="pb-3 border-b border-stone-200">
         <h2 className="font-serif text-base font-bold text-stone-900">
-          Distinções & Selos de Conquista
+          Distinções & Selos de Achievement
         </h2>
         <p className="text-xs text-stone-600">
           Insígnias verificadas outorgadas por rigor analítico, assiduidade e contribuição acadêmica

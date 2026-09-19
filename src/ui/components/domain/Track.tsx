@@ -110,21 +110,27 @@ export const Track: React.FC<TrackProps> = ({
 
           {/* Volume and Pan readout */}
           <div className="flex items-center gap-2 text-[10px] font-mono text-stone-400">
-            <span
+            <button
+              type="button"
+              disabled={!onVolumeChange}
               onClick={() => onVolumeChange && onVolumeChange(0)}
               className={onVolumeChange ? 'cursor-pointer hover:text-stone-200' : ''}
-              title="Clique para resetar volume"
+              title="Voltar o volume a zero"
+              aria-label="Voltar o volume a zero"
             >
               {volumeDb > 0 ? `+${volumeDb.toFixed(1)}` : volumeDb.toFixed(1)} dB
-            </span>
+            </button>
             <span className="text-stone-600">|</span>
-            <span
+            <button
+              type="button"
+              disabled={!onPanChange}
               onClick={() => onPanChange && onPanChange(0)}
               className={onPanChange ? 'cursor-pointer hover:text-stone-200' : ''}
-              title="Clique para centralizar pan"
+              title="Centralizar o panorama"
+              aria-label="Centralizar o panorama"
             >
               {pan === 0 ? 'C' : pan < 0 ? `L${Math.abs(pan)}` : `R${pan}`}
-            </span>
+            </button>
           </div>
         </div>
       </div>

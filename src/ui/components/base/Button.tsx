@@ -46,7 +46,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantClasses = {
     primary:
-      'bg-red-800 text-white hover:bg-red-900 active:bg-red-950 focus:ring-red-800 focus:ring-offset-stone-50 border border-transparent shadow-xs',
+      'bg-anil-800 text-white hover:bg-anil-900 active:bg-anil-950 focus:ring-anil-800 focus:ring-offset-stone-50 border border-transparent shadow-xs',
     secondary:
       'bg-stone-900 text-white hover:bg-stone-800 active:bg-black focus:ring-stone-900 focus:ring-offset-stone-50 border border-transparent',
     outline:
@@ -56,7 +56,7 @@ export const Button: React.FC<ButtonProps> = ({
     danger:
       'bg-rose-700 text-white hover:bg-rose-800 active:bg-rose-900 focus:ring-rose-700 border border-transparent',
     accent:
-      'bg-stone-100 text-red-900 hover:bg-stone-200 active:bg-stone-300 focus:ring-red-800 border border-red-200',
+      'bg-stone-100 text-red-900 hover:bg-stone-200 active:bg-stone-300 focus:ring-anil-800 border border-red-200',
   };
 
   const successClass = isSuccess ? 'bg-emerald-700 hover:bg-emerald-800 text-white border-transparent' : '';

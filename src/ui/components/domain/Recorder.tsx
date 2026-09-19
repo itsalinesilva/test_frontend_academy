@@ -46,7 +46,7 @@ export const Recorder: React.FC<RecorderProps> = ({
       id={id}
       className={twMerge(
         'p-5 bg-stone-950 border border-stone-800 rounded-lg text-stone-200 select-none shadow-xl flex flex-col items-center font-mono max-w-md mx-auto gap-4',
-        isRecording && 'border-red-600/80 ring-2 ring-red-800/30',
+        isRecording && 'border-red-600/80 ring-2 ring-anil-800/30',
         className
       )}
     >
@@ -104,7 +104,7 @@ export const Recorder: React.FC<RecorderProps> = ({
             onClick={onStartRecord}
             disabled={!isArmed}
             aria-label="Iniciar Gravação"
-            className="w-16 h-16 rounded-full bg-red-800 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center cursor-pointer shadow-lg active:scale-95 transition-all focus:outline-none focus:ring-4 focus:ring-red-900"
+            className="w-16 h-16 rounded-full bg-anil-800 hover:bg-anil-700 disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center cursor-pointer shadow-lg active:scale-95 transition-all focus:outline-none focus:ring-4 focus:ring-anil-900"
           >
             <div className="w-6 h-6 rounded-full bg-white" />
           </button>
@@ -135,7 +135,7 @@ export const Recorder: React.FC<RecorderProps> = ({
           <button
             type="button"
             onClick={onSaveTake}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded bg-red-800 hover:bg-red-900 text-white font-bold cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded bg-anil-800 hover:bg-anil-900 text-white font-bold cursor-pointer shadow-xs"
           >
             <Check className="w-3.5 h-3.5" />
             <span>Salvar como Evidência</span>

@@ -13,13 +13,17 @@ import {
 import { RankingLeaderboardEntry, RankingLeague } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { PageLayout } from '../../components/layout/PageLayout';
 
 export const RankingScreen: React.FC = () => {
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [selectedLeague, setSelectedLeague] = useState<RankingLeague>(RankingLeague.CONSERVATORIO);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedLeague, setSelectedLeague] = useState<RankingLeague>(RankingLeague.CONSERVATORY);
   const [entries, setEntries] = useState<RankingLeaderboardEntry[]>([]);
-  const currentUserId = 'usr_founder_1';
+  const currentUserId = userId;
 
   useEffect(() => {
     async function loadRankings() {
@@ -30,6 +34,7 @@ export const RankingScreen: React.FC = () => {
       } catch (err) {
         console.error('Failed to load ranking', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -42,7 +47,7 @@ export const RankingScreen: React.FC = () => {
     { id: RankingLeague.GOLD, label: 'Ouro', color: 'text-amber-600' },
     { id: RankingLeague.PLATINUM, label: 'Platina', color: 'text-teal-600' },
     { id: RankingLeague.DIAMOND, label: 'Diamante', color: 'text-blue-600' },
-    { id: RankingLeague.CONSERVATORIO, label: 'Conservatório', color: 'text-purple-600' },
+    { id: RankingLeague.CONSERVATORY, label: 'Conservatório', color: 'text-purple-600' },
   ];
 
   if (loading) {
@@ -55,7 +60,26 @@ export const RankingScreen: React.FC = () => {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="ranking"
+      form="catalog"
+      density="operational"
+      asideLabel="Liga"
+      state={isLoading ? 'loading' : entries.length === 0 ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-2">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Classificação
+          </p>
+          <p className="text-xs leading-relaxed text-stone-600">
+            A posição considera o XP da semana corrente.
+          </p>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 pb-6">
         <div>
@@ -112,7 +136,7 @@ export const RankingScreen: React.FC = () => {
               <div
                 key={entry.id}
                 className={`p-4 flex items-center justify-between gap-4 transition-colors ${
-                  isCurrentUser ? 'bg-red-50/50 border-l-4 border-l-red-800' : 'hover:bg-stone-50/70'
+                  isCurrentUser ? 'bg-red-50/50 border-l-4 border-l-anil-800' : 'hover:bg-stone-50/70'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -176,6 +200,7 @@ export const RankingScreen: React.FC = () => {
           Os 3 primeiros colocados da semana no Conservatório recebem o Laurel de Excelência e multiplicador de 1.5x em todas as evidências geradas na plataforma.
         </p>
       </div>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

@@ -126,12 +126,12 @@ export const Tabs: React.FC<TabsProps> = ({
               onKeyDown={(e) => handleKeyDown(e, idx)}
               className={twMerge(
                 clsx(
-                  'inline-flex items-center gap-2 font-medium whitespace-nowrap transition-colors select-none cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-red-800 disabled:opacity-40 disabled:cursor-not-allowed',
+                  'inline-flex items-center gap-2 font-medium whitespace-nowrap transition-colors select-none cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-anil-800 disabled:opacity-40 disabled:cursor-not-allowed',
                   sizeClasses[sizeVariant],
                   variant === 'underline' && [
                     orientation === 'horizontal' ? '-mb-px border-b-2' : '-mr-px border-r-2',
                     isSelected
-                      ? 'border-red-800 text-stone-900 font-semibold'
+                      ? 'border-anil-800 text-stone-900 font-semibold'
                       : 'border-transparent text-stone-600 hover:text-stone-900 hover:border-stone-300',
                   ],
                   variant === 'pills' && [

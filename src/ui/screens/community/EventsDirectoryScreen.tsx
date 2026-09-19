@@ -1,95 +1,174 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
-import { Calendar, Clock, Users, ArrowLeft } from 'lucide-react';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { communityEventsRepository } from '../../../repositories/community-events.repository';
+import { CommunityEvent } from '../../../domain/community';
+import { Calendar, Clock, Users, ArrowLeft, Check } from 'lucide-react';
+
+/**
+ * Eventos da Academia.
+ *
+ * Esta tela listava duas masterclasses escritas no código, com professora
+ * inventada e contagem de inscritos inventada. O botão "Garantir
+ * participação" chamava `alert('Inscrição confirmada no evento…')` — não
+ * gravava nada e **dizia ao aluno que tinha gravado**.
+ *
+ * Agora a lista vem do repositório, a inscrição é gravada em nome de quem
+ * está logado, e a contagem é contada. Enquanto o Conservatório não marcar
+ * evento, a tela diz que não há evento marcado.
+ */
+interface EventoNaTela {
+  evento: CommunityEvent;
+  inscritos: number;
+  euEstouInscrito: boolean;
+}
+
+const formatarDia = (iso: string) =>
+  new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+
+const formatarHora = (iso: string) =>
+  new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
 export const EventsDirectoryScreen: React.FC = () => {
   const { navigate } = useRouter();
+  const { userId } = useCurrentUser();
+  const [itens, setItens] = useState<EventoNaTela[] | null>(null);
+  const [emCurso, setEmCurso] = useState<string | null>(null);
 
-  const events = [
-    {
-      id: 'masterclass-polifonia-bach',
-      title: 'Masterclass: Articulação Histórica no Violino Barroco',
-      host: 'Profa. Dra. Helene Becker',
-      date: '24 de Outubro de 2026',
-      time: '19:00 BRT',
-      type: 'Ao Vivo / Sala Virtual',
-      enrolled: 48,
-    },
-    {
-      id: 'recital-alunos-piano',
-      title: 'Recital Comentado: Miniaturas de Chopin e Schumann',
-      host: 'Cátedra de Teclados Históricos',
-      date: '02 de Novembro de 2026',
-      time: '20:30 BRT',
-      type: 'Recital Acadêmico',
-      enrolled: 112,
-    },
-  ];
+  const carregar = useCallback(async () => {
+    const eventos = await communityEventsRepository.listar();
+    const compostos = await Promise.all(
+      eventos.map(async (evento) => ({
+        evento,
+        inscritos: await communityEventsRepository.totalDeInscritos(evento.id),
+        euEstouInscrito: userId
+          ? await communityEventsRepository.estaInscrito(evento.id, userId)
+          : false,
+      }))
+    );
+    setItens(compostos);
+  }, [userId]);
+
+  useEffect(() => {
+    carregar().catch(() => setItens([]));
+  }, [carregar]);
+
+  const alternarInscricao = async (item: EventoNaTela) => {
+    if (!userId) {
+      navigate('/auth/login?voltar=/community/events');
+      return;
+    }
+    setEmCurso(item.evento.id);
+    try {
+      if (item.euEstouInscrito) {
+        await communityEventsRepository.cancelarInscricao(item.evento.id, userId);
+      } else {
+        await communityEventsRepository.inscrever(item.evento.id, userId);
+      }
+      await carregar();
+    } finally {
+      setEmCurso(null);
+    }
+  };
 
   return (
     <ScreenContainer
       id="community-events"
-      title="Eventos & Recitais da Academia"
-      subtitle="Masterclasses síncronas, bancas de avaliação e recitais comentados ao vivo."
-      badgeLabel="Programação Oficial"
+      title="Eventos e recitais da Academia"
+      subtitle="Masterclasses ao vivo, bancas de avaliação e recitais comentados."
+      badgeLabel="Programação"
       badgeVariant="brand"
       primaryAction={{
-        label: 'Voltar ao Fórum',
+        label: 'Voltar ao fórum',
         icon: ArrowLeft,
         onClick: () => navigate('/community'),
       }}
       emptyProps={{
         title: 'Nenhum evento programado',
-        description: 'Não há eventos acadêmicos ao vivo previstos para as próximas duas semanas.',
-        actionLabel: 'Ver Fórum',
+        description:
+          'Não há masterclasses nem recitais marcados no momento. Quando houver, eles aparecem aqui com data, horário e inscrição.',
+        actionLabel: 'Ver o fórum',
         onAction: () => navigate('/community'),
       }}
+      state={itens === null ? 'loading' : itens.length === 0 ? 'empty' : 'populated'}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {events.map((evt) => (
-          <Card key={evt.id} variant="default" padding="lg" className="space-y-4 flex flex-col justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Badge variant="neutral" size="sm">{evt.type}</Badge>
-                <span className="text-xs font-mono text-stone-500 flex items-center gap-1">
-                  <Users className="w-3.5 h-3.5 text-stone-400" /> {evt.enrolled} inscritos
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {(itens ?? []).map((item) => {
+          const { evento, inscritos, euEstouInscrito } = item;
+          const lotado =
+            evento.maxAttendees !== undefined && inscritos >= evento.maxAttendees && !euEstouInscrito;
+
+          return (
+            <Card
+              key={evento.id}
+              variant="default"
+              padding="lg"
+              className="flex flex-col justify-between space-y-4"
+            >
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Badge variant="neutral" size="sm">
+                    {evento.type}
+                  </Badge>
+                  <span className="flex items-center gap-1 font-mono text-xs text-stone-500">
+                    <Users className="h-3.5 w-3.5 text-stone-400" aria-hidden="true" />
+                    {inscritos}
+                    {evento.maxAttendees !== undefined && ` de ${evento.maxAttendees}`} inscritos
+                  </span>
+                </div>
+
+                <h3 className="font-serif text-lg font-bold leading-snug text-stone-900">
+                  {evento.title}
+                </h3>
+
+                <p className="text-xs font-medium text-stone-700">Orientação: {evento.hostName}</p>
+
+                {evento.description && (
+                  <p className="text-xs leading-relaxed text-stone-600">{evento.description}</p>
+                )}
+
+                <div className="space-y-1 border-t border-stone-100 pt-2 font-mono text-xs text-stone-600">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-3.5 w-3.5 text-stone-400" aria-hidden="true" />
+                    <time dateTime={evento.scheduledStartTime}>
+                      {formatarDia(evento.scheduledStartTime)}
+                    </time>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-3.5 w-3.5 text-stone-400" aria-hidden="true" />
+                    <span>
+                      {formatarHora(evento.scheduledStartTime)} às{' '}
+                      {formatarHora(evento.scheduledEndTime)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between border-t border-stone-100 pt-3">
+                <span className="font-mono text-xs text-stone-500">
+                  {euEstouInscrito
+                    ? 'Você está inscrito'
+                    : lotado
+                      ? 'Sem vagas'
+                      : 'Inscrição aberta'}
                 </span>
+                <Button
+                  variant={euEstouInscrito ? 'outline' : 'primary'}
+                  size="sm"
+                  disabled={lotado || emCurso === evento.id}
+                  onClick={() => alternarInscricao(item)}
+                >
+                  {euEstouInscrito && <Check className="mr-1 h-3.5 w-3.5" aria-hidden="true" />}
+                  {euEstouInscrito ? 'Cancelar inscrição' : 'Inscrever-me'}
+                </Button>
               </div>
-
-              <h3 className="font-serif font-bold text-lg text-stone-900 leading-snug">
-                {evt.title}
-              </h3>
-
-              <p className="text-xs font-medium text-stone-700">Orientação: {evt.host}</p>
-
-              <div className="pt-2 border-t border-stone-100 space-y-1 text-xs text-stone-600 font-mono">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-3.5 h-3.5 text-stone-400" />
-                  <span>{evt.date}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5 text-stone-400" />
-                  <span>{evt.time}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
-              <span className="text-xs text-stone-500 font-mono">Vagas Limitadas</span>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => alert(`Inscrição confirmada no evento: ${evt.title}`)}
-              >
-                Garantir Participação
-              </Button>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </div>
     </ScreenContainer>
   );

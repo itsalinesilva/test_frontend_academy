@@ -16,7 +16,7 @@ import {
 
 export const ProgramDetailScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const programId = params.id || 'prg_fundamentos_musicais';
+  const programId = params.id;
 
   const [program, setProgram] = useState<Program | null>(null);
   const [paths, setPaths] = useState<LearningPath[]>([]);
@@ -25,6 +25,10 @@ export const ProgramDetailScreen: React.FC = () => {
 
   useEffect(() => {
     const loadProgram = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!programId) return;
       try {
         const p = await academyService.getProgram(programId);
         if (p) {
@@ -120,7 +124,7 @@ export const ProgramDetailScreen: React.FC = () => {
           {/* Sequential Paths */}
           <div className="space-y-4">
             <h2 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-              <Layers className="w-5 h-5 text-red-800" />
+              <Layers className="w-5 h-5 text-anil-800" />
               Trilhas Curriculares do Programa
             </h2>
 
@@ -164,16 +168,17 @@ export const ProgramDetailScreen: React.FC = () => {
                       </span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {pathCourses.map((c) => (
-                          <div
+                          <button
                             key={c.id}
+                            type="button"
                             onClick={() => navigate(`/academy/course/${c.id}`)}
-                            className="p-2.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-md flex items-center justify-between cursor-pointer transition-colors"
+                            className="w-full p-2.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-md text-left flex items-center justify-between cursor-pointer transition-colors"
                           >
                             <span className="text-xs font-serif font-semibold text-stone-900 line-clamp-1">
                               {c.title}
                             </span>
                             <ArrowRight className="w-3.5 h-3.5 text-stone-400 shrink-0 ml-1" />
-                          </div>
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -200,7 +205,7 @@ export const ProgramDetailScreen: React.FC = () => {
           {/* Competencies */}
           <Card variant="default" padding="md" className="space-y-3">
             <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
-              <Award className="w-4 h-4 text-red-800" />
+              <Award className="w-4 h-4 text-anil-800" />
               Competências Certificadas
             </h3>
             <ul className="space-y-2 text-xs text-stone-700">
@@ -216,7 +221,7 @@ export const ProgramDetailScreen: React.FC = () => {
           {/* Certificate Info */}
           <Card variant="muted" padding="md" className="space-y-3 border-stone-200">
             <div className="flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-red-800" />
+              <GraduationCap className="w-5 h-5 text-anil-800" />
               <h3 className="font-serif font-bold text-sm text-stone-900">
                 Certificação Acadêmica
               </h3>
@@ -237,7 +242,6 @@ export const ProgramDetailScreen: React.FC = () => {
               Proveniência Canônica
             </span>
             <p className="text-stone-700 font-serif leading-snug">
-              {program?.provenanceRef}
             </p>
           </Card>
         </div>

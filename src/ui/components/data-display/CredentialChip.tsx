@@ -43,7 +43,7 @@ export const CredentialChip: React.FC<CredentialChipProps> = ({
         clsx(
           'inline-flex items-center gap-2 rounded-md border border-stone-300 bg-stone-50/90 text-stone-800 transition-all select-none text-left',
           sizeClasses[sizeVariant],
-          isClickable && 'hover:bg-stone-100 hover:border-stone-400 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800',
+          isClickable && 'hover:bg-stone-100 hover:border-stone-400 cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800',
           className
         )
       )}

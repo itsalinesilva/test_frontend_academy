@@ -210,7 +210,7 @@ export const ScoreContainer: React.FC<ScoreContainerProps> = ({
                           id={`${measureId}-note-${noteIdx}`}
                           className={clsx(
                             'w-3 h-2.5 rounded-full rotate-[-20deg] flex items-center justify-center shadow-xs',
-                            isCurrent ? 'bg-red-800' : 'bg-stone-900'
+                            isCurrent ? 'bg-anil-800' : 'bg-stone-900'
                           )}
                           title={note}
                         />

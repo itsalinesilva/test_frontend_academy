@@ -55,7 +55,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         onClick={() => onPageChange(currentPage - 1)}
         disabled={disabled || currentPage <= 1}
         aria-label="Página anterior"
-        className="inline-flex items-center justify-center w-9 h-9 text-sm font-medium rounded border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800"
+        className="inline-flex items-center justify-center w-9 h-9 text-sm font-medium rounded border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800"
       >
         <ChevronLeft className="w-4 h-4" />
       </button>
@@ -83,9 +83,9 @@ export const Pagination: React.FC<PaginationProps> = ({
               disabled={disabled}
               aria-current={isCurrent ? 'page' : undefined}
               className={clsx(
-                'w-9 h-9 text-sm font-medium rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800',
+                'w-9 h-9 text-sm font-medium rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800',
                 isCurrent
-                  ? 'bg-red-800 text-white font-semibold'
+                  ? 'bg-anil-800 text-white font-semibold'
                   : 'bg-white border border-stone-200 text-stone-700 hover:bg-stone-50'
               )}
             >
@@ -101,7 +101,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         onClick={() => onPageChange(currentPage + 1)}
         disabled={disabled || currentPage >= totalPages}
         aria-label="Próxima página"
-        className="inline-flex items-center justify-center w-9 h-9 text-sm font-medium rounded border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800"
+        className="inline-flex items-center justify-center w-9 h-9 text-sm font-medium rounded border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800"
       >
         <ChevronRight className="w-4 h-4" />
       </button>

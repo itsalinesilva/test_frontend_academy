@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { Button } from '../../components/base/Button';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Badge } from '../../components/base/Badge';
@@ -17,9 +18,7 @@ import {
 import {
   CheckCircle2,
   Clock,
-  Play,
   ArrowRight,
-  ArrowLeft,
   GraduationCap,
   Layers,
   AlertCircle,
@@ -27,25 +26,36 @@ import {
 
 export const CourseProgressScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const courseId = params.id || 'crs_fomt_01';
+  const courseId = params.id;
 
   const [course, setCourse] = useState<AcademyCourse | null>(null);
   const [modules, setModules] = useState<AcademyModule[]>([]);
   const [moduleLessons, setModuleLessons] = useState<Record<string, AcademyLesson[]>>({});
   const [progress, setProgress] = useState<UserAcademyProgress | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [submissions, setSubmissions] = useState<AssessmentSubmission[]>([]);
   const [finalAssessment, setFinalAssessment] = useState<AcademyAssessment | null>(null);
 
   useEffect(() => {
     const loadProgressData = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!courseId) return;
       try {
         const session = await authService.getActiveSession();
-        const userId = session?.user.id || 'usr_founder_1';
+        // O catalogo e publico; so o progresso exige sessao. A guarda anterior
+        // bloqueava ambos, escondendo o catalogo de visitantes anonimos.
+        const userId = session?.user.id;
 
         const [c, prog, subs] = await Promise.all([
           academyService.getCourse(courseId),
-          academyService.getUserProgress(userId, courseId),
-          academyService.getAssessmentSubmissions(userId),
+          userId
+            ? academyService.getUserProgress(userId, courseId)
+            : Promise.resolve(null),
+          userId
+            ? academyService.getAssessmentSubmissions(userId)
+            : Promise.resolve([]),
         ]);
 
         if (c) {
@@ -73,6 +83,7 @@ export const CourseProgressScreen: React.FC = () => {
       } catch (err) {
         console.error('Error loading course progress:', err);
       }
+      setIsLoading(false);
     };
 
     loadProgressData();
@@ -88,41 +99,56 @@ export const CourseProgressScreen: React.FC = () => {
   );
 
   return (
-    <ScreenContainer
-      id={`course-progress-${courseId}`}
-      title={`Progresso Acadêmico do Curso`}
-      subtitle={`${course?.title || 'Curso'} • Acompanhamento Curricular em Tempo Real`}
-      badgeLabel={isCompleted ? 'Curso Concluído ✓' : `${progressPct}% Concluído`}
-      badgeVariant={isCompleted ? 'brand' : 'neutral'}
-      primaryAction={{
-        label: isCompleted
-          ? 'Ver Certificado Oficial'
-          : progress?.lastAccessedLessonId
-          ? 'Continuar Onde Parou'
-          : 'Retomar Curso',
-        icon: isCompleted ? GraduationCap : Play,
-        onClick: () => {
-          if (isCompleted) {
-            navigate(`/academy/completion/${courseId}`);
-          } else if (progress?.lastAccessedLessonId) {
-            navigate(`/academy/lesson/${progress.lastAccessedLessonId}`);
-          } else {
-            navigate(`/academy/course/${courseId}`);
-          }
-        },
-      }}
-      secondaryActions={[
-        {
-          label: 'Voltar ao Curso',
-          icon: ArrowLeft,
-          onClick: () => navigate(`/academy/course/${courseId}`),
-        },
-        {
-          label: 'Ementa Completa',
-          onClick: () => navigate(`/academy/course/${courseId}/curriculum`),
-        },
-      ]}
+    <PageLayout
+      id="courseprogress"
+      form="detail"
+      density="catalog"
+      asideLabel="Resumo do progresso"
+      state={isLoading ? 'loading' : !course ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
     >
+      <PageLayout.Aside>
+        <div className="space-y-3">
+          <Card variant="default" padding="md" className="space-y-3">
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+              Seu progresso
+            </p>
+            {progress ? (
+              <>
+                <div className="space-y-1">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-xs text-stone-600">Conclusao</span>
+                    <span className="font-mono text-lg font-bold text-stone-900">
+                      {progress.progressPercentage}%
+                    </span>
+                  </div>
+                  <ProgressBar
+                    id="course-progress-rail"
+                    value={progress.progressPercentage}
+                    max={100}
+                    label={`Progresso: ${progress.progressPercentage}%`}
+                  />
+                </div>
+                <dl className="space-y-1.5 border-t border-stone-100 pt-2.5 text-xs text-stone-700">
+                  <div className="flex items-center justify-between">
+                    <dt>Licoes concluidas</dt>
+                    <dd className="font-mono font-bold">{progress.completedLessonIds.length}</dd>
+                  </div>
+                </dl>
+                <Button variant="primary" size="sm" className="w-full" onClick={() => course && navigate(`/academy/course/${course.id}`)}>
+                  Continuar
+                </Button>
+              </>
+            ) : (
+              <p className="text-xs leading-relaxed text-stone-600">
+                Sem matricula nesta disciplina ainda.
+              </p>
+            )}
+          </Card>
+        </div>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       <div className="space-y-8 max-w-5xl mx-auto">
         {/* Top Progress Dashboard Card */}
         <Card variant="muted" padding="lg" className="border-stone-200 space-y-6">
@@ -212,7 +238,7 @@ export const CourseProgressScreen: React.FC = () => {
               <span className="text-sm font-semibold text-stone-900">
                 {isCompleted ? 'Emitido com Louvor' : 'Aguardando Aprovação'}
               </span>
-              <GraduationCap className={`w-5 h-5 ${isCompleted ? 'text-red-800' : 'text-stone-400'}`} />
+              <GraduationCap className={`w-5 h-5 ${isCompleted ? 'text-anil-800' : 'text-stone-400'}`} />
             </div>
             <p className="text-xs text-stone-500 leading-relaxed">
               Emissão criptográfica com hash SHA-256 e proveniência auditável.
@@ -274,10 +300,11 @@ export const CourseProgressScreen: React.FC = () => {
                     {lessons.map((les) => {
                       const isLesDone = completedLessonIds.includes(les.id);
                       return (
-                        <div
+                        <button
                           key={les.id}
+                          type="button"
                           onClick={() => navigate(`/academy/lesson/${les.id}`)}
-                          className="p-3 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg flex items-center justify-between cursor-pointer transition-colors text-xs"
+                          className="w-full p-3 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg text-left flex items-center justify-between cursor-pointer transition-colors text-xs"
                         >
                           <div className="flex items-center gap-2.5">
                             <span
@@ -301,7 +328,7 @@ export const CourseProgressScreen: React.FC = () => {
                             )}
                             <ArrowRight className="w-3 h-3 ml-1" />
                           </span>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
@@ -311,6 +338,7 @@ export const CourseProgressScreen: React.FC = () => {
           </div>
         </div>
       </div>
-    </ScreenContainer>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

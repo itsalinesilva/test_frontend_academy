@@ -1,14 +1,35 @@
 import { User, UserRole } from '../domain/types';
 import { StorageAdapter, LocalStorageAdapter } from '../infrastructure/storage/storage-adapter';
-import { FOUNDER_ADMIN_EMAILS, isFounderAdminEmail } from '../domain/capabilities';
 
 export interface UserRepository {
   findById(id: string): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
+  /** Busca pela identidade estável do Google (`sub`). Caminho preferencial. */
+  findByGoogleSubject(subject: string): Promise<User | null>;
   save(user: User): Promise<User>;
   listAll(): Promise<User[]>;
 }
 
+/**
+ * Repositório local de usuários (ADR-001.A: local-first, sem banco de dados).
+ *
+ * O que foi removido, e por quê:
+ *
+ *  - **Seed de fundadoras por e-mail.** O repositório criava usuários ADMIN a
+ *    partir de `FOUNDER_ADMIN_EMAILS`, e `findByEmail()` provisionava um
+ *    administrador sempre que via um e-mail da lista. Isso é decisão de
+ *    autorização tomada no cliente — CLAUDE_AUDIT.md S-02. A outorga agora
+ *    vem exclusivamente da sessão assinada pelo servidor.
+ *
+ *  - **Personas de demonstração.** "Prof. Johann Sebastian Bach",
+ *    "Clara Schumann", "Frederico Chopin" e "Wolfgang Mozart" eram semeados
+ *    como contas reais da plataforma — dado fabricado apresentado como real
+ *    (CLAUDE_AUDIT.md K-05). A coleção agora nasce vazia e só recebe
+ *    identidades efetivamente autenticadas no Google.
+ *
+ *  - **Coerção de papel por e-mail no `save()`.** `isFounderAdminEmail()`
+ *    forçava `UserRole.ADMIN`. Removido pelo mesmo motivo.
+ */
 export class PersistentUserRepository implements UserRepository {
   private storage: StorageAdapter;
   private storageKey = 'users_collection';
@@ -17,61 +38,9 @@ export class PersistentUserRepository implements UserRepository {
     this.storage = storage;
   }
 
-  private async initializeSeedUsers(): Promise<Record<string, User>> {
-    const usersMap: Record<string, User> = {};
-
-    // Mandatory founder admin seeds per Doc 00 and AGENTS.md
-    FOUNDER_ADMIN_EMAILS.forEach((founderEmail, idx) => {
-      const id = `usr_founder_${idx + 1}`;
-      usersMap[id] = {
-        id,
-        email: founderEmail,
-        name: idx === 0 ? 'Aline Silva (Fundadora)' : 'Office Aline Silva (Admin)',
-        primaryRole: UserRole.ADMIN,
-        assignedRoles: [UserRole.ADMIN, UserRole.PROFESSOR, UserRole.MUSICO, UserRole.ALUNO],
-        isEmailVerified: true,
-        isFounderAdmin: true,
-        authProvider: 'google',
-        createdAt: '2026-01-01T00:00:00.000Z',
-        updatedAt: '2026-01-01T00:00:00.000Z',
-      };
-    });
-
-    // Standard institutional personas for evaluation
-    const demoPersonas: Array<{ email: string; name: string; role: UserRole; guardian?: string }> = [
-      { email: 'aluno@academia.mus.br', name: 'Frederico Chopin (Estudante)', role: UserRole.ALUNO },
-      { email: 'musico@academia.mus.br', name: 'Clara Schumann (Músico & Intérprete)', role: UserRole.MUSICO },
-      { email: 'professor@academia.mus.br', name: 'Prof. Johann Sebastian Bach', role: UserRole.PROFESSOR },
-      { email: 'crianca@academia.mus.br', name: 'Wolfgang Mozart (Iniciação Kids)', role: UserRole.CRIANCA, guardian: 'leopold.mozart@familia.mus.br' },
-    ];
-
-    demoPersonas.forEach((p, idx) => {
-      const id = `usr_demo_${idx + 1}`;
-      usersMap[id] = {
-        id,
-        email: p.email,
-        name: p.name,
-        primaryRole: p.role,
-        assignedRoles: [p.role],
-        isEmailVerified: true,
-        isFounderAdmin: false,
-        authProvider: 'email',
-        guardianId: p.guardian,
-        createdAt: '2026-01-01T00:00:00.000Z',
-        updatedAt: '2026-01-01T00:00:00.000Z',
-      };
-    });
-
-    await this.storage.setItem(this.storageKey, usersMap);
-    return usersMap;
-  }
-
   private async getAllMap(): Promise<Record<string, User>> {
     const raw = await this.storage.getItem<Record<string, User>>(this.storageKey);
-    if (!raw || Object.keys(raw).length === 0) {
-      return this.initializeSeedUsers();
-    }
-    return raw;
+    return raw || {};
   }
 
   public async findById(id: string): Promise<User | null> {
@@ -82,49 +51,26 @@ export class PersistentUserRepository implements UserRepository {
   public async findByEmail(email: string): Promise<User | null> {
     const map = await this.getAllMap();
     const normalized = email.trim().toLowerCase();
-    const found = Object.values(map).find((u) => u.email.toLowerCase() === normalized);
-
-    // Auto-seed founder admin if email matches founder list
-    if (!found && isFounderAdminEmail(normalized)) {
-      const id = `usr_founder_${Object.keys(map).length + 1}`;
-      const founderUser: User = {
-        id,
-        email: normalized,
-        name: normalized.includes('office') ? 'Office Aline Silva (Admin)' : 'Aline Silva (Fundadora)',
-        primaryRole: UserRole.ADMIN,
-        assignedRoles: [UserRole.ADMIN, UserRole.PROFESSOR, UserRole.MUSICO, UserRole.ALUNO],
-        isEmailVerified: true,
-        isFounderAdmin: true,
-        authProvider: 'google',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      map[id] = founderUser;
-      await this.storage.setItem(this.storageKey, map);
-      return founderUser;
-    }
-
-    return found || null;
+    return Object.values(map).find((u) => u.email.toLowerCase() === normalized) || null;
   }
 
+  public async findByGoogleSubject(subject: string): Promise<User | null> {
+    if (!subject) return null;
+    const map = await this.getAllMap();
+    return Object.values(map).find((u) => u.googleSubject === subject) || null;
+  }
+
+  /**
+   * Persiste o usuário exatamente como recebido.
+   *
+   * Nenhuma regra de autorização é aplicada aqui: o papel já foi decidido
+   * pelo servidor em `AuthService.authenticateWithGoogle()` e é reconciliado
+   * a cada revalidação de sessão. Um repositório não é lugar de decidir
+   * privilégio — e tentar decidir aqui foi exatamente o que criou o S-02.
+   */
   public async save(user: User): Promise<User> {
     const map = await this.getAllMap();
-    const isFounder = isFounderAdminEmail(user.email);
-
-    // Backend authority enforcement: never allow non-founder to claim ADMIN unless already authorized
-    const enforcedRole = isFounder
-      ? UserRole.ADMIN
-      : (user.primaryRole === UserRole.ADMIN && !map[user.id]?.assignedRoles?.includes(UserRole.ADMIN)
-          ? UserRole.ALUNO
-          : user.primaryRole);
-
-    const updated: User = {
-      ...user,
-      primaryRole: enforcedRole,
-      isFounderAdmin: isFounder,
-      updatedAt: new Date().toISOString(),
-    };
-
+    const updated: User = { ...user, updatedAt: new Date().toISOString() };
     map[user.id] = updated;
     await this.storage.setItem(this.storageKey, map);
     return updated;
@@ -134,7 +80,12 @@ export class PersistentUserRepository implements UserRepository {
     const map = await this.getAllMap();
     return Object.values(map);
   }
+
+  /** Conveniência para telas de governança. */
+  public async listByRole(role: UserRole): Promise<User[]> {
+    const all = await this.listAll();
+    return all.filter((u) => u.primaryRole === role || u.assignedRoles.includes(role));
+  }
 }
 
 export const userRepository = new PersistentUserRepository();
-

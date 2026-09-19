@@ -72,7 +72,7 @@ export const Waveform: React.FC<WaveformProps> = ({
             style={{ height: `${peak * 100}%` }}
             className={clsx(
               'flex-1 min-w-[2px] max-w-[4px] rounded-full transition-colors',
-              isPlayed ? 'bg-red-700' : 'bg-stone-700 group-hover:bg-stone-600'
+              isPlayed ? 'bg-anil-700' : 'bg-stone-700 group-hover:bg-stone-600'
             )}
           />
         );

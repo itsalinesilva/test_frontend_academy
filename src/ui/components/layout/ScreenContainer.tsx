@@ -35,6 +35,18 @@ export interface ScreenContainerProps {
   }>;
   // State overrides for testing/verification (48_ERROR_EMPTY_LOADING_STATES.md)
   initialState?: ScreenState;
+  /**
+   * Estado governado pelos DADOS, e não pelo seletor de inspeção.
+   *
+   * `initialState` só semeia o estado inicial: depois que a tela monta, nada
+   * do que o repositório devolve consegue mudá-lo. O resultado era uma tela
+   * que declarava ter estado vazio e nunca o alcançava, porque a lista chegar
+   * vazia não a levava até lá.
+   *
+   * Quando `state` é passado, ele manda. É por onde a tela diz "a consulta
+   * voltou sem nada" e o vazio aparece de verdade.
+   */
+  state?: ScreenState;
   emptyProps?: {
     title: string;
     description: string;
@@ -66,14 +78,16 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   primaryAction,
   secondaryActions = [],
   initialState = 'populated',
+  state,
   emptyProps,
   errorProps,
   successProps,
-  loadingMessage = 'Carregando recursos acadêmicos...',
+  loadingMessage = 'Carregando recursos acadêmicos…',
   children,
 }) => {
   const { breadcrumbs: autoBreadcrumbs, navigate, authorization } = useRouter();
-  const [currentState, setCurrentState] = useState<ScreenState>(initialState);
+  const [estadoLocal, setCurrentState] = useState<ScreenState>(initialState);
+  const currentState = state ?? estadoLocal;
   const [showStateTester, setShowStateTester] = useState(false);
 
   const activeBreadcrumbs = customBreadcrumbs || autoBreadcrumbs;
@@ -91,7 +105,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
         />
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-2xl mx-auto shadow-sm">
           <div className="flex items-start gap-4">
-            <div className="p-2 bg-red-100 rounded-md text-red-800">
+            <div className="p-2 bg-red-100 rounded-md text-anil-800">
               <ShieldAlert className="w-6 h-6" />
             </div>
             <div className="flex-1">
@@ -145,7 +159,14 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
           />
         )}
 
-        {/* State inspector toggle (Universal States Verification per Doc 48) */}
+        {/*
+          Inspetor de estados: ferramenta de DESENVOLVIMENTO.
+
+          Ele aparecia em toda tela publicada, com o rótulo "Estados UI
+          (populated)" e uma barra para forçar erro, vazio e sucesso. O aluno
+          via — e podia acionar — um painel de depuração do time.
+        */}
+        {import.meta.env.DEV && (
         <div className="flex items-center gap-1.5 ml-auto">
           <button
             id={`${id}-state-tester-toggle`}
@@ -163,10 +184,11 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
             <span>Estados UI ({currentState})</span>
           </button>
         </div>
+        )}
       </div>
 
       {/* State Inspector Toolbar when opened */}
-      {showStateTester && (
+      {import.meta.env.DEV && showStateTester && (
         <div
           id={`${id}-state-inspector-bar`}
           className="p-3 bg-stone-100 border border-stone-200 rounded-md flex flex-wrap items-center justify-between gap-3 text-xs"
@@ -183,7 +205,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
                 className={clsx(
                   'px-2.5 py-1 rounded text-xs font-mono transition-colors',
                   currentState === st
-                    ? 'bg-red-800 text-white font-medium'
+                    ? 'bg-anil-800 text-white font-medium'
                     : 'bg-white border border-stone-300 text-stone-700 hover:bg-stone-50'
                 )}
               >

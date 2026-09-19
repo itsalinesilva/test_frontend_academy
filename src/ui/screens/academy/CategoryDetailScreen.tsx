@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
@@ -18,9 +18,10 @@ import {
 
 export const CategoryDetailScreen: React.FC = () => {
   const { params, navigate } = useRouter();
-  const categoryId = params.id || 'cat_teoria_harmonia';
+  const categoryId = params.id;
 
   const [category, setCategory] = useState<AcademyCategory | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [courses, setCourses] = useState<AcademyCourse[]>([]);
   const [allCategories, setAllCategories] = useState<AcademyCategory[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
@@ -28,6 +29,10 @@ export const CategoryDetailScreen: React.FC = () => {
 
   useEffect(() => {
     const loadCategoryData = async () => {
+      // Rota sem parametro: nao consulta o servico e recai no estado de
+      // "nao encontrado" da propria tela, em vez de exibir uma entidade
+      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
+      if (!categoryId) return;
       try {
         const [cats, allCrs] = await Promise.all([
           academyService.getCategories(),
@@ -50,6 +55,7 @@ export const CategoryDetailScreen: React.FC = () => {
       } catch (err) {
         console.error('Error loading category:', err);
       }
+      setIsLoading(false);
     };
 
     loadCategoryData();
@@ -65,23 +71,32 @@ export const CategoryDetailScreen: React.FC = () => {
   });
 
   return (
-    <ScreenContainer
-      id={`category-detail-${categoryId}`}
-      title={category?.name || 'Categoria Curricular'}
-      subtitle={category?.description || 'Exploração das disciplinas e especializações da cátedra.'}
-      badgeLabel="Especialização Acadêmica"
-      badgeVariant="brand"
-      secondaryActions={[
-        {
-          label: 'Ver Todas as Categorias',
-          onClick: () => navigate('/academy/catalog'),
-        },
-        {
-          label: 'Explorar Catálogo Geral',
-          onClick: () => navigate('/academy/catalog'),
-        },
-      ]}
+    <PageLayout
+      id="categorydetail"
+      form="catalog"
+      density="catalog"
+      asideLabel="Filtros da catedra"
+      state={isLoading ? 'loading' : !category ? 'empty' : 'content'}
+      loadingMessage="Carregando..."
     >
+      <PageLayout.Aside>
+        <Card variant="default" padding="md" className="space-y-3">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+            Catedra
+          </p>
+          <dl className="space-y-1.5 text-xs text-stone-700">
+            <div className="flex items-center justify-between">
+              <dt>Disciplinas</dt>
+              <dd className="font-mono font-bold">{courses.length}</dd>
+            </div>
+          </dl>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academy/catalog')}>
+            Catalogo completo
+          </Button>
+        </Card>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
       <div className="space-y-8">
         {/* Category Hero / Header Banner */}
         <Card variant="muted" padding="lg" className="border-stone-200 bg-gradient-to-r from-stone-50 via-white to-stone-50">
@@ -188,7 +203,7 @@ export const CategoryDetailScreen: React.FC = () => {
                   onClick={() => setSelectedLevel(lvl)}
                   className={`px-2.5 py-1 text-xs rounded font-medium capitalize transition-colors ${
                     selectedLevel === lvl
-                      ? 'bg-red-800 text-white font-semibold'
+                      ? 'bg-anil-800 text-white font-semibold'
                       : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                   }`}
                 >
@@ -200,6 +215,7 @@ export const CategoryDetailScreen: React.FC = () => {
 
           <div className="w-full sm:w-64">
             <input
+        aria-label="Filtrar nesta categoria"
               type="text"
               placeholder="Filtrar nesta categoria..."
               value={searchQuery}
@@ -256,7 +272,7 @@ export const CategoryDetailScreen: React.FC = () => {
 
                     <h4
                       onClick={() => navigate(`/academy/course/${crs.id}`)}
-                      className="font-serif font-bold text-base text-stone-950 hover:text-red-800 cursor-pointer transition-colors"
+                      className="font-serif font-bold text-base text-stone-950 hover:text-anil-800 cursor-pointer transition-colors"
                     >
                       {crs.title}
                     </h4>
@@ -299,6 +315,7 @@ export const CategoryDetailScreen: React.FC = () => {
           )}
         </div>
       </div>
-    </ScreenContainer>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

@@ -97,7 +97,7 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
               Personalize sua apresentação artística, titulação e referências institucionais públicas.
             </p>
           </div>
-          <button type="button" onClick={onClose} className="text-stone-400 hover:text-stone-700 p-1">
+          <button type="button" aria-label="Fechar" onClick={onClose} className="text-stone-400 hover:text-stone-700 p-1">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -105,10 +105,10 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-header-modal-nome-de-exibicao-canonico">
                 Nome de Exibição Canônico *
               </label>
-              <input
+              <input id="edit-header-modal-nome-de-exibicao-canonico"
                 type="text"
                 required
                 value={displayName}
@@ -118,10 +118,10 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-header-modal-titulo-institucional-artistico">
                 Título Institucional / Artístico
               </label>
-              <input
+              <input id="edit-header-modal-titulo-institucional-artistico"
                 type="text"
                 placeholder="Ex: Pianista, Pesquisadora & Mestre"
                 value={title}
@@ -132,10 +132,10 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-stone-700 block">
+            <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-header-modal-headline-linha-de-atuacao-musical">
               Headline / Linha de Atuação Musical
             </label>
-            <input
+            <input id="edit-header-modal-headline-linha-de-atuacao-musical"
               type="text"
               placeholder="Ex: Música de Concerto • Polifonia Barroca • Performance ao Teclado"
               value={headline}
@@ -145,10 +145,10 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-stone-700 block">
+            <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-header-modal-biografia-trajetoria-academica">
               Biografia & Trajetória Acadêmica
             </label>
-            <textarea
+            <textarea id="edit-header-modal-biografia-trajetoria-academica"
               rows={3}
               value={biography}
               onChange={(e) => setBiography(e.target.value)}
@@ -158,10 +158,10 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-header-modal-instrumentos-separados-por-virgula">
                 Instrumentos (separados por vírgula)
               </label>
-              <input
+              <input id="edit-header-modal-instrumentos-separados-por-virgula"
                 type="text"
                 value={instrumentsInput}
                 onChange={(e) => setInstrumentsInput(e.target.value)}
@@ -170,10 +170,10 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-header-modal-areas-de-interesse-pesquisa">
                 Áreas de Interesse & Pesquisa
               </label>
-              <input
+              <input id="edit-header-modal-areas-de-interesse-pesquisa"
                 type="text"
                 value={interestsInput}
                 onChange={(e) => setInterestsInput(e.target.value)}
@@ -183,10 +183,10 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-stone-700 block">
+            <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-header-modal-especialidades-focos-de-atuacao-separada">
               Especialidades & Focos de Atuação (separadas por vírgula)
             </label>
-            <input
+            <input id="edit-header-modal-especialidades-focos-de-atuacao-separada"
               type="text"
               placeholder="Ex: Contraponto Bachiano, Música de Câmara, Cravo Histórico"
               value={specialtiesInput}
@@ -197,10 +197,10 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-header-modal-localizacao-instituicao-afiliada-opciona">
                 Localização / Instituição Afiliada (opcional)
               </label>
-              <input
+              <input id="edit-header-modal-localizacao-instituicao-afiliada-opciona"
                 type="text"
                 placeholder="Ex: São Paulo, Brasil • Conservatório de Tatuí"
                 value={location}
@@ -210,10 +210,10 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-header-modal-status-atual-atividade-recente">
                 Status Atual / Atividade Recente
               </label>
-              <input
+              <input id="edit-header-modal-status-atual-atividade-recente"
                 type="text"
                 placeholder="Ex: 🟢 Gravando o Cravo Bem Temperado (Livro I)"
                 value={currentStatus}
@@ -225,8 +225,8 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">Nível de Formação</label>
-              <select
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-header-modal-nivel-de-formacao">Nível de Formação</label>
+              <select id="edit-header-modal-nivel-de-formacao"
                 value={experienceLevel}
                 onChange={(e) => setExperienceLevel(e.target.value as any)}
                 className="w-full text-sm p-2 rounded border border-stone-300 bg-white"
@@ -239,8 +239,8 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 block">Visibilidade Geral</label>
-              <select
+              <label className="text-xs font-semibold text-stone-700 block" htmlFor="edit-header-modal-visibilidade-geral">Visibilidade Geral</label>
+              <select id="edit-header-modal-visibilidade-geral"
                 value={overallVisibility}
                 onChange={(e) => setOverallVisibility(e.target.value as any)}
                 className="w-full text-sm p-2 rounded border border-stone-300 bg-white"
@@ -257,8 +257,8 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
           <div className="space-y-2 pt-2 border-t border-stone-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800">
-                <Link2 className="w-4 h-4 text-red-800" />
-                <span>Links Oficiais (Lattes, IMSLP, YouTube, Portal)</span>
+                <Link2 className="w-4 h-4 text-anil-800" />
+                <span>Links Oficiais (Lattes, YouTube, site pessoal)</span>
               </div>
               <Button variant="outline" size="sm" type="button" onClick={addLink}>
                 <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar Link
@@ -273,13 +273,13 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
                 >
                   <div className="sm:col-span-3">
                     <select
+                      aria-label="Tipo do link oficial"
                       value={link.type}
                       onChange={(e) => updateLink(link.id, 'type', e.target.value as OfficialLinkType)}
                       className="w-full text-xs p-1.5 rounded border border-stone-300 bg-white font-medium"
                     >
                       <option value="website">Website</option>
                       <option value="lattes">Lattes CNPq</option>
-                      <option value="imslp">IMSLP</option>
                       <option value="youtube">YouTube</option>
                       <option value="spotify">Spotify</option>
                       <option value="orcid">ORCID</option>
@@ -290,6 +290,7 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
 
                   <div className="sm:col-span-4">
                     <input
+        aria-label="Rótulo (ex: Currículo Lattes)"
                       type="text"
                       placeholder="Rótulo (ex: Currículo Lattes)"
                       value={link.label}
@@ -300,6 +301,7 @@ export const EditHeaderModal: React.FC<EditHeaderModalProps> = ({
 
                   <div className="sm:col-span-4">
                     <input
+        aria-label="https://"
                       type="url"
                       placeholder="https://..."
                       value={link.url}

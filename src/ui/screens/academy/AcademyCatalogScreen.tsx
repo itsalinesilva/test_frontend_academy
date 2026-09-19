@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { CourseCard } from '../../components/domain/CourseCard';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
 import { academyService } from '../../../services/application/academy.service';
 import { Program, LearningPath, AcademyCourse } from '../../../domain/academy';
-import { BookOpen, Award, ArrowRight, Search, Layers, GraduationCap } from 'lucide-react';
+import { Award, ArrowRight, Search, Layers, GraduationCap } from 'lucide-react';
 
 export const AcademyCatalogScreen: React.FC = () => {
   const { navigate } = useRouter();
@@ -64,39 +65,29 @@ export const AcademyCatalogScreen: React.FC = () => {
   const totalResults = filteredPrograms.length + filteredPaths.length + filteredCourses.length;
 
   return (
-    <ScreenContainer
+    <PageLayout
       id="academy-catalog"
-      title="Catálogo Acadêmico"
-      subtitle="Currículo rigoroso de ensino musical livre estruturado por competências, fundamentação física e análise contrapontística."
-      badgeLabel="Grade Canônica"
-      badgeVariant="brand"
-      primaryAction={{
-        label: 'Meu Aprendizado',
-        icon: BookOpen,
-        onClick: () => navigate('/academy/my-learning'),
-      }}
-      secondaryActions={[
-        {
-          label: 'Início da Academia',
-          onClick: () => navigate('/academy'),
+      form="catalog"
+      density="catalog"
+      asideLabel="Filtros do catálogo"
+      state={isLoading ? 'loading' : totalResults === 0 ? 'empty' : 'content'}
+      loadingMessage="Carregando o catálogo acadêmico…"
+      emptyProps={{
+        title: 'Nenhum resultado encontrado',
+        description: searchTerm
+          ? `Não há registros para "${searchTerm}" com os filtros aplicados.`
+          : 'Não há registros com os filtros aplicados.',
+        actionLabel: 'Limpar filtros',
+        onAction: () => {
+          setSearchTerm('');
+          setContentType('all');
+          setSelectedLevel('todos');
         },
-      ]}
-      emptyProps={
-        totalResults === 0
-          ? {
-              title: 'Nenhum resultado encontrado',
-              description: `Não foram localizados registros com o termo "${searchTerm}" e filtros selecionados.`,
-              actionLabel: 'Limpar Filtros',
-              onAction: () => {
-                setSearchTerm('');
-                setContentType('all');
-                setSelectedLevel('todos');
-              },
-            }
-          : undefined
-      }
+      }}
     >
-      <div className="space-y-6">
+      {/* Filtros no trilho FIXO: acompanham a rolagem dos resultados, em vez
+          de sair da tela assim que a pessoa comeca a percorrer a lista. */}
+      <PageLayout.Aside>
         {/* Search & Filter Toolbar */}
         <div
           id="academy-catalog-toolbar"
@@ -108,7 +99,8 @@ export const AcademyCatalogScreen: React.FC = () => {
             <input
               id="academy-catalog-search-input"
               type="text"
-              placeholder="Buscar por disciplina, trilha, autor ou competência..."
+              aria-label="Buscar no catálogo"
+              placeholder="Buscar por disciplina, trilha, autor ou competência…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="bg-transparent text-xs sm:text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none w-full font-sans"
@@ -175,19 +167,22 @@ export const AcademyCatalogScreen: React.FC = () => {
             </div>
           </div>
         </div>
+      </PageLayout.Aside>
+
+      <PageLayout.Main>
+        <div className="space-y-6">
+          <p className="font-mono text-xs text-stone-500" role="status" aria-live="polite">
+            {totalResults} {totalResults === 1 ? 'resultado' : 'resultados'}
+          </p>
 
         {/* Results Sections */}
-        {isLoading ? (
-          <div className="py-16 text-center text-xs text-stone-500 font-mono">
-            Carregando catálogo acadêmico integrado...
-          </div>
-        ) : (
+        {(
           <>
             {/* 1. Programs */}
         {filteredPrograms.length > 0 && (
           <div className="space-y-3">
             <h2 className="font-serif font-bold text-lg text-stone-900 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-red-800" />
+              <Layers className="w-4 h-4 text-anil-800" />
               Programas Formativos Integrados ({filteredPrograms.length})
             </h2>
 
@@ -277,43 +272,25 @@ export const AcademyCatalogScreen: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {filteredCourses.map((course) => (
-                <Card
+                <CourseCard
                   key={course.id}
                   id={`course-${course.id}`}
-                  variant="default"
-                  padding="lg"
-                  className="space-y-4 flex flex-col justify-between hover:border-stone-400 transition-colors"
-                >
-                  <div className="space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <Badge variant="neutral" size="sm">{course.level}</Badge>
-                      <span className="text-xs font-mono text-stone-500">{course.workloadHours} horas</span>
-                    </div>
-                    <h3 className="font-serif font-bold text-base text-stone-900 leading-snug">{course.title}</h3>
-                    <p className="text-xs text-stone-600 line-clamp-2">{course.subtitle}</p>
-                    <span className="text-xs text-stone-500 block font-sans">Prof. {course.authorName}</span>
-                  </div>
-
-                  <div className="pt-3 border-t border-stone-200">
-                    <Button
-                      id={`btn-course-${course.id}`}
-                      variant="primary"
-                      size="sm"
-                      className="w-full justify-between"
-                      onClick={() => navigate(`/academy/course/${course.id}`)}
-                    >
-                      <span>Ver Ementa & Aulas</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </Card>
+                  title={course.title}
+                  description={course.subtitle}
+                  instructorName={course.authorName}
+                  level={course.level}
+                  durationHours={course.workloadHours}
+                  modulesCount={course.moduleIds.length}
+                  onActionClick={() => navigate(`/academy/course/${course.id}`)}
+                />
               ))}
             </div>
           </div>
         )}
           </>
         )}
-      </div>
-    </ScreenContainer>
+        </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

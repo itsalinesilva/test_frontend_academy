@@ -1,100 +1,121 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
 import { Badge } from '../../components/base/Badge';
+import { auditRepository } from '../../../repositories/audit.repository';
+import { AuditEvent, AuditSeverity } from '../../../domain/audit';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
+
+/**
+ * Trilha de auditoria.
+ *
+ * Esta tela mostrava quatro eventos escritos no código: uma autenticação
+ * administrativa, uma concessão de papel de professor, uma calibragem de
+ * motor de áudio e — a mais grave — uma "tentativa de acesso não autenticado
+ * à rota protegida /admin/users".
+ *
+ * Nada disso aconteceu. Numa tela de auditoria de segurança, evento inventado
+ * não é enfeite: é a informação em que alguém vai se apoiar para decidir se
+ * houve incidente. Mostrar um ataque que não houve é tão nocivo quanto
+ * esconder um que houve.
+ *
+ * Agora lê `auditRepository`, onde o serviço de autenticação efetivamente
+ * grava entrada, saída e negativa de acesso. Quando não há registro, a tela
+ * diz que não há.
+ */
+const CORES: Record<AuditSeverity, 'brand' | 'accent' | 'neutral'> = {
+  [AuditSeverity.CRITICAL]: 'brand',
+  [AuditSeverity.SECURITY]: 'brand',
+  [AuditSeverity.WARNING]: 'accent',
+  [AuditSeverity.INFO]: 'neutral',
+};
 
 export const AdminAuditScreen: React.FC = () => {
   const { navigate } = useRouter();
+  const [eventos, setEventos] = useState<AuditEvent[] | null>(null);
 
-  const auditEvents = [
-    {
-      id: 'aud-001',
-      action: 'auth.login',
-      actor: 'admin@academia.mus.br',
-      severity: 'INFO',
-      timestamp: '2026-09-14T21:40:12Z',
-      details: 'Autenticação bem-sucedida com credenciais administrativas.',
-    },
-    {
-      id: 'aud-002',
-      action: 'admin.role.granted',
-      actor: 'admin@academia.mus.br',
-      severity: 'SECURITY',
-      timestamp: '2026-09-14T20:15:00Z',
-      details: 'Concessão de papel PROFESSOR ao usuário clara@academia.mus.br.',
-    },
-    {
-      id: 'aud-003',
-      action: 'engine.config.updated',
-      actor: 'system.daemon',
-      severity: 'INFO',
-      timestamp: '2026-09-14T18:00:00Z',
-      details: 'Calibração de latência do motor de áudio WebAudio DSP.',
-    },
-    {
-      id: 'aud-004',
-      action: 'security.access.denied',
-      actor: 'anonymous',
-      severity: 'WARNING',
-      timestamp: '2026-09-14T17:22:45Z',
-      details: 'Tentativa de acesso não autenticado à rota protegida /admin/users.',
-    },
-  ];
+  const carregar = useCallback(() => {
+    setEventos(null);
+    auditRepository
+      .listRecent(200)
+      .then(setEventos)
+      .catch(() => setEventos([]));
+  }, []);
+
+  useEffect(carregar, [carregar]);
 
   return (
     <ScreenContainer
       id="admin-audit"
-      title="Trilha Imutável de Auditoria Institucional"
-      subtitle="Registro criptográfico de eventos de segurança, autenticações e modificações de privilégios."
-      badgeLabel="Auditoria Imutável"
+      title="Trilha de auditoria"
+      subtitle="Autenticações, negativas de acesso e alterações de privilégio registradas neste dispositivo."
+      badgeLabel="Auditoria"
       badgeVariant="brand"
       primaryAction={{
-        label: 'Recarregar Registros',
+        label: 'Recarregar',
         icon: RefreshCw,
-        onClick: () => alert('Registros sincronizados com a cadeia de custódia segura.'),
+        onClick: carregar,
       }}
       secondaryActions={[
         {
-          label: 'Voltar ao Console',
+          label: 'Voltar ao console',
           icon: ArrowLeft,
           onClick: () => navigate('/admin'),
         },
       ]}
+      emptyProps={{
+        title: 'Nenhum evento registrado',
+        description:
+          'A trilha grava autenticações, saídas e tentativas de acesso negadas. Ela está vazia porque nada disso ocorreu neste navegador ainda.',
+      }}
+      state={eventos === null ? 'loading' : eventos.length === 0 ? 'empty' : 'populated'}
     >
       <div className="space-y-4">
-        <div className="border border-stone-200 rounded-lg overflow-hidden bg-white">
+        <p className="text-xs text-stone-600">
+          A trilha é gravada no armazenamento deste navegador. Ela registra o que aconteceu neste
+          dispositivo, e não substitui o registro do servidor de identidade.
+        </p>
+
+        <div className="overflow-hidden rounded-lg border border-stone-200 bg-white">
           <table className="w-full text-left text-xs">
-            <thead className="bg-stone-50 border-b border-stone-200 text-stone-600 font-mono">
+            <caption className="sr-only">Eventos de auditoria, do mais recente ao mais antigo</caption>
+            <thead className="border-b border-stone-200 bg-stone-50 font-mono text-stone-600">
               <tr>
-                <th className="p-3">Data / Hora (UTC)</th>
-                <th className="p-3">Ação</th>
-                <th className="p-3">Ator</th>
-                <th className="p-3">Severidade</th>
-                <th className="p-3">Detalhes do Evento</th>
+                <th scope="col" className="p-3">
+                  Data e hora
+                </th>
+                <th scope="col" className="p-3">
+                  Ação
+                </th>
+                <th scope="col" className="p-3">
+                  Ator
+                </th>
+                <th scope="col" className="p-3">
+                  Severidade
+                </th>
+                <th scope="col" className="p-3">
+                  Alvo
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100 font-mono">
-              {auditEvents.map((evt) => (
+              {(eventos ?? []).map((evt) => (
                 <tr key={evt.id} className="hover:bg-stone-50">
-                  <td className="p-3 text-stone-500">{evt.timestamp}</td>
+                  <td className="p-3 text-stone-500">
+                    <time dateTime={evt.timestamp}>
+                      {new Date(evt.timestamp).toLocaleString('pt-BR')}
+                    </time>
+                  </td>
                   <td className="p-3 font-semibold text-stone-900">{evt.action}</td>
-                  <td className="p-3 text-stone-700">{evt.actor}</td>
+                  <td className="p-3 text-stone-700">{evt.actorEmail || evt.actorId}</td>
                   <td className="p-3">
-                    <Badge
-                      variant={
-                        evt.severity === 'SECURITY'
-                          ? 'brand'
-                          : evt.severity === 'WARNING'
-                          ? 'accent'
-                          : 'neutral'
-                      }
-                      size="sm"
-                    >
+                    <Badge variant={CORES[evt.severity] ?? 'neutral'} size="sm">
                       {evt.severity}
                     </Badge>
                   </td>
-                  <td className="p-3 text-stone-600 font-sans text-xs">{evt.details}</td>
+                  <td className="p-3 font-sans text-xs text-stone-600">
+                    {evt.targetType ? `${evt.targetType} ${evt.targetId ?? ''}` : '—'}
+                  </td>
                 </tr>
               ))}
             </tbody>

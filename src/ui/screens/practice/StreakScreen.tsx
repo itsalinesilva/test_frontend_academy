@@ -12,21 +12,28 @@ import {
 import { StreakTracker } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter } from '../../navigation/router';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { PageLayout } from '../../components/layout/PageLayout';
+import { ProgressRing } from '../../components/data-display/ProgressRing';
 
 export const StreakScreen: React.FC = () => {
+  const { userId } = useCurrentUser();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [streak, setStreak] = useState<StreakTracker | null>(null);
 
   useEffect(() => {
     async function loadStreak() {
+      if (!userId) return;
       try {
         setLoading(true);
-        const data = await practiceService.getStreak('usr_founder_1');
+        const data = await practiceService.getStreak(userId);
         setStreak(data);
       } catch (err) {
         console.error('Failed to load streak', err);
       } finally {
+        setIsLoading(false);
         setLoading(false);
       }
     }
@@ -52,7 +59,31 @@ export const StreakScreen: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <PageLayout
+      id="streak"
+      form="focus"
+      density="editorial"
+      state={isLoading ? 'loading' : 'content'}
+      loadingMessage="Carregando..."
+    >
+      <PageLayout.Main>
+      {streak && (
+        <div className="mb-6 flex items-center justify-center gap-4">
+          <ProgressRing
+            id="ofensiva-ring"
+            value={Math.min(100, Math.round((streak.currentStreakDays / Math.max(1, streak.longestStreakDays || 7)) * 100))}
+            size={96}
+            strokeWidth={7}
+            showLabel
+          />
+          <div className="text-sm text-stone-700">
+            <p className="font-serif text-lg font-bold text-stone-900">
+              {streak.currentStreakDays} {streak.currentStreakDays === 1 ? 'dia' : 'dias'}
+            </p>
+            <p className="text-xs text-stone-500">recorde: {streak.longestStreakDays}</p>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div>
         <button
@@ -112,7 +143,7 @@ export const StreakScreen: React.FC = () => {
       {/* Calendar Consistency History */}
       <section className="space-y-4">
         <h2 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-red-800" />
+          <Calendar className="w-5 h-5 text-anil-800" />
           <span>Histórico dos Últimos Dias Praticados</span>
         </h2>
 
@@ -127,8 +158,8 @@ export const StreakScreen: React.FC = () => {
               <span className="text-[11px] font-mono text-stone-500 block">
                 {entry.date}
               </span>
-              <div className="w-8 h-8 rounded-full bg-red-100 text-red-800 mx-auto flex items-center justify-center font-bold text-xs">
-                <Flame className="w-4 h-4 fill-red-800" />
+              <div className="w-8 h-8 rounded-full bg-red-100 text-anil-800 mx-auto flex items-center justify-center font-bold text-xs">
+                <Flame className="w-4 h-4 fill-anil-800" />
               </div>
               <span className="text-xs font-bold text-stone-800 block">
                 {entry.completedMinutes} min
@@ -181,6 +212,7 @@ export const StreakScreen: React.FC = () => {
           ))}
         </div>
       </section>
-    </div>
+      </PageLayout.Main>
+    </PageLayout>
   );
 };

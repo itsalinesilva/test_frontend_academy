@@ -1,137 +1,157 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { RouterProvider, useRouter } from '../ui/navigation/router';
 import { AppShell } from '../ui/components/layout/AppShell';
 import { AppRouterOutlet } from '../ui/screens/AppRouterOutlet';
+import { GuardaDeAudiencia } from '../ui/navigation/GuardaDeAudiencia';
 import { authService } from '../services/application/auth.service';
-import { entitlementService } from '../infrastructure/entitlements/entitlement-service';
 import { User, UserRole } from '../domain/types';
-import { FOUNDER_ADMIN_EMAILS } from '../domain/capabilities';
 import { LoadingState } from '../ui/components/feedback/LoadingState';
 
 interface AppContentProps {
   currentUser: User | null;
-  setCurrentUser: (user: User | null) => void;
-  onSwitchUserRole: (role: UserRole) => Promise<void>;
+  isAdmin: boolean;
+  assignedRoles: readonly UserRole[];
+  onLogout: () => Promise<void>;
+  onSwitchRole: (role: UserRole) => Promise<void>;
 }
+
+/**
+ * Simulador de papéis — DESENVOLVIMENTO APENAS.
+ *
+ * CLAUDE_AUDIT.md S-06: esta barra era renderizada no shell de produção para
+ * todos os usuários, permitindo escalonar privilégio por menu suspenso.
+ *
+ * Agora: (1) só existe sob `import.meta.env.DEV`, sendo eliminada do bundle
+ * de produção pelo tree-shaking; (2) lista somente papéis JÁ atribuídos à
+ * conta; (3) ADMIN é recusado pelo serviço quando o servidor não o concede.
+ */
+const DevRoleSwitcher: React.FC<{
+  currentRole?: UserRole;
+  assignedRoles: readonly UserRole[];
+  onSwitchRole: (role: UserRole) => Promise<void>;
+}> = ({ currentRole, assignedRoles, onSwitchRole }) => {
+  if (!import.meta.env.DEV || assignedRoles.length <= 1) return null;
+
+  return (
+    <aside
+      aria-label="Alternador de papéis (somente desenvolvimento)"
+      className="mb-6 flex flex-col items-start justify-between gap-3 rounded-lg bg-stone-900 p-3 text-xs text-stone-100 sm:flex-row sm:items-center"
+    >
+      <p className="font-mono text-stone-300">
+        <strong className="text-amber-400">DEV</strong> · alternador de papéis · ausente em produção
+      </p>
+      <div className="flex shrink-0 items-center gap-2">
+        <label htmlFor="dev-role-selector" className="text-stone-400">
+          Papel ativo:
+        </label>
+        <select
+          id="dev-role-selector"
+          value={currentRole}
+          onChange={(e) => void onSwitchRole(e.target.value as UserRole)}
+          className="rounded border border-stone-700 bg-stone-800 px-2.5 py-1.5 text-xs text-stone-100 focus:outline-none focus:ring-1 focus:ring-anil-500"
+        >
+          {assignedRoles.map((role) => (
+            <option key={role} value={role}>
+              {role}
+            </option>
+          ))}
+        </select>
+      </div>
+    </aside>
+  );
+};
 
 const AppContent: React.FC<AppContentProps> = ({
   currentUser,
-  setCurrentUser,
-  onSwitchUserRole,
+  isAdmin,
+  assignedRoles,
+  onLogout,
+  onSwitchRole,
 }) => {
   const { navigate } = useRouter();
-
-  const handleLogout = async () => {
-    await authService.logout();
-    setCurrentUser(null);
-    navigate('/auth/login');
-  };
-
-  const showAdminTab = entitlementService.isAdministrator(currentUser);
 
   return (
     <AppShell
       currentUser={currentUser}
       onLoginClick={() => navigate('/auth/login')}
-      onLogoutClick={handleLogout}
-      showAdminTab={showAdminTab}
+      onLogoutClick={async () => {
+        await onLogout();
+        navigate('/auth/login');
+      }}
+      // Visibilidade da aba Admin segue a outorga assinada pelo servidor,
+      // nunca o papel local (CLAUDE_AUDIT.md S-02).
+      showAdminTab={isAdmin}
     >
-      {/* Simulation / Persona Quick Bar for Evaluation */}
-      <aside
-        id="dev-role-simulator"
-        aria-label="Barra de simulação de perfis acadêmicos"
-        className="mb-6 p-3 bg-stone-900 text-stone-100 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs"
-      >
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-          <p className="font-mono text-stone-300">
-            <strong>Application Shell:</strong> 6 Eixos Canônicos + Rotas de Governança & Utilitários
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <label htmlFor="simulate-role-selector" className="text-stone-400">
-            Papel Ativo:
-          </label>
-          <select
-            id="simulate-role-selector"
-            aria-label="Simular perfil de usuário"
-            value={currentUser?.primaryRole || UserRole.ALUNO}
-            onChange={(e) => onSwitchUserRole(e.target.value as UserRole)}
-            className="text-xs bg-stone-800 text-stone-100 border border-stone-700 rounded px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-red-600"
-          >
-            <option value={UserRole.ADMIN}>ADMIN (Fundador - Acesso Irrestrito)</option>
-            <option value={UserRole.PROFESSOR}>PROFESSOR (Criar Salas, Avaliações)</option>
-            <option value={UserRole.MUSICO}>MÚSICO (Estúdio, Gravações)</option>
-            <option value={UserRole.ALUNO}>ALUNO (Currículo, Exercícios)</option>
-            <option value={UserRole.CRIANCA}>CRIANÇA (Modo Kids Protegido)</option>
-          </select>
-        </div>
-      </aside>
-
-      {/* Dynamic Screen Outlet Managed by Canonical Router */}
-      <AppRouterOutlet />
+      <DevRoleSwitcher
+        currentRole={currentUser?.primaryRole}
+        assignedRoles={assignedRoles}
+        onSwitchRole={onSwitchRole}
+      />
+      {/* A audiencia de cada rota e declarada em navigation/audiencia.ts. */}
+      <GuardaDeAudiencia>
+        <AppRouterOutlet />
+      </GuardaDeAudiencia>
     </AppShell>
   );
 };
 
 export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [assignedRoles, setAssignedRoles] = useState<readonly UserRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize active session on mount
-  useEffect(() => {
-    async function initSession() {
-      try {
-        setIsLoading(true);
-        const session = await authService.getActiveSession();
-        if (session) {
-          setCurrentUser(session.user);
-        } else {
-          // Default to founder admin for initial exploration
-          const founderSession = await authService.login({ email: FOUNDER_ADMIN_EMAILS[0] });
-          setCurrentUser(founderSession.user);
-        }
-      } catch {
-        // Handled silently
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    initSession();
-  }, []);
-
-  const handleSwitchUserRole = async (targetRole: UserRole) => {
+  /**
+   * Restaura a sessão existente — e apenas isso.
+   *
+   * CLAUDE_AUDIT.md S-04: a versão anterior fazia
+   * `authService.login({ email: FOUNDER_ADMIN_EMAILS[0] })` quando não havia
+   * sessão, com o comentário "default to founder admin for initial
+   * exploration". Todo visitante entrava como administradora fundadora.
+   *
+   * Agora, ausência de sessão significa exatamente isso: visitante anônimo.
+   */
+  const loadSession = useCallback(async () => {
     try {
-      setIsLoading(true);
-      if (targetRole === UserRole.ADMIN) {
-        const session = await authService.login({ email: FOUNDER_ADMIN_EMAILS[0] });
+      const session = await authService.getActiveSession();
+      if (session) {
         setCurrentUser(session.user);
+        setIsAdmin(session.isAdmin);
+        setAssignedRoles(session.user.assignedRoles);
       } else {
-        const email = `usuario.${targetRole.toLowerCase()}@academia.internal`;
-        try {
-          const session = await authService.login({ email });
-          setCurrentUser(session.user);
-        } catch {
-          const newSession = await authService.register({
-            email,
-            name: `Estudante (${targetRole})`,
-            selectedRole: targetRole,
-            guardianEmail: targetRole === UserRole.CRIANCA ? 'responsavel@familia.internal' : undefined,
-          });
-          setCurrentUser(newSession.user);
-        }
+        setCurrentUser(null);
+        setIsAdmin(false);
+        setAssignedRoles([]);
       }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void loadSession();
+  }, [loadSession]);
+
+  const handleLogout = useCallback(async () => {
+    await authService.logout();
+    setCurrentUser(null);
+    setIsAdmin(false);
+    setAssignedRoles([]);
+  }, []);
+
+  const handleSwitchRole = useCallback(async (targetRole: UserRole) => {
+    // `switchRole` recusa papéis não atribuídos e recusa ADMIN sem outorga
+    // do servidor. Aqui apenas refletimos o resultado.
+    const session = await authService.switchRole(targetRole);
+    setCurrentUser(session.user);
+    setIsAdmin(session.isAdmin);
+    setAssignedRoles(session.user.assignedRoles);
+  }, []);
 
   if (isLoading) {
     return (
-      <div id="root-loading" className="min-h-screen flex items-center justify-center bg-stone-50">
-        <LoadingState id="app-init-loader" message="Inicializando Application Shell & Roteamento da Academia..." />
+      <div id="root-loading" className="flex min-h-screen items-center justify-center bg-stone-50">
+        <LoadingState id="app-init-loader" message="Verificando sua sessão…" />
       </div>
     );
   }
@@ -140,8 +160,10 @@ export const App: React.FC = () => {
     <RouterProvider currentUser={currentUser}>
       <AppContent
         currentUser={currentUser}
-        setCurrentUser={setCurrentUser}
-        onSwitchUserRole={handleSwitchUserRole}
+        isAdmin={isAdmin}
+        assignedRoles={assignedRoles}
+        onLogout={handleLogout}
+        onSwitchRole={handleSwitchRole}
       />
     </RouterProvider>
   );

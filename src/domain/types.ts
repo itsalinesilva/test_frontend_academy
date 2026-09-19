@@ -1,5 +1,5 @@
 /**
- * Domain Types - Academia Musical Digital
+ * Domain Types - Conservatório Muscicapa
  * Canonical Domain Model definitions based on docs 00, 04, 32, 63
  */
 
@@ -73,10 +73,14 @@ export interface User {
   primaryRole: UserRole;
   assignedRoles: UserRole[];
   isEmailVerified: boolean;
-  authProvider?: 'email' | 'google';
-  passwordHash?: string;
+  authProvider?: 'google';
+  /**
+   * `sub` do Google — identidade estável e imutável, chave canônica do
+   * usuário. Sobrevive à troca de e-mail da conta.
+   */
+  googleSubject?: string;
   linkedAccounts?: Array<{
-    provider: 'email' | 'google';
+    provider: 'google';
     email: string;
     linkedAt: ISOTimestamp;
   }>;
@@ -150,7 +154,7 @@ export interface Profile {
 export enum CourseLevel {
   FUNDAMENTAL = 'FUNDAMENTAL',
   INTERMEDIARIO = 'INTERMEDIARIO',
-  AVANCADO = 'AVANCADO',
+  ADVANCED = 'ADVANCED',
   MESTRADO = 'MESTRADO',
 }
 
@@ -167,11 +171,6 @@ export interface Course {
   modulesCount: number;
   lessonsCount: number;
   isPublished: boolean;
-  provenance: {
-    source: string;
-    citation: string;
-    curatorNotes: string;
-  };
   createdAt: ISOTimestamp;
   updatedAt: ISOTimestamp;
 }
@@ -194,7 +193,6 @@ export interface Lesson {
   summary: string;
   contentMarkdown: string;
   durationMinutes: number;
-  provenanceRef?: string;
 }
 
 export interface UserCourseProgress {

@@ -71,7 +71,7 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
       <Card variant="default" padding="lg" className="max-w-2xl w-full space-y-4 shadow-xl border-stone-300">
         <div className="flex items-center justify-between border-b border-stone-200 pb-3">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-red-100 text-red-800 rounded-md">
+            <div className="p-2 bg-anil-100 text-anil-800 rounded-md">
               <School className="w-5 h-5" />
             </div>
             <div>
@@ -83,17 +83,17 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
               </p>
             </div>
           </div>
-          <button type="button" onClick={onClose} className="text-stone-400 hover:text-stone-700 p-1">
+          <button type="button" aria-label="Fechar" onClick={onClose} className="text-stone-400 hover:text-stone-700 p-1">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-stone-700 block">
+            <label className="text-xs font-semibold text-stone-700 block" htmlFor="teacher-room-modal-nome-da-catedra-sala-de-aula-oficial">
               Nome da Cátedra / Sala de Aula Oficial *
             </label>
-            <input
+            <input id="teacher-room-modal-nome-da-catedra-sala-de-aula-oficial"
               type="text"
               required
               value={roomName}
@@ -103,10 +103,10 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-stone-700 block">
+            <label className="text-xs font-semibold text-stone-700 block" htmlFor="teacher-room-modal-lema-tagline-academico">
               Lema / Tagline Acadêmico
             </label>
-            <input
+            <input id="teacher-room-modal-lema-tagline-academico"
               type="text"
               value={tagline}
               onChange={(e) => setTagline(e.target.value)}
@@ -115,10 +115,10 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-stone-700 block">
+            <label className="text-xs font-semibold text-stone-700 block" htmlFor="teacher-room-modal-descricao-metodologica-linha-pedagogica">
               Descrição Metodológica & Linha Pedagógica
             </label>
-            <textarea
+            <textarea id="teacher-room-modal-descricao-metodologica-linha-pedagogica"
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -127,12 +127,12 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-stone-700 block">
+            <label className="text-xs font-semibold text-stone-700 block" htmlFor="teacher-room-modal-url-da-imagem-de-capa-hero-da-sala">
               URL da Imagem de Capa (Hero da Sala)
             </label>
-            <input
+            <input id="teacher-room-modal-url-da-imagem-de-capa-hero-da-sala"
               type="url"
-              placeholder="https://images.unsplash.com/..."
+              placeholder="https://…"
               value={heroImageUrl}
               onChange={(e) => setHeroImageUrl(e.target.value)}
               className="w-full text-xs p-2 rounded border border-stone-300 font-mono"
@@ -150,7 +150,7 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
                   type="checkbox"
                   checked={exposeStudentCount}
                   onChange={(e) => setExposeStudentCount(e.target.checked)}
-                  className="rounded border-stone-300 text-red-800"
+                  className="rounded border-stone-300 text-anil-800"
                 />
                 <span>Exibir Total de Alunos</span>
               </label>
@@ -159,7 +159,7 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
                   type="checkbox"
                   checked={exposeUpcomingLives}
                   onChange={(e) => setExposeUpcomingLives(e.target.checked)}
-                  className="rounded border-stone-300 text-red-800"
+                  className="rounded border-stone-300 text-anil-800"
                 />
                 <span>Exibir Próximas Lives</span>
               </label>
@@ -168,7 +168,7 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
                   type="checkbox"
                   checked={exposeGuidedProjects}
                   onChange={(e) => setExposeGuidedProjects(e.target.checked)}
-                  className="rounded border-stone-300 text-red-800"
+                  className="rounded border-stone-300 text-anil-800"
                 />
                 <span>Exibir Projetos Guiados</span>
               </label>
@@ -183,6 +183,7 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
 
             <div className="space-y-2 p-2 bg-stone-50 border border-stone-200 rounded-md">
               <input
+        aria-label="Título do comunicado"
                 type="text"
                 placeholder="Título do comunicado"
                 value={newAnnouncementTitle}
@@ -190,6 +191,7 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
                 className="w-full text-xs p-1.5 rounded border border-stone-300"
               />
               <textarea
+        aria-label="Texto do aviso aos estudantes"
                 rows={2}
                 placeholder="Texto do aviso aos estudantes..."
                 value={newAnnouncementContent}

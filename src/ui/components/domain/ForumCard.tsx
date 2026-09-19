@@ -32,12 +32,12 @@ export const ForumCard: React.FC<ForumCardProps> = ({
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       className={twMerge(
-        'p-5 bg-white border border-stone-200 rounded-lg shadow-xs hover:border-stone-300 hover:shadow-sm transition-all select-none flex flex-col justify-between gap-4 cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-800',
+        'p-5 bg-white border border-stone-200 rounded-lg shadow-xs hover:border-stone-300 hover:shadow-sm transition-all select-none flex flex-col justify-between gap-4 cursor-pointer focus:outline-none focus:ring-2 focus:ring-anil-800',
         className
       )}
     >
       <div className="flex items-start gap-3.5">
-        <div className="w-10 h-10 rounded-lg bg-red-50 border border-red-200/80 flex items-center justify-center text-red-800 shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-red-50 border border-red-200/80 flex items-center justify-center text-anil-800 shrink-0">
           {icon || <MessageSquare className="w-5 h-5" />}
         </div>
 

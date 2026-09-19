@@ -13,12 +13,20 @@ export enum PassportStampType {
   EXAM_HONORS = 'EXAM_HONORS',
 }
 
+/**
+ * Mundo — o cruzamento de uma era com uma regiao.
+ *
+ * Tinha `eraId` e nao tinha regiao, e com isso "Barroco" era um mundo so —
+ * quando Barroco alemao e Barroco italiano sao territorios distintos, com
+ * escolas distintas. Ver `75_ATLAS_TAXONOMY.md`.
+ */
 export interface MusicalWorld {
   id: EntityId;
   slug: string;
   name: string;
   description: string;
   eraId: EntityId;
+  regionId: EntityId;
   aestheticTheme: string;
   mapCoordinates: { x: number; y: number };
   unlockedByDefault: boolean;
@@ -110,4 +118,37 @@ export interface ProgressionMilestone {
   reachedValue: number;
   isCompleted: boolean;
   completedAt?: ISOTimestamp;
+}
+
+/**
+ * O eixo da população saiu deste arquivo.
+ *
+ * `InstrumentIsland` virou `Tribo`, em `src/domain/tribo.ts`. A mudança não
+ * foi de rótulo: **ilha dá ideia de lugar**, e lugar, no Conservatório, é
+ * assunto do Atlas — que já trata de onde (região) e de quando (era). Dois
+ * vocabulários competindo pelo mesmo significado foi o que o catálogo de
+ * taxonomia pegou.
+ *
+ * Tribo trata de gente: a população nichada de um lugar ou de um tempo.
+ * E a generalização é o ganho — quem estuda história da música forma uma
+ * tribo tanto quanto quem toca violino, e isso não cabia em "ilha de
+ * instrumento".
+ *
+ * Ver `docs/harness/75_ATLAS_TAXONOMY.md`.
+ */
+
+/**
+ * Cruzamento dos eixos: uma obra situada numa era, numa regiao e no corpus
+ * de uma tribo. E a unidade que o passaporte carimba.
+ */
+export interface AtlasWorkPlacement {
+  workId: EntityId;
+  eraId: EntityId;
+  /** Ausente para obras sem recorte geografico definido. */
+  regionId?: EntityId;
+  /** Ausente para obras sem instrumento ou disciplina solista definidos. */
+  houseId?: EntityId;
+  composerId: EntityId;
+  /** Nivel dentro da progressao da tribo, quando aplicavel. */
+  etapaDaTribo?: number;
 }

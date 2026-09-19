@@ -1,79 +1,106 @@
 /**
- * Client-Side AdminService Proxy
+ * Proxy de cliente para a autoridade administrativa.
  *
- * CANONICAL RULE: "Não expor lógica administrativa ao cliente."
- * This service communicates strictly with the server-side authority
- * to verify admin privileges and query audit logs.
- * It contains NO hardcoded allowlists or admin resolution logic.
+ * CORREÇÃO DE CLAUDE_AUDIT.md S-02.
+ *
+ * A versão anterior declarava "não expor lógica administrativa ao cliente"
+ * e, na linha seguinte, importava `AdminAuthorization` de `src/server/` —
+ * levando a allowlist de e-mails para dentro do bundle do navegador
+ * (verificado: 6 ocorrências em `dist/assets/index-*.js`). Pior, o bloco
+ * `catch` caía num fallback local, de modo que em produção — onde o
+ * middleware do Vite não existe — a autorização era 100% client-side.
+ *
+ * Agora este arquivo não conhece nenhum e-mail, nenhuma regra e nenhum
+ * módulo de servidor. Ele apenas pergunta. E falha fechado: se a rede cair,
+ * o acesso é NEGADO, nunca concedido.
  */
 
-import { AdminAuthorization, AdminVerificationResult } from '../../server/admin/AdminAuthorization';
-import { AuditRecord, auditLog } from '../../server/admin/AuditLog';
+import { AuditRecord } from '../../contracts/admin-contracts';
+
+const API_BASE = '/api/v1';
+
+export interface AdminVerificationResult {
+  authorized: boolean;
+  roleType?: string;
+  level?: number;
+  capabilities: readonly string[];
+  reason?: string;
+  verifiedAt: string;
+}
+
+const DENIED = (reason: string): AdminVerificationResult => ({
+  authorized: false,
+  capabilities: [],
+  reason,
+  verifiedAt: new Date().toISOString(),
+});
 
 export class AdminService {
   /**
-   * Delegates admin verification to the server-side authority.
+   * Pergunta ao servidor se a SESSÃO ATUAL tem privilégio administrativo.
+   *
+   * Note a ausência de parâmetro de e-mail: a identidade vem exclusivamente
+   * do token de sessão assinado. Isso torna a falha S-01 inexpressável a
+   * partir do cliente.
    */
-  public async verifyAuthorization(
-    email: string,
-    requestedRoute = '/admin'
-  ): Promise<AdminVerificationResult> {
+  public async verifyAuthorization(accessToken: string | null): Promise<AdminVerificationResult> {
+    if (!accessToken) {
+      return DENIED('Nenhuma sessão autenticada.');
+    }
+
     try {
-      const response = await fetch('/api/v1/admin/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, requestedRoute }),
+      const response = await fetch(`${API_BASE}/admin/verify`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
 
       if (response.ok) {
-        return (await response.json()) as AdminVerificationResult;
-      }
-
-      // If server returned 403 or other status
-      if (response.status === 403) {
-        const errorData = await response.json();
+        const body = (await response.json()) as { data: Omit<AdminVerificationResult, 'authorized'> & { isAdmin: boolean } };
         return {
-          authorized: false,
-          reason: errorData.reason || 'Acesso administrativo negado pelo servidor.',
-          verifiedAt: new Date().toISOString(),
+          authorized: body.data.isAdmin,
+          roleType: body.data.roleType,
+          level: body.data.level,
+          capabilities: body.data.capabilities || [],
+          verifiedAt: body.data.verifiedAt,
         };
       }
-    } catch {
-      // Fallback for isolated preview or test environments without HTTP server running
-    }
 
-    // Direct invocation of server-side engine as authoritative local fallback
-    return AdminAuthorization.verifyAdmin({
-      email,
-      requestedRoute,
-    });
+      const errorBody = (await response.json().catch(() => null)) as
+        | { error?: { message?: string } }
+        | null;
+      return DENIED(errorBody?.error?.message || 'Acesso administrativo negado pelo servidor.');
+    } catch {
+      // Falha fechada. Indisponibilidade da autoridade NUNCA concede acesso.
+      return DENIED(
+        'Não foi possível contatar o servidor de autoridade. Acesso administrativo negado por precaução.'
+      );
+    }
   }
 
-  /**
-   * Fetches immutable audit logs from the server authority.
-   */
-  public async fetchAuditLogs(email: string, limit = 50): Promise<AuditRecord[]> {
-    try {
-      const response = await fetch(
-        `/api/v1/admin/audit-logs?email=${encodeURIComponent(email)}&limit=${limit}`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        return data.logs || [];
-      }
-    } catch {
-      // Fallback for isolated preview
+  /** Consulta o log de auditoria encadeado. Exige `admin.audit.view`. */
+  public async fetchAuditLogs(
+    accessToken: string | null,
+    limit = 50
+  ): Promise<{ logs: AuditRecord[]; integrity: { valid: boolean; brokenAtSeq?: number } }> {
+    if (!accessToken) {
+      throw new Error('Nenhuma sessão autenticada.');
     }
 
-    // Authority check before direct fallback read
-    const check = await AdminAuthorization.verifyAdmin({ email, requestedRoute: '/admin/audit' });
-    if (!check.authorized) {
-      throw new Error(check.reason || 'Acesso negado aos registros de auditoria.');
+    const response = await fetch(`${API_BASE}/admin/audit-logs?limit=${encodeURIComponent(String(limit))}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!response.ok) {
+      const errorBody = (await response.json().catch(() => null)) as
+        | { error?: { message?: string } }
+        | null;
+      throw new Error(errorBody?.error?.message || 'Acesso negado aos registros de auditoria.');
     }
 
-    return auditLog.getRecent(limit);
+    const body = (await response.json()) as {
+      data: { logs: AuditRecord[]; integrity: { valid: boolean; brokenAtSeq?: number } };
+    };
+    return { logs: body.data.logs, integrity: body.data.integrity };
   }
 }
 
