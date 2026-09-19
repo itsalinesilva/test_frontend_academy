@@ -15,8 +15,12 @@
 > dependência real: cada fase destrava a seguinte, e fazer fora de ordem
 > significa construir sobre o que ainda não existe.
 >
-> As fases novas vêm de `77_SECTIONS_AND_LEVELS.md`, `78_REWARDS_AND_PASSPORT.md`
-> e `79_LAB_TOOLS.md`, escritos em 18/09.
+> As fases vêm de `77_SECTIONS_AND_LEVELS.md`, `78_REWARDS_AND_PASSPORT.md`,
+> `79_LAB_TOOLS.md` e `80_INSTITUTIONAL_ARCHITECTURE.md`.
+>
+> **Decisão de 19/09:** a Fase B — povoar o acervo — está **adiada**. Ela
+> continua sendo o que trava o Laboratório, e continua descrita abaixo, mas
+> não se trabalha nela agora.
 
 ## Fase A — o Laboratório existe mas ninguém alcança
 
@@ -49,7 +53,37 @@ coisas que estavam erradas: "tribo" carregava sozinha três funções, e
 | S-9 | **Associação** — fundadora e lista vazia de contribuintes | ⬜ |
 | S-10 | Tela do Passaporte reunindo carteira + carimbos + emblemas | ⬜ |
 
-## Fase B — o acervo está vazio, e é isso que trava o Laboratório
+## Fase V — visitante e apresentação
+
+Auditoria de 19/09. Das 81 telas, 47 distinguem visitante. O defeito não era
+falta de tela: era mostrar ao visitante o **componente de logado vazio** —
+"Seu progresso: você ainda não se matriculou" — gastando o melhor espaço da
+tela para dizer à pessoa que ela não tem nada.
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| V-1 | Componente de convite: o que é, o que levo, como começo | ✅ `VisitorInvitation.tsx` |
+| V-2 | **Academia** — trilho vira convite, com números reais e a ressalva de curso livre | ✅ |
+| V-3 | **Atlas** — convite explicando o que ele vira depois de entrar | ✅ |
+| V-4 | **Comunidade** — ação principal deixa de ser "Escrever publicação" para quem não pode publicar | ✅ |
+| V-5 | **Partituras** (`/score`) — apresentação do acervo público | ⬜ |
+| V-6 | **Busca** (`/search`) — o que se pode achar sem conta | ⬜ |
+| V-7 | **Obra** (`/worlds/work/:id`) — convite ao simulador e ao carimbo | ⬜ |
+| V-8 | **Credencial** (`/credential`) — já é pública por projeto; conferir o texto | ⬜ |
+| V-9 | **Raiz** (`/`) — a home do visitante é a porta comercial; revisar contra os convites | ⬜ |
+| V-10 | Verificação: tela em rota pública não mostra seção de progresso pessoal | ✅ `checkPersonalSectionWithoutSession` |
+
+## Fase X — segurança, auditoria de 19/09
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| X-1 | `/academy/result/<id>` herdava audiência **pública** e mostrava a prova de qualquer um | ✅ |
+| X-2 | `getAssessmentAttempt`, `getAssessmentSubmission`, `getAttempt`, `getResult`, `getCertificate` liam registro pessoal sem dono | ✅ |
+| X-3 | `checkRecordOwnership` — a classe inteira passa a ser verificada | ✅ |
+| X-4 | Revisar as demais rotas que herdam audiência por prefixo, uma a uma | ⬜ |
+| X-5 | `checkDeadButton` não vê handler dentro de objeto de props — `onAction: () => {}` passou batido | ⬜ |
+
+## Fase B — o acervo está vazio ⏸ **ADIADA POR DECISÃO DE 19/09**
 
 Medido em 18/09: **0 compositores**, **0 obras no Atlas**, 3 regiões, 4
 partituras executáveis. "Escolher uma obra e jogar no simulador" não tem hoje
@@ -129,7 +163,7 @@ Levantado em 18/09, respondendo à sua pergunta direta.
 
 | # | Item | Estado |
 |:---|:---|:---:|
-| H-1 | `checkDeadButton` não vê handler dentro de objeto de props — `onAction: () => {}` passou batido em `ScoreEditorScreen` | ⬜ |
+| H-1 | ~~`checkDeadButton` e handler em objeto de props~~ — **movido para X-5**, junto do resto da auditoria | ➡ |
 | H-2 | Verificações de `78 §8`: marco só sobre contador medido, XP de marco = base × multiplicador, carimbo sem duplicata | ⬜ |
 | H-3 | Verificação de densidade: falhar se seção for arredondada para número redondo | ⬜ |
 

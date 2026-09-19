@@ -672,3 +672,120 @@ export function checkRetiredVocabulary() {
   }
   return findings;
 }
+
+/**
+ * Seção pessoal em tela que não sabe quem está olhando.
+ *
+ * A Academia mostrava, a quem nunca entrou: *"Seu progresso — você ainda não
+ * se matriculou."* Para quem chega de fora aquilo não é uma seção vazia: é uma
+ * seção **sem sujeito**. Não há "seu".
+ *
+ * A regra é independente de rota, e é por isso que funciona: **quem escreve
+ * "seu" precisa saber se há um "seu"**. Uma tela que usa possessivo e não
+ * consulta a sessão está afirmando uma relação que pode não existir.
+ *
+ * Limite conhecido: vê o texto literal. Possessivo montado por interpolação
+ * passa, e está anotado em `72_QUALITY_SWEEP.md`.
+ */
+const POSSESSIVE_HEADING =
+  /(Seu|Sua|Seus|Suas|Meu|Minha|Meus|Minhas)\s+(progresso|aprendizado|percurso|histórico|desempenho|conquistas?|certificados?|matrículas?|ofensiva|carteira|passaporte|repertório|caderno)/i;
+
+/**
+ * As rotas que cada tela atende, lidas do outlet.
+ *
+ * A primeira versão disto usava a PASTA da tela, e estava errada: `academy`
+ * aparece como "exige login" por causa de `/academy/history`, e com isso a
+ * regra pulava justamente a tela que a motivou — a home da Academia, que é
+ * pública. Foi reintroduzir o defeito que mostrou o furo.
+ */
+function screenRoutes() {
+  /**
+   * Varredura linha a linha, e não uma janela de caracteres.
+   *
+   * A primeira versão casava a rota com o próximo `<XxxScreen` dentro de 200
+   * caracteres, e pareava errado: `AcademyHomeScreen` saía ligada a
+   * `/design-system`. Aqui a rota mais recente vale até aparecer a tela, que é
+   * exatamente como o arquivo é escrito.
+   */
+  const lines = stripComments(readFileSync(OUTLET, 'utf-8')).split('\n');
+  const map = new Map();
+  let pending = [];
+
+  for (const line of lines) {
+    for (const m of line.matchAll(
+      /currentPath\s*(?:===|\.startsWith\(|\.includes\()\s*'([^']+)'/g
+    )) {
+      pending.push(m[1]);
+    }
+    const tag = line.match(/<(\w+Screen)/);
+    if (tag && pending.length > 0) {
+      map.set(tag[1], [...(map.get(tag[1]) ?? []), ...pending]);
+      pending = [];
+    }
+  }
+  return map;
+}
+
+/** Prefixos de rota que exigem login, lidos de `audiencia.ts`. */
+function loginOnlyRoutes() {
+  const src = readFileSync('src/ui/navigation/audiencia.ts', 'utf-8');
+  return [...src.matchAll(/rota:\s*'([^']+)',\s*audiencia:\s*'exigeLogin'/g)].map((m) => m[1]);
+}
+
+/**
+ * O visitante alcança esta tela?
+ *
+ * Prefixo mais longo vence, como na tabela de audiência. Tela sem rota
+ * conhecida conta como alcançável: é mais seguro acusar de menos do que
+ * deixar passar.
+ */
+function reachableByVisitor(screen, routes, loginOnly) {
+  const mine = routes.get(screen);
+  if (!mine || mine.length === 0) return true;
+
+  return mine.some((r) => {
+    const match = loginOnly
+      .filter((p) => r === p || r.startsWith(p))
+      .sort((a, b) => b.length - a.length)[0];
+    return !match;
+  });
+}
+
+export function checkPersonalSectionWithoutSession() {
+  const findings = [];
+
+  const routes = screenRoutes();
+  const loginOnly = loginOnlyRoutes();
+
+  for (const { file, code } of sources()) {
+    if (!/\/ui\/screens\//.test(file) || file.includes('.test.')) continue;
+
+    const screen = file.split('/').pop().replace(/\.tsx?$/, '');
+    // `auth` é visitante por definição: ali o possessivo fala do futuro.
+    if (/\/screens\/auth\//.test(file)) continue;
+    if (!reachableByVisitor(screen, routes, loginOnly)) continue;
+
+    /**
+     * Em `code`, e não no arquivo inteiro: o comentário que EXPLICA o defeito
+     * precisa poder citá-lo, como no verificador de vocabulário aposentado.
+     */
+    const m = code.match(POSSESSIVE_HEADING);
+    if (!m) continue;
+
+    /**
+     * A leitura da sessao, e nao a mera palavra `userId`.
+     *
+     * Com `userId` na lista este verificador nascia vazio: quase toda tela
+     * menciona a variavel em algum lugar, e a condicao passava sempre. Foi
+     * reintroduzindo o defeito original que isso apareceu.
+     */
+    if (/getActiveSession\(|useCurrentUser\(|useSessao\(/.test(code)) continue;
+
+    findings.push({
+      file,
+      line: code.slice(0, code.indexOf(m[0])).split('\n').length,
+      detail: `escreve "${m[0]}" e não consulta a sessão — seção sem sujeito para quem não entrou`,
+    });
+  }
+  return findings;
+}

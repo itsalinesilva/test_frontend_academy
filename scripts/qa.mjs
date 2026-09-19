@@ -38,6 +38,7 @@ import {
   checkFabricatedData,
   checkInflatedAggregate,
   checkRetiredVocabulary,
+  checkPersonalSectionWithoutSession,
   checkPublicDomainRepertoire,
   checkDeadButton,
   checkSuccessWithoutEffect,
@@ -125,6 +126,11 @@ const SECTIONS = [
     checks: [
       report('nenhuma tela órfã', routes.orphans, G.BLOCKS),
       report('nenhuma tela vaza conteúdo de logado', routes.leaking, G.BLOCKS),
+      report(
+        'nenhuma seção pessoal em tela que o visitante alcança',
+        checkPersonalSectionWithoutSession(),
+        G.BLOCKS
+      ),
       report('todo destino de navegação existe', checkNavigationTargets(), G.BLOCKS),
     ],
   },
