@@ -117,7 +117,7 @@ export const AppRouterOutlet: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
     async function evaluateSecurity() {
-      const isProtected = currentPath.startsWith('/admin') || currentPath === '/rooms/create';
+      const isProtected = currentPath.startsWith('/founder') || currentPath === '/rooms/create';
 
       // A restrição de conta infantil é avaliada em TODA rota, não só nas
       // protegidas por papel. Perfil de terceiro, comunidade e salas não são
@@ -197,7 +197,7 @@ export const AppRouterOutlet: React.FC = () => {
               As aulas, os exercícios e a sua prática continuam todos disponíveis.
             </p>
             <div className="flex justify-center pt-2">
-              <Button variant="primary" size="sm" onClick={() => navigate('/academy')}>
+              <Button variant="primary" size="sm" onClick={() => navigate('/academia')}>
                 <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Voltar para as aulas
               </Button>
             </div>
@@ -248,31 +248,31 @@ export const AppRouterOutlet: React.FC = () => {
   }
 
   // 1. ACADEMIA
-  if (currentPath === '/academy') {
+  if (currentPath === '/academia') {
     return <AcademyHomeScreen />;
   }
   if (
-    currentPath === '/academy/meu-aprendizado' ||
-    currentPath === '/academy/my-learning'
+    currentPath === '/academia/meu-aprendizado' ||
+    currentPath === '/academia/my-learning'
   ) {
     return <MeuAprendizadoScreen />;
   }
-  if (currentPath === '/academy/catalog') {
+  if (currentPath === '/academia/catalog') {
     return <AcademyCatalogScreen />;
   }
-  if (currentPath === '/academy/search/results') {
+  if (currentPath === '/academia/search/results') {
     return <AcademySearchResultsScreen />;
   }
-  if (currentPath === '/academy/search') {
+  if (currentPath === '/academia/search') {
     return <AcademySearchScreen />;
   }
-  if (currentPath.startsWith('/academy/category/')) {
+  if (currentPath.startsWith('/academia/category/')) {
     return <CategoryDetailScreen />;
   }
-  if (currentPath.startsWith('/academy/program/')) {
+  if (currentPath.startsWith('/academia/program/')) {
     return <ProgramDetailScreen />;
   }
-  if (currentPath.startsWith('/academy/path/')) {
+  if (currentPath.startsWith('/academia/path/')) {
     return <PathDetailScreen />;
   }
   if (currentPath.includes('/module/')) {
@@ -285,42 +285,42 @@ export const AppRouterOutlet: React.FC = () => {
     return <CourseProgressScreen />;
   }
   // Dentro do curso: menu lateral fixo, conteudo ao centro, calendario a direita.
-  if (currentPath.startsWith('/academy/course/') && currentPath.endsWith('/aprender')) {
+  if (currentPath.startsWith('/academia/course/') && currentPath.endsWith('/aprender')) {
     return <CourseLearnScreen />;
   }
   // Apresentacao do curso: hero, metricas, secoes, disciplinas, avaliacoes.
-  if (currentPath.startsWith('/academy/course/')) {
+  if (currentPath.startsWith('/academia/course/')) {
     return <CoursePresentationScreen />;
   }
   if (currentPath.includes('/interactive')) {
     return <InteractiveLessonScreen />;
   }
   // A licao abre em tela-teatro, com o menu da disciplina a esquerda.
-  if (currentPath.startsWith('/academy/lesson/')) {
+  if (currentPath.startsWith('/academia/lesson/')) {
     return <LessonTheaterScreen />;
   }
-  if (currentPath.startsWith('/academy/activity/')) {
+  if (currentPath.startsWith('/academia/activity/')) {
     return <ActivityScreen />;
   }
-  if (currentPath.startsWith('/academy/quiz/')) {
+  if (currentPath.startsWith('/academia/quiz/')) {
     return <AcademyQuizScreen />;
   }
-  if (currentPath.startsWith('/academy/assessment/')) {
+  if (currentPath.startsWith('/academia/assessment/')) {
     return <AssessmentScreen />;
   }
-  if (currentPath.startsWith('/academy/result/')) {
+  if (currentPath.startsWith('/academia/result/')) {
     return <AssessmentResultScreen />;
   }
-  if (currentPath.startsWith('/academy/completion/')) {
+  if (currentPath.startsWith('/academia/completion/')) {
     return <CourseCompletionScreen />;
   }
-  if (currentPath.startsWith('/academy/certificate/')) {
+  if (currentPath.startsWith('/academia/certificate/')) {
     return <CertificateScreen />;
   }
-  if (currentPath === '/academy/history') {
+  if (currentPath === '/academia/history') {
     return <AcademicHistoryScreen />;
   }
-  if (currentPath === '/academy/academic-profile' || currentPath === '/academy/profile') {
+  if (currentPath === '/academia/academic-profile' || currentPath === '/academia/profile') {
     return <AcademicProfileScreen />;
   }
 
@@ -495,31 +495,31 @@ export const AppRouterOutlet: React.FC = () => {
   }
 
   // ADMIN GOVERNANCE
-  if (currentPath === '/admin') {
+  if (currentPath === '/founder') {
     return <AdminDashboardScreen />;
   }
-  if (currentPath === '/admin/users') {
+  if (currentPath === '/founder/users') {
     return <AdminUsersScreen />;
   }
-  if (currentPath === '/admin/engines') {
+  if (currentPath === '/founder/engines') {
     return <AdminEnginesScreen />;
   }
-  if (currentPath === '/admin/content') {
+  if (currentPath === '/founder/content') {
     return <AdminContentScreen />;
   }
-  if (currentPath === '/admin/moderation') {
+  if (currentPath === '/founder/moderation') {
     return <AdminModerationScreen />;
   }
-  if (currentPath === '/admin/credentials') {
+  if (currentPath === '/founder/credentials') {
     return <CredentialStudioScreen />;
   }
-  if (currentPath === '/admin/booklets') {
+  if (currentPath === '/founder/booklets') {
     return <BookletEditorScreen />;
   }
-  if (currentPath === '/admin/biblioteca') {
+  if (currentPath === '/founder/biblioteca') {
     return <LibraryScreen />;
   }
-  if (currentPath === '/admin/audit') {
+  if (currentPath === '/founder/audit') {
     return <AdminAuditScreen />;
   }
 

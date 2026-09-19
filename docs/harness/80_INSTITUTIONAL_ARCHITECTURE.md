@@ -82,6 +82,9 @@ Não é comunidade de usuários. É quem **mantém** o Conservatório.
 > exemplo mente sobre quem a sustenta — e isso é o tipo de mentira com
 > consequência jurídica, não só de produto.
 
+A área administrativa da plataforma fica em **`/founder`** — ver
+`81_HIERARCHY_AND_ISOLATION.md` §2.1 para o porquê do nome.
+
 O privilégio administrativo **não vem daqui**: continua vindo de concessão
 assinada pelo servidor, como em `SECURITY.md`. Ser fundadora na Associação é
 um fato institucional; ser admin é uma autorização técnica. Confundir as duas

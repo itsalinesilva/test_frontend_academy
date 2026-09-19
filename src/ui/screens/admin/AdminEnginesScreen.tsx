@@ -136,7 +136,7 @@ export const AdminEnginesScreen: React.FC = () => {
         {
           label: 'Voltar ao console',
           icon: ArrowLeft,
-          onClick: () => navigate('/admin'),
+          onClick: () => navigate('/founder'),
         },
       ]}
       state={capacidades === null ? 'loading' : 'populated'}

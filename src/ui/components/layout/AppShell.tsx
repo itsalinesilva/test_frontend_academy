@@ -59,8 +59,8 @@ export const AppShell: React.FC<AppShellProps> = ({
 
   // Mobile Bottom Navigation Bar: Primary Thumb-Friendly Pillars
   const mobileBottomItems = [
-    { label: 'Academy', icon: GraduationCap, path: '/academy' },
-    { label: 'Practice', icon: Target, path: '/practice' },
+    { label: 'Academia', icon: GraduationCap, path: '/academia' },
+    { label: 'Laboratório', icon: Target, path: '/practice' },
     { label: 'Score', icon: FileMusic, path: '/score' },
     { label: 'Studio', icon: Sliders, path: '/studio' },
     { label: 'Perfil', icon: UserIcon, path: '/profile' },

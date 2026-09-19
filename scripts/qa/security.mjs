@@ -127,7 +127,7 @@ export function checkPublishKeepsStudentData() {
  * Privilégio administrativo decidido no cliente.
  *
  * A lista de e-mails administrativos é do servidor. Se alguma tela compara
- * e-mail ou papel local para liberar `/admin`, basta editar o localStorage
+ * e-mail ou papel local para liberar `/founder`, basta editar o localStorage
  * para virar administrador.
  */
 export function checkAdminAuthority() {
@@ -371,12 +371,12 @@ function routeToScreen() {
 /**
  * Tela administrativa alcançável por rota que não exige administração.
  *
- * Era o estado da plataforma até 19/09: a tabela declarava `/admin` como
+ * Era o estado da plataforma até 19/09: a tabela declarava `/founder` como
  * `exigeLogin`, e quem barrava o aluno comum era um efeito no outlet chamando
  * `checkRouteAccess`. Funcionava — mas a hierarquia estava partida em dois
  * sistemas, e só um deles era auditado.
  *
- * Uma tela administrativa criada fora do prefixo `/admin` não seria protegida
+ * Uma tela administrativa criada fora do prefixo `/founder` não seria protegida
  * por ninguém, e a tabela continuaria dizendo que estava tudo certo.
  */
 export function checkAdminScreensBehindAdminAudience() {
@@ -384,7 +384,7 @@ export function checkAdminScreensBehindAdminAudience() {
   const findings = [];
 
   for (const { route, screen } of routeToScreen()) {
-    const isAdminScreen = /^Admin|Console/.test(screen) || route.startsWith('/admin');
+    const isAdminScreen = /^Admin|Console/.test(screen) || route.startsWith('/founder');
     if (!isAdminScreen) continue;
 
     const rule = audienceOf(route, rules);
@@ -429,19 +429,19 @@ export function checkGuardCoversEveryAudience() {
  * ruído: `/practice/trainer` herdar `exigeLogin` de `/practice` é aperto, não
  * afrouxamento — a intenção está certa e escrita na raiz.
  *
- * O perigo é o contrário, e foi exatamente o que aconteceu: `/academy/result/`
- * herdou **pública** de `/academy`. Ninguém decidiu que a prova de alguém era
+ * O perigo é o contrário, e foi exatamente o que aconteceu: `/academia/result/`
+ * herdou **pública** de `/academia`. Ninguém decidiu que a prova de alguém era
  * pública; ela simplesmente caiu no padrão do pai.
  *
  * A primeira tentativa de escrever isto acusava toda rota pessoal em audiência
- * pública, e acusava CÓDIGO CERTO: `/progress` e `/academy/profile` são
+ * pública, e acusava CÓDIGO CERTO: `/progress` e `/academia/profile` são
  * públicas de propósito — a estrutura do curso aparece a qualquer um, e as
  * telas consultam a sessão para decidir o que mais mostrar. Acusá-las ensinaria
  * a ignorar o verificador.
  *
  * O sinal honesto é a **combinação**: rota que parece registro de pessoa, em
  * audiência pública, servida por tela que **não consulta a sessão**. Foi essa
- * a tríade de `/academy/result/<id>`.
+ * a tríade de `/academia/result/<id>`.
  *
  * Limite conhecido: vê o nome do caminho. Rota pessoal com nome neutro passa,
  * e está anotado em `72_QUALITY_SWEEP.md`.
@@ -485,6 +485,94 @@ export function checkPersonalRouteInheritingPublic() {
         (inherited ? `herdando de "${inherited.route}"` : 'por omissão') +
         ', e a tela não consulta a sessão',
     });
+  }
+  return findings;
+}
+
+/**
+ * A rota administrativa não se chama pelo nome óbvio.
+ *
+ * Isto **não é** o que protege o console — quem protege é a outorga assinada
+ * pelo servidor, conferida contra a allowlist que vive fora do bundle. Um
+ * nome difícil sem essa outorga seria segurança por obscuridade, que é o
+ * antipadrão clássico.
+ *
+ * O que o nome faz é outra coisa, e é legítima: **não anunciar que existe um
+ * console**. `/admin` é a primeira coisa que qualquer varredura automática
+ * tenta; `/founder` não está em lista nenhuma. Reduzir a superfície que se
+ * descobre sem esforço é camada válida — depois da que decide, nunca no lugar
+ * dela.
+ *
+ * E `/admin` não redireciona: ela simplesmente não existe. Redirecionar
+ * confirmaria que há o que procurar.
+ */
+export function checkNoGuessableAdminRoute() {
+  const findings = [];
+
+  for (const { file, code } of sources()) {
+    if (file.includes('.test.')) continue;
+
+    for (const [i, line] of code.split('\n').entries()) {
+      // literal de rota, e não caminho de import nem nome de pasta
+      if (/['"`]\/admin(?=[/'"`?])/.test(line)) {
+        findings.push({
+          file,
+          line: i + 1,
+          detail: 'rota "/admin" é o primeiro alvo de qualquer varredura — a rota administrativa é /founder',
+        });
+      }
+    }
+  }
+  return findings;
+}
+
+/**
+ * A interface fala português.
+ *
+ * O código é inglês e a interface é portuguesa; o que não pode é o nome
+ * técnico vazar para a tela. "Academy" no menu era exatamente isso: o
+ * identificador do domínio aparecendo para o aluno.
+ *
+ * Só olha texto de interface — rótulo, título, dica, texto de JSX. Tipo,
+ * serviço e arquivo continuam `Academy`, como deve ser.
+ */
+const TECHNICAL_IN_UI = [
+  ['Academy', 'Academia'],
+  ['Practice', 'Laboratório'],
+];
+
+export function checkTechnicalNameInUi() {
+  const findings = [];
+
+  for (const { file, code } of sources()) {
+    if (!/\/ui\//.test(file) || file.includes('.test.')) continue;
+    if (file.includes('design-system-catalog')) continue;
+
+    for (const [i, line] of code.split('\n').entries()) {
+      for (const [technical, instead] of TECHNICAL_IN_UI) {
+        /**
+         * `label:`, `title:`, `hint:`, `placeholder=` e texto solto de JSX.
+         * Fora disso o nome é identificador e fica.
+         *
+         * `String.raw` porque `\b` num template literal comum é o caractere
+         * BACKSPACE, e não a borda de palavra. A regex virava lixo silencioso:
+         * compilava, rodava e não casava com nada. Já aconteceu duas vezes
+         * neste repositório.
+         */
+        const asUiText = new RegExp(
+          String.raw`(?:label|title|hint|subtitle|heading)\s*[:=]\s*['"][^'"]*\b${technical}\b` +
+            String.raw`|placeholder=["'][^"']*\b${technical}\b` +
+            String.raw`|>\s*${technical}\s*<`
+        );
+        if (asUiText.test(line)) {
+          findings.push({
+            file,
+            line: i + 1,
+            detail: `"${technical}" aparece como texto de tela; em português é ${instead}`,
+          });
+        }
+      }
+    }
   }
   return findings;
 }

@@ -88,7 +88,7 @@ export const AcademicProfileScreen: React.FC = () => {
           <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
             Registro
           </p>
-          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academy/history')}>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academia/history')}>
             Historico completo
           </Button>
         </Card>
@@ -168,7 +168,7 @@ export const AcademicProfileScreen: React.FC = () => {
                 variant="outline"
                 size="sm"
                 className="mt-3"
-                onClick={() => navigate('/academy/catalog')}
+                onClick={() => navigate('/academia/catalog')}
               >
                 Explorar Catálogo e Iniciar Formação
               </Button>
@@ -211,7 +211,7 @@ export const AcademicProfileScreen: React.FC = () => {
                       <Button
                         size="sm"
                         variant="primary"
-                        onClick={() => navigate(`/academy/certificate/${cert.id}`)}
+                        onClick={() => navigate(`/academia/certificate/${cert.id}`)}
                       >
                         Visualizar Certificado
                         <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
@@ -257,7 +257,7 @@ export const AcademicProfileScreen: React.FC = () => {
                         </span>
                       </div>
                       <h4
-                        onClick={() => navigate(`/academy/course/${prog.courseId}`)}
+                        onClick={() => navigate(`/academia/course/${prog.courseId}`)}
                         className="font-serif font-bold text-base text-stone-950 hover:text-anil-800 cursor-pointer mt-1"
                       >
                         {crs?.title || prog.courseId}
@@ -268,7 +268,7 @@ export const AcademicProfileScreen: React.FC = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => navigate(`/academy/course/${prog.courseId}/progress`)}
+                        onClick={() => navigate(`/academia/course/${prog.courseId}/progress`)}
                       >
                         Ver Progresso
                       </Button>
@@ -277,11 +277,11 @@ export const AcademicProfileScreen: React.FC = () => {
                         variant="primary"
                         onClick={() => {
                           if (isDone) {
-                            navigate(`/academy/completion/${prog.courseId}`);
+                            navigate(`/academia/completion/${prog.courseId}`);
                           } else if (prog.lastAccessedLessonId) {
-                            navigate(`/academy/lesson/${prog.lastAccessedLessonId}`);
+                            navigate(`/academia/lesson/${prog.lastAccessedLessonId}`);
                           } else {
-                            navigate(`/academy/course/${prog.courseId}`);
+                            navigate(`/academia/course/${prog.courseId}`);
                           }
                         }}
                       >

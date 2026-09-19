@@ -77,7 +77,7 @@ tela para dizer à pessoa que ela não tem nada.
 
 | # | Item | Estado |
 |:---|:---|:---:|
-| X-1 | `/academy/result/<id>` herdava audiência **pública** e mostrava a prova de qualquer um | ✅ |
+| X-1 | `/academia/result/<id>` herdava audiência **pública** e mostrava a prova de qualquer um | ✅ |
 | X-2 | `getAssessmentAttempt`, `getAssessmentSubmission`, `getAttempt`, `getResult`, `getCertificate` liam registro pessoal sem dono | ✅ |
 | X-3 | `checkRecordOwnership` — a classe inteira passa a ser verificada | ✅ |
 | X-4 | Revisar as demais rotas que herdam audiência por prefixo, uma a uma | ✅ `checkPersonalRouteInheritingPublic` faz por máquina |
@@ -86,6 +86,9 @@ tela para dizer à pessoa que ela não tem nada.
 | X-7 | Guarda aplica os quatro níveis, com recusa que não descreve o que protege | ✅ |
 | X-8 | `81_HIERARCHY_AND_ISOLATION.md` — a hierarquia escrita | ✅ |
 | X-9 | Teste de fluxo real: guarda renderizada para visitante, aluno e admin | ✅ `audience-guard.test.tsx` |
+| X-10 | **`/admin` → `/founder`** — não anunciar que existe console; `/admin` deixa de existir | ✅ |
+| X-11 | **`/academy` → `/academia`** e os rótulos de tela em português | ✅ |
+| X-12 | Verificação contra a volta de `/admin` e contra nome técnico na tela | ✅ |
 
 ## Fase B — o acervo está vazio ⏸ **ADIADA POR DECISÃO DE 19/09**
 
@@ -316,7 +319,7 @@ cliente Android, e-mail institucional. Depende de você em vários pontos.
 | 7.14 | **Curso História da Música Brasileira** — Unidade 1 (Vasco Mariz) e Unidade 2 (Tinhorão), eixos separados por decisão editorial | ADR-007 | ⬜ |
 | 7.15 | `CanonicalComposer` / `CanonicalWork` + `FieldProvenance` (proveniência por campo, não por entidade) | ADR-007 | ⬜ |
 | 7.16 | `MusicKnowledgeService` com adaptadores Wikidata · MusicBrainz · IMSLP · Commons · Archive · VIAF/ISNI | ADR-007 | ⬜ |
-| 7.17 | Rotas `/academy/conservatory`, `/conservatory/composer/:id`, `/conservatory/work/:id` | ADR-007 | ⬜ |
+| 7.17 | Rotas `/academia/conservatory`, `/conservatory/composer/:id`, `/conservatory/work/:id` | ADR-007 | ⬜ |
 | 7.18 | **Contatar a Música Brasilis** pedindo autorização de uso de dados. Sem acordo, o adaptador fica desabilitado e a integração é apenas link de saída | ADR-007 | ⛔ |
 | 7.19 | Mais exercícios de teoria derivados do *Livro de Exercícios* do Med, com citação de página | ADR-002 | ⬜ |
 | 7.20 | **Adaptador Mutopia** — 2.124 pecas, PDF + MIDI + LilyPond, licenca de redistribuicao explicita | ADR-008 | ⬜ |
@@ -450,7 +453,7 @@ Consequência: se o KV cair ou for desligado, o produto continua inteiro para ca
 | 15.21 | Consentimento explícito antes de publicar ("qualquer pessoa com o link") + caminho de despublicar | ADR-004 | ⬜ |
 | 15.22 | Estado "mídia indisponível" quando o autor revoga o compartilhamento — nunca player quebrado | ADR-004 | ⬜ |
 | 15.23 | **Migrar roteamento de hash para `history.pushState`** — pré-requisito de todo SEO; hash não é indexável | ADR-005 | ⬜ |
-| 15.24 | Criar `/admin/seo`, `/admin/communication`, `/admin/commercial`; descontinuar `/admin/users`, `/admin/content`, `/admin/engines` | ADR-005 | ⬜ |
+| 15.24 | Criar `/founder/seo`, `/founder/communication`, `/founder/commercial`; descontinuar `/founder/users`, `/founder/content`, `/founder/engines` | ADR-005 | ⬜ |
 | 15.25 | Aba "Dados" em Configurações — backup, restauração, mídia no Drive, exclusão de conta | ADR-001.A | ⬜ |
 | 15.3 | Google Sign-In real (GIS) substituindo o `GoogleOAuthModal` simulado; escopos `openid email profile drive.appdata` | ADR-001.A | ⬜ |
 | 15.4 | Cloudflare Pages Function: verificação de assinatura do ID token contra o JWKS do Google | ADR-001.A / S-01 | ⬜ |
@@ -819,12 +822,18 @@ precisa sair do modo de teste.
 
 Você levantou a pergunta certa, e a resposta tem duas partes.
 
-**O que o nome NÃO faz.** Trocar `/admin` por um caminho incomum não é
-controle de segurança. Quem procura painel administrativo usa lista de
-caminhos, e um nome diferente só atrasa. O que de fato protege já está no
-lugar: a allowlist é **variável de ambiente do servidor**, a sessão é
-assinada, e allowlist vazia significa nenhum administrador. Nome nenhum
-substitui isso, e nome nenhum enfraquece isso.
+**Feito em 20/09: a rota passou a ser `/founder`.** `/admin` não existe mais
+— não redireciona, cai no `NotFoundScreen` como qualquer endereço inventado,
+porque redirecionar confirmaria que há o que procurar.
+
+**O que o nome NÃO faz.** Não é controle de segurança. O que de fato protege
+já está no lugar: a allowlist vive no servidor, a sessão é assinada, e
+allowlist vazia significa nenhum administrador. Nome nenhum substitui isso.
+
+**O que ele FAZ, e é legítimo:** não anunciar que existe um console. `/admin`
+é o primeiro alvo de qualquer varredura automática; `/founder` não está em
+lista nenhuma. Camada válida **depois** da que decide, nunca no lugar dela.
+`checkNoGuessableAdminRoute` impede a volta.
 
 **O que um subdomínio separado FAZ, e é real:**
 
@@ -846,7 +855,7 @@ Depende de: I.2, I.3. **Tarefa de implementação, depois da decisão:**
 - [ ] Subdomínio apontado para o mesmo projeto do Pages
 - [ ] Política do Cloudflare Access com os dois e-mails institucionais
 - [ ] Origem do subdomínio autorizada no OAuth
-- [ ] **A rota `/admin` continua existindo na aplicação** — o subdomínio é
+- [ ] **A rota `/founder` continua existindo na aplicação** — o subdomínio é
       camada adicional, e a autoridade de sessão continua sendo a garantia
 - [ ] Verificar que a área do aluno **não** responde no subdomínio, e
       vice-versa

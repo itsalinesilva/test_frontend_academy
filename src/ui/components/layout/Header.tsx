@@ -40,7 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
   const { currentPath, navigate } = useRouter();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
-  const emAprendizado = currentPath.startsWith('/academy/meu-aprendizado');
+  const emAprendizado = currentPath.startsWith('/academia/meu-aprendizado');
 
   return (
     <header
@@ -73,7 +73,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             id="header-meu-aprendizado"
-            onClick={() => navigate('/academy/meu-aprendizado')}
+            onClick={() => navigate('/academia/meu-aprendizado')}
             aria-current={emAprendizado ? 'page' : undefined}
             className={clsx(
               'hidden shrink-0 rounded px-2 py-1.5 text-sm transition-colors sm:block',

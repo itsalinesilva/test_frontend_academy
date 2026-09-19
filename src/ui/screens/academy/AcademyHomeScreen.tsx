@@ -188,7 +188,7 @@ export const AcademyHomeScreen: React.FC = () => {
         moduleTitles={(disciplinasPorCurso[c.id] ?? []).map((d) => d.title)}
         progressPercent={m?.progressPercentage}
         isEnrolled={Boolean(m)}
-        onActionClick={() => navigate(`/academy/course/${c.id}`)}
+        onActionClick={() => navigate(`/academia/course/${c.id}`)}
       />
     );
   };
@@ -223,8 +223,8 @@ export const AcademyHomeScreen: React.FC = () => {
               description={p.subtitle || p.description}
               durationHours={p.workloadHours}
               cursos={cursosDoPrograma(p)}
-              onActionClick={() => navigate(`/academy/program/${p.id}`)}
-              onCourseClick={(cid) => navigate(`/academy/course/${cid}`)}
+              onActionClick={() => navigate(`/academia/program/${p.id}`)}
+              onCourseClick={(cid) => navigate(`/academia/course/${cid}`)}
             />
           ))}
         </Carrossel>
@@ -246,7 +246,7 @@ export const AcademyHomeScreen: React.FC = () => {
       state={carregando ? 'loading' : falhou ? 'error' : 'content'}
       loadingMessage="Carregando o catálogo…"
       errorProps={{
-        title: 'Não foi possível carregar o Academy',
+        title: 'Não foi possível carregar a Academia',
         message: 'Houve uma falha ao buscar o catálogo.',
         onRetry: () => window.location.reload(),
       }}
@@ -310,7 +310,7 @@ export const AcademyHomeScreen: React.FC = () => {
             primaryLabel="Entrar e me matricular"
             onPrimary={() => navigate('/auth')}
             secondaryLabel="Ver o catálogo antes"
-            onSecondary={() => navigate('/academy/catalog')}
+            onSecondary={() => navigate('/academia/catalog')}
             disclaimer="Os cursos são livres, com certificação própria do Conservatório. Não constituem graduação nem têm reconhecimento do MEC."
           />
         ) : (
@@ -337,7 +337,7 @@ export const AcademyHomeScreen: React.FC = () => {
                     <button
                       key={m.courseId}
                       type="button"
-                      onClick={() => navigate(`/academy/course/${c.id}`)}
+                      onClick={() => navigate(`/academia/course/${c.id}`)}
                       className="flex w-full items-center gap-3 rounded-lg p-1 text-left transition-colors hover:bg-stone-100"
                     >
                       <ProgressRing
@@ -381,7 +381,7 @@ export const AcademyHomeScreen: React.FC = () => {
                     durationMinutes={l.durationMinutes}
                     type="INTERACTIVE"
                     status={i === 0 ? 'IN_PROGRESS' : 'NOT_STARTED'}
-                    onSelect={() => navigate(`/academy/lesson/${l.id}`)}
+                    onSelect={() => navigate(`/academia/lesson/${l.id}`)}
                   />
                 ))}
               </div>
@@ -491,7 +491,7 @@ export const AcademyHomeScreen: React.FC = () => {
                         <button
                           type="button"
                           onClick={() =>
-                            navigate(`/academy/course/${a.curso!.id}?modulo=${a.disciplina!.id}`)
+                            navigate(`/academia/course/${a.curso!.id}?modulo=${a.disciplina!.id}`)
                           }
                           className="flex w-full items-center gap-3 py-2.5 text-left hover:bg-stone-50"
                         >
@@ -511,8 +511,8 @@ export const AcademyHomeScreen: React.FC = () => {
 
                   const alvo =
                     a.tipo === 'curso'
-                      ? `/academy/course/${a.curso!.id}`
-                      : `/academy/program/${a.programa!.id}`;
+                      ? `/academia/course/${a.curso!.id}`
+                      : `/academia/program/${a.programa!.id}`;
                   const titulo = a.tipo === 'curso' ? a.curso!.title : a.programa!.title;
 
                   return (

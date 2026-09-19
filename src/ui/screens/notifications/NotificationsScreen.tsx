@@ -25,7 +25,7 @@ export const NotificationsScreen: React.FC = () => {
       time: 'Há 2 horas',
       unread: true,
       category: 'Academia',
-      link: '/academy/course/contraponto-modal',
+      link: '/academia/course/contraponto-modal',
       icon: BookOpen,
     },
     {
@@ -62,7 +62,7 @@ export const NotificationsScreen: React.FC = () => {
         title: 'Nenhuma notificação recebida',
         description: 'Você está em dia com todas as suas disciplinas, tarefas e comunicados.',
         actionLabel: 'Ver Meu Aprendizado',
-        onAction: () => navigate('/academy/my-learning'),
+        onAction: () => navigate('/academia/my-learning'),
       }}
     >
       <div className="space-y-4 max-w-3xl mx-auto">

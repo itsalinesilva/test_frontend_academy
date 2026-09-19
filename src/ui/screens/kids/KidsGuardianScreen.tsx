@@ -445,7 +445,7 @@ export const KidsGuardianScreen: React.FC = () => {
                 Você continua autenticado e entra no perfil da criança. Ao sair, volta para o
                 acompanhamento. É o caminho do dia a dia, quando vocês estudam juntos.
               </p>
-              <Button variant="primary" size="sm" onClick={() => navigate('/academy')}>
+              <Button variant="primary" size="sm" onClick={() => navigate('/academia')}>
                 Abrir o perfil de {crianca.nomeExibicao}
               </Button>
             </Card>

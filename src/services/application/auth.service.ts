@@ -581,14 +581,14 @@ export class AuthService {
   // ------------------------------------------------------ GUARDA DE ROTA ---
 
   /**
-   * Avalia acesso a rota. A decisão sobre `/admin` vem do campo `isAdmin` da
+   * Avalia acesso a rota. A decisão sobre `/founder` vem do campo `isAdmin` da
    * sessão, que só existe porque o servidor o assinou — nunca de estado local.
    */
   public async checkRouteAccess(
     routePath: string,
     sessionUser: User | null
   ): Promise<{ authorized: boolean; reason?: string; requiredCapability?: string }> {
-    if (routePath.startsWith('/admin')) {
+    if (routePath.startsWith('/founder')) {
       const session = await this.getActiveSession();
       if (!session) {
         return {

@@ -125,7 +125,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
         <button
           type="button"
           role="menuitem"
-          onClick={() => handleNavigate('/academy/my-learning')}
+          onClick={() => handleNavigate('/academia/my-learning')}
           className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors"
         >
           <GraduationCap className="w-4 h-4 text-stone-400" />
@@ -158,7 +158,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
           <button
             type="button"
             role="menuitem"
-            onClick={() => handleNavigate('/admin')}
+            onClick={() => handleNavigate('/founder')}
             className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-anil-800 bg-red-50/50 hover:bg-red-100 transition-colors font-semibold"
           >
             <Shield className="w-4 h-4 text-anil-800" />

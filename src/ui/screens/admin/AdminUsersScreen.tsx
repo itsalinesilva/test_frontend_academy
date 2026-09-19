@@ -73,7 +73,7 @@ export const AdminUsersScreen: React.FC = () => {
       primaryAction={{
         label: 'Voltar ao console',
         icon: ArrowLeft,
-        onClick: () => navigate('/admin'),
+        onClick: () => navigate('/founder'),
       }}
       emptyProps={{
         title: usuarios && usuarios.length > 0 ? 'Nenhuma conta corresponde à busca' : 'Nenhuma conta registrada',

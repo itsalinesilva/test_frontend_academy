@@ -113,7 +113,7 @@ export const LibraryScreen: React.FC = () => {
         description:
           'Cada curso com módulos e lições rende dois livros: o de leitura e o caderno de prática. Assim que um curso ficar pronto, ele aparece aqui.',
         actionLabel: 'Ver os cursos',
-        onAction: () => navigate('/admin/content'),
+        onAction: () => navigate('/founder/content'),
       }}
     >
       <PageLayout.Hero>

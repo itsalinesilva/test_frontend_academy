@@ -72,8 +72,8 @@ export const ExplorarMenu: React.FC<ExplorarMenuProps> = ({
     {
       titulo: 'Aprender',
       itens: [
-        { label: 'Academy', hint: 'Cursos e programas', path: '/academy' },
-        { label: 'Practice', hint: 'Treino com medição real', path: '/practice' },
+        { label: 'Academia', hint: 'Cursos e programas', path: '/academia' },
+        { label: 'Laboratório', hint: 'Treino com medição real', path: '/practice' },
       ],
     },
     {
@@ -100,7 +100,7 @@ export const ExplorarMenu: React.FC<ExplorarMenuProps> = ({
     grupos[3].itens.push({ label: 'Salas', hint: 'Suas turmas', path: '/rooms' });
   }
   if (currentUserRole === UserRole.ADMIN || showAdminTab) {
-    grupos[3].itens.push({ label: 'Admin', hint: 'Governança', path: '/admin' });
+    grupos[3].itens.push({ label: 'Admin', hint: 'Governança', path: '/founder' });
   }
 
   const ir = (path: string) => {

@@ -51,7 +51,7 @@ beforeEach(() => {
 describe('rota pública', () => {
   it('abre para os três', () => {
     for (const quem of [VISITANTE, ALUNO, ADMIN]) {
-      const { unmount } = abrir('/academy', quem);
+      const { unmount } = abrir('/academia', quem);
       expect(screen.getByText(CONTEUDO)).toBeInTheDocument();
       unmount();
     }
@@ -63,7 +63,7 @@ describe('rota pública', () => {
      * sessão…" antes do catálogo. É o pior primeiro contato possível: a
      * plataforma pedindo identidade antes de dizer o que é.
      */
-    abrir('/academy', { userId: null, ehAdmin: false, carregando: true });
+    abrir('/academia', { userId: null, ehAdmin: false, carregando: true });
     expect(screen.getByText(CONTEUDO)).toBeInTheDocument();
     expect(screen.queryByText(/verificando/i)).not.toBeInTheDocument();
   });
@@ -94,28 +94,28 @@ describe('rota que exige login', () => {
 
 describe('rota que exige administração', () => {
   it('o visitante não passa', () => {
-    abrir('/admin', VISITANTE);
+    abrir('/founder', VISITANTE);
     expect(screen.queryByText(CONTEUDO)).not.toBeInTheDocument();
   });
 
   it('o ALUNO LOGADO não passa', () => {
     /**
-     * É a razão de o nível existir. Enquanto `/admin` era `exigeLogin`, a
+     * É a razão de o nível existir. Enquanto a rota se chamava `/admin` e era `exigeLogin`, a
      * tabela dizia que qualquer aluno alcançava o console, e só um segundo
      * sistema — não auditado — impedia.
      */
-    abrir('/admin', ALUNO);
+    abrir('/founder', ALUNO);
     expect(screen.queryByText(CONTEUDO)).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /não está disponível/i })).toBeInTheDocument();
   });
 
   it('o admin passa', () => {
-    abrir('/admin', ADMIN);
+    abrir('/founder', ADMIN);
     expect(screen.getByText(CONTEUDO)).toBeInTheDocument();
   });
 
   it('a subrota herda a exigência', () => {
-    abrir('/admin/users', ALUNO);
+    abrir('/founder/users', ALUNO);
     expect(screen.queryByText(CONTEUDO)).not.toBeInTheDocument();
   });
 
@@ -125,7 +125,7 @@ describe('rota que exige administração', () => {
      * bateu na porta errada. E não se distingue "não existe" de "não é para
      * você".
      */
-    const { container } = abrir('/admin', ALUNO);
+    const { container } = abrir('/founder', ALUNO);
     expect(container.textContent).not.toMatch(
       /usuários|motores|moderação|auditoria|credenciais|console/i
     );
@@ -151,7 +151,7 @@ describe('enquanto a sessão carrega', () => {
      * Mostrar primeiro e esconder depois é pior que esperar: o conteúdo já
      * apareceu, e num print ou numa gravação de tela ele ficou.
      */
-    abrir('/admin', { userId: null, ehAdmin: false, carregando: true });
+    abrir('/founder', { userId: null, ehAdmin: false, carregando: true });
     await waitFor(() => {
       expect(screen.queryByText(CONTEUDO)).not.toBeInTheDocument();
     });

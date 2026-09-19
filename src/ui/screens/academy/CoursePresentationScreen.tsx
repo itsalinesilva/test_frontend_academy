@@ -143,7 +143,7 @@ export const CoursePresentationScreen: React.FC = () => {
         errorProps={{
           title: 'Curso não encontrado',
           message: 'Verifique o endereço ou volte ao catálogo.',
-          onRetry: () => navigate('/academy'),
+          onRetry: () => navigate('/academia'),
         }}
       >
         <PageLayout.Main>{null}</PageLayout.Main>
@@ -157,7 +157,7 @@ export const CoursePresentationScreen: React.FC = () => {
 
   const entrar = async () => {
     if (matriculado) {
-      navigate(`/academy/course/${curso.id}/aprender`);
+      navigate(`/academia/course/${curso.id}/aprender`);
       return;
     }
     const sessao = await authService.getActiveSession();
@@ -166,7 +166,7 @@ export const CoursePresentationScreen: React.FC = () => {
       return;
     }
     await academyService.enrollCourse(sessao.user.id, curso.id);
-    navigate(`/academy/course/${curso.id}/aprender`);
+    navigate(`/academia/course/${curso.id}/aprender`);
   };
 
   const rotuloDoBotao = matriculado ? 'Continuar o curso' : 'Ir para o curso';

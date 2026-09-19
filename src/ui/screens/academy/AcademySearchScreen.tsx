@@ -67,7 +67,7 @@ export const AcademySearchScreen: React.FC = () => {
           <p className="text-xs leading-relaxed text-stone-600">
             Busque por disciplina, trilha, competencia ou obra do acervo.
           </p>
-          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academy/catalog')}>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academia/catalog')}>
             Ver catalogo completo
           </Button>
         </Card>
@@ -183,7 +183,7 @@ export const AcademySearchScreen: React.FC = () => {
                       variant="default"
                       padding="md"
                       className="space-y-3 flex flex-col justify-between hover:border-stone-400 cursor-pointer transition-colors"
-                      onClick={() => navigate(`/academy/course/${course.id}`)}
+                      onClick={() => navigate(`/academia/course/${course.id}`)}
                     >
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
@@ -218,7 +218,7 @@ export const AcademySearchScreen: React.FC = () => {
                       variant="default"
                       padding="md"
                       className="space-y-2 flex flex-col justify-between hover:border-stone-400 cursor-pointer transition-colors"
-                      onClick={() => navigate(`/academy/path/${path.id}`)}
+                      onClick={() => navigate(`/academia/path/${path.id}`)}
                     >
                       <div>
                         <div className="flex items-center justify-between mb-1">
@@ -252,7 +252,7 @@ export const AcademySearchScreen: React.FC = () => {
                       variant="default"
                       padding="md"
                       className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-stone-400 cursor-pointer transition-colors"
-                      onClick={() => navigate(`/academy/program/${program.id}`)}
+                      onClick={() => navigate(`/academia/program/${program.id}`)}
                     >
                       <div className="space-y-1 max-w-xl">
                         <Badge variant="brand" size="sm">Programa Curricular</Badge>

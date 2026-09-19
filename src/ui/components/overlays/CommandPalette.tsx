@@ -61,15 +61,15 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     },
     {
       id: 'cmd-academy',
-      title: 'Academy: Disciplinas Formais e Currículo',
+      title: 'Academia: disciplinas formais e currículo',
       category: 'Pilar Principal',
       icon: <GraduationCap className="w-4 h-4" />,
       shortcut: 'A',
-      action: () => { navigate('/academy'); onClose(); },
+      action: () => { navigate('/academia'); onClose(); },
     },
     {
       id: 'cmd-practice',
-      title: 'Practice: Treino Auditivo e Microcompetências',
+      title: 'Laboratório: treino auditivo e microcompetências',
       category: 'Pilar Principal',
       icon: <Target className="w-4 h-4" />,
       shortcut: 'P',
@@ -130,7 +130,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       title: 'Admin: Governança, Engines e Auditoria',
       category: 'Administração',
       icon: <Shield className="w-4 h-4" />,
-      action: () => { navigate('/admin'); onClose(); },
+      action: () => { navigate('/founder'); onClose(); },
     },
     {
       id: 'cmd-notifications',
@@ -234,7 +234,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               setQuery(e.target.value);
               setSelectedIndex(0);
             }}
-            placeholder="Navegar para Academy, Practice, Score, Studio, Profile…"
+            placeholder="Navegar para Academia, Laboratório, Partituras, Estúdio, Perfil…"
             className="w-full text-sm sm:text-base text-stone-900 placeholder:text-stone-400 bg-transparent focus:outline-none"
           />
           <kbd className="text-[10px] font-mono text-stone-400 bg-stone-100 border border-stone-200 px-1.5 py-0.5 rounded">

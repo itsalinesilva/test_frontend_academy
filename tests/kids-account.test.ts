@@ -262,8 +262,8 @@ describe('A criança não alcança perfil de ninguém', () => {
     expect(rotaBloqueadaParaKids('/rooms')).toBe(true);
     expect(rotaBloqueadaParaKids('/rooms/sala-1')).toBe(true);
     expect(rotaBloqueadaParaKids('/studio')).toBe(true);
-    expect(rotaBloqueadaParaKids('/admin')).toBe(true);
-    expect(rotaBloqueadaParaKids('/admin/credentials')).toBe(true);
+    expect(rotaBloqueadaParaKids('/founder')).toBe(true);
+    expect(rotaBloqueadaParaKids('/founder/credentials')).toBe(true);
   });
 
   it('o próprio perfil da criança continua aberto', () => {
@@ -273,8 +273,8 @@ describe('A criança não alcança perfil de ninguém', () => {
 
   it('a Academia e a Prática continuam abertas', () => {
     // Restringir o social não significa restringir o estudo.
-    expect(rotaBloqueadaParaKids('/academy')).toBe(false);
-    expect(rotaBloqueadaParaKids('/academy/course/crs_1')).toBe(false);
+    expect(rotaBloqueadaParaKids('/academia')).toBe(false);
+    expect(rotaBloqueadaParaKids('/academia/course/crs_1')).toBe(false);
     expect(rotaBloqueadaParaKids('/practice')).toBe(false);
     expect(rotaBloqueadaParaKids('/practice/skill-tree')).toBe(false);
   });

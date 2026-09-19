@@ -148,7 +148,7 @@ export const WorkDetailScreen: React.FC = () => {
                   variant="outline"
                   size="sm"
                   className="w-full"
-                  onClick={() => navigate('/academy/course/contraponto-modal')}
+                  onClick={() => navigate('/academia/course/contraponto-modal')}
                 >
                   <BookOpen className="w-3.5 h-3.5 mr-1" />
                   Ver Curso na Academia

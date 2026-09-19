@@ -110,7 +110,7 @@ export const CourseLearnScreen: React.FC = () => {
         errorProps={{
           title: 'Curso não encontrado',
           message: 'Verifique o endereço ou volte ao catálogo.',
-          onRetry: () => navigate('/academy'),
+          onRetry: () => navigate('/academia'),
         }}
       >
         <PageLayout.Main>{null}</PageLayout.Main>
@@ -187,7 +187,7 @@ export const CourseLearnScreen: React.FC = () => {
               </div>
               <button
                 type="button"
-                onClick={() => navigate(`/academy/course/${curso.id}#avaliacoes`)}
+                onClick={() => navigate(`/academia/course/${curso.id}#avaliacoes`)}
                 className="mt-2 text-xs font-medium text-anil-700 underline-offset-2 hover:underline"
               >
                 {minhaAvaliacao?.comentario
@@ -217,7 +217,7 @@ export const CourseLearnScreen: React.FC = () => {
                 <li key={o.id}>
                   <button
                     type="button"
-                    onClick={() => navigate(`/academy/course/${o.id}`)}
+                    onClick={() => navigate(`/academia/course/${o.id}`)}
                     className="w-full rounded-md px-2 py-1.5 text-left transition-colors hover:bg-stone-50"
                   >
                     <span className="block text-xs font-medium leading-snug text-stone-900">
@@ -250,7 +250,7 @@ export const CourseLearnScreen: React.FC = () => {
                   </p>
                   <button
                     type="button"
-                    onClick={() => navigate(`/academy/completion/${curso.id}`)}
+                    onClick={() => navigate(`/academia/completion/${curso.id}`)}
                     className="mt-3 rounded-md bg-anil-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-anil-700"
                   >
                     Emitir certificado
@@ -345,7 +345,7 @@ export const CourseLearnScreen: React.FC = () => {
                             <li key={l.id}>
                               <button
                                 type="button"
-                                onClick={() => navigate(`/academy/lesson/${l.id}`)}
+                                onClick={() => navigate(`/academia/lesson/${l.id}`)}
                                 className="flex w-full items-center gap-3 py-3 text-left transition-colors hover:bg-stone-50"
                               >
                                 {feita ? (

@@ -130,7 +130,7 @@ export const InteractiveLessonScreen: React.FC = () => {
         title: 'Licao nao encontrada',
         description: 'O identificador informado nao corresponde a uma licao do curriculo.',
         actionLabel: 'Voltar ao catalogo',
-        onAction: () => navigate('/academy/catalog'),
+        onAction: () => navigate('/academia/catalog'),
       }}
     >
       <PageLayout.Aside>
@@ -357,7 +357,7 @@ export const InteractiveLessonScreen: React.FC = () => {
                   size="sm"
                   variant="outline"
                   className="w-full justify-center"
-                  onClick={() => navigate('/academy/academic-profile')}
+                  onClick={() => navigate('/academia/academic-profile')}
                 >
                   <Award className="w-3.5 h-3.5 mr-1.5" />
                   Ver Perfil Acadêmico

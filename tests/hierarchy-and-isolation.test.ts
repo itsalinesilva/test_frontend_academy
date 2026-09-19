@@ -14,13 +14,13 @@ import {
  *
  * O QUE ESTAVA PARTIDO ATÉ 19/09
  * ------------------------------
- * A tabela declarava `/admin` como `exigeLogin`, e quem de fato barrava o
+ * A tabela declarava `/admin` — o nome de então — como `exigeLogin`, e quem de fato barrava o
  * aluno comum era um efeito no `AppRouterOutlet` chamando `checkRouteAccess`.
  * A proteção funcionava — mas a hierarquia vivia em **dois sistemas**, um
  * declarativo e um imperativo, e só o primeiro era auditado.
  *
  * Duas fontes de verdade sobre quem alcança o quê divergem na primeira rota
- * nova. Uma tela administrativa criada fora do prefixo `/admin` não seria
+ * nova. Uma tela administrativa criada fora do prefixo dela não seria
  * protegida por ninguém, e a tabela continuaria dizendo que estava tudo certo.
  */
 
@@ -51,21 +51,21 @@ describe('os quatro níveis existem e são distintos', () => {
 });
 
 describe('administração é nível próprio, e não "logado"', () => {
-  it('/admin exige administração', () => {
-    expect(audienciaDaRota('/admin')).toBe('exigeAdmin');
+  it('/founder exige administração', () => {
+    expect(audienciaDaRota('/founder')).toBe('exigeAdmin');
   });
 
-  it('toda subrota de /admin herda a exigência', () => {
+  it('toda subrota de /founder herda a exigência', () => {
     // Herdar aqui é o comportamento certo: a raiz é a mais restritiva.
     for (const sub of [
-      '/admin/users',
-      '/admin/engines',
-      '/admin/content',
-      '/admin/moderation',
-      '/admin/credentials',
-      '/admin/booklets',
-      '/admin/biblioteca',
-      '/admin/audit',
+      '/founder/users',
+      '/founder/engines',
+      '/founder/content',
+      '/founder/moderation',
+      '/founder/credentials',
+      '/founder/booklets',
+      '/founder/biblioteca',
+      '/founder/audit',
     ]) {
       expect(audienciaDaRota(sub), sub).toBe('exigeAdmin');
     }
@@ -73,22 +73,22 @@ describe('administração é nível próprio, e não "logado"', () => {
 
   it('estar logado não basta para a administração', () => {
     /**
-     * É a distinção que o nível novo existe para fazer. Enquanto `/admin` era
+     * É a distinção que o nível novo existe para fazer. Enquanto a rota se chamava `/admin` e era
      * `exigeLogin`, a tabela dizia que qualquer aluno alcançava o console — e
      * só um segundo sistema, não auditado, impedia.
      */
-    expect(audienciaDaRota('/admin')).not.toBe('exigeLogin');
+    expect(audienciaDaRota('/founder')).not.toBe('exigeLogin');
   });
 });
 
 describe('o que é de alguém não é público', () => {
   it('as rotas de registro pessoal exigem login', () => {
     for (const rota of [
-      '/academy/result/sub_1',
-      '/academy/certificate/cert_1',
-      '/academy/completion/c_1',
-      '/academy/history',
-      '/academy/meu-aprendizado',
+      '/academia/result/sub_1',
+      '/academia/certificate/cert_1',
+      '/academia/completion/c_1',
+      '/academia/history',
+      '/academia/meu-aprendizado',
       '/profile',
       '/notifications',
       '/settings',
@@ -97,19 +97,19 @@ describe('o que é de alguém não é público', () => {
     }
   });
 
-  it('`/academy/result` não volta a herdar pública', () => {
+  it('`/academia/result` não volta a herdar pública', () => {
     /**
-     * O vazamento de 19/09: a rota herdava `publica` de `/academy`, e a tela
+     * O vazamento de 19/09: a rota herdava `publica` de `/academia`, e a tela
      * buscava a submissão só pelo identificador. Quem tivesse um id via a
      * nota, a aprovação e o número de certificado de outra pessoa.
      */
-    expect(audienciaDaRota('/academy')).toBe('publica');
-    expect(audienciaDaRota('/academy/result/qualquer-coisa')).toBe('exigeLogin');
+    expect(audienciaDaRota('/academia')).toBe('publica');
+    expect(audienciaDaRota('/academia/result/qualquer-coisa')).toBe('exigeLogin');
   });
 
   it('o catálogo continua aberto — restringir tudo seria o erro oposto', () => {
     // Trancar o catálogo esconderia o produto de quem ainda não decidiu.
-    expect(audienciaDaRota('/academy')).toBe('publica');
+    expect(audienciaDaRota('/academia')).toBe('publica');
     expect(audienciaDaRota('/worlds')).toBe('publica');
     expect(audienciaDaRota('/score')).toBe('publica');
   });
@@ -117,8 +117,8 @@ describe('o que é de alguém não é público', () => {
 
 describe('prefixo mais longo vence', () => {
   it('a regra específica ganha da genérica', () => {
-    expect(audienciaDaRota('/academy')).toBe('publica');
-    expect(audienciaDaRota('/academy/history')).toBe('exigeLogin');
+    expect(audienciaDaRota('/academia')).toBe('publica');
+    expect(audienciaDaRota('/academia/history')).toBe('exigeLogin');
   });
 
   it('rota desconhecida vale como pública', () => {

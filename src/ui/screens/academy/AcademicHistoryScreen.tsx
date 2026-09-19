@@ -63,7 +63,7 @@ export const AcademicHistoryScreen: React.FC = () => {
         description:
           'Cada lição concluída, avaliação realizada e certificado emitido fica registrado aqui de forma auditável.',
         actionLabel: 'Ir ao catálogo',
-        onAction: () => navigate('/academy/catalog'),
+        onAction: () => navigate('/academia/catalog'),
       }}
     >
       <PageLayout.Aside>

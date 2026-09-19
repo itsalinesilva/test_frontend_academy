@@ -411,7 +411,7 @@ export class AcademyService {
           title: `Atividade Auditada: ${activity.skills.join(', ')}`,
           description: `Demonstração determinística de competência em "${activity.skills.join(' / ')}". Resolvido na tentativa ${attemptNumber} com nota máxima.`,
           artifactType: 'project',
-          artifactUrl: `/academy/activity/${activityId}`,
+          artifactUrl: `/academia/activity/${activityId}`,
           skills: activity.skills,
           evaluator: {
             id: 'eval_auto_validator',
@@ -657,7 +657,7 @@ export class AcademyService {
         title: `Certificado de Conclusão: ${course.title}`,
         description: `Certificado oficial conferido pela Conservatório Muscicapa. Carga horária auditada de ${course.workloadHours} horas. Código: ${verificationCode}`,
         artifactType: 'document',
-        artifactUrl: `/academy/certificate/${savedCert.id}`,
+        artifactUrl: `/academia/certificate/${savedCert.id}`,
         skills: course.competencies,
         evaluator: {
           id: course.authorId,

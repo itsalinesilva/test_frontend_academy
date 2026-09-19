@@ -90,7 +90,7 @@ export const CategoryDetailScreen: React.FC = () => {
               <dd className="font-mono font-bold">{courses.length}</dd>
             </div>
           </dl>
-          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academy/catalog')}>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academia/catalog')}>
             Catalogo completo
           </Button>
         </Card>
@@ -152,7 +152,7 @@ export const CategoryDetailScreen: React.FC = () => {
                 variant="outline"
                 size="sm"
                 className="w-full justify-center"
-                onClick={() => navigate('/academy/search')}
+                onClick={() => navigate('/academia/search')}
               >
                 <Search className="w-3.5 h-3.5 mr-1.5" />
                 Buscar nas Disciplinas
@@ -176,7 +176,7 @@ export const CategoryDetailScreen: React.FC = () => {
                 <button
                   key={c.id}
                   type="button"
-                  onClick={() => navigate(`/academy/category/${c.id}`)}
+                  onClick={() => navigate(`/academia/category/${c.id}`)}
                   className={`px-3.5 py-2 rounded-lg text-xs font-medium shrink-0 transition-all border ${
                     isCurrent
                       ? 'bg-stone-900 text-white border-stone-900 shadow-xs'
@@ -271,7 +271,7 @@ export const CategoryDetailScreen: React.FC = () => {
                     </div>
 
                     <h4
-                      onClick={() => navigate(`/academy/course/${crs.id}`)}
+                      onClick={() => navigate(`/academia/course/${crs.id}`)}
                       className="font-serif font-bold text-base text-stone-950 hover:text-anil-800 cursor-pointer transition-colors"
                     >
                       {crs.title}
@@ -303,7 +303,7 @@ export const CategoryDetailScreen: React.FC = () => {
                     <Button
                       size="sm"
                       variant="primary"
-                      onClick={() => navigate(`/academy/course/${crs.id}`)}
+                      onClick={() => navigate(`/academia/course/${crs.id}`)}
                     >
                       Ver Detalhes do Curso
                       <ArrowRight className="w-3.5 h-3.5 ml-1" />

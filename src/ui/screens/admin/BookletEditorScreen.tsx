@@ -211,7 +211,7 @@ export const BookletEditorScreen: React.FC = () => {
         description:
           'Os livretos de exercício são gerados junto com cada curso, a partir do estudo do acervo. Assim que um curso ficar pronto, o caderno dele aparece aqui para revisão.',
         actionLabel: 'Ver os cursos',
-        onAction: () => navigate('/admin/content'),
+        onAction: () => navigate('/founder/content'),
       }}
     >
       <PageLayout.Hero>

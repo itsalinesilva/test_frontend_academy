@@ -74,7 +74,7 @@ export const AcademySearchResultsScreen: React.FC = () => {
           <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
             Resultados
           </p>
-          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academy/search')}>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academia/search')}>
             Nova busca
           </Button>
         </Card>
@@ -206,7 +206,7 @@ export const AcademySearchResultsScreen: React.FC = () => {
                     </div>
 
                     <h4
-                      onClick={() => navigate(`/academy/course/${crs.id}`)}
+                      onClick={() => navigate(`/academia/course/${crs.id}`)}
                       className="font-serif font-bold text-base text-stone-950 hover:text-anil-800 cursor-pointer"
                     >
                       {crs.title}
@@ -232,7 +232,7 @@ export const AcademySearchResultsScreen: React.FC = () => {
                     <Button
                       size="sm"
                       variant="primary"
-                      onClick={() => navigate(`/academy/course/${crs.id}`)}
+                      onClick={() => navigate(`/academia/course/${crs.id}`)}
                     >
                       Ver Disciplina
                       <ArrowRight className="w-3.5 h-3.5 ml-1" />

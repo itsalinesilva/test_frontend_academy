@@ -141,7 +141,7 @@ export const LessonTheaterScreen: React.FC = () => {
         errorProps={{
           title: 'Lição não encontrada',
           message: 'Verifique o endereço ou volte ao catálogo.',
-          onRetry: () => navigate('/academy'),
+          onRetry: () => navigate('/academia'),
         }}
       >
         <PageLayout.Main>{null}</PageLayout.Main>
@@ -169,7 +169,7 @@ export const LessonTheaterScreen: React.FC = () => {
     setSalvando(true);
     try {
       setProgresso(await academyService.completeLesson(sessao.user.id, licao.id));
-      if (proxima) navigate(`/academy/lesson/${proxima.id}`);
+      if (proxima) navigate(`/academia/lesson/${proxima.id}`);
     } finally {
       setSalvando(false);
     }
@@ -287,7 +287,7 @@ export const LessonTheaterScreen: React.FC = () => {
             {anterior ? (
               <button
                 type="button"
-                onClick={() => navigate(`/academy/lesson/${anterior.id}`)}
+                onClick={() => navigate(`/academia/lesson/${anterior.id}`)}
                 className="inline-flex min-w-0 items-center gap-2 rounded-md px-3 py-2 text-sm text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900"
               >
                 <ArrowLeft className="h-4 w-4 shrink-0" />

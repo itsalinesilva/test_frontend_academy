@@ -60,7 +60,7 @@ export const AdminAuditScreen: React.FC = () => {
         {
           label: 'Voltar ao console',
           icon: ArrowLeft,
-          onClick: () => navigate('/admin'),
+          onClick: () => navigate('/founder'),
         },
       ]}
       emptyProps={{

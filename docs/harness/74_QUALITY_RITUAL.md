@@ -106,7 +106,7 @@ npm run dev
 
 1. Home — o que o visitante lê é sobre conhecer e se inscrever?
 2. Catálogo → curso → grade. Nenhuma frase fala com quem não entrou?
-3. Tentar `/academy/meu-aprendizado` — o convite aparece e o endereço se mantém?
+3. Tentar `/academia/meu-aprendizado` — o convite aparece e o endereço se mantém?
 4. Verificar uma credencial por código — abre sem conta?
 
 **Percurso do aluno** — sessão iniciada

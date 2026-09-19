@@ -23,7 +23,7 @@ export const AdminDashboardScreen: React.FC = () => {
       title: 'Gestão de Usuários & Papéis',
       desc: 'Atribuição de papéis (Aluno, Músico, Professor, Admin), homologação e moderação de contas.',
       icon: Users,
-      link: '/admin/users',
+      link: '/founder/users',
       badge: 'Controle de Acesso',
     },
     {
@@ -31,7 +31,7 @@ export const AdminDashboardScreen: React.FC = () => {
       title: 'Gateway de Engines & Saúde',
       desc: 'Inspeção de latência e disponibilidade dos motores: Teoria Musical, Áudio/DSP, Partituras e IA.',
       icon: Activity,
-      link: '/admin/engines',
+      link: '/founder/engines',
       badge: 'Infraestrutura',
     },
     {
@@ -39,7 +39,7 @@ export const AdminDashboardScreen: React.FC = () => {
       title: 'Curadoria & Governança Curricular',
       desc: 'Homologação de planos de curso, ementas acadêmicas e validação de proveniência musicológica.',
       icon: FileCheck,
-      link: '/admin/content',
+      link: '/founder/content',
       badge: 'Currículo Oficial',
     },
     {
@@ -47,7 +47,7 @@ export const AdminDashboardScreen: React.FC = () => {
       title: 'Fila de Moderação Institucional',
       desc: 'Auditoria de publicações sinalizadas pela comunidade, denúncias e conformidade ética.',
       icon: Flag,
-      link: '/admin/moderation',
+      link: '/founder/moderation',
       badge: '0 Denúncias',
     },
     {
@@ -55,7 +55,7 @@ export const AdminDashboardScreen: React.FC = () => {
       title: 'Estúdio de Credenciais',
       desc: 'A matriz visual de badges, credenciais e certificados: cores, tipografia, logotipo, selo, QR e emissão.',
       icon: Award,
-      link: '/admin/credentials',
+      link: '/founder/credentials',
       badge: 'Identidade & Emissão',
     },
     {
@@ -63,7 +63,7 @@ export const AdminDashboardScreen: React.FC = () => {
       title: 'Trilha Imutável de Auditoria',
       desc: 'Logs criptográficos de autenticação, concessão de privilégios e transações sensíveis.',
       icon: History,
-      link: '/admin/audit',
+      link: '/founder/audit',
       badge: 'Logs Imutáveis',
     },
   ];

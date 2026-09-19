@@ -27,6 +27,8 @@ import {
   checkAdminScreensBehindAdminAudience,
   checkGuardCoversEveryAudience,
   checkPersonalRouteInheritingPublic,
+  checkNoGuessableAdminRoute,
+  checkTechnicalNameInUi,
   checkPublishKeepsStudentData,
   checkAdminAuthority,
   checkConsoleLeak,
@@ -102,6 +104,7 @@ const SECTIONS = [
         checkPersonalRouteInheritingPublic(),
         G.BLOCKS
       ),
+      report('a rota administrativa não se chama pelo nome óbvio', checkNoGuessableAdminRoute(), G.BLOCKS),
     ],
   },
   {
@@ -167,6 +170,7 @@ const SECTIONS = [
       report('ortografia: acentuação', texto.ortografia, G.FIX),
       report('pontuação e espaçamento', texto.pontuacao, G.FIX),
       report('nenhum inglês na interface em português', texto.ingles, G.FIX),
+      report('nenhum nome técnico vazando para a tela', checkTechnicalNameInUi(), G.FIX),
     ],
   },
   {

@@ -11,11 +11,11 @@ import { resolveRouteParams, CANONICAL_ROUTES } from '../src/ui/navigation/route
  */
 describe('Rotas quebradas — as seis do R-01', () => {
   const casos: Array<[string, Record<string, string>]> = [
-    ['/academy/course/crs_x/curriculum', { id: 'crs_x' }],
-    ['/academy/course/crs_x/progress', { id: 'crs_x' }],
-    ['/academy/lesson/les_x/interactive', { id: 'les_x' }],
-    ['/academy/quiz/quiz_x', { id: 'quiz_x' }],
-    ['/academy/category/cat_x', { id: 'cat_x' }],
+    ['/academia/course/crs_x/curriculum', { id: 'crs_x' }],
+    ['/academia/course/crs_x/progress', { id: 'crs_x' }],
+    ['/academia/lesson/les_x/interactive', { id: 'les_x' }],
+    ['/academia/quiz/quiz_x', { id: 'quiz_x' }],
+    ['/academia/category/cat_x', { id: 'cat_x' }],
     ['/practice/feedback/fb_x', { id: 'fb_x' }],
   ];
 
@@ -26,13 +26,13 @@ describe('Rotas quebradas — as seis do R-01', () => {
 
 describe('Rotas que já funcionavam continuam funcionando', () => {
   it('curso, lição e obra', () => {
-    expect(resolveRouteParams('/academy/course/crs_fomt_01')).toEqual({ id: 'crs_fomt_01' });
-    expect(resolveRouteParams('/academy/lesson/les_1')).toEqual({ id: 'les_1' });
+    expect(resolveRouteParams('/academia/course/crs_fomt_01')).toEqual({ id: 'crs_fomt_01' });
+    expect(resolveRouteParams('/academia/lesson/les_1')).toEqual({ id: 'les_1' });
     expect(resolveRouteParams('/worlds/work/bwv-1001')).toEqual({ id: 'bwv-1001' });
   });
 
   it('módulo, com dois parâmetros', () => {
-    expect(resolveRouteParams('/academy/course/crs_1/module/mod_2')).toEqual({
+    expect(resolveRouteParams('/academia/course/crs_1/module/mod_2')).toEqual({
       courseId: 'crs_1',
       moduleId: 'mod_2',
     });
@@ -46,8 +46,8 @@ describe('Rota estática tem precedência sobre padrão dinâmico', () => {
     expect(resolveRouteParams('/rooms/sala_x')).toEqual({ id: 'sala_x' });
   });
 
-  it('/academy/search/results não vira categoria nem curso', () => {
-    expect(resolveRouteParams('/academy/search/results')).toEqual({});
+  it('/academia/search/results não vira categoria nem curso', () => {
+    expect(resolveRouteParams('/academia/search/results')).toEqual({});
   });
 
   it('/practice/skill-tree não é capturado por /practice/skill/:id', () => {

@@ -17,7 +17,7 @@ export const AdminModerationScreen: React.FC = () => {
       primaryAction={{
         label: 'Voltar ao Console',
         icon: ArrowLeft,
-        onClick: () => navigate('/admin'),
+        onClick: () => navigate('/founder'),
       }}
       emptyProps={{
         title: 'Nenhum item pendente de moderação',

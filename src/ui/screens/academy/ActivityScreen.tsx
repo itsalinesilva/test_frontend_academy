@@ -118,7 +118,7 @@ export const ActivityScreen: React.FC = () => {
         {
           label: 'Voltar à Lição',
           icon: ArrowLeft,
-          onClick: () => navigate(`/academy/lesson/${activity.lessonId}`),
+          onClick: () => navigate(`/academia/lesson/${activity.lessonId}`),
         },
       ]}
     >
@@ -273,7 +273,7 @@ export const ActivityScreen: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate(`/academy/lesson/${activity.lessonId}`)}
+              onClick={() => navigate(`/academia/lesson/${activity.lessonId}`)}
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
               Voltar à Lição
@@ -297,7 +297,7 @@ export const ActivityScreen: React.FC = () => {
                     id="btn-activity-next-step"
                     variant="primary"
                     size="sm"
-                    onClick={() => navigate(`/academy/course/${lesson?.courseId || 'crs_fomt_01'}`)}
+                    onClick={() => navigate(`/academia/course/${lesson?.courseId || 'crs_fomt_01'}`)}
                   >
                     Prosseguir no Curso
                     <ArrowRight className="w-3.5 h-3.5 ml-1" />

@@ -54,7 +54,7 @@ export const CertificateScreen: React.FC = () => {
           title: 'Certificado não encontrado',
           description: `O código [${certificateId}] não corresponde a um registro válido.`,
           actionLabel: 'Voltar ao Meu Aprendizado',
-          onAction: () => navigate('/academy/my-learning'),
+          onAction: () => navigate('/academia/my-learning'),
         }}
       >
         <div />
@@ -82,7 +82,7 @@ export const CertificateScreen: React.FC = () => {
         {
           label: 'Meu Histórico',
           icon: ArrowLeft,
-          onClick: () => navigate('/academy/history'),
+          onClick: () => navigate('/academia/history'),
         },
       ]}
     >

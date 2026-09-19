@@ -211,7 +211,7 @@ export const PracticeScreen: React.FC = () => {
       secondaryActions={[
         {
           label: 'Voltar para Academia',
-          onClick: () => navigate('/academy'),
+          onClick: () => navigate('/academia'),
         },
       ]}
       emptyProps={{

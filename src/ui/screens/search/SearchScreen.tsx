@@ -15,7 +15,7 @@ export const SearchScreen: React.FC = () => {
       type: 'Curso',
       title: 'Harmonia e Teoria Fundamental',
       context: 'Academia • Cátedra de Teoria',
-      link: '/academy/course/harmonia-fundamental',
+      link: '/academia/course/harmonia-fundamental',
       icon: BookOpen,
     },
     {

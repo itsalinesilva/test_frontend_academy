@@ -77,7 +77,7 @@ export const RoomsDirectoryScreen: React.FC = () => {
             ? 'Salas que você criar aparecem aqui, com as tarefas e os encontros de cada turma.'
             : 'Ainda não há turmas abertas no Conservatório. O conteúdo dos cursos está disponível para estudo independente enquanto isso.',
         actionLabel: 'Ver os cursos da Academia',
-        onAction: () => navigate('/academy'),
+        onAction: () => navigate('/academia'),
       }}
       state={salas === null ? 'loading' : visiveis.length === 0 ? 'empty' : 'populated'}
     >

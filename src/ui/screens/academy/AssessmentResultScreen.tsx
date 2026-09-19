@@ -71,7 +71,7 @@ export const AssessmentResultScreen: React.FC = () => {
           title: 'Tentativa não encontrada',
           description: `O identificador [${attemptId}] não foi localizado.`,
           actionLabel: 'Voltar ao Início',
-          onAction: () => navigate('/academy'),
+          onAction: () => navigate('/academia'),
         }}
       >
         <div />
@@ -93,16 +93,16 @@ export const AssessmentResultScreen: React.FC = () => {
         icon: isPassed ? GraduationCap : RotateCcw,
         onClick: () => {
           if (isPassed && course) {
-            navigate(`/academy/completion/${course.id}`);
+            navigate(`/academia/completion/${course.id}`);
           } else if (course) {
-            navigate(`/academy/course/${course.id}`);
+            navigate(`/academia/course/${course.id}`);
           }
         },
       }}
       secondaryActions={[
         {
           label: 'Início da Academia',
-          onClick: () => navigate('/academy'),
+          onClick: () => navigate('/academia'),
         },
       ]}
     >
@@ -160,7 +160,7 @@ export const AssessmentResultScreen: React.FC = () => {
                 id="btn-view-certificate"
                 size="sm"
                 variant="primary"
-                onClick={() => navigate(`/academy/certificate/${attempt.certificateId}`)}
+                onClick={() => navigate(`/academia/certificate/${attempt.certificateId}`)}
               >
                 Abrir Certificado
                 <ArrowRight className="w-3.5 h-3.5 ml-1" />

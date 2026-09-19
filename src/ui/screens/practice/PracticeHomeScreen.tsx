@@ -502,12 +502,12 @@ export const PracticeHomeScreen: React.FC = () => {
         </div>
       </section>
 
-      {/* Section 3: Academy → Practice: Laboratórios Integrados */}
+      {/* Secao 3: da Academia ao Laboratorio */}
       <section className="space-y-4 pt-2">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="font-serif text-xl font-bold text-stone-900">
-              Academy → Practice: Laboratórios Integrados
+              Da Academia ao Laboratório
             </h2>
             <p className="text-xs text-stone-500 font-sans">
               Práticas deliberadas diretamente conectadas às disciplinas matriculadas no currículo acadêmico.
@@ -516,7 +516,7 @@ export const PracticeHomeScreen: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.navigate('/academy/my-learning')}
+            onClick={() => router.navigate('/academia/my-learning')}
           >
             Ver Meu Aprendizado
           </Button>

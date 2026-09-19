@@ -23,14 +23,14 @@
  *
  * POR QUE `exigeAdmin` PASSOU A EXISTIR
  * -------------------------------------
- * `/admin` estava declarada aqui como `exigeLogin`, e quem de fato barrava o
+ * A rota administrativa chamava-se `/admin` e estava declarada aqui como `exigeLogin`, e quem de fato barrava o
  * aluno comum era um efeito no `AppRouterOutlet`, chamando
  * `authService.checkRouteAccess`. A proteção funcionava — mas a **hierarquia
  * estava partida em dois sistemas**: um declarativo, que a auditoria lê, e um
  * imperativo, que ela não lê.
  *
  * Duas fontes de verdade sobre quem alcança o quê divergem na primeira rota
- * nova. Uma tela administrativa fora do prefixo `/admin` não seria protegida
+ * nova. Uma tela administrativa fora do prefixo dela não seria protegida
  * por ninguém, e a tabela continuaria dizendo que estava tudo certo.
  *
  * Agora a declaração é a fonte, a guarda a aplica, e `checkRouteAccess`
@@ -64,7 +64,7 @@ export const REGRAS_DE_AUDIENCIA: RegraDeAudiencia[] = [
     porque: 'A home é a porta: visitante conhece a plataforma, aluno vê o próprio feed.',
   },
   {
-    rota: '/academy',
+    rota: '/academia',
     audiencia: 'publica',
     porque: 'O catálogo precisa ser visível a quem ainda não se matriculou.',
   },
@@ -117,44 +117,44 @@ export const REGRAS_DE_AUDIENCIA: RegraDeAudiencia[] = [
 
   // --------------------------------------------------------- exige login --
   {
-    rota: '/academy/meu-aprendizado',
+    rota: '/academia/meu-aprendizado',
     audiencia: 'exigeLogin',
     porque: 'É o progresso de alguém; sem alguém, não há o que mostrar.',
   },
   {
-    rota: '/academy/my-learning',
+    rota: '/academia/my-learning',
     audiencia: 'exigeLogin',
     porque: 'Mesma tela, rota antiga.',
   },
   {
-    rota: '/academy/history',
+    rota: '/academia/history',
     audiencia: 'exigeLogin',
     porque: 'Histórico acadêmico é pessoal.',
   },
   /**
-   * Esta herdava "pública" de `/academy`, por prefixo mais longo.
+   * Esta herdava "pública" de `/academia`, por prefixo mais longo.
    *
-   * Não era descuido de declaração: era vazamento. `/academy/result/<id>`
+   * Não era descuido de declaração: era vazamento. `/academia/result/<id>`
    * mostrava a nota, a aprovação e o número de certificado de quem tivesse —
-   * ou adivinhasse — o identificador. `/academy/certificate` e
-   * `/academy/completion` já estavam declaradas; esta tinha ficado de fora.
+   * ou adivinhasse — o identificador. `/academia/certificate` e
+   * `/academia/completion` já estavam declaradas; esta tinha ficado de fora.
    *
    * A regra do prefixo mais longo é boa, e é justamente por isso que o que é
    * pessoal precisa se declarar: o silêncio aqui significa "vale o que o pai
    * disser", e o pai é público.
    */
   {
-    rota: '/academy/result',
+    rota: '/academia/result',
     audiencia: 'exigeLogin',
     porque: 'É a prova de uma pessoa: nota, aprovação e registro.',
   },
   {
-    rota: '/academy/certificate',
+    rota: '/academia/certificate',
     audiencia: 'exigeLogin',
     porque: 'Emitir certificado exige aluno; verificar um já emitido é público.',
   },
   {
-    rota: '/academy/completion',
+    rota: '/academia/completion',
     audiencia: 'exigeLogin',
     porque: 'Conclusão de curso pressupõe matrícula.',
   },
@@ -169,7 +169,7 @@ export const REGRAS_DE_AUDIENCIA: RegraDeAudiencia[] = [
   { rota: '/settings', audiencia: 'exigeLogin', porque: 'Preferências são de alguém.' },
   { rota: '/rooms', audiencia: 'exigeLogin', porque: 'Salas exigem vínculo.' },
   {
-    rota: '/admin',
+    rota: '/founder',
     audiencia: 'exigeAdmin',
     porque: 'Governança exige outorga administrativa assinada pelo servidor.',
   },
@@ -184,7 +184,7 @@ export const REGRAS_DE_AUDIENCIA: RegraDeAudiencia[] = [
 
 /**
  * Audiência de uma rota. A regra de prefixo mais longo vence, de modo que
- * `/academy/meu-aprendizado` supere `/academy`.
+ * `/academia/meu-aprendizado` supere `/academia`.
  *
  * Rota não declarada é pública — e a auditoria acusa a omissão.
  */

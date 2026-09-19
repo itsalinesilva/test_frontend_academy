@@ -38,7 +38,7 @@ quatro níveis:
 | `somenteVisitante` | abre | avisa que não há o que fazer ali | idem |
 | `exigeAdmin` | recusa | **recusa** | abre |
 
-**Prefixo mais longo vence.** `/academy` é pública; `/academy/history` exige
+**Prefixo mais longo vence.** `/academia` é pública; `/academia/history` exige
 login; a regra mais específica ganha da genérica.
 
 **Omissão vale como pública**, e isso é deliberado: erra para o lado de não
@@ -61,6 +61,43 @@ Agora a declaração é a fonte, a guarda a aplica, e `checkRouteAccess` continu
 como **segunda camada** — defesa em profundidade, e não verdade concorrente.
 
 ---
+
+## 2.1 · O nome da rota administrativa
+
+A rota é **`/founder`**, e não `/admin`.
+
+Isto **não é o que protege** o console. Quem protege é a outorga assinada pelo
+servidor, conferida contra a allowlist de `server/core/admin-authority.ts` —
+que vive fora do bundle e nunca chega ao navegador. Um nome difícil sem essa
+outorga seria segurança por obscuridade, o antipadrão clássico.
+
+O que o nome faz é outra coisa, e é legítima: **não anunciar que existe um
+console**. `/admin` é a primeira coisa que qualquer varredura automática tenta;
+`/founder` não está em lista nenhuma. Reduzir a superfície que se descobre sem
+esforço é camada válida — **depois** da que decide, nunca no lugar dela.
+
+E `/admin` não redireciona: ela simplesmente não existe, e cai no
+`NotFoundScreen` como qualquer endereço inventado. Redirecionar confirmaria
+que há o que procurar.
+
+> **A allowlist não é segredo e não é credencial.** Quem se apresentar com um
+> daqueles e-mails ainda precisa provar posse da conta Google, com token
+> verificado por assinatura RS256 contra o JWKS. A lista só decide o que fazer
+> **depois** dessa prova — por isso ler o código não dá acesso a ninguém.
+
+## 2.2 · O nome técnico não vai para a tela
+
+O código é inglês; a interface é portuguesa. O que não pode é o identificador
+do domínio aparecer para o aluno — "Academy" no menu era exatamente isso.
+
+| Na tela | No código |
+|---|---|
+| Academia | `AcademyHomeScreen`, `academyService`, `/academia` |
+| Laboratório | `practice.service`, `PracticePathMap` |
+| Partituras | `ScoreScreen` |
+
+`checkTechnicalNameInUi` verifica rótulo, título, dica, `placeholder` e texto
+solto de JSX. Tipo, serviço e arquivo continuam em inglês, como devem.
 
 ## 3 · Três camadas, e cada uma sozinha é insuficiente
 
@@ -109,6 +146,8 @@ espaço, o que a pessoa leva, como começa. Ver `VisitorInvitation`.
 | `checkPerUserFilter` | listagem de dado de aluno sem filtro |
 | `checkPersonalSectionWithoutSession` | seção possessiva em tela que o visitante alcança |
 | `checkAdminAuthority` | privilégio decidido no cliente |
+| `checkNoGuessableAdminRoute` | volta de `/admin` como rota |
+| `checkTechnicalNameInUi` | nome técnico vazando para a tela |
 | `checkKeyCollision` | duas coisas diferentes na mesma chave de armazenamento |
 | `checkPublishKeepsStudentData` | publicar conteúdo apagando dado do aluno |
 
@@ -140,7 +179,7 @@ E em fluxo real, com a guarda renderizada para cada público:
 
 1. Declarar a audiência em `audiencia.ts`, com o **porquê** escrito
 2. Se serve registro pessoal, o serviço recebe `userId` e confere o dono
-3. Se é administrativa, `exigeAdmin` — e nunca só `exigeLogin`
+3. Se é administrativa, `exigeAdmin` — e nunca só `exigeLogin` —, sob `/founder`
 4. Se é pública e a tela tem seção pessoal, a tela consulta a sessão
 5. `npm run qa` antes de abrir o commit
 

@@ -212,7 +212,7 @@ describe('Explorar lista telas, não sub-rotas', () => {
     const src = ler('src/ui/components/layout/ExplorarMenu.tsx');
     const caminhos = new Set([...src.matchAll(/path: '([^']+)'/g)].map((m) => m[1]));
     const oficiais = new Set([
-      '/academy',
+      '/academia',
       '/practice',
       '/score',
       '/studio',
@@ -220,7 +220,7 @@ describe('Explorar lista telas, não sub-rotas', () => {
       '/community',
       '/profile',
       '/rooms',
-      '/admin',
+      '/founder',
     ]);
     for (const c of caminhos) expect(oficiais.has(c), `${c} não é pilar oficial`).toBe(true);
   });

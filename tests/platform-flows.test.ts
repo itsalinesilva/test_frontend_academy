@@ -453,10 +453,10 @@ describe('coerência de rota ao longo do percurso', () => {
   it('o que o aluno produz exige login; o que a instituição publica, não', () => {
     // Verificar credencial é público porque quem confere é o empregador, e
     // ele não tem conta aqui.
-    expect(audienciaDaRota('/academy')).toBe('publica');
+    expect(audienciaDaRota('/academia')).toBe('publica');
     expect(audienciaDaRota('/credential/CMU-ABC')).toBe('publica');
 
-    expect(audienciaDaRota('/academy/meu-aprendizado')).toBe('exigeLogin');
+    expect(audienciaDaRota('/academia/meu-aprendizado')).toBe('exigeLogin');
     expect(audienciaDaRota('/credentials')).toBe('exigeLogin');
 
     /**
@@ -467,7 +467,7 @@ describe('coerência de rota ao longo do percurso', () => {
      *
      * Administração é nível próprio desde 19/09. Ver `81_HIERARCHY_AND_ISOLATION.md`.
      */
-    expect(audienciaDaRota('/admin')).toBe('exigeAdmin');
+    expect(audienciaDaRota('/founder')).toBe('exigeAdmin');
   });
 
   it('quem já entrou não fica preso na tela de entrar', () => {

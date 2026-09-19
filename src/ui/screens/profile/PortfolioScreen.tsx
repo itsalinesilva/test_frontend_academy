@@ -136,7 +136,7 @@ export const PortfolioScreen: React.FC = () => {
             ? 'Cada curso concluído, gravação avaliada e projeto entregue deposita uma evidência auditável aqui.'
             : 'Nenhuma evidência corresponde ao filtro selecionado.',
         actionLabel: filter === 'todas' ? 'Ir para a Academia' : 'Ver todas',
-        onAction: () => (filter === 'todas' ? navigate('/academy') : setFilter('todas')),
+        onAction: () => (filter === 'todas' ? navigate('/academia') : setFilter('todas')),
       }}
     >
       <PageLayout.Hero>

@@ -129,7 +129,7 @@ export const GuardaDeAudiencia: React.FC<GuardaDeAudienciaProps> = ({ children }
         </p>
         <button
           type="button"
-          onClick={() => navigate('/academy')}
+          onClick={() => navigate('/academia')}
           className="mt-2 text-xs font-medium text-anil-700 underline-offset-2 hover:underline"
         >
           Ver os cursos

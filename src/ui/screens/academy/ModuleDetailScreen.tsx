@@ -64,7 +64,7 @@ export const ModuleDetailScreen: React.FC = () => {
             </div>
           </dl>
           {course && (
-            <Button variant="outline" size="sm" className="w-full" onClick={() => navigate(`/academy/course/${course.id}`)}>
+            <Button variant="outline" size="sm" className="w-full" onClick={() => navigate(`/academia/course/${course.id}`)}>
               Voltar a disciplina
             </Button>
           )}
@@ -111,7 +111,7 @@ export const ModuleDetailScreen: React.FC = () => {
                 variant="default"
                 padding="md"
                 className="flex items-center justify-between hover:border-stone-400 cursor-pointer transition-colors"
-                onClick={() => navigate(`/academy/lesson/${lesson.id}`)}
+                onClick={() => navigate(`/academia/lesson/${lesson.id}`)}
               >
                 <div className="flex items-center gap-3">
                   <span className="w-8 h-8 rounded-full bg-stone-100 text-stone-800 flex items-center justify-center text-xs font-mono font-semibold">

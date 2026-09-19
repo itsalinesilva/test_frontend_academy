@@ -287,7 +287,7 @@ describe('o que é editável, e o que não é', () => {
 describe('o livreto — exercícios, simulados e provas — também é editável', () => {
   it('o livreto gravado volta com a alteração', async () => {
     /**
-     * A tela `/admin/booklets` já editava e gravava. O que faltava era o
+     * A tela `/founder/booklets` já editava e gravava. O que faltava era o
      * caso que prova isso, para que a capacidade não se perca numa
      * refatoração.
      */

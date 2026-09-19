@@ -28,15 +28,15 @@ export interface CirculationStep {
 export const CIRCULATION_CHAIN: CirculationStep[] = [
   {
     id: 'academy',
-    label: 'Academy',
+    label: 'Academia',
     shortLabel: 'Academia',
-    path: '/academy',
+    path: '/academia',
     icon: GraduationCap,
     description: 'Disciplinas, Cursos e Lições Teóricas',
   },
   {
     id: 'practice',
-    label: 'Practice',
+    label: 'Laboratório',
     shortLabel: 'Prática',
     path: '/practice',
     icon: Target,

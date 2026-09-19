@@ -694,7 +694,7 @@ const POSSESSIVE_HEADING =
  * As rotas que cada tela atende, lidas do outlet.
  *
  * A primeira versão disto usava a PASTA da tela, e estava errada: `academy`
- * aparece como "exige login" por causa de `/academy/history`, e com isso a
+ * aparece como "exige login" por causa de `/academia/history`, e com isso a
  * regra pulava justamente a tela que a motivou — a home da Academia, que é
  * pública. Foi reintroduzir o defeito que mostrou o furo.
  */

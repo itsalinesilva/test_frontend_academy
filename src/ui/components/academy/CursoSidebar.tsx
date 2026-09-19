@@ -58,11 +58,11 @@ export const CursoSidebar: React.FC<CursoSidebarProps> = ({
     m.lessonIds.length > 0 && m.lessonIds.every((l) => feitas.has(l));
 
   const recursos = [
-    { label: 'Notas', icon: FileText, path: `/academy/course/${curso.id}/notas` },
-    { label: 'Anotações', icon: BookMarked, path: `/academy/course/${curso.id}/anotacoes` },
+    { label: 'Notas', icon: FileText, path: `/academia/course/${curso.id}/notas` },
+    { label: 'Anotações', icon: BookMarked, path: `/academia/course/${curso.id}/anotacoes` },
     { label: 'Fórum do curso', icon: MessageSquare, path: '/community' },
     { label: 'Perguntas frequentes', icon: HelpCircle, path: '/help' },
-    { label: 'Sobre o curso', icon: Info, path: `/academy/course/${curso.id}` },
+    { label: 'Sobre o curso', icon: Info, path: `/academia/course/${curso.id}` },
   ];
 
   return (
@@ -78,7 +78,7 @@ export const CursoSidebar: React.FC<CursoSidebarProps> = ({
           </p>
           <button
             type="button"
-            onClick={() => navigate(`/academy/course/${curso.id}/aprender`)}
+            onClick={() => navigate(`/academia/course/${curso.id}/aprender`)}
             className="mt-0.5 block text-left font-serif text-sm font-semibold leading-snug text-stone-900 hover:text-anil-800"
           >
             {curso.title}
@@ -146,7 +146,7 @@ export const CursoSidebar: React.FC<CursoSidebarProps> = ({
                         <li key={l.id}>
                           <button
                             type="button"
-                            onClick={() => navigate(`/academy/lesson/${l.id}`)}
+                            onClick={() => navigate(`/academia/lesson/${l.id}`)}
                             aria-current={atual ? 'page' : undefined}
                             className={clsx(
                               'flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left transition-colors',

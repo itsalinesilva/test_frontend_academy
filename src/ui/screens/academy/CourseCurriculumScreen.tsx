@@ -128,7 +128,7 @@ export const CourseCurriculumScreen: React.FC = () => {
                   max={100}
                   label={`Progresso: ${progress.progressPercentage}%`}
                 />
-                <Button variant="primary" size="sm" className="w-full" onClick={() => course && navigate(`/academy/course/${course.id}`)}>
+                <Button variant="primary" size="sm" className="w-full" onClick={() => course && navigate(`/academia/course/${course.id}`)}>
                   Voltar a disciplina
                 </Button>
               </>
@@ -142,7 +142,7 @@ export const CourseCurriculumScreen: React.FC = () => {
                   description="A grade está visível, mas as lições exigem matrícula."
                   requirementText="Matricule-se para liberar as lições e a avaliação."
                 />
-                <Button variant="primary" size="sm" className="w-full" onClick={() => course && navigate(`/academy/course/${course.id}`)}>
+                <Button variant="primary" size="sm" className="w-full" onClick={() => course && navigate(`/academia/course/${course.id}`)}>
                   Ver a disciplina
                 </Button>
               </>
@@ -224,7 +224,7 @@ export const CourseCurriculumScreen: React.FC = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => navigate(`/academy/course/${courseId}/module/${mod.id}`)}
+                    onClick={() => navigate(`/academia/course/${courseId}/module/${mod.id}`)}
                   >
                     Ver Página do Módulo
                   </Button>
@@ -246,7 +246,7 @@ export const CourseCurriculumScreen: React.FC = () => {
                         key={les.id}
                         type="button"
                         id={`curriculum-lesson-${les.id}`}
-                        onClick={() => navigate(`/academy/lesson/${les.id}`)}
+                        onClick={() => navigate(`/academia/lesson/${les.id}`)}
                         className="w-full p-3.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg text-left flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer transition-all"
                       >
                         <div className="flex items-start gap-3">
@@ -287,7 +287,7 @@ export const CourseCurriculumScreen: React.FC = () => {
                             variant="ghost"
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate(`/academy/lesson/${les.id}/interactive`);
+                              navigate(`/academia/lesson/${les.id}/interactive`);
                             }}
                           >
                             Modo Interativo
@@ -315,7 +315,7 @@ export const CourseCurriculumScreen: React.FC = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => navigate(`/academy/quiz/${modQuiz.id}`)}
+                      onClick={() => navigate(`/academia/quiz/${modQuiz.id}`)}
                     >
                       Iniciar Quiz
                     </Button>
@@ -351,7 +351,7 @@ export const CourseCurriculumScreen: React.FC = () => {
                   id="btn-curriculum-assessment"
                   size="sm"
                   variant="primary"
-                  onClick={() => navigate(`/academy/assessment/${finalAssessment.id}`)}
+                  onClick={() => navigate(`/academia/assessment/${finalAssessment.id}`)}
                 >
                   Realizar Exame Oficial ({finalAssessment.questions.length} Questões)
                   <ArrowRight className="w-3.5 h-3.5 ml-1.5" />

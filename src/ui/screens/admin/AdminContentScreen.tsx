@@ -58,7 +58,7 @@ export const AdminContentScreen: React.FC = () => {
       primaryAction={{
         label: 'Voltar ao console',
         icon: ArrowLeft,
-        onClick: () => navigate('/admin'),
+        onClick: () => navigate('/founder'),
       }}
       emptyProps={{
         title: 'Nenhum curso publicado',
@@ -95,7 +95,7 @@ export const AdminContentScreen: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => navigate(`/academy/course/${curso.id}/curriculum`)}
+                onClick={() => navigate(`/academia/course/${curso.id}/curriculum`)}
               >
                 <BookOpen className="mr-1 h-3.5 w-3.5" aria-hidden="true" /> Ver a grade
               </Button>

@@ -174,7 +174,7 @@ export const CommunityFeedScreen: React.FC = () => {
               primaryLabel="Entrar na Comunidade"
               onPrimary={() => navigate('/auth')}
               secondaryLabel="Ver os cursos primeiro"
-              onSecondary={() => navigate('/academy')}
+              onSecondary={() => navigate('/academia')}
             />
           </div>
         )}

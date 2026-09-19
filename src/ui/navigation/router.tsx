@@ -49,28 +49,28 @@ export const CANONICAL_ROUTES = {
   HELP: '/help',
 
   // 8 Primary Canonical Pillars & Navigation Axes
-  ACADEMY: '/academy',
-  ACADEMY_CATALOG: '/academy/catalog',
-  ACADEMY_SEARCH: '/academy/search',
-  ACADEMY_SEARCH_RESULTS: '/academy/search/results',
-  ACADEMY_CATEGORY: '/academy/category/:id',
-  ACADEMY_PROGRAM: '/academy/program/:id',
-  ACADEMY_PATH: '/academy/path/:id',
-  ACADEMY_COURSE: '/academy/course/:id',
-  ACADEMY_COURSE_CURRICULUM: '/academy/course/:id/curriculum',
-  ACADEMY_COURSE_PROGRESS: '/academy/course/:id/progress',
-  ACADEMY_MODULE: '/academy/course/:courseId/module/:moduleId',
-  ACADEMY_LESSON: '/academy/lesson/:id',
-  ACADEMY_INTERACTIVE_LESSON: '/academy/lesson/:id/interactive',
-  ACADEMY_ACTIVITY: '/academy/activity/:id',
-  ACADEMY_QUIZ: '/academy/quiz/:id',
-  ACADEMY_ASSESSMENT: '/academy/assessment/:id',
-  ACADEMY_RESULT: '/academy/result/:id',
-  ACADEMY_COMPLETION: '/academy/completion/:id',
-  ACADEMY_CERTIFICATE: '/academy/certificate/:id',
-  ACADEMY_MY_LEARNING: '/academy/my-learning',
-  ACADEMY_HISTORY: '/academy/history',
-  ACADEMY_PROFILE: '/academy/academic-profile',
+  ACADEMY: '/academia',
+  ACADEMY_CATALOG: '/academia/catalog',
+  ACADEMY_SEARCH: '/academia/search',
+  ACADEMY_SEARCH_RESULTS: '/academia/search/results',
+  ACADEMY_CATEGORY: '/academia/category/:id',
+  ACADEMY_PROGRAM: '/academia/program/:id',
+  ACADEMY_PATH: '/academia/path/:id',
+  ACADEMY_COURSE: '/academia/course/:id',
+  ACADEMY_COURSE_CURRICULUM: '/academia/course/:id/curriculum',
+  ACADEMY_COURSE_PROGRESS: '/academia/course/:id/progress',
+  ACADEMY_MODULE: '/academia/course/:courseId/module/:moduleId',
+  ACADEMY_LESSON: '/academia/lesson/:id',
+  ACADEMY_INTERACTIVE_LESSON: '/academia/lesson/:id/interactive',
+  ACADEMY_ACTIVITY: '/academia/activity/:id',
+  ACADEMY_QUIZ: '/academia/quiz/:id',
+  ACADEMY_ASSESSMENT: '/academia/assessment/:id',
+  ACADEMY_RESULT: '/academia/result/:id',
+  ACADEMY_COMPLETION: '/academia/completion/:id',
+  ACADEMY_CERTIFICATE: '/academia/certificate/:id',
+  ACADEMY_MY_LEARNING: '/academia/my-learning',
+  ACADEMY_HISTORY: '/academia/history',
+  ACADEMY_PROFILE: '/academia/academic-profile',
 
   PRACTICE: '/practice',
   PRACTICE_SKILL_TREE: '/practice/skill-tree',
@@ -120,15 +120,15 @@ export const CANONICAL_ROUTES = {
   PROFILE_MEMBER: '/profile/:userId',
 
   // Admin Governance (Protected)
-  ADMIN: '/admin',
-  ADMIN_USERS: '/admin/users',
-  ADMIN_ENGINES: '/admin/engines',
-  ADMIN_CONTENT: '/admin/content',
-  ADMIN_MODERATION: '/admin/moderation',
-  ADMIN_AUDIT: '/admin/audit',
-  ADMIN_CREDENTIALS: '/admin/credentials',
-  ADMIN_BOOKLETS: '/admin/booklets',
-  ADMIN_LIBRARY: '/admin/biblioteca',
+  ADMIN: '/founder',
+  ADMIN_USERS: '/founder/users',
+  ADMIN_ENGINES: '/founder/engines',
+  ADMIN_CONTENT: '/founder/content',
+  ADMIN_MODERATION: '/founder/moderation',
+  ADMIN_AUDIT: '/founder/audit',
+  ADMIN_CREDENTIALS: '/founder/credentials',
+  ADMIN_BOOKLETS: '/founder/booklets',
+  ADMIN_LIBRARY: '/founder/biblioteca',
 
   // Simulador de violino com acompanhamento de partitura.
   VIOLIN_SIMULATOR: '/violin/simulator',
@@ -180,47 +180,47 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
   }
 
   // Academy
-  if (path.startsWith('/academy')) {
-    crumbs.push({ label: 'Academia', path: '/academy' });
-    if (path === '/academy/catalog') {
+  if (path.startsWith('/academia')) {
+    crumbs.push({ label: 'Academia', path: '/academia' });
+    if (path === '/academia/catalog') {
       crumbs.push({ label: 'Catálogo de Cursos' });
-    } else if (path === '/academy/search') {
+    } else if (path === '/academia/search') {
       crumbs.push({ label: 'Busca Acadêmica' });
-    } else if (path === '/academy/search/results') {
+    } else if (path === '/academia/search/results') {
       crumbs.push({ label: 'Resultados da Busca' });
-    } else if (path.startsWith('/academy/category/')) {
+    } else if (path.startsWith('/academia/category/')) {
       crumbs.push({ label: `Cátedra: ${params.id || 'Especialização'}` });
-    } else if (path.startsWith('/academy/program/')) {
+    } else if (path.startsWith('/academia/program/')) {
       crumbs.push({ label: `Programa: ${params.id || 'Detalhes'}` });
-    } else if (path.startsWith('/academy/path/')) {
+    } else if (path.startsWith('/academia/path/')) {
       crumbs.push({ label: `Trilha: ${params.id || 'Detalhes'}` });
     } else if (path.includes('/curriculum')) {
       crumbs.push({ label: 'Grade Curricular' });
     } else if (path.includes('/progress')) {
       crumbs.push({ label: 'Progresso do Curso' });
-    } else if (path.startsWith('/academy/course/')) {
+    } else if (path.startsWith('/academia/course/')) {
       crumbs.push({ label: `Curso: ${params.id || 'Detalhes'}` });
     } else if (path.includes('/interactive')) {
       crumbs.push({ label: 'Laboratório Interativo' });
-    } else if (path.startsWith('/academy/lesson/')) {
+    } else if (path.startsWith('/academia/lesson/')) {
       crumbs.push({ label: 'Lição' });
-    } else if (path.startsWith('/academy/activity/')) {
+    } else if (path.startsWith('/academia/activity/')) {
       crumbs.push({ label: 'Atividade Prática' });
-    } else if (path.startsWith('/academy/quiz/')) {
+    } else if (path.startsWith('/academia/quiz/')) {
       crumbs.push({ label: 'Quiz de Verificação' });
-    } else if (path.startsWith('/academy/assessment/')) {
+    } else if (path.startsWith('/academia/assessment/')) {
       crumbs.push({ label: 'Avaliação Acadêmica' });
-    } else if (path.startsWith('/academy/result/')) {
+    } else if (path.startsWith('/academia/result/')) {
       crumbs.push({ label: 'Resultado do Exame' });
-    } else if (path.startsWith('/academy/completion/')) {
+    } else if (path.startsWith('/academia/completion/')) {
       crumbs.push({ label: 'Conclusão de Curso' });
-    } else if (path.startsWith('/academy/certificate/')) {
+    } else if (path.startsWith('/academia/certificate/')) {
       crumbs.push({ label: 'Certificado Digital' });
-    } else if (path === '/academy/my-learning') {
+    } else if (path === '/academia/my-learning') {
       crumbs.push({ label: 'Meu Aprendizado' });
-    } else if (path === '/academy/history') {
+    } else if (path === '/academia/history') {
       crumbs.push({ label: 'Histórico Acadêmico' });
-    } else if (path === '/academy/academic-profile') {
+    } else if (path === '/academia/academic-profile') {
       crumbs.push({ label: 'Perfil Acadêmico' });
     }
     return crumbs;
@@ -333,16 +333,16 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
   }
 
   // Admin
-  if (path.startsWith('/admin')) {
-    crumbs.push({ label: 'Governança Admin', path: '/admin' });
-    if (path === '/admin/biblioteca') crumbs.push({ label: 'Biblioteca Oficial' });
-    else if (path === '/admin/booklets') crumbs.push({ label: 'Livretos de Exercício' });
-    else if (path === '/admin/credentials') crumbs.push({ label: 'Estúdio de Credenciais' });
-    else if (path === '/admin/users') crumbs.push({ label: 'Usuários & Papéis' });
-    else if (path === '/admin/engines') crumbs.push({ label: 'Engines & Gateway' });
-    else if (path === '/admin/content') crumbs.push({ label: 'Conteúdo & Currículo' });
-    else if (path === '/admin/moderation') crumbs.push({ label: 'Moderação' });
-    else if (path === '/admin/audit') crumbs.push({ label: 'Auditoria Imutável' });
+  if (path.startsWith('/founder')) {
+    crumbs.push({ label: 'Governança Admin', path: '/founder' });
+    if (path === '/founder/biblioteca') crumbs.push({ label: 'Biblioteca Oficial' });
+    else if (path === '/founder/booklets') crumbs.push({ label: 'Livretos de Exercício' });
+    else if (path === '/founder/credentials') crumbs.push({ label: 'Estúdio de Credenciais' });
+    else if (path === '/founder/users') crumbs.push({ label: 'Usuários & Papéis' });
+    else if (path === '/founder/engines') crumbs.push({ label: 'Engines & Gateway' });
+    else if (path === '/founder/content') crumbs.push({ label: 'Conteúdo & Currículo' });
+    else if (path === '/founder/moderation') crumbs.push({ label: 'Moderação' });
+    else if (path === '/founder/audit') crumbs.push({ label: 'Auditoria Imutável' });
     return crumbs;
   }
 
@@ -362,9 +362,9 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
  * Rotas estáticas e dinâmicas, DERIVADAS de `CANONICAL_ROUTES`.
  *
  * A versão anterior mantinha à mão uma lista de 20 padrões dinâmicos, e ela
- * estava incompleta: `/academy/course/:id/curriculum`, `/.../progress`,
- * `/academy/lesson/:id/interactive`, `/academy/quiz/:id`,
- * `/academy/category/:id` e `/practice/feedback/:id` ficaram de fora. Como
+ * estava incompleta: `/academia/course/:id/curriculum`, `/.../progress`,
+ * `/academia/lesson/:id/interactive`, `/academia/quiz/:id`,
+ * `/academia/category/:id` e `/practice/feedback/:id` ficaram de fora. Como
  * `parseParams` exige igualdade de número de segmentos, nenhum padrão casava
  * e essas 6 rotas recebiam `params = {}` — defeito R-01 do
  * 01_REPOSITORY_AUDIT. Dezoito telas mascaravam isso com um id fixo de

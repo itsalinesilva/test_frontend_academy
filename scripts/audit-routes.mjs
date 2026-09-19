@@ -38,7 +38,7 @@ const tabela = temTabela ? readFileSync(AUDIENCIA_PATH, 'utf-8') : '';
 /**
  * Rotas de verdade vêm de `===` e de `.startsWith(`. O que vem de
  * `.includes(` é FRAGMENTO — `/curriculum` casa dentro de
- * `/academy/course/X/curriculum`, e a audiência quem decide é o prefixo do
+ * `/academia/course/X/curriculum`, e a audiência quem decide é o prefixo do
  * caminho inteiro. Misturar os dois fazia a auditoria cobrar declaração de
  * coisa que não é rota.
  */

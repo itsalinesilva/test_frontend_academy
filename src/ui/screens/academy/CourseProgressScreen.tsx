@@ -135,7 +135,7 @@ export const CourseProgressScreen: React.FC = () => {
                     <dd className="font-mono font-bold">{progress.completedLessonIds.length}</dd>
                   </div>
                 </dl>
-                <Button variant="primary" size="sm" className="w-full" onClick={() => course && navigate(`/academy/course/${course.id}`)}>
+                <Button variant="primary" size="sm" className="w-full" onClick={() => course && navigate(`/academia/course/${course.id}`)}>
                   Continuar
                 </Button>
               </>
@@ -303,7 +303,7 @@ export const CourseProgressScreen: React.FC = () => {
                         <button
                           key={les.id}
                           type="button"
-                          onClick={() => navigate(`/academy/lesson/${les.id}`)}
+                          onClick={() => navigate(`/academia/lesson/${les.id}`)}
                           className="w-full p-3 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-lg text-left flex items-center justify-between cursor-pointer transition-colors text-xs"
                         >
                           <div className="flex items-center gap-2.5">
