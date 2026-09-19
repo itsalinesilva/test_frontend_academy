@@ -8,6 +8,7 @@ import { ProgressRing } from '../../components/data-display/ProgressRing';
 import { useRouter } from '../../navigation/router';
 import { academyService } from '../../../services/application/academy.service';
 import { authService } from '../../../services/application/auth.service';
+import { VisitorInvitation } from '../../components/visitor/VisitorInvitation';
 import {
   Program,
   LearningPath,
@@ -45,6 +46,11 @@ export const AcademyHomeScreen: React.FC = () => {
   const [cursos, setCursos] = useState<AcademyCourse[]>([]);
   const [disciplinasPorCurso, setDisciplinasPorCurso] = useState<Record<string, AcademyModule[]>>({});
   const [matriculas, setMatriculas] = useState<UserAcademyProgress[]>([]);
+  /**
+   * `null` enquanto a sessão não foi consultada. Distinguir "ainda não sei" de
+   * "não há sessão" evita o convite piscar na tela de quem está logado.
+   */
+  const [ehVisitante, setEhVisitante] = useState<boolean | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [falhou, setFalhou] = useState(false);
   const [proximas, setProximas] = useState<AcademyLesson[]>([]);
@@ -56,6 +62,7 @@ export const AcademyHomeScreen: React.FC = () => {
       try {
         const sessao = await authService.getActiveSession();
         const userId = sessao?.user.id;
+        setEhVisitante(!sessao);
 
         const [progs, trls, crss, mats] = await Promise.all([
           academyService.getPrograms(),
@@ -258,6 +265,55 @@ export const AcademyHomeScreen: React.FC = () => {
       {/* Trilho fixo: onde você está, o que vem a seguir, e o que isso rende.
           Fica sempre visível, como a coluna da direita de um curso online. */}
       <PageLayout.Aside>
+        {/**
+         * Para quem chega de fora, "Seu progresso" não é uma seção vazia: é uma
+         * seção SEM SUJEITO. O trilho é o espaço mais valioso da tela, e gastá-lo
+         * dizendo à pessoa que ela não tem nada é desperdiçá-lo duas vezes — não
+         * informa e não convida.
+         */}
+        {ehVisitante ? (
+          <VisitorInvitation
+            space="Academia"
+            summary="A estrutura curricular do Conservatório: cursos, disciplinas, avaliações e certificado."
+            highlights={[
+              { value: String(cursos.length), label: 'cursos' },
+              {
+                value: String(
+                  Object.values(disciplinasPorCurso).reduce((a, d) => a + d.length, 0)
+                ),
+                label: 'disciplinas',
+              },
+              {
+                value: `${cursos.reduce((a, c) => a + c.workloadHours, 0)}h`,
+                label: 'carga horária',
+              },
+              { value: String(programas.length), label: 'programas' },
+            ]}
+            steps={[
+              {
+                title: 'Escolha um curso',
+                description: 'O catálogo inteiro é aberto — dá para ler a ementa antes de decidir.',
+              },
+              {
+                title: 'Matricule-se com a conta Google',
+                description: 'Sem senha para criar nem para lembrar.',
+              },
+              {
+                title: 'Estude e seja avaliado',
+                description: 'Lições, atividades, simulados e prova final.',
+              },
+              {
+                title: 'Receba o certificado',
+                description: 'Emitido pelo Conservatório, com registro verificável.',
+              },
+            ]}
+            primaryLabel="Entrar e me matricular"
+            onPrimary={() => navigate('/auth')}
+            secondaryLabel="Ver o catálogo antes"
+            onSecondary={() => navigate('/academy/catalog')}
+            disclaimer="Os cursos são livres, com certificação própria do Conservatório. Não constituem graduação nem têm reconhecimento do MEC."
+          />
+        ) : (
         <div className="space-y-4">
           <section aria-labelledby="rail-progresso" className="space-y-3">
             <h2
@@ -387,6 +443,7 @@ export const AcademyHomeScreen: React.FC = () => {
             </button>
           </section>
         </div>
+        )}
       </PageLayout.Aside>
 
       <PageLayout.Main>

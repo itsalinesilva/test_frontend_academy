@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { VisitorInvitation } from '../../components/visitor/VisitorInvitation';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Badge } from '../../components/base/Badge';
@@ -40,16 +42,17 @@ const TODOS = 'todos';
 
 export const WorldsAtlasScreen: React.FC = () => {
   const { navigate } = useRouter();
+  const { userId, carregando: sessaoCarregando } = useCurrentUser();
 
   const [eras, setEras] = useState<MusicalEra[] | null>(null);
   const [regions, setRegions] = useState<Region[]>([]);
-  const [generos, setGeneros] = useState<Genre[]>([]);
-  const [houses, setTribos] = useState<House[]>([]);
-  const [works, setObras] = useState<AtlasWorkPlacement[]>([]);
-  const [totalNoAcervo, setTotalNoAcervo] = useState(0);
+  const [genres, setGenres] = useState<Genre[]>([]);
+  const [houses, setHouses] = useState<House[]>([]);
+  const [works, setWorks] = useState<AtlasWorkPlacement[]>([]);
+  const [totalInCollection, setTotalInCollection] = useState(0);
 
   const [eraId, setEraId] = useState<string>(TODOS);
-  const [regionId, setRegiaoId] = useState<string>(TODOS);
+  const [regionId, setRegionId] = useState<string>(TODOS);
   const [genreId, setGeneroId] = useState<string>(TODOS);
   const [houseId, setTriboId] = useState<string>(TODOS);
 
@@ -66,9 +69,9 @@ export const WorldsAtlasScreen: React.FC = () => {
       if (!vivo) return;
       setEras(e);
       setRegions(r);
-      setGeneros(g);
-      setTribos(t);
-      setTotalNoAcervo(total);
+      setGenres(g);
+      setHouses(t);
+      setTotalInCollection(total);
     })().catch(() => {
       if (vivo) setEras([]);
     });
@@ -89,8 +92,8 @@ export const WorldsAtlasScreen: React.FC = () => {
   useEffect(() => {
     atlasRepository
       .listarObras(filtro())
-      .then(setObras)
-      .catch(() => setObras([]));
+      .then(setWorks)
+      .catch(() => setWorks([]));
   }, [filtro]);
 
   /**
@@ -121,6 +124,39 @@ export const WorldsAtlasScreen: React.FC = () => {
       loadingMessage="Abrindo o mapa…"
     >
       <div className="space-y-8">
+        {/* O Atlas e acervo, e por isso e publico. O convite explica o que ele
+            vira depois de entrar — carimbos, passaporte, simulador. */}
+        {!sessaoCarregando && !userId && (
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-5">
+            <VisitorInvitation
+              space="Atlas"
+              summary="O mapa de quando, onde e com quem a música foi feita — aberto a qualquer um."
+              highlights={[
+                { value: String((eras ?? []).length), label: 'eras' },
+                { value: String(regions.length), label: 'regiões' },
+                { value: String(houses.length), label: 'Casas' },
+                { value: String(genres.length), label: 'gêneros' },
+              ]}
+              steps={[
+                {
+                  title: 'Percorra o mapa livremente',
+                  description: 'Eras, regiões e gêneros não exigem conta.',
+                },
+                {
+                  title: 'Entre para carimbar o passaporte',
+                  description: 'Cada era, região e obra visitada vira um carimbo seu.',
+                },
+                {
+                  title: 'Toque as obras no simulador',
+                  description: 'A execução é medida, e a melhor marca fica registrada.',
+                },
+              ]}
+              primaryLabel="Entrar e começar o passaporte"
+              onPrimary={() => navigate('/auth')}
+            />
+          </div>
+        )}
+
         <section className="space-y-3" aria-labelledby="eixo-tempo">
           <h2
             id="eixo-tempo"
@@ -159,7 +195,7 @@ export const WorldsAtlasScreen: React.FC = () => {
             <BotaoDeFiltro
               ativo={regionId === TODOS}
               onClick={() => {
-                setRegiaoId(TODOS);
+                setRegionId(TODOS);
                 setEraId(TODOS);
               }}
             >
@@ -170,7 +206,7 @@ export const WorldsAtlasScreen: React.FC = () => {
                 key={r.id}
                 ativo={regionId === r.id}
                 onClick={() => {
-                  setRegiaoId(r.id);
+                  setRegionId(r.id);
                   // a era escolhida pode não existir nesta região
                   if (!r.eraIds.includes(eraId)) setEraId(TODOS);
                 }}
@@ -238,7 +274,7 @@ export const WorldsAtlasScreen: React.FC = () => {
             <BotaoDeFiltro ativo={genreId === TODOS} onClick={() => setGeneroId(TODOS)}>
               Todos
             </BotaoDeFiltro>
-            {generos.map((g) => (
+            {genres.map((g) => (
               <BotaoDeFiltro
                 key={g.id}
                 ativo={genreId === g.id}
@@ -256,7 +292,7 @@ export const WorldsAtlasScreen: React.FC = () => {
               Obras
             </h2>
             <span className="font-mono text-xs text-stone-500">
-              {works.length} de {totalNoAcervo} no acervo
+              {works.length} de {totalInCollection} no acervo
             </span>
           </div>
 
@@ -265,12 +301,12 @@ export const WorldsAtlasScreen: React.FC = () => {
               id="atlas-obras-vazio"
               icon={<Library className="h-8 w-8 stroke-1" aria-hidden="true" />}
               title={
-                totalNoAcervo === 0
+                totalInCollection === 0
                   ? 'O acervo de obras ainda está vazio'
                   : 'Nenhuma obra responde a este recorte'
               }
               description={
-                totalNoAcervo === 0
+                totalInCollection === 0
                   ? 'O mapa acima é a taxonomia que os cursos de História ensinam — eras, regiões e gêneros. Catalogar uma obra exige decidir edição, proveniência e domínio público, e isso ainda não foi feito.'
                   : 'Escolha outra era, região ou gênero para ver o que existe.'
               }

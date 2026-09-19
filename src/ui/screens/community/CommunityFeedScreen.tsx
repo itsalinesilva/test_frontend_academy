@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
+import { VisitorInvitation } from '../../components/visitor/VisitorInvitation';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
@@ -106,11 +107,23 @@ export const CommunityFeedScreen: React.FC = () => {
       subtitle="Debates teóricos, análises de repertório e dúvidas sobre as lições."
       badgeLabel="Fórum"
       badgeVariant="neutral"
-      primaryAction={{
-        label: escrevendo ? 'Fechar editor' : 'Escrever publicação',
-        icon: Plus,
-        onClick: () => setEscrevendo((v) => !v),
-      }}
+      /**
+       * Visitante nao publica, entao a acao principal dele nao pode ser
+       * "Escrever publicacao": seria um botao que existe para nao funcionar.
+       */
+      primaryAction={
+        userId
+          ? {
+              label: escrevendo ? 'Fechar editor' : 'Escrever publicação',
+              icon: Plus,
+              onClick: () => setEscrevendo((v) => !v),
+            }
+          : {
+              label: 'Entrar para participar',
+              icon: Plus,
+              onClick: () => navigate('/auth'),
+            }
+      }
       secondaryActions={[
         {
           label: 'Eventos',
@@ -118,16 +131,54 @@ export const CommunityFeedScreen: React.FC = () => {
           onClick: () => navigate('/community/events'),
         },
       ]}
-      emptyProps={{
-        title: 'Nenhum tópico ainda',
-        description:
-          'A comunidade começa com a primeira pergunta. Escreva uma dúvida de lição ou uma análise de obra.',
-        actionLabel: 'Escrever publicação',
-        onAction: () => setEscrevendo(true),
-      }}
+      emptyProps={
+        userId
+          ? {
+              title: 'Nenhum tópico ainda',
+              description:
+                'A comunidade começa com a primeira pergunta. Escreva uma dúvida de lição ou uma análise de obra.',
+              actionLabel: 'Escrever publicação',
+              onAction: () => setEscrevendo(true),
+            }
+          : {
+              title: 'Nenhum tópico ainda',
+              description:
+                'A Comunidade é o corpo social do Conservatório. Entre para abrir o primeiro tópico.',
+              actionLabel: 'Entrar',
+              onAction: () => navigate('/auth'),
+            }
+      }
       state={topicos === null ? 'loading' : topicos.length === 0 && !escrevendo ? 'empty' : 'populated'}
     >
       <div className="space-y-6">
+        {!userId && (
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-5">
+            <VisitorInvitation
+              space="Comunidade"
+              summary="O corpo social do Conservatório: quem estuda, quem ensina e quem pratica."
+              steps={[
+                {
+                  title: 'Leia tudo sem conta',
+                  description: 'Os tópicos são abertos — dá para acompanhar antes de entrar.',
+                },
+                {
+                  title: 'Entre para responder e abrir tópico',
+                  description: 'Com a conta Google, sem senha.',
+                },
+                {
+                  title: 'Participe dos Clubes do seu Grêmio',
+                  description:
+                    'Clubes são criados pelos próprios usuários, dentro da área que estudam.',
+                },
+              ]}
+              primaryLabel="Entrar na Comunidade"
+              onPrimary={() => navigate('/auth')}
+              secondaryLabel="Ver os cursos primeiro"
+              onSecondary={() => navigate('/academy')}
+            />
+          </div>
+        )}
+
         {escrevendo && (
           <Card variant="default" padding="lg" className="space-y-4">
             <h3 className="font-serif text-base font-bold text-stone-900">Nova publicação</h3>
