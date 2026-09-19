@@ -255,7 +255,16 @@ export function checkContentMarkdown() {
  * A regra: numa linha de texto de interface que tem acento ou palavra
  * funcional portuguesa, um termo técnico inglês solto é resto de renomeação.
  */
-const PT_MARKER = /[àáâãéêíóôõúç]|\b(de|da|do|em|para|com|sem|que|não|uma|seu|sua|pelo|pela)\b/i;
+/**
+ * O marcador era estreito demais.
+ *
+ * "Sair e perder o progress" — a frase real que quebrou — não tem acento nem
+ * nenhuma das palavras da lista original, e passava batido. Artigos e
+ * conjunções entraram: o discriminador desta regra é a palavra **inglesa**,
+ * não este teste, que só precisa dizer "isto é prosa em português".
+ */
+const PT_MARKER =
+  /[àáâãéêíóôõúç]|\b(de|da|do|dos|das|em|no|na|nos|nas|para|por|pelo|pela|com|sem|que|não|uma|um|seu|sua|ao|aos|e|o|a|os|as)\b/i;
 
 const EN_LEAK =
   /\b(week|tier|goal|progress|lesson|accuracy|answer|skip|completed|record|badges|streak|scope|level|node|path|queue|review)\b/;

@@ -49,13 +49,44 @@ export function stripComments(code) {
 }
 
 /** Fontes da aplicação. `codigo` é o conteúdo sem comentários. */
+/**
+ * Arquivos-fonte injetados, para provar que um verificador acusa.
+ *
+ * POR QUE ESTA COSTURA EXISTE
+ * ---------------------------
+ * "Passou" só significa alguma coisa se o verificador **consegue** falhar. Eu
+ * vinha provando isso à mão — reintroduzia o defeito, via a acusação, desfazia
+ * — e não deixava prova nenhuma. Quarenta e um dos quarenta e três
+ * verificadores estavam nesse estado: verdes, e sem ninguém nunca ter visto
+ * um deles acusar.
+ *
+ * Com esta costura, `tests/checkers-fire.test.ts` injeta um arquivo com o
+ * defeito e exige que o verificador o encontre. A prova passa a ser parte da
+ * suíte, e não lembrança de quem escreveu.
+ */
+let arquivosInjetados = [];
+
+export function injectSources(arquivos) {
+  arquivosInjetados = arquivos.map(({ file, content }) => ({
+    file,
+    content,
+    code: stripComments(content),
+  }));
+}
+
+export function clearInjectedSources() {
+  arquivosInjetados = [];
+}
+
 export function sources() {
-  return walk('src')
+  const reais = walk('src')
     .filter((f) => ['.ts', '.tsx'].includes(extname(f)))
     .map((f) => {
       const content = readFileSync(f, 'utf-8');
       return { file: norm(f), content, code: stripComments(content) };
     });
+
+  return arquivosInjetados.length ? [...reais, ...arquivosInjetados] : reais;
 }
 
 export function screens() {
@@ -158,4 +189,81 @@ export function printReport(results) {
   lines.push('');
   lines.push(`bloqueios: ${blockers} · a corrigir: ${fixables}`);
   return { texto: lines.join('\n'), blockers, fixables };
+}
+
+// ---------------------------------------------------------------------------
+// A suíte vigia a si mesma
+// ---------------------------------------------------------------------------
+
+/**
+ * Verificador que existe e ninguém roda, ou que ninguém provou.
+ *
+ * O DEFEITO QUE ISTO FECHA
+ * ------------------------
+ * `checkReadiness` chegou a provar que uma lição era editável procurando a
+ * **string** `'LICAO'` num arquivo. Bastaria escrevê-la num comentário para o
+ * verificador ficar verde. Era teatro: verificava o nome, não o conteúdo.
+ *
+ * A regra geral, que vale para todo verificador: **procurar o símbolo que faz
+ * a coisa, e não a palavra que a descreve**. E a regra de processo, que é esta
+ * função: todo verificador precisa estar ligado ao pente fino **e** ter um
+ * teste que o viu acusar.
+ *
+ * Sem o segundo, um verificador pode nascer vazio e passar anos verde. Já
+ * aconteceu aqui três vezes — `checkDevToolInProduction` nasceu sem pegar o
+ * caso que o motivou, e duas regex viraram backspace e nunca casaram com nada.
+ */
+export function checkerInventory() {
+  const arquivos = walk('scripts/qa').filter((f) => f.endsWith('.mjs'));
+  const orquestrador = readFileSync('scripts/qa.mjs', 'utf-8');
+  const testes = walk('tests')
+    .filter((f) => f.endsWith('.ts') || f.endsWith('.tsx'))
+    .map((f) => readFileSync(f, 'utf-8'))
+    .join('\n');
+
+  const inventario = [];
+  for (const arquivo of arquivos) {
+    const src = readFileSync(arquivo, 'utf-8');
+    /**
+     * `check[A-Z]` e nao `check\w+`: `checkerInventory` e auxiliar desta
+     * propria vigilancia, e acusa-la por "nao estar ligada ao pente fino"
+     * seria o verificador reclamando de si mesmo.
+     */
+    for (const m of src.matchAll(/export function (check[A-Z]\w*)/g)) {
+      const nome = m[1];
+      inventario.push({
+        nome,
+        arquivo: norm(arquivo),
+        ligado: orquestrador.includes(nome),
+        provado: testes.includes(nome),
+      });
+    }
+  }
+  return inventario;
+}
+
+/** Verificador escrito e nunca chamado pelo pente fino. */
+export function checkEveryCheckerIsWired() {
+  return checkerInventory()
+    .filter((c) => !c.ligado)
+    .map((c) => ({
+      file: c.arquivo,
+      detail: `\`${c.nome}\` existe e o pente fino não o chama — verificação que ninguém roda`,
+    }));
+}
+
+/**
+ * Verificador sem teste que o tenha visto acusar.
+ *
+ * "Passou" só significa alguma coisa se o verificador **consegue** falhar.
+ * O teste que o nomeia é a prova de que alguém reintroduziu o defeito e viu
+ * a acusação aparecer.
+ */
+export function checkEveryCheckerHasProof() {
+  return checkerInventory()
+    .filter((c) => !c.provado)
+    .map((c) => ({
+      file: c.arquivo,
+      detail: `\`${c.nome}\` não é citado por nenhum teste — ninguém provou que ele acusa`,
+    }));
 }

@@ -152,7 +152,7 @@ export const WorldsAtlasScreen: React.FC = () => {
                 },
               ]}
               primaryLabel="Entrar e começar o passaporte"
-              onPrimary={() => navigate('/auth')}
+              onPrimary={() => navigate('/auth/login')}
             />
           </div>
         )}

@@ -308,7 +308,7 @@ export const AcademyHomeScreen: React.FC = () => {
               },
             ]}
             primaryLabel="Entrar e me matricular"
-            onPrimary={() => navigate('/auth')}
+            onPrimary={() => navigate('/auth/login')}
             secondaryLabel="Ver o catálogo antes"
             onSecondary={() => navigate('/academia/catalog')}
             disclaimer="Os cursos são livres, com certificação própria do Conservatório. Não constituem graduação nem têm reconhecimento do MEC."

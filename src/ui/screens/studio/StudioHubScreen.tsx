@@ -85,7 +85,7 @@ export const StudioHubScreen: React.FC = () => {
                 },
               ]}
               primaryLabel="Entrar e guardar o que eu escrever"
-              onPrimary={() => navigate('/auth')}
+              onPrimary={() => navigate('/auth/login')}
               secondaryLabel="Conhecer a Academia"
               onSecondary={() => navigate('/academia')}
             />

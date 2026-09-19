@@ -56,6 +56,22 @@ lugar certo continuam precisando de navegador e de olho humano — `F.2`.
 
 ---
 
+## DÍVIDA DA PRÓPRIA SUÍTE
+
+> Registrada aqui, e não escondida na conversa. É **parte do trabalho da
+> suíte** manter esta lista curta: ao perceber um déficit nela, refatorar.
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| S-1 | Todo verificador ligado ao pente fino | ✅ 0 soltos |
+| S-2 | Todo verificador **visto acusando** por um teste | 🔄 24 de 43 provados |
+| S-3 | `checkNavigationTargets` era **vazio** — aceitava `/` como prefixo, e todo caminho absoluto passava. Achou 6 botões mortos ao ser consertado | ✅ |
+| S-4 | Os 19 sem prova leem arquivo fixo (tabela da economia, outlet, audiência) e não passam pela injeção — precisam de costura própria | ⬜ |
+| S-5 | **Tela de admin** para editar questão e criar lição: o domínio existe, a interface não | ⬜ |
+| S-6 | Template de questão e de lição, para duplicar e editar em vez de escrever do zero | ⬜ |
+
+---
+
 # A ORDEM
 
 > **Esta seção manda.** O detalhe por área continua abaixo, como referência e

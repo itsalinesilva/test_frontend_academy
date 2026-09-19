@@ -121,7 +121,7 @@ export const CommunityFeedScreen: React.FC = () => {
           : {
               label: 'Entrar para participar',
               icon: Plus,
-              onClick: () => navigate('/auth'),
+              onClick: () => navigate('/auth/login'),
             }
       }
       secondaryActions={[
@@ -145,7 +145,7 @@ export const CommunityFeedScreen: React.FC = () => {
               description:
                 'A Comunidade é o corpo social do Conservatório. Entre para abrir o primeiro tópico.',
               actionLabel: 'Entrar',
-              onAction: () => navigate('/auth'),
+              onAction: () => navigate('/auth/login'),
             }
       }
       state={topicos === null ? 'loading' : topicos.length === 0 && !escrevendo ? 'empty' : 'populated'}
@@ -172,7 +172,7 @@ export const CommunityFeedScreen: React.FC = () => {
                 },
               ]}
               primaryLabel="Entrar na Comunidade"
-              onPrimary={() => navigate('/auth')}
+              onPrimary={() => navigate('/auth/login')}
               secondaryLabel="Ver os cursos primeiro"
               onSecondary={() => navigate('/academia')}
             />

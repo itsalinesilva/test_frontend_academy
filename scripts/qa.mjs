@@ -18,7 +18,13 @@
  * Uso:  node scripts/qa.mjs [--json] [--so-falhas]
  */
 import { execFileSync } from 'node:child_process';
-import { SEVERITY as G, report, printReport } from './qa/core.mjs';
+import {
+  SEVERITY as G,
+  report,
+  printReport,
+  checkEveryCheckerIsWired,
+  checkEveryCheckerHasProof,
+} from './qa/core.mjs';
 import { checkText, checkContentMarkdown, checkEnglishLeakInSentence } from './qa/text.mjs';
 import {
   checkKeyCollision,
@@ -149,6 +155,13 @@ const SECTIONS = [
       report('nenhum XP atribuído fora da tabela', checkValueOutsideTable(), G.BLOCKS),
       report('a tabela e as constantes dizem o mesmo número', checkDivergentValue(), G.BLOCKS),
       report('o vocabulário do Atlas está certo na contagem', checkCountingVocabulary(), G.FIX),
+    ],
+  },
+  {
+    heading: 'A SUÍTE VIGIA A SI MESMA',
+    checks: [
+      report('todo verificador está ligado ao pente fino', checkEveryCheckerIsWired(), G.BLOCKS),
+      report('todo verificador foi visto acusando', checkEveryCheckerHasProof(), G.FIX),
     ],
   },
   {

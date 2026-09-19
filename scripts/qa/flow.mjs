@@ -39,12 +39,28 @@ export function servedRoutes() {
  */
 export function checkNavigationTargets() {
   const routes = servedRoutes();
+  /**
+   * A versão anterior deste teste NUNCA acusava nada.
+   *
+   * `routes` contém `/`, e a condição era
+   * `clean === r || clean.startsWith(r) || clean.includes(r)`. Com `r = '/'`,
+   * `startsWith` é verdadeiro para **todo caminho absoluto** — então qualquer
+   * destino, existente ou inventado, passava.
+   *
+   * O verificador estava verde havia meses porque era incapaz de ficar
+   * vermelho. Quem o encontrou foi a tabela de provas, que injeta o defeito e
+   * exige a acusação.
+   */
   const serves = (target) => {
     const clean = target.split('?')[0].split('#')[0];
-    if (clean === '/' ) return true;
-    return routes.some(
-      (r) => clean === r || clean.startsWith(r) || clean.includes(r)
-    );
+    if (clean === '/') return true;
+
+    return routes.some((r) => {
+      if (r === '/') return false;
+      if (clean === r) return true;
+      // prefixo de verdade: `/academia/course` serve `/academia/course/x`
+      return clean.startsWith(r.endsWith('/') ? r : `${r}/`);
+    });
   };
 
   const findings = [];
@@ -865,9 +881,15 @@ export function checkHardcodedMetric() {
        * Só onde o número é o conteúdo inteiro de um elemento: `>1.240<`.
        * Atributo, classe e expressão ficam de fora.
        */
-      const inner = line.match(/>([^<>{}]+)</);
-      if (!inner) continue;
-
+      /**
+       * Todos os `>...<` da linha, e não só o primeiro.
+       *
+       * `const Z = () => <p className="x">8.920</p>` tem uma seta antes do
+       * JSX, e o primeiro casamento era o espaço depois dela. A medida
+       * cravada, que vinha em seguida, nunca era vista — o verificador
+       * passava verde sobre o defeito que existia para pegar.
+       */
+      for (const inner of line.matchAll(/>([^<>{}]+)</g)) {
       const text = inner[1];
       const formatted = METRIC_LITERAL.test(text);
 
@@ -888,6 +910,7 @@ export function checkHardcodedMetric() {
         line: i + 1,
         detail: `"${text.trim()}" está cravado na tela — medida vem de medição`,
       });
+      }
     }
   }
   return findings;
