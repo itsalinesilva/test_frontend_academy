@@ -38,7 +38,7 @@ export const ImmediateFeedbackScreen: React.FC = () => {
         setLoading(true);
         let att: ExerciseAttempt | null = null;
         if (attemptId) {
-          att = await practiceService.getAttempt(attemptId);
+          att = await practiceService.getAttempt(attemptId, userId ?? "");
         }
         // Sem tentativa identificada, a tela fica vazia — e nao inventa uma.
         //

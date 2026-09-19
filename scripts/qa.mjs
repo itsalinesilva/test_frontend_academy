@@ -23,6 +23,7 @@ import { checkText, checkContentMarkdown } from './qa/text.mjs';
 import {
   checkKeyCollision,
   checkPerUserFilter,
+  checkRecordOwnership,
   checkPublishKeepsStudentData,
   checkAdminAuthority,
   checkConsoleLeak,
@@ -80,6 +81,7 @@ const SECTIONS = [
     heading: 'SEGURANÇA — dado de um aluno não aparece para outro',
     checks: [
       report('leitura de dado de aluno filtra por usuário', checkPerUserFilter(), G.BLOCKS),
+      report('registro pessoal buscado por id confere o dono', checkRecordOwnership(), G.BLOCKS),
       report('nenhuma chave de armazenamento colide', checkKeyCollision(), G.BLOCKS),
       report('publicar conteúdo não apaga dado do aluno', checkPublishKeepsStudentData(), G.BLOCKS),
       report('privilégio de admin não é decidido no cliente', checkAdminAuthority(), G.BLOCKS),

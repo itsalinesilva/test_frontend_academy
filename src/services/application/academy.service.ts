@@ -674,8 +674,20 @@ export class AcademyService {
     return savedCert;
   }
 
-  public async getCertificate(certificateId: string): Promise<AcademicCertificateRecord | null> {
-    return this.repo.findCertificateById(certificateId);
+  /**
+   * O certificado de alguem, para esse alguem.
+   *
+   * A verificacao PUBLICA de autenticidade tem rota propria — `/credential` —
+   * e mostra so o que prova o registro. Esta aqui e a via do titular, dentro
+   * da Academia, e por isso exige dono.
+   */
+  public async getCertificate(
+    certificateId: string,
+    userId: string
+  ): Promise<AcademicCertificateRecord | null> {
+    const cert = await this.repo.findCertificateById(certificateId);
+    if (!cert || cert.userId !== userId) return null;
+    return cert;
   }
 
   public async listUserCertificates(userId: string): Promise<AcademicCertificateRecord[]> {
@@ -686,8 +698,19 @@ export class AcademyService {
     return this.repo.listHistoryByUser(userId);
   }
 
-  public async getAssessmentSubmission(submissionId: string): Promise<AssessmentSubmission | null> {
-    return this.repo.getAssessmentSubmission(submissionId);
+  /**
+   * A submissao de alguem, para esse alguem.
+   *
+   * Identificador unico da a sensacao de ja ser credencial, quando e so um
+   * endereco. Quem tem o endereco nao e, por isso, o dono.
+   */
+  public async getAssessmentSubmission(
+    submissionId: string,
+    userId: string
+  ): Promise<AssessmentSubmission | null> {
+    const found = await this.repo.getAssessmentSubmission(submissionId);
+    if (!found || found.userId !== userId) return null;
+    return found;
   }
 
   public async getAllUserProgress(userId: string): Promise<UserAcademyProgress[]> {
@@ -735,8 +758,23 @@ export class AcademyService {
     return this.submitActivity(userId, activityId, givenAnswer, variant);
   }
 
-  public async getAssessmentAttempt(submissionId: string): Promise<AssessmentSubmission | null> {
-    return this.getAssessmentSubmission(submissionId);
+  /**
+   * A prova de alguem, para esse alguem.
+   *
+   * O `userId` e OBRIGATORIO, e nao por formalidade: esta leitura buscava so
+   * pelo identificador da submissao, e a tela que a usa esta em rota publica.
+   * Quem tivesse — ou adivinhasse — um identificador via a nota, a aprovacao e
+   * o numero de certificado de outra pessoa.
+   *
+   * Devolver `null` em vez de lancar e deliberado: a tela ja sabe mostrar
+   * "nao encontrado", e distinguir "nao existe" de "existe e nao e sua"
+   * confirmaria a existencia do registro a quem nao deveria saber dele.
+   */
+  public async getAssessmentAttempt(
+    submissionId: string,
+    userId: string
+  ): Promise<AssessmentSubmission | null> {
+    return this.getAssessmentSubmission(submissionId, userId);
   }
 
   public async submitAssessmentAttempt(

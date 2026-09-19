@@ -294,8 +294,11 @@ export class PracticeService {
     return attempt;
   }
 
-  public async getAttempt(attemptId: string): Promise<ExerciseAttempt | null> {
-    return this.repo.findAttemptById(attemptId);
+  /** A tentativa de alguem, para esse alguem. Ver `80` e a auditoria de 19/09. */
+  public async getAttempt(attemptId: string, userId: string): Promise<ExerciseAttempt | null> {
+    const found = await this.repo.findAttemptById(attemptId);
+    if (!found || found.userId !== userId) return null;
+    return found;
   }
 
   // ---------------------------------------------------------------------------
@@ -521,8 +524,11 @@ export class PracticeService {
     return result;
   }
 
-  public async getResult(resultId: string): Promise<PracticeResult | null> {
-    return this.repo.findResultById(resultId);
+  /** O resultado de alguem, para esse alguem. */
+  public async getResult(resultId: string, userId: string): Promise<PracticeResult | null> {
+    const found = await this.repo.findResultById(resultId);
+    if (!found || found.userId !== userId) return null;
+    return found;
   }
 
   public async getPracticeHistory(userId: string): Promise<PracticeResult[]> {

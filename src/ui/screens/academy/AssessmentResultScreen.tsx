@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
@@ -20,6 +21,7 @@ import {
 
 export const AssessmentResultScreen: React.FC = () => {
   const { params, navigate } = useRouter();
+  const { userId, carregando: sessaoCarregando } = useCurrentUser();
   const attemptId = params.id || '';
 
   const [attempt, setAttempt] = useState<AssessmentAttempt | null>(null);
@@ -29,8 +31,17 @@ export const AssessmentResultScreen: React.FC = () => {
 
   useEffect(() => {
     const loadAttemptData = async () => {
+      /**
+       * Sem sessao nao ha resultado a mostrar: este e o registro de UMA
+       * pessoa, e a rota e alcancavel por qualquer um.
+       */
+      if (sessaoCarregando) return;
+      if (!userId) {
+        setIsLoading(false);
+        return;
+      }
       try {
-        const att = await academyService.getAssessmentAttempt(attemptId);
+        const att = await academyService.getAssessmentAttempt(attemptId, userId);
         if (att) {
           setAttempt(att);
           const asm = await academyService.getAssessment(att.assessmentId);
@@ -48,7 +59,7 @@ export const AssessmentResultScreen: React.FC = () => {
     };
 
     loadAttemptData();
-  }, [attemptId]);
+  }, [attemptId, userId, sessaoCarregando]);
 
   if (!attempt && !isLoading) {
     return (

@@ -32,7 +32,7 @@ export const AttemptDetailScreen: React.FC = () => {
       if (!userId) return;
       try {
         setLoading(true);
-        const att = await practiceService.getAttempt(attemptId);
+        const att = await practiceService.getAttempt(attemptId, userId ?? "");
         setAttempt(att);
         if (att) {
           const ex = await practiceService.getExercise(att.exerciseId);

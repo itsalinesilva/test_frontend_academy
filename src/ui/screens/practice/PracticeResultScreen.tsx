@@ -16,11 +16,13 @@ import {
 import { PracticeResult } from '../../../domain/practice';
 import { practiceService } from '../../../services/application/practice.service';
 import { useRouter, useRouteParams } from '../../navigation/router';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { MeasurementPanel } from '../../components/practice/MeasurementPanel';
 import { PageLayout } from '../../components/layout/PageLayout';
 
 export const PracticeResultScreen: React.FC = () => {
   const router = useRouter();
+  const { userId } = useCurrentUser();
   const params = useRouteParams();
   const resultId = params.id || '';
 
@@ -32,7 +34,7 @@ export const PracticeResultScreen: React.FC = () => {
     async function loadResult() {
       try {
         setLoading(true);
-        const res = await practiceService.getResult(resultId);
+        const res = await practiceService.getResult(resultId, userId ?? "");
         setResult(res);
       } catch (err) {
         console.error('Failed to load practice result', err);

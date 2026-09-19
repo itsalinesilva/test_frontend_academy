@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { academyService } from '../../../services/application/academy.service';
@@ -18,13 +19,20 @@ export const CertificateScreen: React.FC = () => {
   const { params, navigate } = useRouter();
   const certificateId = params.id || '';
 
+  const { userId, carregando: sessaoCarregando } = useCurrentUser();
   const [certificate, setCertificate] = useState<AcademyCertificate | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadCertificate = async () => {
+      /** A via do titular. A verificacao publica fica em `/credential`. */
+      if (sessaoCarregando) return;
+      if (!userId) {
+        setIsLoading(false);
+        return;
+      }
       try {
-        const cert = await academyService.getCertificate(certificateId);
+        const cert = await academyService.getCertificate(certificateId, userId);
         setCertificate(cert);
       } catch (err) {
         console.error('Error loading certificate:', err);
@@ -34,7 +42,7 @@ export const CertificateScreen: React.FC = () => {
     };
 
     loadCertificate();
-  }, [certificateId]);
+  }, [certificateId, userId, sessaoCarregando]);
 
   if (!certificate && !isLoading) {
     return (

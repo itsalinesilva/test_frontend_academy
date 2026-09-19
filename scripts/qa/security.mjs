@@ -270,3 +270,51 @@ export function checkCommittedSecret() {
   }
   return findings;
 }
+
+/**
+ * Registro pessoal buscado por identificador, sem dono.
+ *
+ * `checkPerUserFilter` procura LISTAGEM que não filtra por usuário. Não
+ * alcançou o defeito que a auditoria de 19/09 encontrou, porque ali se buscava
+ * **um** registro:
+ *
+ * ```
+ *   getAssessmentAttempt(submissionId)  →  a prova de qualquer um
+ *   getCertificate(certificateId)       →  o certificado de qualquer um
+ * ```
+ *
+ * Buscar um é tão vazável quanto listar todos — pior, até: o identificador
+ * único dá a sensação de que já é uma credencial, quando é só um endereço.
+ *
+ * A regra: método de serviço que devolve UM registro de pessoa precisa receber
+ * `userId` e conferir o dono. Listagens ficam com o verificador anterior.
+ */
+const PERSONAL_RECORD = /(Submission|Attempt|Certificate|Progress|Enrollment|Result|Evidence|Credential)/;
+
+export function checkRecordOwnership() {
+  const findings = [];
+
+  for (const { file, code } of sources()) {
+    if (!/\/services\//.test(file) || file.includes('.test.')) continue;
+
+    for (const [i, line] of code.split('\n').entries()) {
+      // método público que devolve um registro pessoal, ou nulo
+      const m = line.match(
+        /public\s+async\s+(\w+)\s*\(([^)]*)\)\s*:\s*Promise<\s*(\w+)\s*\|\s*null\s*>/
+      );
+      if (!m) continue;
+
+      const [, name, params, returned] = m;
+      if (!PERSONAL_RECORD.test(returned)) continue;
+      // quem já recebe o usuário está conferindo, ou pode conferir
+      if (/\buserId\b/.test(params)) continue;
+
+      findings.push({
+        file,
+        line: i + 1,
+        detail: `\`${name}\` devolve ${returned} sem receber userId — registro de alguém, legível por qualquer um`,
+      });
+    }
+  }
+  return findings;
+}

@@ -106,6 +106,23 @@ export const REGRAS_DE_AUDIENCIA: RegraDeAudiencia[] = [
     audiencia: 'exigeLogin',
     porque: 'Histórico acadêmico é pessoal.',
   },
+  /**
+   * Esta herdava "pública" de `/academy`, por prefixo mais longo.
+   *
+   * Não era descuido de declaração: era vazamento. `/academy/result/<id>`
+   * mostrava a nota, a aprovação e o número de certificado de quem tivesse —
+   * ou adivinhasse — o identificador. `/academy/certificate` e
+   * `/academy/completion` já estavam declaradas; esta tinha ficado de fora.
+   *
+   * A regra do prefixo mais longo é boa, e é justamente por isso que o que é
+   * pessoal precisa se declarar: o silêncio aqui significa "vale o que o pai
+   * disser", e o pai é público.
+   */
+  {
+    rota: '/academy/result',
+    audiencia: 'exigeLogin',
+    porque: 'É a prova de uma pessoa: nota, aprovação e registro.',
+  },
   {
     rota: '/academy/certificate',
     audiencia: 'exigeLogin',
