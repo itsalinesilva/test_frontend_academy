@@ -10,11 +10,11 @@ import { Flame, Lock, Snowflake } from 'lucide-react';
 interface StreakPanelProps {
   streakDays: number;
   /** Sete posições, de domingo a sábado: houve estudo naquele dia? */
-  semana: readonly boolean[];
+  week: readonly boolean[];
   /** Congelamentos guardados — protegem um dia perdido cada. */
   freezes: number;
   /** Meta de constância que a pessoa escolheu, se escolheu. */
-  meta: number | null;
+  goal: number | null;
 }
 
 /**
@@ -37,9 +37,9 @@ interface StreakPanelProps {
  */
 export const StreakPanel: React.FC<StreakPanelProps> = ({
   streakDays,
-  semana,
+  week,
   freezes,
-  meta,
+  goal,
 }) => {
   const earnedClubs = earnedStreakClubs(streakDays);
   const upcoming = nextStreakClub(streakDays);
@@ -65,7 +65,7 @@ export const StreakPanel: React.FC<StreakPanelProps> = ({
 
       <ol className="flex justify-between gap-1" aria-label="Esta semana">
         {WEEKDAY_INITIALS.map((initial, i) => {
-          const studied = semana[i] === true;
+          const studied = week[i] === true;
           return (
             <li key={i} className="flex flex-1 flex-col items-center gap-1.5">
               <span
@@ -97,12 +97,12 @@ export const StreakPanel: React.FC<StreakPanelProps> = ({
         </p>
       )}
 
-      {meta !== null && (
+      {goal !== null && (
         <p className="text-xs text-stone-600">
-          Sua meta é de <strong>{meta} dias</strong>.{' '}
-          {streakDays >= meta
+          Sua meta é de <strong>{goal} dias</strong>.{' '}
+          {streakDays >= goal
             ? 'Cumprida.'
-            : `Faltam ${meta - streakDays}.`}
+            : `Faltam ${goal - streakDays}.`}
         </p>
       )}
 

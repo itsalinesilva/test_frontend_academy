@@ -165,8 +165,8 @@ describe('a mesma semente dá o mesmo exercício', () => {
      * tônica, porque sementes vizinhas produzem primeiros valores quase
      * iguais num gerador linear.
      */
-    const licao = generateLesson(Dimension.INTERVAL, Level.EAR, 100, 10);
-    const enunciados = new Set(licao.map((e) => e.prompt + e.choices.map((c) => c.label).join()));
+    const lesson = generateLesson(Dimension.INTERVAL, Level.EAR, 100, 10);
+    const enunciados = new Set(lesson.map((e) => e.prompt + e.choices.map((c) => c.label).join()));
     expect(enunciados.size).toBeGreaterThan(5);
   });
 

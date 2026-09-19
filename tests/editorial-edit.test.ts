@@ -37,16 +37,16 @@ const EDITOR = 'usr_editora';
 
 /** Uma lição com bloco de prosa, para as correções terem onde acontecer. */
 function primeiraLicaoComProsa(): {
-  licao: AcademyLesson;
+  lesson: AcademyLesson;
   secaoId: string;
   bloco: Extract<LessonBlock, { kind: 'MARKDOWN' }>;
 } {
-  for (const licao of SEED_LESSONS) {
-    for (const secao of licao.variants.TRADITIONAL.sections) {
+  for (const lesson of SEED_LESSONS) {
+    for (const secao of lesson.variants.TRADITIONAL.sections) {
       const bloco = (secao.blocks ?? []).find((b) => b.kind === 'MARKDOWN');
       if (bloco) {
         return {
-          licao,
+          lesson,
           secaoId: secao.id,
           bloco: bloco as Extract<LessonBlock, { kind: 'MARKDOWN' }>,
         };
@@ -56,7 +56,7 @@ function primeiraLicaoComProsa(): {
   throw new Error('nenhuma lição do catálogo tem bloco de prosa');
 }
 
-const { licao: LICAO, secaoId: SECAO, bloco: BLOCO } = primeiraLicaoComProsa();
+const { lesson: LICAO, secaoId: SECAO, bloco: BLOCO } = primeiraLicaoComProsa();
 
 const ALVO = {
   tipo: 'BLOCO' as const,
@@ -93,10 +93,10 @@ describe('a correção chega à lição', () => {
     expect(alvo.markdown).toBe(TEXTO_CORRIGIDO);
 
     // os demais blocos da mesma seção continuam intactos
-    const outros = secao.blocks!.filter((b) => b.id !== BLOCO.id);
+    const others = secao.blocks!.filter((b) => b.id !== BLOCO.id);
     const originais = LICAO.variants.TRADITIONAL.sections.find((s) => s.id === SECAO)!
       .blocks!.filter((b) => b.id !== BLOCO.id);
-    expect(outros).toEqual(originais);
+    expect(others).toEqual(originais);
   });
 
   it('lição sem edição nenhuma volta idêntica, sem cópia desnecessária', () => {

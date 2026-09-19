@@ -239,3 +239,49 @@ export function checkContentMarkdown() {
   }
   return quebrado;
 }
+
+/**
+ * Palavra inglesa dentro de frase portuguesa, na tela.
+ *
+ * Aconteceu TRÊS vezes, sempre pelo mesmo buraco: texto JSX não tem aspas, e
+ * um renomeador que separa código de prosa o trata como código. Assim
+ * "emblemas" virou "badges", "perder o progresso" virou "perder o progress" e
+ * "sua faixa atual" virou "sua tier atual".
+ *
+ * Nenhuma das três quebrou teste — o texto continuava renderizando, só que
+ * errado. Duas foram pegas por acaso; a terceira só apareceu porque um caso
+ * antigo procurava a frase exata.
+ *
+ * A regra: numa linha de texto de interface que tem acento ou palavra
+ * funcional portuguesa, um termo técnico inglês solto é resto de renomeação.
+ */
+const PT_MARKER = /[àáâãéêíóôõúç]|\b(de|da|do|em|para|com|sem|que|não|uma|seu|sua|pelo|pela)\b/i;
+
+const EN_LEAK =
+  /\b(week|tier|goal|progress|lesson|accuracy|answer|skip|completed|record|badges|streak|scope|level|node|path|queue|review)\b/;
+
+export function checkEnglishLeakInSentence() {
+  const findings = [];
+
+  for (const { file, code } of sources()) {
+    if (!/\/ui\//.test(file) || file.includes('.test.')) continue;
+
+    for (const [i, line] of code.split('\n').entries()) {
+      // só o texto entre tags, que é onde a prosa mora
+      for (const m of line.matchAll(/>([^<>{}]{6,})</g)) {
+        const texto = m[1];
+        if (!PT_MARKER.test(texto)) continue;
+
+        const vazou = texto.match(EN_LEAK);
+        if (!vazou) continue;
+
+        findings.push({
+          file,
+          line: i + 1,
+          detail: `"${vazou[0]}" numa frase em português: "${texto.trim().slice(0, 60)}"`,
+        });
+      }
+    }
+  }
+  return findings;
+}

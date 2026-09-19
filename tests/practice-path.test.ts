@@ -102,9 +102,9 @@ describe('há um só nó atual', () => {
      * Vários destaques é a mesma coisa que nenhum: a pessoa abre o mapa para
      * saber por onde continuar, não para escolher.
      */
-    for (const concluidas of [[], [Dimension.NOTE], [Dimension.NOTE, Dimension.NOTE_VALUE]]) {
-      const atuais = TUDO.filter((d) => nodeState(d, concluidas) === 'CURRENT');
-      expect(atuais, `com ${concluidas.length} concluídas`).toHaveLength(1);
+    for (const completed of [[], [Dimension.NOTE], [Dimension.NOTE, Dimension.NOTE_VALUE]]) {
+      const atuais = TUDO.filter((d) => nodeState(d, completed) === 'CURRENT');
+      expect(atuais, `com ${completed.length} concluídas`).toHaveLength(1);
     }
   });
 
@@ -114,9 +114,9 @@ describe('há um só nó atual', () => {
   });
 
   it('o atual é sempre alcançável', () => {
-    const concluidas = [Dimension.NOTE, Dimension.NOTE_VALUE];
-    const atual = currentDimension(concluidas)!;
-    expect(DIMENSIONS[atual].requer.every((r) => concluidas.includes(r))).toBe(true);
+    const completed = [Dimension.NOTE, Dimension.NOTE_VALUE];
+    const atual = currentDimension(completed)!;
+    expect(DIMENSIONS[atual].requer.every((r) => completed.includes(r))).toBe(true);
   });
 });
 

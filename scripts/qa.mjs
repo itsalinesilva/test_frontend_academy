@@ -19,7 +19,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { SEVERITY as G, report, printReport } from './qa/core.mjs';
-import { checkText, checkContentMarkdown } from './qa/text.mjs';
+import { checkText, checkContentMarkdown, checkEnglishLeakInSentence } from './qa/text.mjs';
 import {
   checkKeyCollision,
   checkPerUserFilter,
@@ -62,6 +62,7 @@ import {
   checkValueOutsideTable,
   checkDivergentValue,
 } from './qa/economy.mjs';
+import { checkReadiness, readinessReport } from './qa/readiness.mjs';
 
 /** A auditoria de rotas já existia; entra aqui em vez de virar comando à parte. */
 function checarRotas() {
@@ -151,6 +152,12 @@ const SECTIONS = [
     ],
   },
   {
+    heading: 'PRONTIDÃO — as sete perguntas, por área',
+    checks: [
+      report('nenhuma área com pergunta em aberto', checkReadiness(), G.FIX),
+    ],
+  },
+  {
     heading: 'ROTAS E FLUXO — todo caminho chega a algum lugar',
     checks: [
       report('nenhuma tela órfã', routes.orphans, G.BLOCKS),
@@ -173,6 +180,11 @@ const SECTIONS = [
       report('pontuação e espaçamento', texto.pontuacao, G.FIX),
       report('nenhum inglês na interface em português', texto.ingles, G.FIX),
       report('nenhum nome técnico vazando para a tela', checkTechnicalNameInUi(), G.FIX),
+      report(
+        'nenhuma palavra inglesa dentro de frase portuguesa',
+        checkEnglishLeakInSentence(),
+        G.BLOCKS
+      ),
     ],
   },
   {
@@ -222,6 +234,11 @@ if (process.argv.includes('--json')) {
   console.log('---');
   console.log(`rotas ${routes.total} · telas ${routes.screens} · distinguem visitante ${routes.distinguishing}`);
   console.log(`bloqueios ${blockers} · a corrigir ${fixables}`);
+  const prontas = readinessReport().filter((r) => r.respondidas === r.total).length;
+  console.log(
+    `prontidão: ${prontas} de ${readinessReport().length} áreas respondem às sete perguntas`
+  );
+  console.log('curadoria do relatório: npm run qa:todo (a suíte falha se estiver velho)');
   console.log('não coberto por máquina: docs/harness/72_QUALITY_SWEEP.md');
   process.exitCode = blockers > 0 ? 1 : 0;
 }

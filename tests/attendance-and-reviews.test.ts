@@ -73,7 +73,7 @@ describe('calendário de frequência', () => {
       9,
       hoje
     );
-    expect(m.maiorSequencia).toBe(3);
+    expect(m.bestStreak).toBe(3);
   });
 
   it('registro com zero eventos não conta como dia estudado', () => {

@@ -115,10 +115,10 @@ describe('a carga declarada pelos cursos é a medida', () => {
       LIVRETOS_PADRAO.flatMap((l) => l.capitulos.map((c) => [c.lessonId, c.questoes]))
     );
 
-    for (const licao of SEED_LESSONS) {
-      const blocos = licao.variants.TRADITIONAL.sections.flatMap((s) => s.blocks ?? []);
-      const esperado = calculateLessonWorkload(blocos, questoesPorLicao.get(licao.id) ?? []).total;
-      expect(licao.durationMinutes, licao.id).toBe(esperado);
+    for (const lesson of SEED_LESSONS) {
+      const blocos = lesson.variants.TRADITIONAL.sections.flatMap((s) => s.blocks ?? []);
+      const esperado = calculateLessonWorkload(blocos, questoesPorLicao.get(lesson.id) ?? []).total;
+      expect(lesson.durationMinutes, lesson.id).toBe(esperado);
     }
   });
 

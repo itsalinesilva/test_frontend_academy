@@ -49,7 +49,7 @@ const COURSE = 'crs_teoria';
 
 const agora = () => new Date().toISOString();
 
-const progresso = (userId: string, pct: number): UserAcademyProgress => ({
+const progress = (userId: string, pct: number): UserAcademyProgress => ({
   userId,
   courseId: COURSE,
   enrolledAt: agora(),
@@ -177,7 +177,7 @@ describe('percurso do aluno — matricular, estudar, ser avaliado, certificar', 
   it('o percurso inteiro sobrevive a recarregar a página', async () => {
     // Grava com uma instância, lê com outra: é o mais perto de um F5.
     const gravando = new PersistentAcademyRepository(novo());
-    await gravando.saveProgress(progresso(ANA, 100));
+    await gravando.saveProgress(progress(ANA, 100));
     await gravando.saveAssessmentSubmission(submissao(ANA, 91));
     await gravando.saveCertificate(certificado(ANA, 'Ana'));
 
@@ -201,7 +201,7 @@ describe('vazamento entre alunos — nenhuma trilha atravessa', () => {
   for (const [nome, ler] of casos) {
     it(`${nome} de Ana não aparece para Bruno`, async () => {
       const repo = new PersistentAcademyRepository(novo());
-      await repo.saveProgress(progresso(ANA, 70));
+      await repo.saveProgress(progress(ANA, 70));
       await repo.saveAssessmentSubmission(submissao(ANA, 88));
       await repo.saveCertificate(certificado(ANA, 'Ana'));
       await repo.logHistoryEntry({
@@ -256,11 +256,11 @@ describe('aluno e administração — o que cada lado alcança', () => {
      * aconteceu de o catálogo ser reescrito por cima do que não era dele.
      */
     const academy = new PersistentAcademyRepository(novo());
-    await academy.saveProgress(progresso(ANA, 55));
+    await academy.saveProgress(progress(ANA, 55));
 
     const editorial = new PersistentEditorialRepository(novo());
-    const licao = SEED_LESSONS[0];
-    const secao = licao.variants.TRADITIONAL.sections[0];
+    const lesson = SEED_LESSONS[0];
+    const secao = lesson.variants.TRADITIONAL.sections[0];
     const bloco = secao.blocks![0];
     const alvo = {
       tipo: 'BLOCO' as const,
@@ -269,8 +269,8 @@ describe('aluno e administração — o que cada lado alcança', () => {
       blocoId: bloco.id,
     };
     await editorial.salvar({
-      id: editId(licao.id, alvo),
-      lessonId: licao.id,
+      id: editId(lesson.id, alvo),
+      lessonId: lesson.id,
       alvo,
       conteudo: bloco,
       anterior: bloco,
@@ -288,8 +288,8 @@ describe('aluno e administração — o que cada lado alcança', () => {
 
   it('a edição do administrador leva o nome de quem editou, e só dele', async () => {
     const editorial = new PersistentEditorialRepository(novo());
-    const licao = SEED_LESSONS[0];
-    const secao = licao.variants.TRADITIONAL.sections[0];
+    const lesson = SEED_LESSONS[0];
+    const secao = lesson.variants.TRADITIONAL.sections[0];
     const bloco = secao.blocks![0];
     const alvo = {
       tipo: 'BLOCO' as const,
@@ -298,8 +298,8 @@ describe('aluno e administração — o que cada lado alcança', () => {
       blocoId: bloco.id,
     };
     await editorial.salvar({
-      id: editId(licao.id, alvo),
-      lessonId: licao.id,
+      id: editId(lesson.id, alvo),
+      lessonId: lesson.id,
       alvo,
       conteudo: bloco,
       anterior: bloco,

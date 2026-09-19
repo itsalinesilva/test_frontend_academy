@@ -5,7 +5,7 @@ import {
   TAG_TEXT,
   currentExercise,
   isInCombo,
-  progresso,
+  progress,
 } from '../../../domain/music-exercise';
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
 import { X, Volume2, Turtle, Check, RotateCcw, Flag } from 'lucide-react';
@@ -155,7 +155,7 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
         <div
           className="h-3 flex-1 overflow-hidden rounded-full bg-stone-200"
           role="progressbar"
-          aria-valuenow={Math.round(progresso(lesson) * 100)}
+          aria-valuenow={Math.round(progress(lesson) * 100)}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-label="Progresso da lição"
@@ -164,7 +164,7 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
             className={`h-full rounded-full transition-all duration-300 ${
               inCombo ? 'bg-ouro-500' : 'bg-anil-700'
             }`}
-            style={{ width: `${progresso(lesson) * 100}%` }}
+            style={{ width: `${progress(lesson) * 100}%` }}
           />
         </div>
 

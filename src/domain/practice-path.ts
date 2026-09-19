@@ -114,21 +114,21 @@ export function pathNodes(): PathNode[] {
  */
 export function nodeState(
   dimensao: Dimension,
-  concluidas: readonly Dimension[]
+  completed: readonly Dimension[]
 ): NodeState {
-  if (concluidas.includes(dimensao)) return 'DONE';
+  if (completed.includes(dimensao)) return 'DONE';
 
-  const alcancavel = DIMENSIONS[dimensao].requer.every((r) => concluidas.includes(r));
+  const alcancavel = DIMENSIONS[dimensao].requer.every((r) => completed.includes(r));
   if (!alcancavel) return 'LOCKED';
 
-  return dimensao === currentDimension(concluidas) ? 'CURRENT' : 'AVAILABLE';
+  return dimensao === currentDimension(completed) ? 'CURRENT' : 'AVAILABLE';
 }
 
 /** O próximo nó a fazer, ou `null` quando o percurso inteiro foi concluído. */
-export function currentDimension(concluidas: readonly Dimension[]): Dimension | null {
+export function currentDimension(completed: readonly Dimension[]): Dimension | null {
   for (const no of pathNodes()) {
-    if (concluidas.includes(no.dimensao)) continue;
-    if (no.requer.every((r) => concluidas.includes(r))) return no.dimensao;
+    if (completed.includes(no.dimensao)) continue;
+    if (no.requer.every((r) => completed.includes(r))) return no.dimensao;
   }
   return null;
 }
@@ -141,9 +141,9 @@ export function currentDimension(concluidas: readonly Dimension[]): Dimension | 
  */
 export function lockReason(
   dimensao: Dimension,
-  concluidas: readonly Dimension[]
+  completed: readonly Dimension[]
 ): string | null {
-  const faltando = DIMENSIONS[dimensao].requer.filter((r) => !concluidas.includes(r));
+  const faltando = DIMENSIONS[dimensao].requer.filter((r) => !completed.includes(r));
   if (faltando.length === 0) return null;
 
   const nomes = faltando.map((r) => DIMENSIONS[r].nome);
@@ -156,10 +156,10 @@ export function lockReason(
 /** Quanto da unidade já foi feito, de 0 a 1. */
 export function unitProgress(
   unidade: PathUnit,
-  concluidas: readonly Dimension[]
+  completed: readonly Dimension[]
 ): number {
   if (unidade.nos.length === 0) return 0;
-  const feitos = unidade.nos.filter((n) => concluidas.includes(n.dimensao)).length;
+  const feitos = unidade.nos.filter((n) => completed.includes(n.dimensao)).length;
   return feitos / unidade.nos.length;
 }
 
@@ -169,11 +169,11 @@ export function unitProgress(
  * `null` só quando não há percurso nenhum — com tudo concluído, devolve a
  * última, porque é onde a pessoa de fato chegou.
  */
-export function currentUnit(concluidas: readonly Dimension[]): PathUnit | null {
+export function currentUnit(completed: readonly Dimension[]): PathUnit | null {
   const unidades = pathUnits();
   if (unidades.length === 0) return null;
 
-  const atual = currentDimension(concluidas);
+  const atual = currentDimension(completed);
   if (atual === null) return unidades[unidades.length - 1];
 
   return unidades.find((u) => u.nos.some((n) => n.dimensao === atual)) ?? unidades[0];

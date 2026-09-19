@@ -191,8 +191,8 @@ export function startLesson(lessonId: EntityId, queue: MusicExercise[]): LessonI
   };
 }
 
-export function currentExercise(licao: LessonInProgress): MusicExercise | null {
-  return licao.queue[licao.index] ?? null;
+export function currentExercise(lesson: LessonInProgress): MusicExercise | null {
+  return lesson.queue[lesson.index] ?? null;
 }
 
 /**
@@ -202,47 +202,47 @@ export function currentExercise(licao: LessonInProgress): MusicExercise | null {
  * permite testar o laço inteiro sem interface, e o que evita que duas partes
  * da tela discordem sobre quantas vidas restam.
  */
-export function responder(
-  licao: LessonInProgress,
+export function answer(
+  lesson: LessonInProgress,
   isCorrect: boolean
 ): LessonInProgress {
-  const atual = currentExercise(licao);
-  if (!atual) return licao;
+  const atual = currentExercise(lesson);
+  if (!atual) return lesson;
 
   if (isCorrect) {
-    const streak = licao.streak + 1;
+    const streak = lesson.streak + 1;
     return {
-      ...licao,
-      index: licao.index + 1,
+      ...lesson,
+      index: lesson.index + 1,
       streak,
-      bestStreak: Math.max(licao.bestStreak, streak),
-      correct: licao.correct + 1,
+      bestStreak: Math.max(lesson.bestStreak, streak),
+      correct: lesson.correct + 1,
       /**
        * Acertar na revisão tira o exercício da fila de pendências.
        *
        * Sem isto, um exercício errado uma vez voltaria para sempre — e a
        * lição não fecharia nunca.
        */
-      toRedo: licao.toRedo.filter((id) => id !== atual.id),
+      toRedo: lesson.toRedo.filter((id) => id !== atual.id),
     };
   }
 
   return {
-    ...licao,
-    index: licao.index + 1,
+    ...lesson,
+    index: lesson.index + 1,
     streak: 0,
-    wrong: licao.wrong + 1,
+    wrong: lesson.wrong + 1,
     /** Vidas não ficam negativas: ao chegar a zero, o débito é que acumula. */
-    lives: Math.max(0, licao.lives - 1),
-    toRedo: licao.toRedo.includes(atual.id)
-      ? licao.toRedo
-      : [...licao.toRedo, atual.id],
+    lives: Math.max(0, lesson.lives - 1),
+    toRedo: lesson.toRedo.includes(atual.id)
+      ? lesson.toRedo
+      : [...lesson.toRedo, atual.id],
   };
 }
 
 /** Pular não pune, e não entra na contagem de erro — mas também não acerta. */
-export function pular(licao: LessonInProgress): LessonInProgress {
-  return { ...licao, index: licao.index + 1, streak: 0 };
+export function skip(lesson: LessonInProgress): LessonInProgress {
+  return { ...lesson, index: lesson.index + 1, streak: 0 };
 }
 
 /**
@@ -251,8 +251,8 @@ export function pular(licao: LessonInProgress): LessonInProgress {
  * A lição **não** fecha só por chegar ao fim da fila: se houver exercício
  * errado, ele volta. Ver `prepararRevisao`.
  */
-export function isLessonComplete(licao: LessonInProgress): boolean {
-  return licao.index >= licao.queue.length && licao.toRedo.length === 0;
+export function isLessonComplete(lesson: LessonInProgress): boolean {
+  return lesson.index >= lesson.queue.length && lesson.toRedo.length === 0;
 }
 
 /**
@@ -262,20 +262,20 @@ export function isLessonComplete(licao: LessonInProgress): boolean {
  * a etiqueta `REVISAO` — que é o que a referência mostra como "corrija o erro
  * de antes".
  */
-export function queueReview(licao: LessonInProgress): LessonInProgress {
-  if (licao.index < licao.queue.length || licao.toRedo.length === 0) return licao;
+export function queueReview(lesson: LessonInProgress): LessonInProgress {
+  if (lesson.index < lesson.queue.length || lesson.toRedo.length === 0) return lesson;
 
-  const paraRefazer = licao.toRedo
-    .map((id) => licao.queue.find((e) => e.id === id))
+  const paraRefazer = lesson.toRedo
+    .map((id) => lesson.queue.find((e) => e.id === id))
     .filter((e): e is MusicExercise => e !== undefined)
     .map((e) => ({ ...e, tag: 'REVIEW' as const }));
 
-  return { ...licao, queue: [...licao.queue, ...paraRefazer] };
+  return { ...lesson, queue: [...lesson.queue, ...paraRefazer] };
 }
 
 /** O combo está aceso? Governa a cor da barra de progresso. */
-export function isInCombo(licao: LessonInProgress): boolean {
-  return licao.streak >= STREAK_FOR_COMBO;
+export function isInCombo(lesson: LessonInProgress): boolean {
+  return lesson.streak >= STREAK_FOR_COMBO;
 }
 
 /**
@@ -284,9 +284,9 @@ export function isInCombo(licao: LessonInProgress): boolean {
  * Conta sobre a fila **atual**, que cresce quando há revisão. Por isso a
  * barra pode recuar ao entrar em revisão — e isso é honesto: ainda falta.
  */
-export function progresso(licao: LessonInProgress): number {
-  if (licao.queue.length === 0) return 1;
-  return Math.min(1, licao.index / licao.queue.length);
+export function progress(lesson: LessonInProgress): number {
+  if (lesson.queue.length === 0) return 1;
+  return Math.min(1, lesson.index / lesson.queue.length);
 }
 
 /**
@@ -295,7 +295,7 @@ export function progresso(licao: LessonInProgress): number {
  * `null` antes da primeira resposta — e `null` é diferente de zero por cento.
  * A tela precisa distinguir "ainda não respondeu" de "errou tudo".
  */
-export function precisao(licao: LessonInProgress): number | null {
-  const respondidas = licao.correct + licao.wrong;
-  return respondidas === 0 ? null : Math.round((licao.correct / respondidas) * 100);
+export function accuracy(lesson: LessonInProgress): number | null {
+  const respondidas = lesson.correct + lesson.wrong;
+  return respondidas === 0 ? null : Math.round((lesson.correct / respondidas) * 100);
 }

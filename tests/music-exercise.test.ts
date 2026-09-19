@@ -8,13 +8,13 @@ import {
   requiresMicrophone,
   startLesson,
   currentExercise,
-  responder,
-  pular,
+  answer,
+  skip,
   isLessonComplete,
   queueReview,
   isInCombo,
-  progresso,
-  precisao,
+  progress,
+  accuracy,
 } from '../src/domain/music-exercise';
 
 /**
@@ -63,7 +63,7 @@ describe('a lição começa inteira, e em zero', () => {
   it('a precisão é nula antes da primeira resposta', () => {
     // `null` é diferente de zero por cento: a tela precisa distinguir
     // "ainda não respondeu" de "errou tudo".
-    expect(precisao(licaoDe(3))).toBeNull();
+    expect(accuracy(licaoDe(3))).toBeNull();
   });
 
   it('o primeiro exercício da fila é o atual', () => {
@@ -73,7 +73,7 @@ describe('a lição começa inteira, e em zero', () => {
 
 describe('o erro não termina a lição', () => {
   it('errar enfileira o exercício para refazer', () => {
-    const l = responder(licaoDe(3), false);
+    const l = answer(licaoDe(3), false);
     expect(l.toRedo).toEqual(['e0']);
     expect(l.wrong).toBe(1);
     expect(l.lives).toBe(LIVES_PER_LESSON - 1);
@@ -81,16 +81,16 @@ describe('o erro não termina a lição', () => {
 
   it('a lição NÃO fecha enquanto houver pendência', () => {
     let l = licaoDe(2);
-    l = responder(l, false); // e0 errado
-    l = responder(l, true); // e1 certo
+    l = answer(l, false); // e0 errado
+    l = answer(l, true); // e1 certo
     expect(l.index).toBe(2);
     expect(isLessonComplete(l), 'fechou com pendência aberta').toBe(false);
   });
 
   it('o errado volta ao fim da fila, marcado como revisão', () => {
     let l = licaoDe(2);
-    l = responder(l, false);
-    l = responder(l, true);
+    l = answer(l, false);
+    l = answer(l, true);
     l = queueReview(l);
 
     expect(l.queue).toHaveLength(3);
@@ -100,10 +100,10 @@ describe('o erro não termina a lição', () => {
 
   it('acertar na revisão tira o exercício da pendência, e a lição fecha', () => {
     let l = licaoDe(2);
-    l = responder(l, false);
-    l = responder(l, true);
+    l = answer(l, false);
+    l = answer(l, true);
     l = queueReview(l);
-    l = responder(l, true); // refez o e0
+    l = answer(l, true); // refez o e0
 
     expect(l.toRedo).toEqual([]);
     expect(isLessonComplete(l)).toBe(true);
@@ -113,23 +113,23 @@ describe('o erro não termina a lição', () => {
     // Sem isto, um erro repetido sairia da fila e a lição fecharia com o
     // conteúdo ainda não aprendido.
     let l = licaoDe(1);
-    l = responder(l, false);
+    l = answer(l, false);
     l = queueReview(l);
-    l = responder(l, false);
+    l = answer(l, false);
     expect(l.toRedo).toEqual(['e0']);
   });
 
   it('o mesmo exercício não entra duas vezes na pendência', () => {
     let l = licaoDe(1);
-    l = responder(l, false);
+    l = answer(l, false);
     l = queueReview(l);
-    l = responder(l, false);
+    l = answer(l, false);
     expect(l.toRedo).toHaveLength(1);
   });
 
   it('preparar revisão sem pendência não muda nada', () => {
     let l = licaoDe(1);
-    l = responder(l, true);
+    l = answer(l, true);
     expect(queueReview(l)).toBe(l);
   });
 });
@@ -142,15 +142,15 @@ describe('as vidas acabam, e o estudo continua', () => {
      * tentativa. Ver `76_PROGRESS_ECONOMY.md` §5.
      */
     let l = licaoDe(10);
-    for (let i = 0; i < 8; i++) l = responder(l, false);
+    for (let i = 0; i < 8; i++) l = answer(l, false);
     expect(l.lives).toBe(0);
     expect(l.wrong).toBe(8);
   });
 
   it('com zero vidas ainda se responde', () => {
     let l = licaoDe(10);
-    for (let i = 0; i < 6; i++) l = responder(l, false);
-    l = responder(l, true);
+    for (let i = 0; i < 6; i++) l = answer(l, false);
+    l = answer(l, true);
     expect(l.correct).toBe(1);
   });
 });
@@ -158,19 +158,19 @@ describe('as vidas acabam, e o estudo continua', () => {
 describe('combo de acertos', () => {
   it('a sequência cresce a cada acerto e zera ao errar', () => {
     let l = licaoDe(10);
-    l = responder(l, true);
-    l = responder(l, true);
+    l = answer(l, true);
+    l = answer(l, true);
     expect(l.streak).toBe(2);
 
-    l = responder(l, false);
+    l = answer(l, false);
     expect(l.streak).toBe(0);
   });
 
   it('a melhor sequência da lição fica registrada', () => {
     let l = licaoDe(10);
-    for (let i = 0; i < 4; i++) l = responder(l, true);
-    l = responder(l, false);
-    l = responder(l, true);
+    for (let i = 0; i < 4; i++) l = answer(l, true);
+    l = answer(l, false);
+    l = answer(l, true);
 
     expect(l.bestStreak).toBe(4);
     expect(l.streak).toBe(1);
@@ -179,24 +179,24 @@ describe('combo de acertos', () => {
   it('o combo acende a partir do limiar declarado', () => {
     // É o que muda a cor da barra de progresso, como na referência.
     let l = licaoDe(10);
-    for (let i = 0; i < STREAK_FOR_COMBO - 1; i++) l = responder(l, true);
+    for (let i = 0; i < STREAK_FOR_COMBO - 1; i++) l = answer(l, true);
     expect(isInCombo(l)).toBe(false);
 
-    l = responder(l, true);
+    l = answer(l, true);
     expect(isInCombo(l)).toBe(true);
   });
 
   it('errar apaga o combo', () => {
     let l = licaoDe(10);
-    for (let i = 0; i < STREAK_FOR_COMBO; i++) l = responder(l, true);
-    l = responder(l, false);
+    for (let i = 0; i < STREAK_FOR_COMBO; i++) l = answer(l, true);
+    l = answer(l, false);
     expect(isInCombo(l)).toBe(false);
   });
 });
 
 describe('pular não pune, mas também não acerta', () => {
   it('pular não consome vida nem conta erro', () => {
-    const l = pular(licaoDe(3));
+    const l = skip(licaoDe(3));
     expect(l.lives).toBe(LIVES_PER_LESSON);
     expect(l.wrong).toBe(0);
     expect(l.correct).toBe(0);
@@ -205,23 +205,23 @@ describe('pular não pune, mas também não acerta', () => {
   it('pular quebra a sequência', () => {
     // Não seria honesto manter o combo de quem não respondeu.
     let l = licaoDe(3);
-    l = responder(l, true);
-    l = pular(l);
+    l = answer(l, true);
+    l = skip(l);
     expect(l.streak).toBe(0);
   });
 
   it('pular não enfileira para revisão', () => {
     // Quem pulou não errou: não há erro a corrigir.
-    expect(pular(licaoDe(3)).toRedo).toEqual([]);
+    expect(skip(licaoDe(3)).toRedo).toEqual([]);
   });
 });
 
 describe('progresso e precisão', () => {
   it('o progresso vai de zero a um', () => {
     let l = licaoDe(4);
-    expect(progresso(l)).toBe(0);
-    l = responder(l, true);
-    expect(progresso(l)).toBe(0.25);
+    expect(progress(l)).toBe(0);
+    l = answer(l, true);
+    expect(progress(l)).toBe(0.25);
   });
 
   it('entrar em revisão faz a barra recuar — e isso é honesto', () => {
@@ -231,28 +231,28 @@ describe('progresso e precisão', () => {
      * pessoa achasse que tinha acabado.
      */
     let l = licaoDe(2);
-    l = responder(l, false);
-    l = responder(l, true);
-    const antes = progresso(l);
+    l = answer(l, false);
+    l = answer(l, true);
+    const antes = progress(l);
 
     l = queueReview(l);
-    expect(progresso(l)).toBeLessThan(antes);
+    expect(progress(l)).toBeLessThan(antes);
   });
 
   it('a precisão é a fração de acertos sobre respondidas', () => {
     let l = licaoDe(4);
-    l = responder(l, true);
-    l = responder(l, false);
-    l = responder(l, true);
-    l = responder(l, true);
-    expect(precisao(l)).toBe(75);
+    l = answer(l, true);
+    l = answer(l, false);
+    l = answer(l, true);
+    l = answer(l, true);
+    expect(accuracy(l)).toBe(75);
   });
 
   it('pular não entra na conta da precisão', () => {
     let l = licaoDe(3);
-    l = responder(l, true);
-    l = pular(l);
-    expect(precisao(l)).toBe(100);
+    l = answer(l, true);
+    l = skip(l);
+    expect(accuracy(l)).toBe(100);
   });
 });
 

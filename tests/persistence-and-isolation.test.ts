@@ -31,7 +31,7 @@ import { StudyRecord } from '../src/domain/study-attendance';
 const ANA = 'usr_ana';
 const BRUNO = 'usr_bruno';
 
-const progresso = (userId: string, courseId: string, pct: number): UserAcademyProgress => ({
+const progress = (userId: string, courseId: string, pct: number): UserAcademyProgress => ({
   userId,
   courseId,
   enrolledAt: new Date().toISOString(),
@@ -75,7 +75,7 @@ describe('o que o aluno faz sobrevive a fechar o navegador', () => {
     // Instância nova é o mais perto que este teste chega de recarregar a
     // página: o repositório é reconstruído e só tem o armazenamento.
     const antes = new PersistentAcademyRepository(new LocalStorageAdapter());
-    await antes.saveProgress(progresso(ANA, 'crs_teoria', 30));
+    await antes.saveProgress(progress(ANA, 'crs_teoria', 30));
 
     const depois = new PersistentAcademyRepository(new LocalStorageAdapter());
     const lido = await depois.getProgress(ANA, 'crs_teoria');
@@ -88,8 +88,8 @@ describe('o que o aluno faz sobrevive a fechar o navegador', () => {
 
   it('gravar de novo atualiza, e não duplica', async () => {
     const repo = new PersistentAcademyRepository(new LocalStorageAdapter());
-    await repo.saveProgress(progresso(ANA, 'crs_teoria', 30));
-    await repo.saveProgress(progresso(ANA, 'crs_teoria', 55));
+    await repo.saveProgress(progress(ANA, 'crs_teoria', 30));
+    await repo.saveProgress(progress(ANA, 'crs_teoria', 55));
 
     const todos = await repo.listUserProgress(ANA);
     expect(todos).toHaveLength(1);
@@ -101,7 +101,7 @@ describe('o que o aluno faz sobrevive a fechar o navegador', () => {
     // apagados do código pararam de aparecer na tela. O risco inverso é
     // reescrever por cima do que é do aluno.
     const repo = new PersistentAcademyRepository(new LocalStorageAdapter());
-    await repo.saveProgress(progresso(ANA, 'crs_teoria', 70));
+    await repo.saveProgress(progress(ANA, 'crs_teoria', 70));
 
     window.localStorage.setItem('amd_academy_catalog_version', '"versao-antiga"');
     new PersistentAcademyRepository(new LocalStorageAdapter());
@@ -139,7 +139,7 @@ describe('o que o aluno faz sobrevive a fechar o navegador', () => {
 describe('o dado de um aluno não chega ao outro no mesmo dispositivo', () => {
   it('o progresso de Ana não aparece para Bruno', async () => {
     const repo = new PersistentAcademyRepository(new LocalStorageAdapter());
-    await repo.saveProgress(progresso(ANA, 'crs_teoria', 80));
+    await repo.saveProgress(progress(ANA, 'crs_teoria', 80));
 
     expect(await repo.getProgress(BRUNO, 'crs_teoria')).toBeNull();
     expect(await repo.listUserProgress(BRUNO)).toEqual([]);

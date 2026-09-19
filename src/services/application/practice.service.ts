@@ -204,8 +204,8 @@ export class PracticeService {
       if (medicao.afinacao.deviationCents !== null) {
         partes.push(`afinação a ${Math.abs(medicao.afinacao.deviationCents)} cents do alvo`);
       }
-      if (medicao.tempoRitmico.desvioMedioMs !== null) {
-        partes.push(`desvio médio de ${medicao.tempoRitmico.desvioMedioMs} ms em relação ao pulso`);
+      if (medicao.tempoRitmico.meanDeviationMs !== null) {
+        partes.push(`desvio médio de ${medicao.tempoRitmico.meanDeviationMs} ms em relação ao pulso`);
       }
       details = partes.length > 0 ? `Medido: ${partes.join('; ')}.` : `Nota global ${nota}.`;
       correctiveAction =
@@ -252,7 +252,7 @@ export class PracticeService {
       expectedResponse: expected,
       isCorrect,
       accuracyScore: nota ?? 0,
-      timingDeviationMs: medicao.tempoRitmico.desvioMedioMs ?? 0,
+      timingDeviationMs: medicao.tempoRitmico.meanDeviationMs ?? 0,
       pitchDeviationCents: medicao.afinacao.deviationCents ?? 0,
       medicao,
       immediateFeedback: {

@@ -1,4 +1,4 @@
-import { LessonInProgress, isLessonComplete, precisao } from './music-exercise';
+import { LessonInProgress, isLessonComplete, accuracy } from './music-exercise';
 
 /**
  * A economia de progresso, em código.
@@ -107,12 +107,12 @@ export function levelOf(totalXp: number): LevelInfo {
  * A rodada só paga o bônus quando de fato teve dez exercícios **e** terminou.
  * Pagar o bônus a quem saiu no meio seria pagar por rodada que não houve.
  */
-export function lessonXp(licao: LessonInProgress): number {
+export function lessonXp(lesson: LessonInProgress): number {
   const porResposta =
-    licao.correct * XP.EXERCISE_CORRECT + licao.wrong * XP.EXERCISE_WRONG;
+    lesson.correct * XP.EXERCISE_CORRECT + lesson.wrong * XP.EXERCISE_WRONG;
 
   const rodadaInteira =
-    isLessonComplete(licao) && licao.queue.length >= EXERCISES_PER_ROUND
+    isLessonComplete(lesson) && lesson.queue.length >= EXERCISES_PER_ROUND
       ? XP.ROUND_COMPLETED
       : 0;
 
@@ -126,7 +126,7 @@ export function lessonXp(licao: LessonInProgress): number {
  * precisa distinguir "ainda não praticou" de "errou tudo", e foi confundir os
  * dois que fez o perfil anunciar 86% de precisão a quem nunca tocou.
  */
-export function lessonScore(licao: LessonInProgress): number | null {
-  const p = precisao(licao);
+export function lessonScore(lesson: LessonInProgress): number | null {
+  const p = accuracy(lesson);
   return p === null ? null : Math.round(p * 10);
 }

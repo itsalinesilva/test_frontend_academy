@@ -23,7 +23,7 @@ import { StreakGoal } from '../domain/lesson-completion';
 export interface PathRecord {
   userId: string;
   /** Nós já concluídos, na ordem em que foram. */
-  concluidas: Dimension[];
+  completed: Dimension[];
   /** `null` enquanto a pessoa não escolheu — e não se inventa uma para ela. */
   streakGoal: StreakGoal | null;
   updatedAt: string;
@@ -69,38 +69,38 @@ export class PersistentPathRepository implements PathRepository {
    * houve.
    */
   public async forUser(userId: string): Promise<PathRecord> {
-    const achado = this.registros().find((r) => r.userId === userId);
-    if (achado) return achado;
+    const found = this.registros().find((r) => r.userId === userId);
+    if (found) return found;
 
     return {
       userId,
-      concluidas: [],
+      completed: [],
       streakGoal: null,
       updatedAt: new Date().toISOString(),
     };
   }
 
-  private async gravar(registro: PathRecord): Promise<PathRecord> {
-    const atualizado = { ...registro, updatedAt: new Date().toISOString() };
-    const outros = this.registros().filter((r) => r.userId !== registro.userId);
-    this.storage.set(this.CHAVE, [...outros, atualizado]);
-    return atualizado;
+  private async gravar(record: PathRecord): Promise<PathRecord> {
+    const updated = { ...record, updatedAt: new Date().toISOString() };
+    const others = this.registros().filter((r) => r.userId !== record.userId);
+    this.storage.set(this.CHAVE, [...others, updated]);
+    return updated;
   }
 
   /** Concluir duas vezes o mesmo nó não o duplica. */
   public async completeNode(userId: string, dimensao: Dimension): Promise<PathRecord> {
-    const registro = await this.forUser(userId);
-    if (registro.concluidas.includes(dimensao)) return registro;
+    const record = await this.forUser(userId);
+    if (record.completed.includes(dimensao)) return record;
 
-    return this.gravar({ ...registro, concluidas: [...registro.concluidas, dimensao] });
+    return this.gravar({ ...record, completed: [...record.completed, dimensao] });
   }
 
   public async setStreakGoal(
     userId: string,
     meta: StreakGoal
   ): Promise<PathRecord> {
-    const registro = await this.forUser(userId);
-    return this.gravar({ ...registro, streakGoal: meta });
+    const record = await this.forUser(userId);
+    return this.gravar({ ...record, streakGoal: meta });
   }
 
   private vereditos(): ExerciseVerdict[] {
@@ -114,10 +114,10 @@ export class PersistentPathRepository implements PathRepository {
    * sobre o mesmo exercício fariam a contagem pesar quem clicou duas vezes.
    */
   public async recordVerdict(v: ExerciseVerdict): Promise<void> {
-    const outros = this.vereditos().filter(
+    const others = this.vereditos().filter(
       (a) => !(a.userId === v.userId && a.exerciseId === v.exerciseId)
     );
-    this.storage.set(this.CHAVE_VEREDITOS, [...outros, v]);
+    this.storage.set(this.CHAVE_VEREDITOS, [...others, v]);
   }
 
   public async verdictsForUser(userId: string): Promise<ExerciseVerdict[]> {

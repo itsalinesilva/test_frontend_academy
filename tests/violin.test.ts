@@ -148,9 +148,9 @@ describe('Acompanhamento de partitura', () => {
       amostrasDe([[0, 'A4'], [1, 'B4'], [2, 'C#5'], [3, 'D5']]),
       60
     );
-    expect(r.julgamentos.every((j) => j.verdict === 'PERFEITO')).toBe(true);
-    expect(r.precisao).toBe(100);
-    expect(r.maiorSequencia).toBe(4);
+    expect(r.judgements.every((j) => j.verdict === 'PERFEITO')).toBe(true);
+    expect(r.accuracy).toBe(100);
+    expect(r.bestStreak).toBe(4);
   });
 
   it('separa erro de altura de erro de tempo', () => {
@@ -211,7 +211,7 @@ describe('Acompanhamento de partitura', () => {
       notas: [...PECA.notas, { id: 'p1', nota: null, inicioBatida: 4, duracaoBatidas: 1 }],
     };
     const r = julgarExecucao(comPausa, amostrasDe([[0, 'A4']]), 60);
-    expect(r.notasJulgadas).toBe(4);
+    expect(r.notesJudged).toBe(4);
   });
 
   it('a maior sequência quebra no erro e recomeça', () => {
@@ -220,14 +220,14 @@ describe('Acompanhamento de partitura', () => {
       amostrasDe([[0, 'A4'], [1, 'C5'], [2, 'C#5'], [3, 'D5']]),
       60
     );
-    expect(r.maiorSequencia).toBe(2);
+    expect(r.bestStreak).toBe(2);
     expect(r.correct).toBe(3);
   });
 
   it('relata os desvios médios em ms e em cents', () => {
     const r = julgarExecucao(PECA, amostrasDe([[0, 'A4'], [1, 'B4']]), 60);
-    expect(r.desvioMedioMs).not.toBeNull();
-    expect(r.desvioMedioCents).not.toBeNull();
+    expect(r.meanDeviationMs).not.toBeNull();
+    expect(r.meanDeviationCents).not.toBeNull();
   });
 });
 

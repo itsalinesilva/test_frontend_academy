@@ -35,6 +35,9 @@ import { AcademicProfileScreen } from './academy/AcademicProfileScreen';
 
 // Practice & Score Canonical Pillars
 import { PracticeHomeScreen } from './practice/PracticeHomeScreen';
+import { PracticePathScreen } from './practice/PracticePathScreen';
+import { PracticeLeagueScreen } from './practice/PracticeLeagueScreen';
+import { PracticeEnrollmentScreen } from './practice/PracticeEnrollmentScreen';
 import { SkillTreeScreen } from './practice/SkillTreeScreen';
 import { SkillDetailScreen } from './practice/SkillDetailScreen';
 import { MicroSkillScreen } from './practice/MicroSkillScreen';
@@ -327,6 +330,25 @@ export const AppRouterOutlet: React.FC = () => {
   // 2. PRACTICE (PRACTICE HUB & GAMIFIED LOOP)
   if (currentPath === '/practice') {
     return <PracticeHomeScreen />;
+  }
+  /**
+   * O percurso: mapa, licao e encerramento no mesmo lugar.
+   *
+   * Sem esta rota os oito componentes do Laboratorio eram codigo que ninguem
+   * roda — a suite passava e a pessoa nao chegava a nada deles.
+   */
+  if (currentPath === '/practice/path') {
+    return <PracticePathScreen />;
+  }
+  if (
+    currentPath === '/practice/league' ||
+    currentPath === '/practice/missions' ||
+    currentPath === '/practice/streak'
+  ) {
+    return <PracticeLeagueScreen />;
+  }
+  if (currentPath === '/practice/enrollment' || currentPath === '/practice/meters') {
+    return <PracticeEnrollmentScreen />;
   }
   if (currentPath === '/practice/trainer' || currentPath === '/practice/ear') {
     return <PracticeScreen />;

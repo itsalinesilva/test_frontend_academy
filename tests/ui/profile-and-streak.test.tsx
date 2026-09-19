@@ -28,9 +28,9 @@ const ofensiva = (opcoes: Partial<Parameters<typeof StreakPanel>[0]> = {}) =>
   render(
     <StreakPanel
       streakDays={0}
-      semana={SEMANA_VAZIA}
+      week={SEMANA_VAZIA}
       freezes={0}
-      meta={null}
+      goal={null}
       {...opcoes}
     />
   );
@@ -60,7 +60,7 @@ describe('zero se declara sem constranger', () => {
 describe('a semana fica visível', () => {
   it('os sete dias aparecem, e cada um diz o que houve', () => {
     // Cor sozinha não chega a quem não a distingue nem a leitor de tela.
-    ofensiva({ semana: [false, true, true, false, false, false, false] });
+    ofensiva({ week: [false, true, true, false, false, false, false] });
     expect(screen.getByText(/^segunda: estudou/)).toBeInTheDocument();
     expect(screen.getByText(/^quinta: sem registro/)).toBeInTheDocument();
   });
@@ -84,12 +84,12 @@ describe('congelamentos e meta', () => {
 
   it('com meta, diz quanto falta', () => {
     // Meta de 14 para não colidir com a contagem do clube de 7 dias.
-    ofensiva({ streakDays: 4, meta: 14 });
+    ofensiva({ streakDays: 4, goal: 14 });
     expect(screen.getByText(/Sua meta é de/i)).toHaveTextContent('Faltam 10.');
   });
 
   it('meta alcançada é dita como cumprida, e não como "faltam 0"', () => {
-    ofensiva({ streakDays: 9, meta: 7 });
+    ofensiva({ streakDays: 9, goal: 7 });
     expect(screen.getByText(/cumprida/i)).toBeInTheDocument();
   });
 });

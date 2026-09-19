@@ -11,7 +11,7 @@ import {
   ExerciseType,
   STREAK_FOR_COMBO,
   startLesson,
-  responder,
+  answer,
   queueReview,
 } from '../src/domain/music-exercise';
 import { COMPLETIONS_TO_JOIN_LEAGUE } from '../src/domain/progress-economy';
@@ -46,12 +46,12 @@ const licaoDe = (quantos: number) =>
 /** Uma lição terminada, com o resultado que se pedir. */
 const terminada = (correct: number, wrong = 0) => {
   let l = licaoDe(correct + wrong);
-  for (let i = 0; i < correct; i++) l = responder(l, true);
-  for (let i = 0; i < wrong; i++) l = responder(l, false);
+  for (let i = 0; i < correct; i++) l = answer(l, true);
+  for (let i = 0; i < wrong; i++) l = answer(l, false);
   // Refaz o que errou, senão a lição não fecha.
   for (let i = 0; i < wrong; i++) {
     l = queueReview(l);
-    l = responder(l, true);
+    l = answer(l, true);
   }
   return l;
 };
@@ -71,15 +71,15 @@ const chaves = (l = terminada(3), c = contexto()) =>
 describe('quem saiu no meio não colheu', () => {
   it('lição inacabada não encerra', () => {
     let l = licaoDe(5);
-    l = responder(l, true);
+    l = answer(l, true);
     expect(completionSequence(l, contexto())).toEqual([]);
   });
 
   it('lição com erro ainda não refeito não encerra', () => {
     // A pendência de revisão mantém a lição aberta — ver exercicio-musical.
     let l = licaoDe(2);
-    l = responder(l, false);
-    l = responder(l, true);
+    l = answer(l, false);
+    l = answer(l, true);
     expect(completionSequence(l, contexto())).toEqual([]);
   });
 });

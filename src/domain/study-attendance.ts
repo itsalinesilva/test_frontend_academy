@@ -57,7 +57,7 @@ export interface StudyMonth {
   diasNoMes: number;
   minutosTotais: number;
   /** Maior sequência de dias consecutivos estudados dentro do mês. */
-  maiorSequencia: number;
+  bestStreak: number;
 }
 
 const DIAS_NO_MES = (ano: number, mes: number) => new Date(ano, mes, 0).getDate();
@@ -108,18 +108,18 @@ export function buildMonth(
   const diasEstudados = doMes.filter((c) => c.estudou).length;
   const minutosTotais = doMes.reduce((a, c) => a + c.minutos, 0);
 
-  let maiorSequencia = 0;
+  let bestStreak = 0;
   let corrente = 0;
   for (const c of doMes) {
     if (c.estudou) {
       corrente += 1;
-      if (corrente > maiorSequencia) maiorSequencia = corrente;
+      if (corrente > bestStreak) bestStreak = corrente;
     } else {
       corrente = 0;
     }
   }
 
-  return { ano, mes, celulas, diasEstudados, diasNoMes: total, minutosTotais, maiorSequencia };
+  return { ano, mes, celulas, diasEstudados, diasNoMes: total, minutosTotais, bestStreak };
 }
 
 /**

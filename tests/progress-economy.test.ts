@@ -15,8 +15,8 @@ import {
   MusicExercise,
   ExerciseType,
   startLesson,
-  responder,
-  pular,
+  answer,
+  skip,
 } from '../src/domain/music-exercise';
 
 /**
@@ -59,14 +59,14 @@ describe('errar também paga', () => {
 
   it('uma lição toda errada ainda rende XP', () => {
     let l = licaoDe(4);
-    for (let i = 0; i < 4; i++) l = responder(l, false);
+    for (let i = 0; i < 4; i++) l = answer(l, false);
     expect(lessonXp(l)).toBe(4 * XP.EXERCISE_WRONG);
   });
 
   it('pular não rende nada — quem pulou não praticou', () => {
     let l = licaoDe(3);
-    l = pular(l);
-    l = pular(l);
+    l = skip(l);
+    l = skip(l);
     expect(lessonXp(l)).toBe(0);
   });
 });
@@ -74,7 +74,7 @@ describe('errar também paga', () => {
 describe('o bônus de rodada é da rodada que houve', () => {
   it('dez exercícios terminados pagam o bônus', () => {
     let l = licaoDe(EXERCISES_PER_ROUND);
-    for (let i = 0; i < EXERCISES_PER_ROUND; i++) l = responder(l, true);
+    for (let i = 0; i < EXERCISES_PER_ROUND; i++) l = answer(l, true);
     expect(lessonXp(l)).toBe(
       EXERCISES_PER_ROUND * XP.EXERCISE_CORRECT + XP.ROUND_COMPLETED
     );
@@ -83,20 +83,20 @@ describe('o bônus de rodada é da rodada que houve', () => {
   it('sair no meio não paga bônus de rodada', () => {
     // Pagar por rodada que não houve seria pagar pela intenção.
     let l = licaoDe(EXERCISES_PER_ROUND);
-    for (let i = 0; i < 4; i++) l = responder(l, true);
+    for (let i = 0; i < 4; i++) l = answer(l, true);
     expect(lessonXp(l)).toBe(4 * XP.EXERCISE_CORRECT);
   });
 
   it('lição curta não vira rodada só por terminar', () => {
     let l = licaoDe(3);
-    for (let i = 0; i < 3; i++) l = responder(l, true);
+    for (let i = 0; i < 3; i++) l = answer(l, true);
     expect(lessonXp(l)).toBe(3 * XP.EXERCISE_CORRECT);
   });
 
   it('terminar com pendência de revisão ainda aberta não paga o bônus', () => {
     let l = licaoDe(EXERCISES_PER_ROUND);
-    l = responder(l, false);
-    for (let i = 1; i < EXERCISES_PER_ROUND; i++) l = responder(l, true);
+    l = answer(l, false);
+    for (let i = 1; i < EXERCISES_PER_ROUND; i++) l = answer(l, true);
     // O errado ainda não foi refeito: a rodada não fechou.
     expect(lessonXp(l)).toBe(
       XP.EXERCISE_WRONG + (EXERCISES_PER_ROUND - 1) * XP.EXERCISE_CORRECT
@@ -154,13 +154,13 @@ describe('score é qualidade, e ausência de prática não é zero', () => {
 
   it('acertar tudo dá o score cheio', () => {
     let l = licaoDe(4);
-    for (let i = 0; i < 4; i++) l = responder(l, true);
+    for (let i = 0; i < 4; i++) l = answer(l, true);
     expect(lessonScore(l)).toBe(1000);
   });
 
   it('errar tudo dá zero, que é diferente de não ter score', () => {
     let l = licaoDe(4);
-    for (let i = 0; i < 4; i++) l = responder(l, false);
+    for (let i = 0; i < 4; i++) l = answer(l, false);
     expect(lessonScore(l)).toBe(0);
   });
 });

@@ -16,7 +16,8 @@
     "measure:parity": "node scripts/measure-parity.mjs",
     "qa": "node scripts/qa.mjs",
     "qa:json": "node scripts/qa.mjs --json",
-    "verificar": "npm run typecheck && npm run lint && npm run qa && npm test"
+    "verificar": "npm run typecheck && npm run lint && npm run qa && npm test",
+    "qa:todo": "node scripts/sync-todo.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
