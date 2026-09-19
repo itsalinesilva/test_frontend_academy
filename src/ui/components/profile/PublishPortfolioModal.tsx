@@ -96,7 +96,7 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="sm:col-span-2 space-y-1">
               <label className="text-xs font-semibold text-stone-700 block" htmlFor="publish-portfolio-modal-titulo-do-artefato-obra">
-                Título do Artefato / Obra *
+                Título do Artefato / Work *
               </label>
               <input id="publish-portfolio-modal-titulo-do-artefato-obra"
                 type="text"
@@ -143,7 +143,7 @@ export const PublishPortfolioModal: React.FC<PublishPortfolioModalProps> = ({
 
             <div className="space-y-1">
               <label className="text-xs font-semibold text-stone-700 block" htmlFor="publish-portfolio-modal-referencia-da-obra-catalogo">
-                Referência da Obra / Catálogo
+                Referência da Work / Catálogo
               </label>
               <input id="publish-portfolio-modal-referencia-da-obra-catalogo"
                 type="text"

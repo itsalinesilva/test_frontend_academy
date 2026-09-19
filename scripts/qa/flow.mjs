@@ -592,7 +592,7 @@ export function checkKeyboardReach() {
  *
  * Limite conhecido: só vê literal numérico ao lado de `reduce`, `.length` ou
  * `filter`. Enchimento vindo de constante nomeada passa, e está anotado em
- * `72_PENTE_FINO_QUALIDADE.md`.
+ * `72_QUALITY_SWEEP.md`.
  */
 const METRIC_NAME =
   /(total|count|contagem|quantid|acur|accuracy|precis|score|xp|streak|ofensiva|minut|hora|percent|media|média|avg|nivel|nível|level)/i;
@@ -621,6 +621,52 @@ export function checkInflatedAggregate() {
       const emptyCase = line.match(/\.length\s*[><=!]+\s*0\s*\?[\s\S]*?:\s*(\d+)\s*[;,)]/);
       if (emptyCase && Number(emptyCase[1]) > 1) {
         note(`sem dado nenhum, devolve ${emptyCase[1]} — ausência apresentada como medida`);
+      }
+    }
+  }
+  return findings;
+}
+
+/**
+ * Vocabulário institucional — as palavras que saíram do projeto.
+ *
+ * Este conceito já foi renomeado duas vezes: `ilha` virou `tribo` porque ilha
+ * dava ideia de lugar, e `tribo` virou `Casa` porque não distinguia estudante
+ * de praticante. Cada renomeação deixou ocorrências para trás, e foi preciso
+ * caçá-las à mão.
+ *
+ * Agora a máquina caça. A estrutura oficial está em
+ * `80_INSTITUTIONAL_ARCHITECTURE.md` §11.
+ */
+const RETIRED_WORDS = [
+  ['ilha', 'Região (lugar) ou Casa (grupo)'],
+  ['tribo', 'Grêmio (curso), Casa (prática) ou Clube (comunidade)'],
+];
+
+export function checkRetiredVocabulary() {
+  const findings = [];
+
+  for (const { file, code } of sources()) {
+    if (file.includes('.test.')) continue;
+
+    for (const [i, line] of code.split('\n').entries()) {
+      for (const [word, instead] of RETIRED_WORDS) {
+        /**
+         * Só identificador, e não prosa: os comentários que EXPLICAM a
+         * remoção precisam poder citar a palavra removida. Apagá-los levaria
+         * embora a razão da mudança, que é o mais caro de reconstruir.
+         */
+        const asIdentifier = new RegExp(
+          `(?:^|[^a-zà-ú])${word}s?(?:[A-Z_]|Id\b|\s*[:=.[])`,
+          'i'
+        );
+        if (asIdentifier.test(line)) {
+          findings.push({
+            file,
+            line: i + 1,
+            detail: `"${word}" saiu do projeto; use ${instead}`,
+          });
+        }
       }
     }
   }

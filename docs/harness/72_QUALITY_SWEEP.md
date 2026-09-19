@@ -47,7 +47,7 @@ A última linha é a que importa mais:
 ```
 rotas 83 · telas 81 · distinguem visitante 42
 bloqueios 0 · a corrigir 0
-não coberto por máquina: docs/harness/72_PENTE_FINO_QUALIDADE.md
+não coberto por máquina: docs/harness/72_QUALITY_SWEEP.md
 ```
 
 A terceira linha é deliberada: ela aponta para a seção deste documento que
@@ -218,9 +218,9 @@ caso em `tests/pente-fino.test.ts`.
 
 | Documento | Responde |
 |---|---|
-| `73_ANTIPADROES.md` | **O que** cada verificação previne, e o que já custou |
+| `73_ANTIPATTERNS.md` | **O que** cada verificação previne, e o que já custou |
 | `35_TEST_STRATEGY.md` | **Em que ordem** se testa, e o que cada camada responde |
-| `74_RITUAL_DE_QUALIDADE.md` | **Com que frequência**, e o roteiro manual |
+| `74_QUALITY_RITUAL.md` | **Com que frequência**, e o roteiro manual |
 | `43_RELEASE_GATES.md` | O que reprova publicação |
 
 ## Histórico

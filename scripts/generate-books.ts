@@ -1,5 +1,5 @@
 /**
- * Gera os livros estáticos do Conservatório em `livros/`.
+ * Gera os livros estáticos do Conservatório em `books/`.
  *
  * Cada curso rende dois: o livro de leitura e o caderno de prática. Saem em
  * Markdown e em HTML — o Markdown para editar e versionar, o HTML para ler,

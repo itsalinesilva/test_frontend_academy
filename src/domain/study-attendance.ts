@@ -175,7 +175,7 @@ export const WEEKDAY_INITIALS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 /**
  * Clube — o reconhecimento de constância sustentada.
  *
- * Os requisitos são os de `76_ECONOMIA_DE_PROGRESSO.md` §3, e a razão de
+ * Os requisitos são os de `76_PROGRESS_ECONOMY.md` §3, e a razão de
  * existirem em degraus tão distantes é que constância se mede em meses, não
  * em sessões. Um clube a cada três dias transformaria a ofensiva numa
  * máquina de notificação.

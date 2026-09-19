@@ -3,7 +3,7 @@ import { LessonInProgress, isLessonComplete, precisao } from './music-exercise';
 /**
  * A economia de progresso, em código.
  *
- * `docs/harness/76_ECONOMIA_DE_PROGRESSO.md` §2 se declara **a autoridade**:
+ * `docs/harness/76_PROGRESS_ECONOMY.md` §2 se declara **a autoridade**:
  * valor que não está lá não é atribuído. Até agora, porém, a tabela existia
  * só como prosa — e foi exatamente por isso que o perfil pôde divergir dela e
  * anunciar 1920 de XP e nível 12 a quem nunca praticou.

@@ -157,7 +157,7 @@ describe('o progresso', () => {
 
 describe('os valores são os do documento', () => {
   const doc = readFileSync(
-    resolve(__dirname, '../docs/harness/76_ECONOMIA_DE_PROGRESSO.md'),
+    resolve(__dirname, '../docs/harness/76_PROGRESS_ECONOMY.md'),
     'utf-8'
   );
 

@@ -168,7 +168,7 @@ export const LibraryScreen: React.FC = () => {
           </p>
           <p className="text-[11px] leading-relaxed text-stone-600">
             <code className="rounded bg-stone-100 px-1">npm run livros</code> escreve os livros em{' '}
-            <code className="rounded bg-stone-100 px-1">livros/</code>, em Markdown e em HTML — o
+            <code className="rounded bg-stone-100 px-1">books/</code>, em Markdown e em HTML — o
             HTML já sai pronto para imprimir em A5.
           </p>
         </Card>

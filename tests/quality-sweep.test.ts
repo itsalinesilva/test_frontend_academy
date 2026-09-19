@@ -100,7 +100,7 @@ describe('acessibilidade', () => {
 
 describe('a economia de progresso não envelhece em silêncio', () => {
   /**
-   * `76_ECONOMIA_DE_PROGRESSO.md` se declara a autoridade sobre XP, score,
+   * `76_PROGRESS_ECONOMY.md` se declara a autoridade sobre XP, score,
    * ofensiva e débito. Uma autoridade que envelhece sem avisar é pior que
    * nenhuma: quem lê confia, e o código já faz outra coisa.
    *

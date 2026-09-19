@@ -18,7 +18,7 @@ export enum PassportStampType {
  *
  * Tinha `eraId` e nao tinha regiao, e com isso "Barroco" era um mundo so —
  * quando Barroco alemao e Barroco italiano sao territorios distintos, com
- * escolas distintas. Ver `75_TAXONOMIA_DO_ATLAS.md`.
+ * escolas distintas. Ver `75_ATLAS_TAXONOMY.md`.
  */
 export interface MusicalWorld {
   id: EntityId;
@@ -26,7 +26,7 @@ export interface MusicalWorld {
   name: string;
   description: string;
   eraId: EntityId;
-  regiaoId: EntityId;
+  regionId: EntityId;
   aestheticTheme: string;
   mapCoordinates: { x: number; y: number };
   unlockedByDefault: boolean;
@@ -134,7 +134,7 @@ export interface ProgressionMilestone {
  * tribo tanto quanto quem toca violino, e isso não cabia em "ilha de
  * instrumento".
  *
- * Ver `docs/harness/75_TAXONOMIA_DO_ATLAS.md`.
+ * Ver `docs/harness/75_ATLAS_TAXONOMY.md`.
  */
 
 /**
@@ -145,9 +145,9 @@ export interface AtlasWorkPlacement {
   workId: EntityId;
   eraId: EntityId;
   /** Ausente para obras sem recorte geografico definido. */
-  regiaoId?: EntityId;
+  regionId?: EntityId;
   /** Ausente para obras sem instrumento ou disciplina solista definidos. */
-  triboId?: EntityId;
+  houseId?: EntityId;
   composerId: EntityId;
   /** Nivel dentro da progressao da tribo, quando aplicavel. */
   etapaDaTribo?: number;

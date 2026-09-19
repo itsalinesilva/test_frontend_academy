@@ -25,10 +25,10 @@ está escrito que não há.
 
 `npm run measure:parity` conta estrutura declarada. `npm run qa` verifica que
 a tela não mente. Nenhum dos dois diz que a tela está boa — isso é leitura
-humana, e o roteiro está em `docs/harness/74_RITUAL_DE_QUALIDADE.md` §4.
+humana, e o roteiro está em `docs/harness/74_QUALITY_RITUAL.md` §4.
 
 ## Documentos ligados
 
-- `docs/harness/75_TAXONOMIA_DO_ATLAS.md` — o catálogo de termos
-- `docs/harness/76_ECONOMIA_DE_PROGRESSO.md` — onde e como se conta
+- `docs/harness/75_ATLAS_TAXONOMY.md` — o catálogo de termos
+- `docs/harness/76_PROGRESS_ECONOMY.md` — onde e como se conta
 - `CLAUDE_TODO.md` seção **T** — o que fazer, em ordem

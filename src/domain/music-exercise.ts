@@ -23,7 +23,7 @@ import { MaterialBand } from './practice-enrollment';
  * autocorrelação e medição de desvio em cents — e por isso os tipos
  * `TOCAR`, `CANTAR` e `BATER_RITMO` existem desde o primeiro exercício.
  *
- * Mapeamento completo em `docs/paridade/VOL2_ASTRA_DUOLINGO.md` §B10.
+ * Mapeamento completo em `docs/parity/VOL2_ASTRA_DUOLINGO.md` §B10.
  */
 
 /**

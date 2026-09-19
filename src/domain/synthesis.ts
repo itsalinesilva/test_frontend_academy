@@ -85,7 +85,7 @@ export interface BlocoDeSintese {
    * não serve para extrair questão, porque não tem granularidade.
    */
   nucleo: string;
-  natureza: NaturezaDoBloco;
+  nature: NaturezaDoBloco;
   peso: PesoDoBloco;
   /**
    * Os enganos reais sobre este ponto.
@@ -235,9 +235,9 @@ export function prescrever(
       if (faltam <= 0) continue;
 
       const dificuldade: DificuldadeQuestao =
-        bloco.natureza === 'DEFINICAO' || bloco.natureza === 'FATO'
+        bloco.nature === 'DEFINICAO' || bloco.nature === 'FATO'
           ? 'basica'
-          : bloco.natureza === 'PROCEDIMENTO' || bloco.natureza === 'CAUSA'
+          : bloco.nature === 'PROCEDIMENTO' || bloco.nature === 'CAUSA'
             ? 'avancada'
             : 'intermediaria';
 
@@ -245,7 +245,7 @@ export function prescrever(
         blocoId: bloco.id,
         capituloId: capitulo.capituloId,
         nucleo: bloco.nucleo,
-        tipoSugerido: TIPO_POR_NATUREZA[bloco.natureza],
+        tipoSugerido: TIPO_POR_NATUREZA[bloco.nature],
         dificuldadeSugerida: dificuldade,
         competencia: bloco.competencia,
         distratoresSugeridos: bloco.confusoesComuns,

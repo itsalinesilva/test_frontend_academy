@@ -28,7 +28,7 @@ import {
  * Isso não é punição: é repetição espaçada dentro da sessão. O erro vira a
  * matéria da própria lição.
  *
- * Mapeamento em `docs/paridade/VOL2_ASTRA_DUOLINGO.md` §B9.5.
+ * Mapeamento em `docs/parity/VOL2_ASTRA_DUOLINGO.md` §B9.5.
  */
 
 const ex = (id: string, type = ExerciseType.IDENTIFY_BY_EAR): MusicExercise => ({
@@ -139,7 +139,7 @@ describe('as vidas acabam, e o estudo continua', () => {
     /**
      * Ao chegarem a zero, o estudo NÃO trava — o que acumula a partir daí é
      * o índice de débito. Interromper quem está estudando é punir a
-     * tentativa. Ver `76_ECONOMIA_DE_PROGRESSO.md` §5.
+     * tentativa. Ver `76_PROGRESS_ECONOMY.md` §5.
      */
     let l = licaoDe(10);
     for (let i = 0; i < 8; i++) l = responder(l, false);

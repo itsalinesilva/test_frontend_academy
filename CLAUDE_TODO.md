@@ -15,8 +15,8 @@
 > dependência real: cada fase destrava a seguinte, e fazer fora de ordem
 > significa construir sobre o que ainda não existe.
 >
-> As fases novas vêm de `77_LABORATORIO_E_NIVEIS.md`, `78_RECOMPENSAS_E_PASSAPORTE.md`
-> e `79_FERRAMENTAS_DO_LABORATORIO.md`, escritos em 18/09.
+> As fases novas vêm de `77_SECTIONS_AND_LEVELS.md`, `78_REWARDS_AND_PASSPORT.md`
+> e `79_LAB_TOOLS.md`, escritos em 18/09.
 
 ## Fase A — o Laboratório existe mas ninguém alcança
 
@@ -29,6 +29,25 @@ maior efeito: sem ele, todo o resto é código que ninguém roda.
 | A-2 | **Persistência do que elas produzem** — nós concluídos, meta de ofensiva, veredito de dificuldade. `practice-path.repository.ts` já existe e não é chamado por ninguém | ⬜ |
 | A-3 | **Gerador de exercícios** a partir das 21 dimensões. Sem ele o percurso tem forma e não tem conteúdo | 🔄 `exercise-generator.ts` cobre 6 dimensões nos níveis 0, 1 e 3 · faltam 15 dimensões e os níveis 2 e 4 |
 | A-4 | Contêiner que costura percurso → lição → encerramento → mapa atualizado | ⬜ |
+
+## Fase A-bis — a estrutura institucional e social
+
+Definida em `80_INSTITUTIONAL_ARCHITECTURE.md`, de 19/09. Ela corrige duas
+coisas que estavam erradas: "tribo" carregava sozinha três funções, e
+"Laboratório" havia sido escrito como guarda-chuva do produto.
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| S-1 | `Tribe` → `House` em todo o código e nos documentos | ✅ |
+| S-2 | Domínio de Grêmio, Casa e Clube, com "não existe Clube sem Grêmio" | ✅ `membership.ts` |
+| S-3 | Carteira de pertencimento no Passaporte — as seis perguntas | ✅ `MembershipCardPanel.tsx` |
+| S-4 | Verificação que barra vocabulário aposentado | ✅ `checkRetiredVocabulary` |
+| S-5 | **Grêmio criado de fato na matrícula** — hoje o domínio existe, nada o cria | ⬜ |
+| S-6 | **Casa aberta pela prática recorrente** — três sessões | ⬜ |
+| S-7 | **Clube: criar, entrar, fórum próprio**, vinculado ao Grêmio | ⬜ |
+| S-8 | Recorte de liga `GUILD` e `CLUB`, além de `HOUSE` e `PLATFORM` | ⬜ |
+| S-9 | **Associação** — fundadora e lista vazia de contribuintes | ⬜ |
+| S-10 | Tela do Passaporte reunindo carteira + carimbos + emblemas | ⬜ |
 
 ## Fase B — o acervo está vazio, e é isso que trava o Laboratório
 
@@ -92,7 +111,7 @@ Ordem de `79 §7`: da que destrava mais para a que destrava menos.
 | # | Item | Estado |
 |:---|:---|:---:|
 | F-1 | **"Practice" fora de todo texto de interface** — o nome é Laboratório | ⬜ |
-| F-2 | Rotas `/practice/*` → `/laboratorio/*`, com redirecionamento para não quebrar link | ⬜ |
+| F-2 | Rotas `/practice/*` — decidir o nome. **Não é `/laboratorio`**: Laboratório é unidade de atividade, e há vários. Ver `80 §6` | ⬜ |
 | F-3 | Verificação que falhe se "Practice" voltar a aparecer em tela | ⬜ |
 
 ## Fase G — o que o admin ainda não consegue editar
@@ -449,7 +468,7 @@ Consequência: se o KV cair ou for desligado, o produto continua inteiro para ca
 > correções** no pente fino · **527 testes** passando · tsc e eslint limpos.
 >
 > **Harness reorganizado em 2026-09-18.** `HARNESS_CLAUDE.md`,
-> `HARNESS_AI_STUDIO.md`, `73_ANTIPADROES.md` e `74_RITUAL_DE_QUALIDADE.md`
+> `HARNESS_AI_STUDIO.md`, `73_ANTIPATTERNS.md` e `74_QUALITY_RITUAL.md`
 > são novos; `35_TEST_STRATEGY`, `66_TEST_CASE_LIBRARY`, `43_RELEASE_GATES`,
 > `40_AGENTS_HARNESS`, `13_DEFINITION_OF_DONE` e `README` foram reescritos
 > com o que a auditoria mostrou que faltava.
@@ -579,7 +598,7 @@ Os controles que mentiam foram removidos; os recursos continuam abertos.
 
 ### F — O que só olho humano ou navegador real pega
 
-Descrito em `docs/harness/72_PENTE_FINO_QUALIDADE.md`. Repetido aqui porque é
+Descrito em `docs/harness/72_QUALITY_SWEEP.md`. Repetido aqui porque é
 pendência, não nota de rodapé.
 
 | # | Item | Estado |
@@ -627,7 +646,7 @@ liam do repositório e conheciam o usuário logado. Nenhuma tinha botão falso.
 
 ### H — Verificações que ainda não existem
 
-Cada linha é um antipadrão de `73_ANTIPADROES.md` sem vigilância automática.
+Cada linha é um antipadrão de `73_ANTIPATTERNS.md` sem vigilância automática.
 Está escrito em vez de dar impressão de cobertura.
 
 | # | Antipadrão sem verificação | Estado |
@@ -860,9 +879,9 @@ que **ainda não existe**. Depende de I.2.
 
 ## T · ATLAS E PRACTICE — do mapeamento de paridade, 2026-09-18
 
-> **Origem:** `docs/paridade/VOL2_ASTRA_DUOLINGO.md`, mapeado captura por
-> captura. Taxonomia em `docs/harness/75_TAXONOMIA_DO_ATLAS.md`; contagem em
-> `docs/harness/76_ECONOMIA_DE_PROGRESSO.md`.
+> **Origem:** `docs/parity/VOL2_ASTRA_DUOLINGO.md`, mapeado captura por
+> captura. Taxonomia em `docs/harness/75_ATLAS_TAXONOMY.md`; contagem em
+> `docs/harness/76_PROGRESS_ECONOMY.md`.
 >
 > **A ordem abaixo não é arbitrária.** Vocabulário antes de estrutura,
 > estrutura antes de tela, tela antes de competição. Construir fora de ordem
@@ -929,7 +948,7 @@ que **ainda não existe**. Depende de I.2.
 | T-16 | **Índice de débito** — acumula, registra onde, quita com score, não subtrai | ⬜ |
 
 **Testes:** `tests/economia-de-progresso.test.ts` — os 15 casos `E-1…E-15` de
-`76_ECONOMIA_DE_PROGRESSO.md` §9. Os que mais importam:
+`76_PROGRESS_ECONOMY.md` §9. Os que mais importam:
 - **E-2** nenhum evento conta duas vezes
 - **E-4** conta nova começa em zero — regressão da semente fabricada
 - **E-11** sem participantes, classificação volta vazia

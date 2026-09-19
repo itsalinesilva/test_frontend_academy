@@ -54,7 +54,7 @@ Três perguntas, nesta ordem:
    de outro trecho — ou pode ser a verificação tendo parado de enxergar. Já
    aconteceu: a leitura de atributos parava no `>` dentro de `(e) =>` e
    escondia cinquenta e nove achados.
-3. **O que mudou tem antipadrão novo?** Se sim, entra em `73_ANTIPADROES.md`
+3. **O que mudou tem antipadrão novo?** Se sim, entra em `73_ANTIPATTERNS.md`
    com o que custou, e ganha verificação.
 
 ### Registro
@@ -163,7 +163,7 @@ O custo não pode crescer junto. Três regras que mantêm isto barato:
 
 ### Verificação nova sempre que um antipadrão novo aparecer
 
-O caminho é: defeito → antipadrão em `73_ANTIPADROES.md` → checador em
+O caminho é: defeito → antipadrão em `73_ANTIPATTERNS.md` → checador em
 `scripts/qa/` → caso em `tests/pente-fino.test.ts`.
 
 Foi assim que nasceram as verificações de conjunto de dados na tela, botão
@@ -189,7 +189,7 @@ silêncio.
 
 ## 7 · O que este ritual não cobre
 
-Está em `72_PENTE_FINO_QUALIDADE.md` e em `35_TEST_STRATEGY.md` §5. Em
+Está em `72_QUALITY_SWEEP.md` e em `35_TEST_STRATEGY.md` §5. Em
 resumo: gramática de verdade, correção musical do conteúdo, aparência,
 mobile, e a cópia no Drive — que depende de conta Google real.
 

@@ -4,10 +4,10 @@ import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Badge } from '../../components/base/Badge';
 import { EmptyState } from '../../components/feedback/EmptyState';
-import { atlasRepository, FiltroDoAtlas } from '../../../repositories/atlas.repository';
+import { atlasRepository, AtlasFilter } from '../../../repositories/atlas.repository';
 import { MusicalEra, AtlasWorkPlacement } from '../../../domain/gamification';
-import { Regiao, Genero } from '../../../data/seed-atlas';
-import { Tribe, TribeStatus } from '../../../domain/tribe';
+import { Region, Genre } from '../../../data/seed-atlas';
+import { House, HouseStatus } from '../../../domain/house';
 import { Network, Calendar, Globe2, Music, Library, Users } from 'lucide-react';
 
 /**
@@ -23,7 +23,7 @@ import { Network, Calendar, Globe2, Music, Library, Users } from 'lucide-react';
  *
  * E "Música Brasileira de Tradição" aparecia como **era**. Não é: é uma
  * região, e ela atravessa várias eras. Ver
- * `docs/harness/75_TAXONOMIA_DO_ATLAS.md`.
+ * `docs/harness/75_ATLAS_TAXONOMY.md`.
  *
  * O QUE HÁ AGORA
  * --------------
@@ -42,16 +42,16 @@ export const WorldsAtlasScreen: React.FC = () => {
   const { navigate } = useRouter();
 
   const [eras, setEras] = useState<MusicalEra[] | null>(null);
-  const [regioes, setRegioes] = useState<Regiao[]>([]);
-  const [generos, setGeneros] = useState<Genero[]>([]);
-  const [tribos, setTribos] = useState<Tribe[]>([]);
-  const [obras, setObras] = useState<AtlasWorkPlacement[]>([]);
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [generos, setGeneros] = useState<Genre[]>([]);
+  const [houses, setTribos] = useState<House[]>([]);
+  const [works, setObras] = useState<AtlasWorkPlacement[]>([]);
   const [totalNoAcervo, setTotalNoAcervo] = useState(0);
 
   const [eraId, setEraId] = useState<string>(TODOS);
-  const [regiaoId, setRegiaoId] = useState<string>(TODOS);
-  const [generoId, setGeneroId] = useState<string>(TODOS);
-  const [triboId, setTriboId] = useState<string>(TODOS);
+  const [regionId, setRegiaoId] = useState<string>(TODOS);
+  const [genreId, setGeneroId] = useState<string>(TODOS);
+  const [houseId, setTriboId] = useState<string>(TODOS);
 
   useEffect(() => {
     let vivo = true;
@@ -61,11 +61,11 @@ export const WorldsAtlasScreen: React.FC = () => {
         atlasRepository.listarRegioes(),
         atlasRepository.listarGeneros(),
         atlasRepository.listarTribos(),
-        atlasRepository.contarObras(),
+        atlasRepository.countWorks(),
       ]);
       if (!vivo) return;
       setEras(e);
-      setRegioes(r);
+      setRegions(r);
       setGeneros(g);
       setTribos(t);
       setTotalNoAcervo(total);
@@ -77,14 +77,14 @@ export const WorldsAtlasScreen: React.FC = () => {
     };
   }, []);
 
-  const filtro = useCallback((): FiltroDoAtlas => {
+  const filtro = useCallback((): AtlasFilter => {
     return {
       eraId: eraId === TODOS ? undefined : eraId,
-      regiaoId: regiaoId === TODOS ? undefined : regiaoId,
-      generoId: generoId === TODOS ? undefined : generoId,
-      triboId: triboId === TODOS ? undefined : triboId,
+      regionId: regionId === TODOS ? undefined : regionId,
+      genreId: genreId === TODOS ? undefined : genreId,
+      houseId: houseId === TODOS ? undefined : houseId,
     };
-  }, [eraId, regiaoId, generoId, triboId]);
+  }, [eraId, regionId, genreId, houseId]);
 
   useEffect(() => {
     atlasRepository
@@ -100,9 +100,9 @@ export const WorldsAtlasScreen: React.FC = () => {
    * esconde a Antiguidade, porque não há repertório brasileiro nela — e
    * mostrar um recorte vazio seria oferecer um caminho que não leva a nada.
    */
-  const regiaoAtiva = regioes.find((r) => r.id === regiaoId);
+  const activeRegion = regions.find((r) => r.id === regionId);
   const erasVisiveis = (eras ?? []).filter(
-    (e) => !regiaoAtiva || regiaoAtiva.eraIds.includes(e.id)
+    (e) => !activeRegion || activeRegion.eraIds.includes(e.id)
   );
 
   return (
@@ -110,7 +110,7 @@ export const WorldsAtlasScreen: React.FC = () => {
       id="worlds-atlas"
       title="Atlas"
       subtitle="O mapa: quando, onde e com quem a música foi feita."
-      badgeLabel={`${(eras ?? []).length} eras · ${regioes.length} regiões · ${tribos.length} tribos`}
+      badgeLabel={`${(eras ?? []).length} eras · ${regions.length} regiões · ${houses.length} Casas`}
       badgeVariant="neutral"
       primaryAction={{
         label: 'Ver o grafo de influências',
@@ -157,7 +157,7 @@ export const WorldsAtlasScreen: React.FC = () => {
 
           <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por região">
             <BotaoDeFiltro
-              ativo={regiaoId === TODOS}
+              ativo={regionId === TODOS}
               onClick={() => {
                 setRegiaoId(TODOS);
                 setEraId(TODOS);
@@ -165,10 +165,10 @@ export const WorldsAtlasScreen: React.FC = () => {
             >
               Todas as regiões
             </BotaoDeFiltro>
-            {regioes.map((r) => (
+            {regions.map((r) => (
               <BotaoDeFiltro
                 key={r.id}
-                ativo={regiaoId === r.id}
+                ativo={regionId === r.id}
                 onClick={() => {
                   setRegiaoId(r.id);
                   // a era escolhida pode não existir nesta região
@@ -180,8 +180,8 @@ export const WorldsAtlasScreen: React.FC = () => {
             ))}
           </div>
 
-          {regiaoAtiva && (
-            <p className="text-xs leading-relaxed text-stone-600">{regiaoAtiva.description}</p>
+          {activeRegion && (
+            <p className="text-xs leading-relaxed text-stone-600">{activeRegion.description}</p>
           )}
         </section>
 
@@ -191,30 +191,30 @@ export const WorldsAtlasScreen: React.FC = () => {
             className="flex items-center gap-2 font-serif text-base font-bold text-stone-900"
           >
             <Users className="h-4 w-4 text-anil-800" aria-hidden="true" />
-            Com quem — tribos
+            Com quem — houses
           </h2>
 
           <p className="text-xs text-stone-600">
-            A população nichada de cada lugar e de cada tempo. Tribe é gente, e
+            A população nichada de cada lugar e de cada tempo. House é gente, e
             não lugar — quem tem coordenada no mapa é o mundo.
           </p>
 
           <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por tribo">
-            <BotaoDeFiltro ativo={triboId === TODOS} onClick={() => setTriboId(TODOS)}>
-              Todas as tribos
+            <BotaoDeFiltro ativo={houseId === TODOS} onClick={() => setTriboId(TODOS)}>
+              Todas as houses
             </BotaoDeFiltro>
-            {tribos.map((t) => {
-              const fechada = t.status === TribeStatus.ANNOUNCED;
+            {houses.map((t) => {
+              const fechada = t.status === HouseStatus.ANNOUNCED;
               return (
                 <BotaoDeFiltro
                   key={t.id}
-                  ativo={triboId === t.id}
+                  ativo={houseId === t.id}
                   desabilitado={fechada}
                   titulo={fechada ? 'Aguardando corpus pedagógico' : t.description}
                   onClick={() => setTriboId(t.id)}
                 >
                   {t.name}
-                  {t.status !== TribeStatus.OPEN && (
+                  {t.status !== HouseStatus.OPEN && (
                     <span className="ml-1.5 font-mono text-[10px] opacity-70">
                       {fechada ? 'anunciada' : 'em preparo'}
                     </span>
@@ -235,13 +235,13 @@ export const WorldsAtlasScreen: React.FC = () => {
           </h2>
 
           <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por gênero">
-            <BotaoDeFiltro ativo={generoId === TODOS} onClick={() => setGeneroId(TODOS)}>
+            <BotaoDeFiltro ativo={genreId === TODOS} onClick={() => setGeneroId(TODOS)}>
               Todos
             </BotaoDeFiltro>
             {generos.map((g) => (
               <BotaoDeFiltro
                 key={g.id}
-                ativo={generoId === g.id}
+                ativo={genreId === g.id}
                 onClick={() => setGeneroId(g.id)}
               >
                 {g.name}
@@ -256,11 +256,11 @@ export const WorldsAtlasScreen: React.FC = () => {
               Obras
             </h2>
             <span className="font-mono text-xs text-stone-500">
-              {obras.length} de {totalNoAcervo} no acervo
+              {works.length} de {totalNoAcervo} no acervo
             </span>
           </div>
 
-          {obras.length === 0 ? (
+          {works.length === 0 ? (
             <EmptyState
               id="atlas-obras-vazio"
               icon={<Library className="h-8 w-8 stroke-1" aria-hidden="true" />}
@@ -277,7 +277,7 @@ export const WorldsAtlasScreen: React.FC = () => {
             />
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {obras.map((obra) => (
+              {works.map((obra) => (
                 <Card key={obra.workId} variant="default" padding="lg" className="space-y-2">
                   <Badge variant="neutral" size="sm">
                     {eras?.find((e) => e.id === obra.eraId)?.name ?? obra.eraId}

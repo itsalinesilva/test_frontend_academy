@@ -34,7 +34,7 @@ import { EntityId } from './types';
  * **Coordenada no mapa.** Tribo é gente, e gente não é ponto no Atlas. Quem
  * tem coordenada é o mundo — o cruzamento de era com região.
  *
- * Ver `docs/harness/75_TAXONOMIA_DO_ATLAS.md`.
+ * Ver `docs/harness/75_ATLAS_TAXONOMY.md`.
  */
 
 /**
@@ -44,7 +44,7 @@ import { EntityId } from './types';
  * conviver sem que uma finja ser a outra: a primeira não tem instrumento, e
  * cobrar-lhe um produziria campo vazio em todo lugar.
  */
-export enum TribeNature {
+export enum HouseNature {
   /** Reunida em torno de um instrumento. */
   INSTRUMENT = 'INSTRUMENT',
   /** Reunida em torno de um campo de estudo. */
@@ -53,7 +53,7 @@ export enum TribeNature {
   CRAFT = 'CRAFT',
 }
 
-export enum TribeStatus {
+export enum HouseStatus {
   /** Corpus presente e progressão publicada. Aberta. */
   OPEN = 'OPEN',
   /** Corpus presente, progressão em construção. Visível, não navegável. */
@@ -69,7 +69,7 @@ export enum TribeStatus {
 }
 
 /** Uma fonte pedagógica do corpus de uma tribo, com proveniência. */
-export interface TribeSource {
+export interface HouseSource {
   id: EntityId;
   /** Título como consta na obra. */
   title: string;
@@ -87,22 +87,22 @@ export interface TribeSource {
   isIngested: boolean;
 }
 
-export interface Tribe {
+export interface House {
   id: EntityId;
   /** Casa com a pasta do acervo, quando houver. */
   slug: string;
   name: string;
-  natureza: TribeNature;
+  nature: HouseNature;
   /**
    * Agrupamento dentro da natureza: família do instrumento, ou área do
    * campo de estudo. "Cordas friccionadas", "Musicologia".
    */
   agrupamento: string;
-  status: TribeStatus;
+  status: HouseStatus;
   description: string;
 
   /** Corpus pedagógico disponível para esta tribo. */
-  sources: TribeSource[];
+  sources: HouseSource[];
 
   /**
    * Trilha curricular da tribo. Ausente enquanto `status !== ABERTA` — é o
@@ -124,9 +124,9 @@ export interface Tribe {
 }
 
 /** Carimbos de passaporte do eixo da tribo. */
-export enum TribeStamp {
+export enum HouseStamp {
   /** Primeiro contato com a tribo. */
-  TRIBO_VISITADA = 'TRIBO_VISITADA',
+  HOUSE_VISITED = 'HOUSE_VISITED',
   /** Etapa da progressão concluída. */
   ETAPA_CONCLUIDA = 'ETAPA_CONCLUIDA',
   /** Estudo técnico dominado, com evidência aferida. */
@@ -136,8 +136,8 @@ export enum TribeStamp {
 }
 
 /** Tribos efetivamente navegáveis. */
-export function openTribes(tribos: Tribe[]): Tribe[] {
-  return tribos.filter((t) => t.status === TribeStatus.OPEN);
+export function openHouses(houses: House[]): House[] {
+  return houses.filter((t) => t.status === HouseStatus.OPEN);
 }
 
 /**
@@ -146,6 +146,6 @@ export function openTribes(tribos: Tribe[]): Tribe[] {
  * **Base de qualquer contagem exibida.** Mostrar "15 obras" quando nenhuma
  * foi processada seria anunciar acervo que a plataforma não alcança.
  */
-export function processedSources(tribo: Tribe): number {
-  return tribo.sources.filter((s) => s.isIngested).length;
+export function processedSources(house: House): number {
+  return house.sources.filter((s) => s.isIngested).length;
 }

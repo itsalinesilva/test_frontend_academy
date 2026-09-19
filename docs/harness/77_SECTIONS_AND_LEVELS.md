@@ -17,12 +17,19 @@ Um nome que quer dizer "o resto" não orienta decisão nenhuma. Por isso:
 
 | Nome | O que é | O que **não** é |
 |---|---|---|
-| **Academy** | O curso formal: módulos, lições, avaliações, certificado | Não é onde se treina |
-| **Laboratório** | Onde se pratica, pesquisa, experimenta e constrói | Não é um curso, e não emite certificado por si |
+| **Academia** | O curso formal: módulos, lições, avaliações, certificado | Não é onde se treina |
+| **Laboratório** | **Uma unidade funcional de prática** — de Violino, de Teoria, de Ritmo, de Escuta. Há vários | **Não é o nome do produto**, nem o guarda-chuva da rota |
 | **Atlas** | O mapa de eras, regiões, compositores e obras — **dentro** do Laboratório | Não é uma área separada |
 | **Passaporte** | O histórico documentado do que se fez no Laboratório | Não é o perfil |
 
-O Laboratório contém, e esta lista é fechada até alguém acrescentar aqui:
+> **Correção de 19/09.** A versão anterior deste documento tratava
+> "Laboratório" como o guarda-chuva que substituía *Practice*. Está errado:
+> Laboratório é **unidade de atividade**, e existem vários. A estrutura
+> institucional e social inteira — Associação, Comunidade, Academia, Grêmio,
+> Casa, Clube, Liga — está em `80_INSTITUTIONAL_ARCHITECTURE.md`, que é a
+> autoridade sobre ela. Este documento cuida apenas de **seção e nível**.
+
+Cada Laboratório contém, e esta lista é fechada até alguém acrescentar aqui:
 
 1. **Lições de prática** — outras que as do Academy (ver §4)
 2. **Percursos** — a sequência ordenada dessas lições
@@ -180,8 +187,10 @@ Três regras do quadro:
 | Se você quer dizer… | Use | Nunca use |
 |---|---|---|
 | O produto inteiro | **Conservatório** | Plataforma, app |
-| O curso formal | **Academy** | Curso online, EAD |
-| Onde se pratica e experimenta | **Laboratório** | Practice, treino |
+| O curso formal | **Academia** | Curso online, EAD |
+| Onde a prática acontece | **Laboratório** | Practice, treino |
+| Pertencimento por curso | **Grêmio** | Turma, tribo |
+| Pertencimento por prática | **Casa** | Tribo, ilha |
 | Um assunto do Laboratório | **Seção** | Módulo, tópico, área |
 | Uma subdivisão da seção | **Módulo** | Unidade, capítulo |
 | A profundidade do pedido | **Nível** | Dificuldade, tier |

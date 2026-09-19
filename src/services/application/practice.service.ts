@@ -160,7 +160,7 @@ export class PracticeService {
       input.expectedResponse || exercise.expectedNotes?.join(' ') || exercise.targetPitch || '';
     const given = input.givenResponse.trim();
 
-    const natureza = naturezaDoExercicio(exercise.modality, exercise.type);
+    const nature = naturezaDoExercicio(exercise.modality, exercise.type);
 
     const sinal: SinalDaTentativa = {
       ...input.sinal,
@@ -172,7 +172,7 @@ export class PracticeService {
       respostaEsperada: expected || undefined,
     };
 
-    const medicao = medirTentativa(sinal, natureza);
+    const medicao = medirTentativa(sinal, nature);
     const aprovada = tentativaAprovada(medicao);
 
     // Tentativa sem medição não é acerto nem erro. `isCorrect` é booleano no

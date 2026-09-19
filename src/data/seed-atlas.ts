@@ -26,7 +26,7 @@ import { MusicalEra } from '../domain/gamification';
  * `src/data/brasil/capitulos.ts` já cobrem. Não há era aqui que o
  * Conservatório não ensine.
  */
-export const ERAS_PADRAO: MusicalEra[] = [
+export const DEFAULT_ERAS: MusicalEra[] = [
   {
     id: 'era_antiguidade',
     slug: 'antiguidade',
@@ -131,9 +131,9 @@ export const ERAS_PADRAO: MusicalEra[] = [
  * faltava. Sem região, "Música Brasileira de Tradição" ficava listada como
  * **era** — e não é: é uma região que atravessa várias eras.
  *
- * Ver `docs/harness/75_TAXONOMIA_DO_ATLAS.md`.
+ * Ver `docs/harness/75_ATLAS_TAXONOMY.md`.
  */
-export interface Regiao {
+export interface Region {
   id: string;
   slug: string;
   name: string;
@@ -143,7 +143,7 @@ export interface Regiao {
   order: number;
 }
 
-export const REGIOES_PADRAO: Regiao[] = [
+export const DEFAULT_REGIONS: Region[] = [
   {
     id: 'reg_europa_ocidental',
     slug: 'europa-ocidental',
@@ -187,31 +187,31 @@ export const REGIOES_PADRAO: Regiao[] = [
  * Não organiza o Atlas; refina a busca dentro dele. Uma fuga não é um lugar
  * que se visita.
  */
-export interface Genero {
+export interface Genre {
   id: string;
   slug: string;
   name: string;
   /** Vocal, instrumental, cênico ou misto. */
-  natureza: 'VOCAL' | 'INSTRUMENTAL' | 'CENICO' | 'MISTO';
+  nature: 'VOCAL' | 'INSTRUMENTAL' | 'CENICO' | 'MISTO';
 }
 
-export const GENEROS_PADRAO: Genero[] = [
-  { id: 'gen_missa', slug: 'missa', name: 'Missa', natureza: 'VOCAL' },
-  { id: 'gen_motete', slug: 'motete', name: 'Motete', natureza: 'VOCAL' },
-  { id: 'gen_madrigal', slug: 'madrigal', name: 'Madrigal', natureza: 'VOCAL' },
-  { id: 'gen_opera', slug: 'opera', name: 'Ópera', natureza: 'CENICO' },
-  { id: 'gen_oratorio', slug: 'oratorio', name: 'Oratório', natureza: 'MISTO' },
-  { id: 'gen_cantata', slug: 'cantata', name: 'Cantata', natureza: 'MISTO' },
-  { id: 'gen_suite', slug: 'suite', name: 'Suíte', natureza: 'INSTRUMENTAL' },
-  { id: 'gen_concerto', slug: 'concerto', name: 'Concerto', natureza: 'INSTRUMENTAL' },
-  { id: 'gen_sonata', slug: 'sonata', name: 'Sonata', natureza: 'INSTRUMENTAL' },
-  { id: 'gen_sinfonia', slug: 'sinfonia', name: 'Sinfonia', natureza: 'INSTRUMENTAL' },
-  { id: 'gen_quarteto', slug: 'quarteto-de-cordas', name: 'Quarteto de cordas', natureza: 'INSTRUMENTAL' },
-  { id: 'gen_fuga', slug: 'fuga', name: 'Fuga', natureza: 'INSTRUMENTAL' },
-  { id: 'gen_peca_carater', slug: 'peca-de-carater', name: 'Peça de caráter', natureza: 'INSTRUMENTAL' },
-  { id: 'gen_choro', slug: 'choro', name: 'Choro', natureza: 'INSTRUMENTAL' },
-  { id: 'gen_modinha', slug: 'modinha', name: 'Modinha', natureza: 'VOCAL' },
-  { id: 'gen_cancao', slug: 'cancao', name: 'Canção', natureza: 'VOCAL' },
+export const DEFAULT_GENRES: Genre[] = [
+  { id: 'gen_missa', slug: 'missa', name: 'Missa', nature: 'VOCAL' },
+  { id: 'gen_motete', slug: 'motete', name: 'Motete', nature: 'VOCAL' },
+  { id: 'gen_madrigal', slug: 'madrigal', name: 'Madrigal', nature: 'VOCAL' },
+  { id: 'gen_opera', slug: 'opera', name: 'Ópera', nature: 'CENICO' },
+  { id: 'gen_oratorio', slug: 'oratorio', name: 'Oratório', nature: 'MISTO' },
+  { id: 'gen_cantata', slug: 'cantata', name: 'Cantata', nature: 'MISTO' },
+  { id: 'gen_suite', slug: 'suite', name: 'Suíte', nature: 'INSTRUMENTAL' },
+  { id: 'gen_concerto', slug: 'concerto', name: 'Concerto', nature: 'INSTRUMENTAL' },
+  { id: 'gen_sonata', slug: 'sonata', name: 'Sonata', nature: 'INSTRUMENTAL' },
+  { id: 'gen_sinfonia', slug: 'sinfonia', name: 'Sinfonia', nature: 'INSTRUMENTAL' },
+  { id: 'gen_quarteto', slug: 'quarteto-de-cordas', name: 'Quarteto de cordas', nature: 'INSTRUMENTAL' },
+  { id: 'gen_fuga', slug: 'fuga', name: 'Fuga', nature: 'INSTRUMENTAL' },
+  { id: 'gen_peca_carater', slug: 'peca-de-carater', name: 'Peça de caráter', nature: 'INSTRUMENTAL' },
+  { id: 'gen_choro', slug: 'choro', name: 'Choro', nature: 'INSTRUMENTAL' },
+  { id: 'gen_modinha', slug: 'modinha', name: 'Modinha', nature: 'VOCAL' },
+  { id: 'gen_cancao', slug: 'cancao', name: 'Canção', nature: 'VOCAL' },
 ];
 
 /**
@@ -226,4 +226,4 @@ export const GENEROS_PADRAO: Genero[] = [
  * mostra a taxonomia — que é real e é conhecimento — e diz, sem rodeio, que
  * ainda não há obra catalogada.
  */
-export const OBRAS_PADRAO: never[] = [];
+export const DEFAULT_WORKS: never[] = [];

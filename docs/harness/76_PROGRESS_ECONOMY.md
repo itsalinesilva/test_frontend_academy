@@ -19,7 +19,7 @@ uma hora e o número não sobe, ou sobe duas vezes, e ninguém descobre porque
 nenhum teste cobre a contagem. A defesa é esta tabela, mais os casos de teste
 que ela exige.
 
-E a regra que vem junto, herdada de `73_ANTIPADROES.md` §A1:
+E a regra que vem junto, herdada de `73_ANTIPATTERNS.md` §A1:
 
 > **Contador nasce em zero.** Conta recém-criada já exibiu, neste projeto,
 > sete dias de ofensiva e quarenta pontos que ninguém tinha feito. Zero é a
@@ -51,7 +51,7 @@ cada uma se perde.
 **Esta é a autoridade sobre VALOR.** Valor que não está aqui não é atribuído.
 
 O que se ganha por **acumular** — marcos, emblemas, carimbos, passaporte — está
-em `78_RECOMPENSAS_E_PASSAPORTE.md`. A divisão é dura: aqui mora quanto vale um
+em `78_REWARDS_AND_PASSPORT.md`. A divisão é dura: aqui mora quanto vale um
 evento; lá, o que se recebe por ter juntado muitos. Quem misturar os dois
 acabará com emblema pagando XP fora desta tabela.
 
@@ -313,7 +313,7 @@ catálogo.
 
 > **Toda chave marcada "Dado do aluno" é intocável pela publicação de
 > conteúdo, e filtrada por `userId` em toda leitura.** Regras de
-> `73_ANTIPADROES.md` §B1 e §B3.
+> `73_ANTIPATTERNS.md` §B1 e §B3.
 
 ---
 

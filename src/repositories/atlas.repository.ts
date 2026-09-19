@@ -1,14 +1,14 @@
 import { LocalStorageAdapter } from '../infrastructure/storage/local-storage';
 import { MusicalEra, AtlasWorkPlacement } from '../domain/gamification';
-import { Tribe } from '../domain/tribe';
+import { House } from '../domain/house';
 import {
-  ERAS_PADRAO,
-  REGIOES_PADRAO,
-  GENEROS_PADRAO,
-  Regiao,
-  Genero,
+  DEFAULT_ERAS,
+  DEFAULT_REGIONS,
+  DEFAULT_GENRES,
+  Region,
+  Genre,
 } from '../data/seed-atlas';
-import { TRIBOS_PADRAO } from '../data/seed-tribes';
+import { DEFAULT_HOUSES } from '../data/seed-houses';
 
 /**
  * O Atlas.
@@ -39,16 +39,16 @@ export interface AtlasRepository {
   listarEras(): Promise<MusicalEra[]>;
   eraPorSlug(slug: string): Promise<MusicalEra | null>;
 
-  listarRegioes(): Promise<Regiao[]>;
-  regiaoPorSlug(slug: string): Promise<Regiao | null>;
+  listarRegioes(): Promise<Region[]>;
+  regiaoPorSlug(slug: string): Promise<Region | null>;
 
-  listarGeneros(): Promise<Genero[]>;
-  listarTribos(): Promise<Tribe[]>;
+  listarGeneros(): Promise<Genre[]>;
+  listarTribos(): Promise<House[]>;
 
   /** Obras do acervo, opcionalmente filtradas pelos eixos. */
-  listarObras(filtro?: FiltroDoAtlas): Promise<AtlasWorkPlacement[]>;
+  listarObras(filtro?: AtlasFilter): Promise<AtlasWorkPlacement[]>;
   /** Quantas obras respondem ao filtro. **Contado**, nunca declarado. */
-  contarObras(filtro?: FiltroDoAtlas): Promise<number>;
+  countWorks(filtro?: AtlasFilter): Promise<number>;
   salvarObra(obra: AtlasWorkPlacement): Promise<AtlasWorkPlacement>;
 }
 
@@ -59,12 +59,12 @@ export interface AtlasRepository {
  * *com quem* — qual população nichada produziu ou pratica. Gênero não é
  * eixo: refina o resultado dentro do cruzamento.
  */
-export interface FiltroDoAtlas {
+export interface AtlasFilter {
   eraId?: string;
-  regiaoId?: string;
-  triboId?: string;
-  generoId?: string;
-  compositorId?: string;
+  regionId?: string;
+  houseId?: string;
+  genreId?: string;
+  composerId?: string;
 }
 
 export class PersistentAtlasRepository implements AtlasRepository {
@@ -80,23 +80,23 @@ export class PersistentAtlasRepository implements AtlasRepository {
   }
 
   public async listarEras(): Promise<MusicalEra[]> {
-    return [...ERAS_PADRAO].sort((a, b) => a.order - b.order);
+    return [...DEFAULT_ERAS].sort((a, b) => a.order - b.order);
   }
 
   public async eraPorSlug(slug: string): Promise<MusicalEra | null> {
-    return ERAS_PADRAO.find((e) => e.slug === slug || e.id === slug) ?? null;
+    return DEFAULT_ERAS.find((e) => e.slug === slug || e.id === slug) ?? null;
   }
 
-  public async listarRegioes(): Promise<Regiao[]> {
-    return [...REGIOES_PADRAO].sort((a, b) => a.order - b.order);
+  public async listarRegioes(): Promise<Region[]> {
+    return [...DEFAULT_REGIONS].sort((a, b) => a.order - b.order);
   }
 
-  public async regiaoPorSlug(slug: string): Promise<Regiao | null> {
-    return REGIOES_PADRAO.find((r) => r.slug === slug || r.id === slug) ?? null;
+  public async regiaoPorSlug(slug: string): Promise<Region | null> {
+    return DEFAULT_REGIONS.find((r) => r.slug === slug || r.id === slug) ?? null;
   }
 
-  public async listarGeneros(): Promise<Genero[]> {
-    return [...GENEROS_PADRAO].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  public async listarGeneros(): Promise<Genre[]> {
+    return [...DEFAULT_GENRES].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
   }
 
   /**
@@ -108,25 +108,25 @@ export class PersistentAtlasRepository implements AtlasRepository {
    * fechadas, com o motivo — nunca preenchidas com conteúdo inventado para
    * a tela não parecer vazia.
    */
-  public async listarTribos(): Promise<Tribe[]> {
-    return TRIBOS_PADRAO;
+  public async listarTribos(): Promise<House[]> {
+    return DEFAULT_HOUSES;
   }
 
   private obras(): AtlasWorkPlacement[] {
     return this.storage.get<AtlasWorkPlacement[]>(this.CHAVES.OBRAS) ?? [];
   }
 
-  public async listarObras(filtro: FiltroDoAtlas = {}): Promise<AtlasWorkPlacement[]> {
+  public async listarObras(filtro: AtlasFilter = {}): Promise<AtlasWorkPlacement[]> {
     return this.obras().filter(
       (o) =>
         (!filtro.eraId || o.eraId === filtro.eraId) &&
-        (!filtro.regiaoId || o.regiaoId === filtro.regiaoId) &&
-        (!filtro.triboId || o.triboId === filtro.triboId) &&
-        (!filtro.compositorId || o.composerId === filtro.compositorId)
+        (!filtro.regionId || o.regionId === filtro.regionId) &&
+        (!filtro.houseId || o.houseId === filtro.houseId) &&
+        (!filtro.composerId || o.composerId === filtro.composerId)
     );
   }
 
-  public async contarObras(filtro: FiltroDoAtlas = {}): Promise<number> {
+  public async countWorks(filtro: AtlasFilter = {}): Promise<number> {
     return (await this.listarObras(filtro)).length;
   }
 

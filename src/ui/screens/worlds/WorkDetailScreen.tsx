@@ -113,7 +113,7 @@ export const WorkDetailScreen: React.FC = () => {
 
               <div className="space-y-2 pt-2">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-stone-900 font-mono">
-                  Movimentos da Obra:
+                  Movimentos da Work:
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {work.movements.map((mov, idx) => (

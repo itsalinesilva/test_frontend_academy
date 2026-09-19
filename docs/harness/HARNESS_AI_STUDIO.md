@@ -51,7 +51,7 @@ inventar um preenchimento razoável.
 
 Ler, nesta ordem:
 
-1. **`73_ANTIPADROES.md`** — o que já foi construído errado aqui e não pode voltar
+1. **`73_ANTIPATTERNS.md`** — o que já foi construído errado aqui e não pode voltar
 2. `18_FRONTEND_ARCHITECTURE.md` — camadas e onde cada coisa mora
 3. `17_DESIGN_SYSTEM.md` — tokens, paleta, primitivas
 4. `16_SCREEN_CONTRACTS.md` — o contrato da tela a construir

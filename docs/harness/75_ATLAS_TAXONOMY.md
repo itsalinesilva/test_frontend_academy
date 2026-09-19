@@ -184,7 +184,7 @@ quê":
 ```
 
 A mesma pessoa está em várias ao mesmo tempo. Detalhes em
-`76_ECONOMIA_DE_PROGRESSO.md`.
+`76_PROGRESS_ECONOMY.md`.
 
 ---
 
@@ -224,19 +224,24 @@ duração.
 | Um recorte de tempo | **Era** | Período, época, mundo |
 | Um recorte geográfico | **Região** | Mundo, país |
 | Era × Região, navegável | **Mundo** | Era, território |
-| A população nichada | **Tribo** | Ilha, grupo, comunidade |
+| A população nichada | **Casa** (prática) ou **Grêmio** (curso) | Tribo, ilha, grupo |
 | Faixa de competição | **Liga** | Ranking, nível |
 | Posição dentro da liga | **Classificação** | Ranking, liga |
 | Tipo da peça | **Gênero** | Estilo, forma |
 | Sequência de estudo dentro de um curso | **Trilha** | Caminho, path |
 | Sequência de exercícios | **Percurso** | Trilha |
-| A área de prática inteira | **Laboratório** | Practice, treino |
+| Onde a prática acontece | **Laboratório** | Practice, treino |
 | Um assunto do Laboratório | **Seção** | Módulo, tópico, área |
 | A profundidade do pedido | **Nível** | Dificuldade, tier |
 | O histórico de conquistas | **Passaporte** | Troféus, galeria |
 
+> **Correção de 19/09: "tribo" sai do projeto.** O conceito carregava
+> sozinho a função de estudante, praticante e grupo de interesse. Agora são
+> três: **Grêmio** (curso), **Casa** (prática) e **Clube** (comunidade). Ver
+> `80_INSTITUTIONAL_ARCHITECTURE.md`, que é a autoridade.
+
 > **Laboratório substitui Practice** a partir de 18/09. O nome novo e a
-> estrutura de seções e níveis estão em `77_LABORATORIO_E_NIVEIS.md`, que é a
+> estrutura de seções e níveis estão em `77_SECTIONS_AND_LEVELS.md`, que é a
 > autoridade sobre eles. As recompensas e o passaporte, em `78`.
 
 ---

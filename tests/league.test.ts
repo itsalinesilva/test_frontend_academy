@@ -25,8 +25,8 @@ import {
  * que com zero gente ela devolve zero linhas sem quebrar.
  */
 
-const PLATFORM: LeagueScope = { tipo: 'PLATFORM' };
-const TRIBO_VIOLINO: LeagueScope = { tipo: 'TRIBE', entidadeId: 'tribo_violinistas' };
+const PLATFORM: LeagueScope = { type: 'PLATFORM' };
+const HOUSE_VIOLIN: LeagueScope = { type: 'HOUSE', entityId: 'house_violinists' };
 const SEMANA = '2026-09-14';
 
 const inscrito = (
@@ -98,10 +98,10 @@ describe('os recortes não se misturam', () => {
   it('a liga da tribo não traz quem compete só na plataforma', () => {
     const inscricoes = [
       inscrito('ana', 100, LeagueTier.GOLD, PLATFORM),
-      inscrito('bruno', 300, LeagueTier.GOLD, TRIBO_VIOLINO),
+      inscrito('bruno', 300, LeagueTier.GOLD, HOUSE_VIOLIN),
     ];
 
-    const naTribo = computeStandings(inscricoes, TRIBO_VIOLINO, LeagueTier.GOLD, SEMANA);
+    const naTribo = computeStandings(inscricoes, HOUSE_VIOLIN, LeagueTier.GOLD, SEMANA);
     expect(naTribo).toHaveLength(1);
     expect(naTribo[0].userId).toBe('bruno');
   });
@@ -109,10 +109,10 @@ describe('os recortes não se misturam', () => {
   it('a mesma pessoa compete em vários recortes ao mesmo tempo', () => {
     const inscricoes = [
       inscrito('ana', 100, LeagueTier.GOLD, PLATFORM),
-      inscrito('ana', 100, LeagueTier.SILVER, TRIBO_VIOLINO),
+      inscrito('ana', 100, LeagueTier.SILVER, HOUSE_VIOLIN),
     ];
     expect(computeStandings(inscricoes, PLATFORM, LeagueTier.GOLD, SEMANA)).toHaveLength(1);
-    expect(computeStandings(inscricoes, TRIBO_VIOLINO, LeagueTier.SILVER, SEMANA)).toHaveLength(1);
+    expect(computeStandings(inscricoes, HOUSE_VIOLIN, LeagueTier.SILVER, SEMANA)).toHaveLength(1);
   });
 
   it('faixas diferentes do mesmo recorte não se misturam', () => {
@@ -124,7 +124,7 @@ describe('os recortes não se misturam', () => {
   });
 
   it('a chave do recorte distingue plataforma de tribo', () => {
-    expect(leagueScopeKey(PLATFORM)).not.toBe(leagueScopeKey(TRIBO_VIOLINO));
+    expect(leagueScopeKey(PLATFORM)).not.toBe(leagueScopeKey(HOUSE_VIOLIN));
   });
 });
 
@@ -216,13 +216,13 @@ describe('fechar a semana', () => {
   it('cada recorte é fechado separadamente', () => {
     const inscricoes = [
       ...dez,
-      inscrito('v0', 500, LeagueTier.BRONZE, TRIBO_VIOLINO),
-      inscrito('v1', 10, LeagueTier.BRONZE, TRIBO_VIOLINO),
+      inscrito('v0', 500, LeagueTier.BRONZE, HOUSE_VIOLIN),
+      inscrito('v1', 10, LeagueTier.BRONZE, HOUSE_VIOLIN),
     ];
     const proxima = closeWeek(inscricoes, SEMANA, '2026-09-21');
 
-    expect(proxima.filter((i) => i.recorte.tipo === 'PLATFORM')).toHaveLength(10);
-    expect(proxima.filter((i) => i.recorte.tipo === 'TRIBE')).toHaveLength(2);
+    expect(proxima.filter((i) => i.recorte.type === 'PLATFORM')).toHaveLength(10);
+    expect(proxima.filter((i) => i.recorte.type === 'HOUSE')).toHaveLength(2);
     // v0 lidera o Bronze da tribo e sobe; v1 está na base e não cai, por ser Bronze
     expect(proxima.find((i) => i.userId === 'v0')!.faixa).toBe(LeagueTier.SILVER);
     expect(proxima.find((i) => i.userId === 'v1')!.faixa).toBe(LeagueTier.BRONZE);

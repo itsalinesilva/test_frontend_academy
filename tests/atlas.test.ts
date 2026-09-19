@@ -2,9 +2,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { PersistentAtlasRepository } from '../src/repositories/atlas.repository';
 import { LocalStorageAdapter } from '../src/infrastructure/storage/local-storage';
-import { ERAS_PADRAO, REGIOES_PADRAO, GENEROS_PADRAO } from '../src/data/seed-atlas';
+import { DEFAULT_ERAS, DEFAULT_REGIONS, DEFAULT_GENRES } from '../src/data/seed-atlas';
 import { AtlasWorkPlacement } from '../src/domain/gamification';
-import { openTribes, processedSources, TribeNature } from '../src/domain/tribe';
+import { openHouses, processedSources, HouseNature } from '../src/domain/house';
 
 /**
  * O Atlas — taxonomia é conhecimento, contagem é medição.
@@ -18,7 +18,7 @@ import { openTribes, processedSources, TribeNature } from '../src/domain/tribe';
  * plataforma sem acervo de obras nenhum. E listava "Música Brasileira de
  * Tradição" como **era** — quando é região, e atravessa várias eras.
  *
- * Catálogo de termos: `docs/harness/75_TAXONOMIA_DO_ATLAS.md`.
+ * Catálogo de termos: `docs/harness/75_ATLAS_TAXONOMY.md`.
  */
 
 const novo = () => new PersistentAtlasRepository(new LocalStorageAdapter());
@@ -35,13 +35,13 @@ beforeEach(() => {
 
 describe('a taxonomia é conhecimento, e está coerente', () => {
   it('as eras estão em ordem cronológica, sem ordem repetida', () => {
-    const ordens = ERAS_PADRAO.map((e) => e.order);
+    const ordens = DEFAULT_ERAS.map((e) => e.order);
     expect(new Set(ordens).size, 'duas eras com a mesma ordem').toBe(ordens.length);
     expect([...ordens].sort((a, b) => a - b)).toEqual(ordens);
   });
 
   it('toda era declara período, descrição e características', () => {
-    for (const e of ERAS_PADRAO) {
+    for (const e of DEFAULT_ERAS) {
       expect(e.periodYears.length, e.name).toBeGreaterThan(4);
       expect(e.description.length, e.name).toBeGreaterThan(40);
       expect(e.keyCharacteristics.length, e.name).toBeGreaterThan(0);
@@ -49,14 +49,14 @@ describe('a taxonomia é conhecimento, e está coerente', () => {
   });
 
   it('nenhum identificador de era ou região se repete', () => {
-    expect(new Set(ERAS_PADRAO.map((e) => e.id)).size).toBe(ERAS_PADRAO.length);
-    expect(new Set(REGIOES_PADRAO.map((r) => r.id)).size).toBe(REGIOES_PADRAO.length);
+    expect(new Set(DEFAULT_ERAS.map((e) => e.id)).size).toBe(DEFAULT_ERAS.length);
+    expect(new Set(DEFAULT_REGIONS.map((r) => r.id)).size).toBe(DEFAULT_REGIONS.length);
   });
 
   it('toda era que uma região declara existe de fato', () => {
     // Região apontando para era inexistente produziria filtro que some.
-    const idsDeEra = new Set(ERAS_PADRAO.map((e) => e.id));
-    for (const r of REGIOES_PADRAO) {
+    const idsDeEra = new Set(DEFAULT_ERAS.map((e) => e.id));
+    for (const r of DEFAULT_REGIONS) {
       for (const eraId of r.eraIds) {
         expect(idsDeEra.has(eraId), `${r.name} aponta para ${eraId}`).toBe(true);
       }
@@ -69,18 +69,18 @@ describe('a taxonomia é conhecimento, e está coerente', () => {
      * eras cronológicas, ao lado de Barroco e Romantismo. Não é um recorte
      * de tempo: é um recorte de lugar, e atravessa várias eras.
      */
-    expect(REGIOES_PADRAO.some((r) => r.slug === 'brasil')).toBe(true);
-    expect(ERAS_PADRAO.some((e) => /brasil/i.test(e.name))).toBe(false);
+    expect(DEFAULT_REGIONS.some((r) => r.slug === 'brasil')).toBe(true);
+    expect(DEFAULT_ERAS.some((e) => /brasil/i.test(e.name))).toBe(false);
   });
 
   it('a região do Brasil atravessa mais de uma era', () => {
-    const brasil = REGIOES_PADRAO.find((r) => r.slug === 'brasil')!;
+    const brasil = DEFAULT_REGIONS.find((r) => r.slug === 'brasil')!;
     expect(brasil.eraIds.length).toBeGreaterThan(1);
   });
 
   it('gênero é faceta: tem natureza, e não período nem lugar', () => {
-    for (const g of GENEROS_PADRAO) {
-      expect(['VOCAL', 'INSTRUMENTAL', 'CENICO', 'MISTO']).toContain(g.natureza);
+    for (const g of DEFAULT_GENRES) {
+      expect(['VOCAL', 'INSTRUMENTAL', 'CENICO', 'MISTO']).toContain(g.nature);
       expect(g).not.toHaveProperty('periodYears');
       expect(g).not.toHaveProperty('eraIds');
     }
@@ -94,13 +94,13 @@ describe('a contagem é contada, nunca declarada', () => {
      * cataloga obra nenhuma. Zero é a informação correta.
      */
     const repo = novo();
-    expect(await repo.contarObras()).toBe(0);
+    expect(await repo.countWorks()).toBe(0);
     expect(await repo.listarObras()).toEqual([]);
   });
 
   it('nenhuma era traz contagem embutida', () => {
     // Se trouxesse, ela envelheceria sozinha e passaria a mentir.
-    for (const e of ERAS_PADRAO) {
+    for (const e of DEFAULT_ERAS) {
       expect(e).not.toHaveProperty('worksCount');
       expect(e).not.toHaveProperty('totalWorks');
     }
@@ -112,9 +112,9 @@ describe('a contagem é contada, nunca declarada', () => {
     await repo.salvarObra(obra('w2', 'era_barroco'));
     await repo.salvarObra(obra('w3', 'era_romantismo'));
 
-    expect(await repo.contarObras()).toBe(3);
-    expect(await repo.contarObras({ eraId: 'era_barroco' })).toBe(2);
-    expect(await repo.contarObras({ eraId: 'era_classicismo' })).toBe(0);
+    expect(await repo.countWorks()).toBe(3);
+    expect(await repo.countWorks({ eraId: 'era_barroco' })).toBe(2);
+    expect(await repo.countWorks({ eraId: 'era_classicismo' })).toBe(0);
   });
 
   it('gravar a mesma obra duas vezes não a duplica', async () => {
@@ -122,7 +122,7 @@ describe('a contagem é contada, nunca declarada', () => {
     await repo.salvarObra(obra('w1', 'era_barroco'));
     await repo.salvarObra(obra('w1', 'era_barroco', 'cmp_outro'));
 
-    expect(await repo.contarObras()).toBe(1);
+    expect(await repo.countWorks()).toBe(1);
     expect((await repo.listarObras())[0].composerId).toBe('cmp_outro');
   });
 });
@@ -133,13 +133,13 @@ describe('os eixos se cruzam', () => {
     await repo.salvarObra({
       workId: 'bwv1004',
       eraId: 'era_barroco',
-      triboId: 'tribo_violinistas',
+      houseId: 'house_violinists',
       composerId: 'cmp_bach',
     });
 
-    expect(await repo.contarObras({ eraId: 'era_barroco' })).toBe(1);
-    expect(await repo.contarObras({ triboId: 'tribo_violinistas' })).toBe(1);
-    expect(await repo.contarObras({ eraId: 'era_romantismo', triboId: 'tribo_violinistas' })).toBe(0);
+    expect(await repo.countWorks({ eraId: 'era_barroco' })).toBe(1);
+    expect(await repo.countWorks({ houseId: 'house_violinists' })).toBe(1);
+    expect(await repo.countWorks({ eraId: 'era_romantismo', houseId: 'house_violinists' })).toBe(0);
   });
 
   it('filtrar por compositor devolve só as obras dele', async () => {
@@ -147,7 +147,7 @@ describe('os eixos se cruzam', () => {
     await repo.salvarObra(obra('w1', 'era_barroco', 'cmp_a'));
     await repo.salvarObra(obra('w2', 'era_barroco', 'cmp_b'));
 
-    const deA = await repo.listarObras({ compositorId: 'cmp_a' });
+    const deA = await repo.listarObras({ composerId: 'cmp_a' });
     expect(deA).toHaveLength(1);
     expect(deA[0].workId).toBe('w1');
   });
@@ -160,9 +160,9 @@ describe('tribo — a população nichada', () => {
      * visível, fechada, com o motivo escrito, e **nunca preenchida com
      * conteúdo inventado** para a lista não parecer vazia.
      */
-    const tribos = await novo().listarTribos();
-    expect(tribos.length).toBeGreaterThan(0);
-    expect(openTribes(tribos)).toEqual([]);
+    const houses = await novo().listarTribos();
+    expect(houses.length).toBeGreaterThan(0);
+    expect(openHouses(houses)).toEqual([]);
   });
 
   it('tribo não é lugar: não tem coordenada no mapa', async () => {
@@ -179,13 +179,13 @@ describe('tribo — a população nichada', () => {
   it('há tribo que não é de instrumento', async () => {
     // Quem estuda história forma uma tribo tanto quanto quem toca violino —
     // e isso não cabia em "ilha de instrumento".
-    const tribos = await novo().listarTribos();
-    expect(tribos.some((t) => t.natureza === TribeNature.DISCIPLINE)).toBe(true);
-    expect(tribos.some((t) => t.slug === 'historiadores')).toBe(true);
+    const houses = await novo().listarTribos();
+    expect(houses.some((t) => t.nature === HouseNature.DISCIPLINE)).toBe(true);
+    expect(houses.some((t) => t.slug === 'historiadores')).toBe(true);
   });
 
   it('toda era que uma tribo declara existe de fato', async () => {
-    const idsDeEra = new Set(ERAS_PADRAO.map((e) => e.id));
+    const idsDeEra = new Set(DEFAULT_ERAS.map((e) => e.id));
     for (const t of await novo().listarTribos()) {
       for (const eraId of t.relevantEraIds) {
         expect(idsDeEra.has(eraId), `${t.name} aponta para ${eraId}`).toBe(true);
@@ -194,10 +194,10 @@ describe('tribo — a população nichada', () => {
   });
 
   it('toda região que uma tribo declara existe de fato', async () => {
-    const idsDeRegiao = new Set(REGIOES_PADRAO.map((r) => r.id));
+    const idsDeRegiao = new Set(DEFAULT_REGIONS.map((r) => r.id));
     for (const t of await novo().listarTribos()) {
-      for (const regiaoId of t.relevantRegiaoIds) {
-        expect(idsDeRegiao.has(regiaoId), `${t.name} aponta para ${regiaoId}`).toBe(true);
+      for (const regionId of t.relevantRegiaoIds) {
+        expect(idsDeRegiao.has(regionId), `${t.name} aponta para ${regionId}`).toBe(true);
       }
     }
   });
@@ -214,13 +214,13 @@ describe('tribo — a população nichada', () => {
 describe('leitura e escrita atravessam o recarregar', () => {
   it('a obra gravada volta numa instância nova', async () => {
     await novo().salvarObra(obra('w1', 'era_moderna'));
-    expect(await novo().contarObras()).toBe(1);
+    expect(await novo().countWorks()).toBe(1);
   });
 
   it('a taxonomia não depende do armazenamento', async () => {
     // Ela é conhecimento, e vem do código — não do que alguém gravou.
     window.localStorage.clear();
-    expect((await novo().listarEras()).length).toBe(ERAS_PADRAO.length);
-    expect((await novo().listarRegioes()).length).toBe(REGIOES_PADRAO.length);
+    expect((await novo().listarEras()).length).toBe(DEFAULT_ERAS.length);
+    expect((await novo().listarRegioes()).length).toBe(DEFAULT_REGIONS.length);
   });
 });

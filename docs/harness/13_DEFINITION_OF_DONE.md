@@ -91,8 +91,8 @@ atravessou esta definição de pronto sem ser barrado.
 npm run verificar
 ```
 
-Ver `35_TEST_STRATEGY.md` para a ordem das camadas, `73_ANTIPADROES.md` para
-o que cada item acima já custou, e `74_RITUAL_DE_QUALIDADE.md` para a
+Ver `35_TEST_STRATEGY.md` para a ordem das camadas, `73_ANTIPATTERNS.md` para
+o que cada item acima já custou, e `74_QUALITY_RITUAL.md` para a
 periodicidade.
 
 ### O que "pronto" nunca significou aqui

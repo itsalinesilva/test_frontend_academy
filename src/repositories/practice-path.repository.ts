@@ -9,7 +9,7 @@ import { StreakGoal } from '../domain/lesson-completion';
  * ----------------------------------
  * Esta chave fica do lado do progresso, e não do conteúdo. Nada que publique
  * catálogo pode toca-la: os nós que alguém concluiu são história dela, e
- * republicar o Practice não pode apaga-la. Ver `72_PENTE_FINO_QUALIDADE.md`,
+ * republicar o Practice não pode apaga-la. Ver `72_QUALITY_SWEEP.md`,
  * na regra das três categorias de armazenamento.
  *
  * TUDO É POR USUÁRIO

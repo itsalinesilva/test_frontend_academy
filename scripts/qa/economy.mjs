@@ -1,7 +1,7 @@
 /**
  * Pente fino da economia de progresso.
  *
- * `76_ECONOMIA_DE_PROGRESSO.md` declara-se **a autoridade**: valor que não
+ * `76_PROGRESS_ECONOMY.md` declara-se **a autoridade**: valor que não
  * está na tabela de contagem não é atribuído. Uma autoridade que envelhece em
  * silêncio é pior que nenhuma — quem lê confia, e o código já não faz aquilo.
  *
@@ -25,7 +25,7 @@
 import { readFileSync } from 'node:fs';
 import { sources } from './core.mjs';
 
-const DOC = 'docs/harness/76_ECONOMIA_DE_PROGRESSO.md';
+const DOC = 'docs/harness/76_PROGRESS_ECONOMY.md';
 
 /** As linhas de tabela da §2, já separadas em colunas. */
 function countingRows() {
@@ -79,7 +79,7 @@ export function checkCountingSymbol() {
 /** Vocabulário do Atlas: "ilha" foi removida, e a contagem não pode ressuscitá-la. */
 export function checkCountingVocabulary() {
   const FORBIDDEN = [
-    ['ilha', 'tribo (grupo) ou região (lugar) — ver 75_TAXONOMIA_DO_ATLAS.md'],
+    ['ilha', 'tribo (grupo) ou região (lugar) — ver 75_ATLAS_TAXONOMY.md'],
     ['ranking', 'classificação'],
     ['streak', 'ofensiva'],
   ];

@@ -2,7 +2,7 @@
  * Missões diárias.
  *
  * Três por dia, sorteadas de uma lista fixa, com prazo até a virada do dia.
- * A regra está em `76_ECONOMIA_DE_PROGRESSO.md` §4, e os valores daqui são os
+ * A regra está em `76_PROGRESS_ECONOMY.md` §4, e os valores daqui são os
  * de lá — `scripts/qa/economia.mjs` falha se divergirem.
  *
  * O SORTEIO É DETERMINÍSTICO
@@ -16,7 +16,7 @@
  * NÃO EXISTE "MAIS MISSÕES EM BREVE"
  * ----------------------------------
  * Ou a missão existe, ou não aparece. Promessa de funcionalidade futura na
- * tela é antipadrão — ver `73_ANTIPADROES.md`.
+ * tela é antipadrão — ver `73_ANTIPATTERNS.md`.
  */
 
 import { XP } from './progress-economy';

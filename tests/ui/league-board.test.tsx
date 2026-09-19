@@ -36,10 +36,10 @@ const montar = (opcoes: Partial<Parameters<typeof LeagueBoard>[0]> = {}) => {
   render(
     <LeagueBoard
       faixa={LeagueTier.SILVER}
-      scope={{ tipo: 'PLATFORM' }}
+      scope={{ type: 'PLATFORM' }}
       availableScopes={[
-        { scope: { tipo: 'PLATFORM' }, label: 'Plataforma' },
-        { scope: { tipo: 'TRIBE', entidadeId: 'tribo_violinistas' }, label: 'Violinistas' },
+        { scope: { type: 'PLATFORM' }, label: 'Plataforma' },
+        { scope: { type: 'HOUSE', entityId: 'house_violinists' }, label: 'Violinistas' },
       ]}
       onChangeScope={onChangeScope}
       standings={standings}
@@ -76,8 +76,8 @@ describe('tabela vazia mostra a forma, e nunca gente inventada', () => {
     const { container } = render(
       <LeagueBoard
         faixa={LeagueTier.BRONZE}
-        scope={{ tipo: 'PLATFORM' }}
-        availableScopes={[{ scope: { tipo: 'PLATFORM' }, label: 'Plataforma' }]}
+        scope={{ type: 'PLATFORM' }}
+        availableScopes={[{ scope: { type: 'PLATFORM' }, label: 'Plataforma' }]}
         onChangeScope={vi.fn()}
         standings={[]}
         nameOf={(id) => id}
@@ -165,8 +165,8 @@ describe('os recortes', () => {
 
     await user.click(screen.getByRole('button', { name: 'Violinistas' }));
     expect(onChangeScope).toHaveBeenCalledWith({
-      tipo: 'TRIBE',
-      entidadeId: 'tribo_violinistas',
+      type: 'HOUSE',
+      entityId: 'house_violinists',
     });
   });
 });

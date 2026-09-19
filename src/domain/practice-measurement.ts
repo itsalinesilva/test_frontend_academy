@@ -160,7 +160,7 @@ export interface SinalDaTentativa {
 export type Dimension = number | null;
 
 export interface MedicaoReal {
-  natureza: NaturezaMedicao;
+  nature: NaturezaMedicao;
 
   afinacao: {
     notaAlvo: string | null;
@@ -273,7 +273,7 @@ const PESOS: Record<string, number> = {
  */
 export function medirTentativa(
   sinal: SinalDaTentativa,
-  natureza: NaturezaMedicao
+  nature: NaturezaMedicao
 ): MedicaoReal {
   const ausencias: string[] = [];
   const medidas: Record<string, number> = {};
@@ -311,7 +311,7 @@ export function medirTentativa(
       estabilidadeDeAltura = Math.max(0, Math.round(100 - dispersao * 2.2));
       medidas.estabilidadeDeAltura = estabilidadeDeAltura;
     }
-  } else if (natureza === 'ACOUSTICS') {
+  } else if (nature === 'ACOUSTICS') {
     ausencias.push('Não houve som audível para medir a afinação.');
   }
 
@@ -344,7 +344,7 @@ export function medirTentativa(
     } else {
       ausencias.push('Sem andamento alvo: o desvio de tempo não pôde ser calculado.');
     }
-  } else if (natureza === 'ACOUSTICS' && sinal.bpmAlvo) {
+  } else if (nature === 'ACOUSTICS' && sinal.bpmAlvo) {
     ausencias.push('Ataques insuficientes para medir o andamento (são necessários ao menos dois).');
   }
 
@@ -364,7 +364,7 @@ export function medirTentativa(
     correto = normalizar(sinal.respostaDada) === normalizar(sinal.respostaEsperada);
     pontuacaoAcerto = correto ? 100 : 0;
     medidas.acerto = pontuacaoAcerto;
-  } else if (natureza === 'SIMBOLICA') {
+  } else if (nature === 'SIMBOLICA') {
     ausencias.push('Nenhuma resposta foi registrada.');
   }
 
@@ -383,7 +383,7 @@ export function medirTentativa(
   }
 
   return {
-    natureza,
+    nature,
     afinacao: {
       notaAlvo: sinal.notaAlvo ?? null,
       notaDetectada,
@@ -511,7 +511,7 @@ export function agregarMedicoes(medicoes: MedicaoReal[]): MedicaoReal {
       : null;
 
   return {
-    natureza: presentes.some((m) => m.natureza === 'ACOUSTICS') ? 'ACOUSTICS' : 'SIMBOLICA',
+    nature: presentes.some((m) => m.nature === 'ACOUSTICS') ? 'ACOUSTICS' : 'SIMBOLICA',
     afinacao: {
       notaAlvo: presentes.find((m) => m.afinacao.notaAlvo)?.afinacao.notaAlvo ?? null,
       notaDetectada: null,

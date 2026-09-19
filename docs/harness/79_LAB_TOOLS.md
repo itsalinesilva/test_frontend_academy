@@ -146,7 +146,7 @@ impedir.
 | Obras do Atlas | **conteúdo publicado** |
 | Correção editorial de obra | **trabalho editorial** |
 
-As três categorias estão em `72_PENTE_FINO_QUALIDADE.md` e são verificadas por
+As três categorias estão em `72_QUALITY_SWEEP.md` e são verificadas por
 `scripts/qa/security.mjs`.
 
 ---

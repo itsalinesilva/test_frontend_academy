@@ -5,7 +5,7 @@
 > que falta — com a distinção explícita, porque confundir as duas coisas é o
 > antipadrão F1 dentro do documento que deveria preveni-lo.
 >
-> Estratégia e ordem: `35_TEST_STRATEGY.md`. Antipadrões: `73_ANTIPADROES.md`.
+> Estratégia e ordem: `35_TEST_STRATEGY.md`. Antipadrões: `73_ANTIPATTERNS.md`.
 
 ---
 

@@ -45,7 +45,7 @@ papel protege**, para reconhecer quando se está passando por cima dele.
 
 11. **Não inventar dado para preencher tela.** Foi o defeito mais caro daqui:
     três cursos inventados, uma semana de estudo que ninguém fez, um ataque
-    que nunca houve. Ver `73_ANTIPADROES.md` §A1.
+    que nunca houve. Ver `73_ANTIPATTERNS.md` §A1.
 12. **Não desenhar controle que não age** — e muito menos um que *afirme* ter
     agido. §A2, §A3.
 13. **Não remover o que não foi pedido.** Auditoria produz diagnóstico, não

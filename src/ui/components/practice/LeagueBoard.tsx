@@ -67,10 +67,10 @@ export const LeagueBoard: React.FC<LeagueBoardProps> = ({
 
       <nav aria-label="Recorte da liga" className="mt-6 flex flex-wrap gap-2">
         {availableScopes.map(({ scope: r, label }) => {
-          const ativo = r.tipo === scope.tipo && r.entidadeId === scope.entidadeId;
+          const ativo = r.type === scope.type && r.entityId === scope.entityId;
           return (
             <button
-              key={`${r.tipo}:${r.entidadeId ?? ''}`}
+              key={`${r.type}:${r.entityId ?? ''}`}
               type="button"
               onClick={() => onChangeScope(r)}
               aria-current={ativo ? 'true' : undefined}

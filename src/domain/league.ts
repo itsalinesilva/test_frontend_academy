@@ -58,16 +58,16 @@ export const TIER_NAME: Record<LeagueTier, string> = {
  * tempo — e é isso que dá sentido à comparação: "o melhor da plataforma" diz
  * pouco; "o melhor da tribo dos violinistas" diz muito.
  */
-export type LeagueScopeType = 'PLATFORM' | 'COURSE' | 'TRIBE' | 'ERA';
+export type LeagueScopeType = 'PLATFORM' | 'COURSE' | 'HOUSE' | 'ERA';
 
 export interface LeagueScope {
-  tipo: LeagueScopeType;
+  type: LeagueScopeType;
   /** Ausente quando o tipo é `PLATAFORMA`, que não recorta nada. */
-  entidadeId?: EntityId;
+  entityId?: EntityId;
 }
 
 export function leagueScopeKey(r: LeagueScope): string {
-  return r.entidadeId ? `${r.tipo}:${r.entidadeId}` : r.tipo;
+  return r.entityId ? `${r.type}:${r.entityId}` : r.type;
 }
 
 /** A inscrição de alguém numa liga, numa semana. */

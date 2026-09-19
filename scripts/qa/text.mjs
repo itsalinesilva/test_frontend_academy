@@ -14,7 +14,7 @@
  *
  * O que ele NÃO verifica, e ninguém deve fingir que verifica: concordância,
  * regência, coesão, e se a frase faz sentido no lugar em que está. Isso é
- * revisão humana, está declarado em `docs/harness/72_PENTE_FINO_QUALIDADE.md` como não
+ * revisão humana, está declarado em `docs/harness/72_QUALITY_SWEEP.md` como não
  * coberto e está aberto em `CLAUDE_TODO.md`.
  */
 import { sources, uiFiles, uiStrings } from './core.mjs';

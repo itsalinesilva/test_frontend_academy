@@ -1,6 +1,6 @@
 # 78 · Recompensas, réguas e passaporte
 
-> Companheiro de `76_ECONOMIA_DE_PROGRESSO.md`. Aquele diz **quanto vale cada
+> Companheiro de `76_PROGRESS_ECONOMY.md`. Aquele diz **quanto vale cada
 > coisa**; este diz **o que se ganha por acumular**. Valor de XP não se declara
 > aqui; marco, emblema e carimbo não se declaram lá.
 
@@ -105,6 +105,14 @@ A distinção com o perfil é dura e vale escrever:
 | Apaga | nada, mas os números oscilam | nada, e nada oscila |
 | Natureza | **estado** | **história** |
 
+### O Passaporte é também a carteira de pertencimento
+
+Além dos carimbos, ele responde a seis perguntas — Academia, Grêmio,
+Laboratório, Casa, Comunidade, Clube. A estrutura está em
+`80_INSTITUTIONAL_ARCHITECTURE.md` §10, e a regra é a mesma de todo o resto:
+vazio é vazio, e pertencimento de exemplo seria afirmação falsa sobre a vida
+de alguém.
+
 ### Tipos de carimbo
 
 | Carimbo | Ganha-se ao | Soma |
@@ -114,7 +122,7 @@ A distinção com o perfil é dura e vale escrever:
 | **Compositor** | concluir uma obra do compositor | 1 por compositor |
 | **Obra** | executar a obra no simulador | 1 por obra |
 | **Tour** | concluir um tour inteiro | 1 por tour |
-| **Tribo** | entrar e praticar numa tribo | 7 hoje |
+| **Casa** | entrar e praticar numa Casa | 7 hoje |
 
 O carimbo de compositor **soma**: cinco obras de Beethoven deixam um carimbo de
 Beethoven com contador 5 — e não cinco carimbos iguais. Carimbo repetido

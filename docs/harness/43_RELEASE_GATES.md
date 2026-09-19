@@ -2,7 +2,7 @@
 
 > Um portão não passa por acordo. Passa por execução.
 >
-> Ritual: `74_RITUAL_DE_QUALIDADE.md`. Antipadrões: `73_ANTIPADROES.md`.
+> Ritual: `74_QUALITY_RITUAL.md`. Antipadrões: `73_ANTIPATTERNS.md`.
 
 ---
 

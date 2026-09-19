@@ -89,7 +89,7 @@ Auditoria produz diagnóstico, não demolição.
 
 ## 4 · Antes de escrever qualquer tela
 
-Ler `73_ANTIPADROES.md`. É mais curto que consertar depois.
+Ler `73_ANTIPATTERNS.md`. É mais curto que consertar depois.
 
 Checagem mínima, de cabeça:
 
@@ -119,7 +119,7 @@ ou não terminou.
 > o código de saída, ou chamar `npx` diretamente. Isto é do sandbox, não do
 > projeto.
 
-O pente fino está descrito em `72_PENTE_FINO_QUALIDADE.md`, inclusive a seção
+O pente fino está descrito em `72_QUALITY_SWEEP.md`, inclusive a seção
 do que ele **não** alcança. Ler os dois: "0 bloqueios" não quer dizer "está
 pronto", e o documento diz exatamente por quê.
 
@@ -230,7 +230,7 @@ o erro três vezes.
 
 ## 10 · Preferências de quem decide o produto
 
-Estão em `73_ANTIPADROES.md` §G, e são **critério de aceitação**, não gosto a
+Estão em `73_ANTIPATTERNS.md` §G, e são **critério de aceitação**, não gosto a
 ser tolerado. Em resumo: sem cartão decorativo, sem legenda redundante, ícone
 onde cabe ícone, menu só com telas, um cabeçalho só, paleta anil e ouro.
 
@@ -249,5 +249,5 @@ E a que mais orienta o trabalho:
 - [ ] `CLAUDE_AUDIT.md` registra os achados novos
 - [ ] `CLAUDE_TODO.md` tem as pendências **medidas**, não estimadas
 - [ ] Defeito encontrado virou caso de teste
-- [ ] Antipadrão novo entrou em `73_ANTIPADROES.md`, com o que custou
+- [ ] Antipadrão novo entrou em `73_ANTIPATTERNS.md`, com o que custou
 - [ ] O relatório diz o que não foi verificado

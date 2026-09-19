@@ -547,8 +547,8 @@ efeito genérico:
 # PARTE C — O que o Conservatório monta a partir dos dois
 
 Cada linha existe porque apareceu numa captura. Os detalhes de contagem estão
-em `docs/harness/76_ECONOMIA_DE_PROGRESSO.md`; a taxonomia do mapa, em
-`docs/harness/75_TAXONOMIA_DO_ATLAS.md`.
+em `docs/harness/76_PROGRESS_ECONOMY.md`; a taxonomia do mapa, em
+`docs/harness/75_ATLAS_TAXONOMY.md`.
 
 | # | Capacidade | Origem | Forma adulta | Forma Kids |
 |---|---|---|---|---|

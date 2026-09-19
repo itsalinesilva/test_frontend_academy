@@ -12,7 +12,7 @@
  *
  * "ok" quer dizer que *aquela* verificação passou. Não quer dizer que a tela
  * está boa. O que nenhuma verificação alcança está escrito em
- * `docs/harness/72_PENTE_FINO_QUALIDADE.md`, na seção "o que isto não cobre" — e está
+ * `docs/harness/72_QUALITY_SWEEP.md`, na seção "o que isto não cobre" — e está
  * aberto em `CLAUDE_TODO.md` até alguém fechar.
  *
  * Uso:  node scripts/qa.mjs [--json] [--so-falhas]
@@ -36,6 +36,7 @@ import {
   checkFreeCourseDisclaimer,
   checkFabricatedData,
   checkInflatedAggregate,
+  checkRetiredVocabulary,
   checkPublicDomainRepertoire,
   checkDeadButton,
   checkSuccessWithoutEffect,
@@ -95,6 +96,7 @@ const SECTIONS = [
       report('a ressalva de curso livre está escrita', checkFreeCourseDisclaimer(), G.BLOCKS),
       report('nenhum dado fabricado no catálogo', checkFabricatedData(), G.BLOCKS),
       report('nenhum agregado inflado nem ausência disfarçada', checkInflatedAggregate(), G.BLOCKS),
+      report('nenhuma palavra aposentada do vocabulário', checkRetiredVocabulary(), G.BLOCKS),
       report('nenhum botão falso', checkDeadButton(), G.BLOCKS),
       report('nenhum sucesso anunciado sem efeito', checkSuccessWithoutEffect(), G.BLOCKS),
       report('nenhum conjunto de dados escrito na tela', checkDataInsideScreen(), G.BLOCKS),
@@ -182,6 +184,6 @@ if (process.argv.includes('--json')) {
   console.log('---');
   console.log(`rotas ${routes.total} · telas ${routes.screens} · distinguem visitante ${routes.distinguishing}`);
   console.log(`bloqueios ${blockers} · a corrigir ${fixables}`);
-  console.log('não coberto por máquina: docs/harness/72_PENTE_FINO_QUALIDADE.md');
+  console.log('não coberto por máquina: docs/harness/72_QUALITY_SWEEP.md');
   process.exitCode = blockers > 0 ? 1 : 0;
 }

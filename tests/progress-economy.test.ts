@@ -167,12 +167,12 @@ describe('score é qualidade, e ausência de prática não é zero', () => {
 
 describe('o documento e o código dizem o mesmo número', () => {
   /**
-   * `76_ECONOMIA_DE_PROGRESSO.md` é a autoridade; este módulo é o único lugar
+   * `76_PROGRESS_ECONOMY.md` é a autoridade; este módulo é o único lugar
    * do código autorizado a repetir os números dela. Divergência silenciosa
    * entre os dois foi exatamente o que deixou o perfil mentir.
    */
   const doc = readFileSync(
-    resolve(__dirname, '../docs/harness/76_ECONOMIA_DE_PROGRESSO.md'),
+    resolve(__dirname, '../docs/harness/76_PROGRESS_ECONOMY.md'),
     'utf-8'
   );
 

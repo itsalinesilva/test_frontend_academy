@@ -9,12 +9,12 @@ engenharia, agentes de IA, qualidade e implantação.
 
 | Você é… | Leia, nesta ordem |
 |---|---|
-| **Agente conversacional** (Claude Code, com terminal) | `HARNESS_CLAUDE.md` → `73_ANTIPADROES.md` → `35_TEST_STRATEGY.md` |
-| **Agente de geração** (AI Studio, sem repositório em mãos) | `HARNESS_AI_STUDIO.md` → `73_ANTIPADROES.md` → `18_FRONTEND_ARCHITECTURE.md` |
-| **Pessoa entrando no projeto** | `00_MASTER_ONBOARDING.md` → `01_PRODUCT_SYSTEM.md` → `73_ANTIPADROES.md` |
-| **Quem vai verificar qualidade** | `74_RITUAL_DE_QUALIDADE.md` → `72_PENTE_FINO_QUALIDADE.md` |
+| **Agente conversacional** (Claude Code, com terminal) | `HARNESS_CLAUDE.md` → `73_ANTIPATTERNS.md` → `35_TEST_STRATEGY.md` |
+| **Agente de geração** (AI Studio, sem repositório em mãos) | `HARNESS_AI_STUDIO.md` → `73_ANTIPATTERNS.md` → `18_FRONTEND_ARCHITECTURE.md` |
+| **Pessoa entrando no projeto** | `00_MASTER_ONBOARDING.md` → `01_PRODUCT_SYSTEM.md` → `73_ANTIPATTERNS.md` |
+| **Quem vai verificar qualidade** | `74_QUALITY_RITUAL.md` → `72_QUALITY_SWEEP.md` |
 
-> **Ninguém escreve código aqui sem ter lido `73_ANTIPADROES.md`.** Ele
+> **Ninguém escreve código aqui sem ter lido `73_ANTIPATTERNS.md`.** Ele
 > cataloga o que já foi construído errado neste repositório, quanto custou, e
 > qual verificação hoje impede a reincidência. É mais curto que consertar
 > depois.
@@ -29,9 +29,9 @@ Estes são os que se lê **todo dia**. Os demais são referência de contrato.
 |---|---|
 | `HARNESS_CLAUDE.md` | Como o agente conversacional trabalha aqui |
 | `HARNESS_AI_STUDIO.md` | Padrões de engenharia para geração assistida |
-| `73_ANTIPADROES.md` | O que não pode voltar, e o que custou |
+| `73_ANTIPATTERNS.md` | O que não pode voltar, e o que custou |
 | `35_TEST_STRATEGY.md` | Em que ordem se testa, e o que cada camada responde |
-| `74_RITUAL_DE_QUALIDADE.md` | Com que frequência, e o roteiro manual |
+| `74_QUALITY_RITUAL.md` | Com que frequência, e o roteiro manual |
 
 E o comando que amarra os cinco:
 
@@ -71,7 +71,7 @@ npm run verificar     # typecheck + lint + pente fino + testes
 | **Dado do aluno** | progresso, tentativas, certificados, histórico, frequência | **Nunca** |
 | **Trabalho editorial** | correções de texto, livretos | **Nunca** |
 
-Misturá-las já custou duas vezes, em direções opostas. Ver `73_ANTIPADROES.md` §B3.
+Misturá-las já custou duas vezes, em direções opostas. Ver `73_ANTIPATTERNS.md` §B3.
 
 ---
 

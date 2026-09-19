@@ -51,7 +51,7 @@ escrito na tela, vazamento entre alunos, privilégio decidido no cliente,
 promessa de titulação indevida, citação de fonte, acessibilidade, ortografia,
 tela órfã, destino de navegação inexistente.
 
-Descrita em `72_PENTE_FINO_QUALIDADE.md`, inclusive o que **não** alcança.
+Descrita em `72_QUALITY_SWEEP.md`, inclusive o que **não** alcança.
 
 ### 2 · Domínio — funções puras, ambiente `node`
 
@@ -128,7 +128,7 @@ animação de largura, porque o navegador ajustava `scrollLeft` num contêiner
 com `overflow-hidden` — **não é reproduzível em jsdom**. Só apareceu abrindo
 o navegador.
 
-Roteiro em `74_RITUAL_DE_QUALIDADE.md` §4.
+Roteiro em `74_QUALITY_RITUAL.md` §4.
 
 ---
 
@@ -181,7 +181,7 @@ entender para que servia.
 
 ## 5 · O que esta estratégia NÃO cobre
 
-Repetido de `72_PENTE_FINO_QUALIDADE.md` porque um leitor pode chegar por
+Repetido de `72_QUALITY_SWEEP.md` porque um leitor pode chegar por
 aqui, e porque **não declarar o limite é o erro que a estratégia inteira
 existe para prevenir**.
 
@@ -211,4 +211,4 @@ npm test              # 2 → 7
 npx vitest run tests/persistencia-e-isolamento.test.ts
 ```
 
-Periodicidade e roteiro manual: `74_RITUAL_DE_QUALIDADE.md`.
+Periodicidade e roteiro manual: `74_QUALITY_RITUAL.md`.

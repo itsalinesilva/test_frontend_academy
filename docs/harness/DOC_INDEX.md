@@ -72,14 +72,15 @@
 70. `69_MOBILE_NATIVE_CONTRACT.md`
 71. `70_FIRST_BUILD_BACKLOG.md`
 72. `71_LEGACY_BLUEPRINT_REFERENCE.md`
-73. `72_PENTE_FINO_QUALIDADE.md` — o que `npm run qa` verifica, e o que ele **não** verifica
-74. `73_ANTIPADROES.md` — o que já foi construído errado aqui, e não pode voltar
-75. `74_RITUAL_DE_QUALIDADE.md` — com que frequência se verifica, e o roteiro manual
-76. `75_TAXONOMIA_DO_ATLAS.md` — catálogo único: era, região, mundo, tribo, liga
-77. `77_LABORATORIO_E_NIVEIS.md` — **o nome Laboratório**, seção como disciplina, nível como profundidade, densidade e quadro geral
-78. `78_RECOMPENSAS_E_PASSAPORTE.md` — réguas ascendentes, emblemas, carimbos, credenciais, o passaporte
-79. `79_FERRAMENTAS_DO_LABORATORIO.md` — metrônomo, afinador, teste de microfone, caderno de partituras
-77. `76_ECONOMIA_DE_PROGRESSO.md` — onde e como se conta XP, score, ofensiva, débito, emblema
+73. `72_QUALITY_SWEEP.md` — o que `npm run qa` verifica, e o que ele **não** verifica
+74. `73_ANTIPATTERNS.md` — o que já foi construído errado aqui, e não pode voltar
+75. `74_QUALITY_RITUAL.md` — com que frequência se verifica, e o roteiro manual
+76. `75_ATLAS_TAXONOMY.md` — catálogo único: era, região, mundo, tribo, liga
+77. `77_SECTIONS_AND_LEVELS.md` — **o nome Laboratório**, seção como disciplina, nível como profundidade, densidade e quadro geral
+78. `78_REWARDS_AND_PASSPORT.md` — réguas ascendentes, emblemas, carimbos, credenciais, o passaporte
+80. `80_INSTITUTIONAL_ARCHITECTURE.md` — **autoridade máxima de estrutura**: Associação, Comunidade, Academia, Grêmio, Laboratório, Casa, Clube, Liga
+79. `79_LAB_TOOLS.md` — metrônomo, afinador, teste de microfone, caderno de partituras
+77. `76_PROGRESS_ECONOMY.md` — onde e como se conta XP, score, ofensiva, débito, emblema
 76. `HARNESS_CLAUDE.md` — contrato do agente conversacional
 77. `HARNESS_AI_STUDIO.md` — padrões de engenharia para geração assistida
 78. `DOC_INDEX.md`
@@ -98,8 +99,8 @@ Lidos todo dia. Os demais são referência de contrato.
 |---|---|
 | `HARNESS_CLAUDE.md` | Como o agente conversacional trabalha aqui |
 | `HARNESS_AI_STUDIO.md` | Padrões de engenharia para geração assistida |
-| `73_ANTIPADROES.md` | O que não pode voltar, e o que custou |
+| `73_ANTIPATTERNS.md` | O que não pode voltar, e o que custou |
 | `35_TEST_STRATEGY.md` | Em que ordem se testa, e o que cada camada responde |
-| `74_RITUAL_DE_QUALIDADE.md` | Com que frequência, e o roteiro manual |
+| `74_QUALITY_RITUAL.md` | Com que frequência, e o roteiro manual |
 
-**Ninguém escreve código sem ter lido `73_ANTIPADROES.md`.**
+**Ninguém escreve código sem ter lido `73_ANTIPATTERNS.md`.**
