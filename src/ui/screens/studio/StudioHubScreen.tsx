@@ -1,11 +1,14 @@
 import React from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { VisitorInvitation } from '../../components/visitor/VisitorInvitation';
 import { Card } from '../../components/base/Card';
 import { Plus, Sliders, Mic, FileMusic } from 'lucide-react';
 
 export const StudioHubScreen: React.FC = () => {
   const { navigate } = useRouter();
+  const { userId, carregando: sessaoCarregando } = useCurrentUser();
 
   /**
    * NAO ha lista de projetos, e esta linha e a correcao.
@@ -55,6 +58,40 @@ export const StudioHubScreen: React.FC = () => {
       }}
     >
       <div className="space-y-6">
+        {/**
+          * O Estúdio é público porque as ferramentas servem a quem ainda não
+          * entrou: afinar um instrumento não exige matrícula. O convite diz o
+          * que muda depois de entrar — guardar o que se escreveu.
+          */}
+        {!sessaoCarregando && !userId && (
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-5">
+            <VisitorInvitation
+              space="Estúdio"
+              summary="As ferramentas de ofício: afinador, metrônomo, escuta e escrita de partitura."
+              steps={[
+                {
+                  title: 'Use sem conta',
+                  description: 'Afinar e ouvir não exige matrícula nem cadastro.',
+                },
+                {
+                  title: 'Entre para guardar',
+                  description:
+                    'Com conta, o que você escrever fica no seu caderno de partituras.',
+                },
+                {
+                  title: 'Leve embora',
+                  description:
+                    'A partitura é sua, e sai daqui em MusicXML e MIDI — formatos que outros programas abrem.',
+                },
+              ]}
+              primaryLabel="Entrar e guardar o que eu escrever"
+              onPrimary={() => navigate('/auth')}
+              secondaryLabel="Conhecer a Academia"
+              onSecondary={() => navigate('/academia')}
+            />
+          </div>
+        )}
+
         {/* Quick Tools Bar */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card

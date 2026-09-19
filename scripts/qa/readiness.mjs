@@ -50,13 +50,38 @@ export const AREAS = [
    * A prontidão do visitante é medida por `checkPersonalSectionWithoutSession`
    * e pela fase V do `CLAUDE_TODO.md`.
    */
-  { id: 'academia', nome: 'Academia', pastas: ['academy'], prefixos: ['/academia'] },
+  {
+    id: 'academia',
+    nome: 'Academia',
+    pastas: ['academy'],
+    prefixos: ['/academia'],
+    publica: true,
+    /** O que o admin precisa poder editar nesta área. */
+    editavel: ['BLOCO', 'QUESTAO', 'LICAO'],
+  },
   { id: 'laboratorio', nome: 'Laboratório', pastas: ['practice'], prefixos: ['/practice'] },
-  { id: 'atlas', nome: 'Atlas', pastas: ['worlds'], prefixos: ['/worlds'] },
-  { id: 'comunidade', nome: 'Comunidade', pastas: ['community'], prefixos: ['/community'] },
+  {
+    id: 'atlas',
+    nome: 'Atlas',
+    pastas: ['worlds'],
+    prefixos: ['/worlds'],
+    publica: true,
+    /** Sem acervo o Atlas é uma moldura. */
+    acervo: [
+      { arquivo: 'src/data/seed-atlas.ts', constante: 'DEFAULT_WORKS', nome: 'obras' },
+      { arquivo: 'src/domain/gamification.ts', constante: 'HISTORICAL_MASTERS', nome: 'compositores' },
+    ],
+  },
+  { id: 'comunidade', nome: 'Comunidade', pastas: ['community'], prefixos: ['/community'], publica: true },
   { id: 'perfil', nome: 'Perfil', pastas: ['profile'], prefixos: ['/profile'] },
   { id: 'console', nome: 'Console', pastas: ['admin'], prefixos: ['/founder'] },
-  { id: 'estudio', nome: 'Estúdio', pastas: ['studio', 'score', 'violin'], prefixos: ['/studio', '/score', '/violin'] },
+  {
+    id: 'estudio',
+    nome: 'Estúdio',
+    pastas: ['studio', 'score', 'violin'],
+    prefixos: ['/studio', '/score', '/violin'],
+    publica: true,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -166,6 +191,66 @@ function perguntas(area) {
     area.pastas.some((p) => r.includes(p) || p.includes(r.split('.')[0]))
   );
 
+  /**
+   * 8 · ACERVO — a área tem o conteúdo que ela promete?
+   *
+   * Nasceu porque o relatório dava 7/7 ao Atlas enquanto ele tinha **zero
+   * obras e zero compositores**. As sete primeiras mediam estrutura, e uma
+   * moldura vazia passa em todas: tem tela, tem rota, está protegida, não
+   * inventa nada — porque não tem nada.
+   */
+  const acervoVazio = (area.acervo ?? []).filter((a) => {
+    if (!existsSync(a.arquivo)) return true;
+    const src = readFileSync(a.arquivo, 'utf-8');
+    /**
+     * Sem regex de propósito: montá-la por interpolação já colocou um
+     * backspace no lugar de `\b` três vezes neste repositório. Aqui basta
+     * achar a constante e ler até o colchete que fecha.
+     */
+    const i = src.indexOf(a.constante);
+    if (i === -1) return true;
+
+    const abre = src.indexOf('[', i);
+    const fecha = src.indexOf(']', abre);
+    if (abre === -1 || fecha === -1) return true;
+
+    return src.slice(abre + 1, fecha).trim().length === 0;
+  });
+
+  /**
+   * 9 · EDITÁVEL — o que a instituição publica, a instituição corrige?
+   *
+   * O editor cobre bloco e título de seção. As 174 questões ficam de fora, e
+   * não há criação de lição. Ver um erro e não poder consertá-lo é o defeito
+   * que a camada editorial existe para não ter.
+   */
+  const alvosEditaveis = existsSync('src/domain/editorial-edit.ts')
+    ? readFileSync('src/domain/editorial-edit.ts', 'utf-8')
+    : '';
+  /**
+   * Cada alvo declara como se prova que é editável.
+   *
+   * Procurar só a string `'LICAO'` seria teatro: bastaria escrevê-la num
+   * comentário para o verificador ficar verde. O que conta é a função existir.
+   */
+  const PROVA_DE_EDICAO = {
+    BLOCO: /applyEdits\s*\(/,
+    QUESTAO: /applyEditsToQuestions\s*\(/,
+    LICAO: /mergeCreatedLessons\s*\(/,
+  };
+  const naoEditaveis = (area.editavel ?? []).filter((alvo) => {
+    const prova = PROVA_DE_EDICAO[alvo];
+    return prova ? !prova.test(alvosEditaveis) : true;
+  });
+
+  /**
+   * 10 · APRESENTADA — área pública tem convite ao visitante?
+   *
+   * Mostrar ao visitante o componente de logado vazio é gastar o melhor
+   * espaço da tela dizendo a alguém que ela não tem nada.
+   */
+  const temConvite = /VisitorInvitation/.test(codigo);
+
   return [
     {
       chave: 'pronto',
@@ -215,6 +300,31 @@ function perguntas(area) {
       ok: integra,
       detalhe: integra ? '' : 'nenhuma chamada a serviço ou repositório',
       peso: 5,
+    },
+    {
+      chave: 'acervo',
+      pergunta: 'Tem acervo?',
+      ok: acervoVazio.length === 0,
+      detalhe: acervoVazio.length
+        ? `sem ${acervoVazio.map((a) => a.nome).join(' e ')} — a área é uma moldura`
+        : '',
+      peso: 9,
+    },
+    {
+      chave: 'editavel',
+      pergunta: 'É editável pelo admin?',
+      ok: naoEditaveis.length === 0,
+      detalhe: naoEditaveis.length
+        ? `o editor não cobre: ${naoEditaveis.join(', ')}`
+        : '',
+      peso: 6,
+    },
+    {
+      chave: 'apresentada',
+      pergunta: 'Tem apresentação ao visitante?',
+      ok: !area.publica || temConvite,
+      detalhe: area.publica && !temConvite ? 'área pública sem convite ao visitante' : '',
+      peso: 7,
     },
     {
       chave: 'fluxo',

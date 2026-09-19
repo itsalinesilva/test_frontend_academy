@@ -1,4 +1,5 @@
 import { AcademyLesson, LessonBlock, AudienceVariant } from './academy';
+import { Questao } from './booklet';
 
 /**
  * Edição editorial do conteúdo publicado.
@@ -39,7 +40,20 @@ export type EditTarget =
   /** Um bloco de conteúdo — prosa, aviso, lâmina, verificação. */
   | { tipo: 'BLOCO'; variante: AudienceVariant; secaoId: string; blocoId: string }
   /** O título de uma seção da lição. */
-  | { tipo: 'TITULO_DA_SECAO'; variante: AudienceVariant; secaoId: string };
+  | { tipo: 'TITULO_DA_SECAO'; variante: AudienceVariant; secaoId: string }
+  /**
+   * Uma **questão** — de atividade, de simulado ou de prova.
+   *
+   * Ficou de fora da primeira versão desta camada, e a consequência era
+   * concreta: havia 174 questões no curso de Teoria e nenhuma delas podia ser
+   * corrigida. Ver um erro numa alternativa e não poder consertá-lo é
+   * exatamente o defeito que esta camada existe para não ter.
+   *
+   * A questão pertence ao capítulo, e não à lição — por isso `capitulo` em vez
+   * de `secaoId`. O identificador da edição continua saindo do alvo, e não de
+   * sorteio: corrigir duas vezes a mesma questão deixa **uma** edição.
+   */
+  | { tipo: 'QUESTAO'; capitulo: number; questaoId: string };
 
 export interface EditorialEdit {
   id: string;
@@ -53,7 +67,7 @@ export interface EditorialEdit {
    * pergunta deixando a explicação contradizê-la é o tipo de incoerência que
    * ninguém percebe até o aluno reclamar.
    */
-  conteudo: LessonBlock | string;
+  conteudo: LessonBlock | Questao | string;
   /** Como estava antes. É o que permite desfazer e comparar. */
   anterior: LessonBlock | string;
   editadaPor: string;
@@ -69,11 +83,24 @@ export interface EditorialEdit {
  * a mesma edição em vez de empilhar duas, e a camada não cresce sem limite.
  */
 export function editId(lessonId: string, alvo: EditTarget): string {
-  const sufixo =
-    alvo.tipo === 'BLOCO'
-      ? `${alvo.variante}.${alvo.secaoId}.${alvo.blocoId}`
-      : `${alvo.variante}.${alvo.secaoId}.titulo`;
-  return `ed_${lessonId}__${sufixo}`;
+  /**
+   * `switch` exaustivo, e não ternário.
+   *
+   * O ternário anterior tratava "não é bloco" como "é título de seção" — e no
+   * dia em que um terceiro alvo apareceu, ele produziu silenciosamente um
+   * identificador de título para uma questão. Duas questões diferentes
+   * colidiriam na mesma edição, e a correção de uma apagaria a da outra.
+   *
+   * Com `switch`, o compilador acusa o alvo que ninguém tratou.
+   */
+  switch (alvo.tipo) {
+    case 'BLOCO':
+      return `ed_${lessonId}__${alvo.variante}.${alvo.secaoId}.${alvo.blocoId}`;
+    case 'TITULO_DA_SECAO':
+      return `ed_${lessonId}__${alvo.variante}.${alvo.secaoId}.titulo`;
+    case 'QUESTAO':
+      return `ed_${lessonId}__questao.${alvo.capitulo}.${alvo.questaoId}`;
+  }
 }
 
 /**
@@ -115,7 +142,17 @@ export function applyEdits(
           blocoId: bloco.id,
         });
         const edicao = porAlvo.get(idBloco);
-        if (!edicao || typeof edicao.conteudo === 'string') return bloco;
+        /**
+         * `kind` estreita para bloco.
+         *
+         * Desde que a camada passou a guardar questão também, `conteudo` é uma
+         * união — e uma questão gravada por engano num alvo de bloco entraria
+         * na lição como se fosse conteúdo. O compilador não pegaria: as duas
+         * são objeto.
+         */
+        if (!edicao || typeof edicao.conteudo === 'string' || !('kind' in edicao.conteudo)) {
+          return bloco;
+        }
         mudou = true;
         return edicao.conteudo;
       });
@@ -187,4 +224,139 @@ export function blockText(bloco: LessonBlock): string {
  */
 export function isTextualBlock(bloco: LessonBlock): boolean {
   return ['MARKDOWN', 'CALLOUT', 'CHECKPOINT', 'SLIDES'].includes(bloco.kind);
+}
+
+/**
+ * Aplica a camada editorial sobre as questões de um capítulo.
+ *
+ * Mesmo desenho dos blocos, e pela mesma razão: as questões são **conteúdo
+ * publicado**, e `conteudoPublicado()` as reescreve quando a versão do
+ * catálogo sobe. Guardar a correção junto delas significaria perdê-la na
+ * próxima publicação — e perdê-la em silêncio.
+ *
+ * Função pura. Recebe as questões como o catálogo as publicou e devolve como
+ * devem ser lidas.
+ */
+export function applyEditsToQuestions(
+  capitulo: number,
+  questoes: Questao[],
+  edicoes: EditorialEdit[]
+): Questao[] {
+  const minhas = edicoes.filter(
+    (e) => e.alvo.tipo === 'QUESTAO' && e.alvo.capitulo === capitulo
+  );
+  if (minhas.length === 0) return questoes;
+
+  const porId = new Map(
+    minhas.map((e) => [(e.alvo as { questaoId: string }).questaoId, e.conteudo as Questao])
+  );
+
+  return questoes.map((q) => porId.get(q.id) ?? q);
+}
+
+/**
+ * A questão é editável em todos os campos que a tornam certa ou errada?
+ *
+ * Existe como função porque a tela precisa saber o que oferecer, e porque
+ * editar só o enunciado deixando a explicação contradizê-lo é o tipo de
+ * incoerência que ninguém percebe até o aluno reclamar.
+ */
+export const CAMPOS_EDITAVEIS_DA_QUESTAO = [
+  'prompt',
+  'choices',
+  'resposta',
+  'explanation',
+] as const;
+
+export function questionEditIsComplete(antes: Questao, depois: Questao): boolean {
+  return CAMPOS_EDITAVEIS_DA_QUESTAO.every((campo) => campo in depois && campo in antes);
+}
+
+// ---------------------------------------------------------------------------
+// Lição criada pela instituição
+// ---------------------------------------------------------------------------
+
+/**
+ * Uma lição que a instituição escreveu, e não o catálogo publicou.
+ *
+ * O QUE FALTAVA
+ * -------------
+ * Dava para corrigir o que existe e não dava para **acrescentar**. Quem
+ * percebesse que falta um capítulo sobre modulação não tinha como escrevê-lo
+ * sem mexer em `src/data/` e publicar uma versão nova do catálogo — ou seja,
+ * sem ser programador.
+ *
+ * ONDE ELA VIVE
+ * -------------
+ * Na mesma chave da camada editorial, e **nunca** em `LESSONS`. A razão é a
+ * de sempre: `conteudoPublicado()` reescreve as chaves de conteúdo a cada
+ * versão do catálogo. Uma lição escrita à mão gravada lá seria apagada em
+ * silêncio na próxima publicação — e desta vez o prejuízo não seria uma
+ * correção de vírgula, seria uma aula inteira.
+ */
+export interface EditorialLesson {
+  id: string;
+  moduleId: string;
+  courseId: string;
+  /** Onde entra na ordem do módulo. */
+  order: number;
+  title: string;
+  /**
+   * Os blocos, montados a partir das estruturas que já existem.
+   *
+   * Nada de formato novo: a lição criada usa os mesmos `LessonBlock` das
+   * publicadas, e por isso é lida, exportada para o livro e editada pelos
+   * mesmos caminhos. Um segundo formato dobraria todo o resto.
+   */
+  blocks: LessonBlock[];
+  durationMinutes: number;
+  criadaPor: string;
+  criadaEm: string;
+}
+
+/**
+ * Junta o que a instituição escreveu ao que o catálogo publicou.
+ *
+ * Função pura, aplicada na leitura — o mesmo desenho da sobreposição de
+ * edições. As criadas entram **na ordem do módulo**, e não empilhadas no fim:
+ * uma lição escrita para ser a terceira precisa aparecer como terceira.
+ */
+export function mergeCreatedLessons(
+  publicadas: AcademyLesson[],
+  criadas: EditorialLesson[]
+): AcademyLesson[] {
+  if (criadas.length === 0) return publicadas;
+
+  const convertidas: AcademyLesson[] = criadas.map((c) => ({
+    id: c.id,
+    moduleId: c.moduleId,
+    courseId: c.courseId,
+    canonicalContentId: c.id,
+    order: c.order,
+    durationMinutes: c.durationMinutes,
+    objectives: [],
+    skills: [],
+    activityIds: [],
+    variants: {
+      TRADITIONAL: { title: c.title, summary: '', sections: [{ id: 's1', title: c.title, contentMarkdown: '', blocks: c.blocks }] },
+    } as AcademyLesson['variants'],
+    createdAt: c.criadaEm,
+    updatedAt: c.criadaEm,
+  }));
+
+  return [...publicadas, ...convertidas].sort((a, b) => {
+    if (a.moduleId !== b.moduleId) return a.moduleId.localeCompare(b.moduleId);
+    return a.order - b.order;
+  });
+}
+
+/**
+ * Uma lição criada é válida?
+ *
+ * Título e ao menos um bloco. Não é burocracia: lição sem bloco entra no
+ * catálogo como uma entrada que abre vazia — e o aluno conclui que a
+ * plataforma quebrou, não que ninguém escreveu ainda.
+ */
+export function createdLessonIsValid(licao: EditorialLesson): boolean {
+  return licao.title.trim().length > 2 && licao.blocks.length > 0;
 }

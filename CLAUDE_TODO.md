@@ -28,13 +28,13 @@
 
 | Área | Respondidas | O que falta |
 | :--- | :---: | :--- |
-| Academia | 7/7 | — |
-| Laboratório | 7/7 | — |
-| Atlas | 7/7 | — |
-| Comunidade | 7/7 | — |
-| Perfil | 7/7 | — |
-| Console | 7/7 | — |
-| Estúdio | 6/7 | integrado |
+| Academia | 10/10 | — |
+| Laboratório | 10/10 | — |
+| Atlas | 9/10 | acervo |
+| Comunidade | 10/10 | — |
+| Perfil | 10/10 | — |
+| Console | 10/10 | — |
+| Estúdio | 9/10 | integrado |
 
 ### Fila, na ordem em que deve ser resolvida
 
@@ -44,7 +44,8 @@
 
 | # | Peso | Área | Pergunta | O que falta |
 | :--- | :---: | :--- | :--- | :--- |
-| 1 | 5 | Estúdio | Está integrado? | nenhuma chamada a serviço ou repositório |
+| 1 | 9 | Atlas | Tem acervo? | sem obras e compositores — a área é uma moldura |
+| 2 | 5 | Estúdio | Está integrado? | nenhuma chamada a serviço ou repositório |
 
 ### O que estas sete perguntas NÃO respondem
 
