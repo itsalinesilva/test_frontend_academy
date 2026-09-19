@@ -318,3 +318,173 @@ export function checkRecordOwnership() {
   }
   return findings;
 }
+
+// ---------------------------------------------------------------------------
+// Hierarquia: visitante · aluno · administração
+// ---------------------------------------------------------------------------
+
+const AUDIENCE_FILE = 'src/ui/navigation/audiencia.ts';
+const GUARD_FILE = 'src/ui/navigation/GuardaDeAudiencia.tsx';
+const OUTLET_FILE = 'src/ui/screens/AppRouterOutlet.tsx';
+
+/** As regras declaradas, como pares rota → audiência. */
+function audienceRules() {
+  const src = readFileSync(AUDIENCE_FILE, 'utf-8');
+  return [...src.matchAll(/rota:\s*'([^']+)',\s*\n?\s*audiencia:\s*'(\w+)'/g)].map((m) => ({
+    route: m[1],
+    audience: m[2],
+  }));
+}
+
+/** A audiência que vale para uma rota: prefixo mais longo vence. */
+function audienceOf(route, rules) {
+  let best = null;
+  for (const r of rules) {
+    const matches = r.route === '/' ? route === '/' : route.startsWith(r.route);
+    if (!matches) continue;
+    if (!best || r.route.length > best.route.length) best = r;
+  }
+  return best;
+}
+
+/** Rota → tela, lido do outlet por varredura linha a linha. */
+function routeToScreen() {
+  const lines = stripComments(readFileSync(OUTLET_FILE, 'utf-8')).split('\n');
+  const out = [];
+  let pending = [];
+
+  for (const line of lines) {
+    for (const m of line.matchAll(
+      /currentPath\s*(?:===|\.startsWith\(|\.includes\()\s*'([^']+)'/g
+    )) {
+      pending.push(m[1]);
+    }
+    const tag = line.match(/<(\w+Screen)/);
+    if (tag && pending.length > 0) {
+      for (const route of pending) out.push({ route, screen: tag[1] });
+      pending = [];
+    }
+  }
+  return out;
+}
+
+/**
+ * Tela administrativa alcançável por rota que não exige administração.
+ *
+ * Era o estado da plataforma até 19/09: a tabela declarava `/admin` como
+ * `exigeLogin`, e quem barrava o aluno comum era um efeito no outlet chamando
+ * `checkRouteAccess`. Funcionava — mas a hierarquia estava partida em dois
+ * sistemas, e só um deles era auditado.
+ *
+ * Uma tela administrativa criada fora do prefixo `/admin` não seria protegida
+ * por ninguém, e a tabela continuaria dizendo que estava tudo certo.
+ */
+export function checkAdminScreensBehindAdminAudience() {
+  const rules = audienceRules();
+  const findings = [];
+
+  for (const { route, screen } of routeToScreen()) {
+    const isAdminScreen = /^Admin|Console/.test(screen) || route.startsWith('/admin');
+    if (!isAdminScreen) continue;
+
+    const rule = audienceOf(route, rules);
+    if (rule?.audience === 'exigeAdmin') continue;
+
+    findings.push({
+      file: AUDIENCE_FILE,
+      detail: `${screen} abre em "${route}", declarada "${rule?.audience ?? 'nada — herda pública'}"`,
+    });
+  }
+  return findings;
+}
+
+/**
+ * A guarda trata todos os níveis que o tipo declara.
+ *
+ * Acrescentar um nível e esquecer a guarda produz o pior resultado possível:
+ * a rota **parece** protegida na tabela e passa direto no runtime. O tipo é a
+ * fonte; a guarda precisa acompanhá-lo.
+ */
+export function checkGuardCoversEveryAudience() {
+  const type = readFileSync(AUDIENCE_FILE, 'utf-8').match(
+    /export type Audiencia\s*=\s*([^;]+);/
+  );
+  if (!type) return [{ file: AUDIENCE_FILE, detail: 'tipo Audiencia não encontrado' }];
+
+  const levels = [...type[1].matchAll(/'(\w+)'/g)].map((m) => m[1]);
+  const guard = readFileSync(GUARD_FILE, 'utf-8');
+
+  return levels
+    .filter((level) => !guard.includes(`'${level}'`))
+    .map((level) => ({
+      file: GUARD_FILE,
+      detail: `o nível "${level}" existe no tipo e a guarda não o trata`,
+    }));
+}
+
+/**
+ * Rota que PARECE pessoal e herda "pública".
+ *
+ * A primeira versão desta regra acusava toda rota não declarada, e virou
+ * ruído: `/practice/trainer` herdar `exigeLogin` de `/practice` é aperto, não
+ * afrouxamento — a intenção está certa e escrita na raiz.
+ *
+ * O perigo é o contrário, e foi exatamente o que aconteceu: `/academy/result/`
+ * herdou **pública** de `/academy`. Ninguém decidiu que a prova de alguém era
+ * pública; ela simplesmente caiu no padrão do pai.
+ *
+ * A primeira tentativa de escrever isto acusava toda rota pessoal em audiência
+ * pública, e acusava CÓDIGO CERTO: `/progress` e `/academy/profile` são
+ * públicas de propósito — a estrutura do curso aparece a qualquer um, e as
+ * telas consultam a sessão para decidir o que mais mostrar. Acusá-las ensinaria
+ * a ignorar o verificador.
+ *
+ * O sinal honesto é a **combinação**: rota que parece registro de pessoa, em
+ * audiência pública, servida por tela que **não consulta a sessão**. Foi essa
+ * a tríade de `/academy/result/<id>`.
+ *
+ * Limite conhecido: vê o nome do caminho. Rota pessoal com nome neutro passa,
+ * e está anotado em `72_QUALITY_SWEEP.md`.
+ */
+const PERSONAL_ROUTE =
+  /(result|certificate|completion|attempt|submission|progress|history|profile|portfolio|meu-|minha-|my-|inbox|settings)/i;
+
+/** `search/results` é lista de busca, e não registro de ninguém. */
+const NOT_PERSONAL = /(search|busca)\//i;
+
+/** A tela sabe quem está perguntando? */
+function screenReadsSession(screen) {
+  const found = sources().find(
+    (f) => f.file.endsWith(`/${screen}.tsx`) || f.file.endsWith(`/${screen}.ts`)
+  );
+  if (!found) return false;
+  return /getActiveSession\(|useCurrentUser\(|useSessao\(/.test(found.code);
+}
+
+export function checkPersonalRouteInheritingPublic() {
+  const rules = audienceRules();
+  const declared = new Set(rules.map((r) => r.route));
+  const findings = [];
+  const seen = new Set();
+
+  for (const { route, screen } of routeToScreen()) {
+    if (seen.has(route) || declared.has(route)) continue;
+    seen.add(route);
+    if (!PERSONAL_ROUTE.test(route) || NOT_PERSONAL.test(route)) continue;
+
+    const inherited = audienceOf(route, rules);
+    if (inherited && inherited.audience !== 'publica') continue;
+
+    // Tela que consulta a sessão decide sozinha o que mostrar a cada público.
+    if (screenReadsSession(screen)) continue;
+
+    findings.push({
+      file: AUDIENCE_FILE,
+      detail:
+        `"${route}" (${screen}) parece registro de pessoa, vale como pública ` +
+        (inherited ? `herdando de "${inherited.route}"` : 'por omissão') +
+        ', e a tela não consulta a sessão',
+    });
+  }
+  return findings;
+}

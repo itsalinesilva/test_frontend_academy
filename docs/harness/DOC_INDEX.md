@@ -78,6 +78,7 @@
 76. `75_ATLAS_TAXONOMY.md` — catálogo único: era, região, mundo, tribo, liga
 77. `77_SECTIONS_AND_LEVELS.md` — **o nome Laboratório**, seção como disciplina, nível como profundidade, densidade e quadro geral
 78. `78_REWARDS_AND_PASSPORT.md` — réguas ascendentes, emblemas, carimbos, credenciais, o passaporte
+81. `81_HIERARCHY_AND_ISOLATION.md` — **visitante, aluno e administração**: os quatro níveis de audiência, as três camadas de proteção e o que a máquina verifica
 80. `80_INSTITUTIONAL_ARCHITECTURE.md` — **autoridade máxima de estrutura**: Associação, Comunidade, Academia, Grêmio, Laboratório, Casa, Clube, Liga
 79. `79_LAB_TOOLS.md` — metrônomo, afinador, teste de microfone, caderno de partituras
 77. `76_PROGRESS_ECONOMY.md` — onde e como se conta XP, score, ofensiva, débito, emblema

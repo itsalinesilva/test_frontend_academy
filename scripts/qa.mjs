@@ -24,6 +24,9 @@ import {
   checkKeyCollision,
   checkPerUserFilter,
   checkRecordOwnership,
+  checkAdminScreensBehindAdminAudience,
+  checkGuardCoversEveryAudience,
+  checkPersonalRouteInheritingPublic,
   checkPublishKeepsStudentData,
   checkAdminAuthority,
   checkConsoleLeak,
@@ -83,6 +86,27 @@ const SECTIONS = [
     checks: [
       report('leitura de dado de aluno filtra por usuário', checkPerUserFilter(), G.BLOCKS),
       report('registro pessoal buscado por id confere o dono', checkRecordOwnership(), G.BLOCKS),
+    ],
+  },
+  {
+    heading: 'HIERARQUIA — visitante, aluno e administração ficam separados',
+    checks: [
+      report(
+        'tela administrativa só abre em rota que exige administração',
+        checkAdminScreensBehindAdminAudience(),
+        G.BLOCKS
+      ),
+      report('a guarda trata todos os níveis de audiência', checkGuardCoversEveryAudience(), G.BLOCKS),
+      report(
+        'nenhuma rota pessoal vale como pública sem a tela saber quem pergunta',
+        checkPersonalRouteInheritingPublic(),
+        G.BLOCKS
+      ),
+    ],
+  },
+  {
+    heading: 'ISOLAMENTO — o que é de um não chega ao outro',
+    checks: [
       report('nenhuma chave de armazenamento colide', checkKeyCollision(), G.BLOCKS),
       report('publicar conteúdo não apaga dado do aluno', checkPublishKeepsStudentData(), G.BLOCKS),
       report('privilégio de admin não é decidido no cliente', checkAdminAuthority(), G.BLOCKS),

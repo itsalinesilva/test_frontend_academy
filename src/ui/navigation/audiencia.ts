@@ -14,14 +14,39 @@
  * auditoria — o que é o comportamento certo: erra para o lado de não bloquear,
  * e não deixa a omissão passar silenciosa.
  *
- * TRÊS AUDIÊNCIAS
- * ---------------
+ * QUATRO AUDIÊNCIAS
+ * -----------------
  * `publica`          qualquer um abre; a tela pode mudar conforme haja sessão
  * `exigeLogin`       sem sessão, leva ao acesso e volta depois
  * `somenteVisitante` quem já entrou não tem o que fazer ali (login, cadastro)
+ * `exigeAdmin`       exige outorga administrativa **assinada pelo servidor**
+ *
+ * POR QUE `exigeAdmin` PASSOU A EXISTIR
+ * -------------------------------------
+ * `/admin` estava declarada aqui como `exigeLogin`, e quem de fato barrava o
+ * aluno comum era um efeito no `AppRouterOutlet`, chamando
+ * `authService.checkRouteAccess`. A proteção funcionava — mas a **hierarquia
+ * estava partida em dois sistemas**: um declarativo, que a auditoria lê, e um
+ * imperativo, que ela não lê.
+ *
+ * Duas fontes de verdade sobre quem alcança o quê divergem na primeira rota
+ * nova. Uma tela administrativa fora do prefixo `/admin` não seria protegida
+ * por ninguém, e a tabela continuaria dizendo que estava tudo certo.
+ *
+ * Agora a declaração é a fonte, a guarda a aplica, e `checkRouteAccess`
+ * continua como segunda camada — defesa em profundidade, e não verdade
+ * concorrente. `scripts/qa/security.mjs` falha se as duas discordarem.
+ *
+ * A OUTORGA NUNCA VEM DO CLIENTE
+ * ------------------------------
+ * `isAdmin` é campo da sessão que o servidor assinou a partir da allowlist em
+ * variável de ambiente. Nunca de `user.primaryRole`, nunca de comparação de
+ * e-mail no cliente. Foi assim que a auditoria S-02 encontrou a plataforma, e
+ * é a conclusão que não pode voltar: quem editasse o `localStorage` viraria
+ * administrador.
  */
 
-export type Audiencia = 'publica' | 'exigeLogin' | 'somenteVisitante';
+export type Audiencia = 'publica' | 'exigeLogin' | 'somenteVisitante' | 'exigeAdmin';
 
 export interface RegraDeAudiencia {
   /** Prefixo da rota. A regra mais específica vence. */
@@ -143,7 +168,11 @@ export const REGRAS_DE_AUDIENCIA: RegraDeAudiencia[] = [
   { rota: '/notifications', audiencia: 'exigeLogin', porque: 'Avisos são de alguém.' },
   { rota: '/settings', audiencia: 'exigeLogin', porque: 'Preferências são de alguém.' },
   { rota: '/rooms', audiencia: 'exigeLogin', porque: 'Salas exigem vínculo.' },
-  { rota: '/admin', audiencia: 'exigeLogin', porque: 'Governança exige papel.' },
+  {
+    rota: '/admin',
+    audiencia: 'exigeAdmin',
+    porque: 'Governança exige outorga administrativa assinada pelo servidor.',
+  },
   { rota: '/kids', audiencia: 'exigeLogin', porque: 'Conta infantil nasce de um perfil parental.' },
   { rota: '/violin', audiencia: 'exigeLogin', porque: 'O simulador grava execução medida.' },
   {

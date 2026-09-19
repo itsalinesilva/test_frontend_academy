@@ -26,7 +26,7 @@ export interface GuardaDeAudienciaProps {
  */
 export const GuardaDeAudiencia: React.FC<GuardaDeAudienciaProps> = ({ children }) => {
   const { currentPath, navigate } = useRouter();
-  const { userId, carregando } = useCurrentUser();
+  const { userId, ehAdmin, carregando } = useCurrentUser();
 
   const audiencia = audienciaDaRota(currentPath);
 
@@ -58,6 +58,38 @@ export const GuardaDeAudiencia: React.FC<GuardaDeAudienciaProps> = ({ children }
           className="mt-5 rounded-md bg-anil-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-anil-700"
         >
           Ir para a página inicial
+        </button>
+      </div>
+    );
+  }
+
+  /**
+   * Área administrativa.
+   *
+   * A recusa **não diz o que há do outro lado**, e não distingue "não existe"
+   * de "não é para você". Descrever o console a quem não pode entrar é dar o
+   * mapa da casa a quem bateu na porta errada.
+   *
+   * `ehAdmin` vem da sessão assinada pelo servidor. Nunca de papel no perfil,
+   * nunca de comparação de e-mail no cliente.
+   */
+  if (audiencia === 'exigeAdmin' && !ehAdmin) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-16 text-center">
+        <h1 className="font-serif text-xl font-bold text-stone-900">
+          Esta área não está disponível para a sua conta
+        </h1>
+        <p className="mt-2 text-sm leading-relaxed text-stone-600">
+          {userId
+            ? 'A administração do Conservatório exige outorga institucional.'
+            : 'Entre com a sua conta para continuar.'}
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate(userId ? '/' : `/auth/login?voltar=${encodeURIComponent(currentPath)}`)}
+          className="mt-5 rounded-md bg-anil-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-anil-700"
+        >
+          {userId ? 'Ir para a página inicial' : 'Entrar'}
         </button>
       </div>
     );

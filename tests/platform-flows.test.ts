@@ -458,7 +458,16 @@ describe('coerência de rota ao longo do percurso', () => {
 
     expect(audienciaDaRota('/academy/meu-aprendizado')).toBe('exigeLogin');
     expect(audienciaDaRota('/credentials')).toBe('exigeLogin');
-    expect(audienciaDaRota('/admin')).toBe('exigeLogin');
+
+    /**
+     * `/admin` era `exigeLogin`, e este caso fixava isso como se estivesse
+     * certo. Estava errado: com aquele nível, a tabela dizia que qualquer
+     * aluno logado alcançava o console, e só um segundo sistema — um efeito no
+     * outlet, que a auditoria não lia — impedia.
+     *
+     * Administração é nível próprio desde 19/09. Ver `81_HIERARCHY_AND_ISOLATION.md`.
+     */
+    expect(audienciaDaRota('/admin')).toBe('exigeAdmin');
   });
 
   it('quem já entrou não fica preso na tela de entrar', () => {

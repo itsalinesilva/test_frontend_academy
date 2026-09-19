@@ -80,8 +80,12 @@ tela para dizer à pessoa que ela não tem nada.
 | X-1 | `/academy/result/<id>` herdava audiência **pública** e mostrava a prova de qualquer um | ✅ |
 | X-2 | `getAssessmentAttempt`, `getAssessmentSubmission`, `getAttempt`, `getResult`, `getCertificate` liam registro pessoal sem dono | ✅ |
 | X-3 | `checkRecordOwnership` — a classe inteira passa a ser verificada | ✅ |
-| X-4 | Revisar as demais rotas que herdam audiência por prefixo, uma a uma | ⬜ |
+| X-4 | Revisar as demais rotas que herdam audiência por prefixo, uma a uma | ✅ `checkPersonalRouteInheritingPublic` faz por máquina |
 | X-5 | `checkDeadButton` não vê handler dentro de objeto de props — `onAction: () => {}` passou batido | ⬜ |
+| X-6 | **`/admin` era `exigeLogin`** — a hierarquia vivia em dois sistemas, e só um era auditado | ✅ nível `exigeAdmin` |
+| X-7 | Guarda aplica os quatro níveis, com recusa que não descreve o que protege | ✅ |
+| X-8 | `81_HIERARCHY_AND_ISOLATION.md` — a hierarquia escrita | ✅ |
+| X-9 | Teste de fluxo real: guarda renderizada para visitante, aluno e admin | ✅ `audience-guard.test.tsx` |
 
 ## Fase B — o acervo está vazio ⏸ **ADIADA POR DECISÃO DE 19/09**
 
