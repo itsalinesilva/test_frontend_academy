@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
+import { userRepository } from '../../../repositories/user.repository';
+import { roomsRepository } from '../../../repositories/rooms.repository';
+import { auditRepository } from '../../../repositories/audit.repository';
 import {
   Users,
   Activity,
@@ -14,8 +17,53 @@ import {
   ArrowRight,
 } from 'lucide-react';
 
+/**
+ * O painel da administração.
+ *
+ * As quatro medidas aqui eram números CRAVADOS: "1.240 usuários matriculados",
+ * "42 salas de aula ativas", "4/4 motores operacionais", "8.920 eventos
+ * auditados" — numa plataforma que tem zero de cada um.
+ *
+ * Não era estado vazio mal desenhado: era número inventado posando de medição,
+ * justamente na tela que existe para decidir. Um painel administrativo que
+ * mente é pior que um painel ausente, porque decisões são tomadas a partir
+ * dele.
+ *
+ * Agora cada número vem de uma contagem real, e `null` enquanto ela não
+ * voltou — zero só aparece quando é zero medido.
+ */
 export const AdminDashboardScreen: React.FC = () => {
   const { navigate } = useRouter();
+
+  const [medidas, setMedidas] = useState<{
+    usuarios: number;
+    salas: number;
+    eventos: number;
+  } | null>(null);
+
+  useEffect(() => {
+    let vivo = true;
+    Promise.all([
+      userRepository.listAll(),
+      roomsRepository.listar(),
+      auditRepository.listRecent(1000),
+    ])
+      .then(([usuarios, salas, eventos]) => {
+        if (!vivo) return;
+        setMedidas({
+          usuarios: usuarios.length,
+          salas: salas.length,
+          eventos: eventos.length,
+        });
+      })
+      .catch(() => {
+        // Falhar em contar não autoriza inventar: fica sem número.
+        if (vivo) setMedidas(null);
+      });
+    return () => {
+      vivo = false;
+    };
+  }, []);
 
   const adminModules = [
     {
@@ -79,21 +127,18 @@ export const AdminDashboardScreen: React.FC = () => {
       <div className="space-y-6">
         {/* Governance Metrics Strip */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <Medida rotulo="Contas registradas" valor={medidas?.usuarios} />
+          <Medida rotulo="Salas de aula" valor={medidas?.salas} />
+          <Medida rotulo="Eventos auditados" valor={medidas?.eventos} />
           <Card variant="default" padding="md" className="space-y-1">
-            <span className="text-xs text-stone-500 font-mono uppercase">Usuários Matriculados</span>
-            <p className="text-2xl font-bold font-serif text-stone-900">1.240</p>
-          </Card>
-          <Card variant="default" padding="md" className="space-y-1">
-            <span className="text-xs text-stone-500 font-mono uppercase">Salas de Aula Ativas</span>
-            <p className="text-2xl font-bold font-serif text-stone-900">42</p>
-          </Card>
-          <Card variant="default" padding="md" className="space-y-1">
-            <span className="text-xs text-stone-500 font-mono uppercase">Motores Operacionais</span>
-            <p className="text-2xl font-bold font-serif text-emerald-700">4/4 (100%)</p>
-          </Card>
-          <Card variant="default" padding="md" className="space-y-1">
-            <span className="text-xs text-stone-500 font-mono uppercase">Eventos Auditados</span>
-            <p className="text-2xl font-bold font-serif text-stone-900">8.920</p>
+            <span className="text-xs text-stone-500 font-mono uppercase">Saúde dos motores</span>
+            <button
+              type="button"
+              onClick={() => navigate('/founder/engines')}
+              className="block text-left text-sm font-medium text-anil-700 underline-offset-2 hover:underline"
+            >
+              Medir agora
+            </button>
           </Card>
         </div>
 
@@ -149,3 +194,23 @@ export const AdminDashboardScreen: React.FC = () => {
     </ScreenContainer>
   );
 };
+
+/**
+ * Uma medida.
+ *
+ * `undefined` é "ainda contando", e não zero. A distinção importa num painel:
+ * zero medido é informação — "não há contas" —, enquanto zero exibido antes da
+ * contagem é uma afirmação falsa que dura o tempo do carregamento.
+ */
+const Medida: React.FC<{ rotulo: string; valor: number | undefined }> = ({ rotulo, valor }) => (
+  <Card variant="default" padding="md" className="space-y-1">
+    <span className="text-xs text-stone-500 font-mono uppercase">{rotulo}</span>
+    <p className="text-2xl font-bold font-serif text-stone-900">
+      {valor === undefined ? (
+        <span className="text-base font-normal text-stone-400">contando…</span>
+      ) : (
+        valor.toLocaleString('pt-BR')
+      )}
+    </p>
+  </Card>
+);

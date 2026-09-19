@@ -1,47 +1,86 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
 import { Badge } from '../../components/base/Badge';
-import { Search, ArrowRight, BookOpen, Music, Users } from 'lucide-react';
+import { Search, ArrowRight, BookOpen, Compass, Layers } from 'lucide-react';
+import { academyService } from '../../../services/application/academy.service';
 
 export const SearchScreen: React.FC = () => {
   const { navigate } = useRouter();
   const [query, setQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<'tudo' | 'cursos' | 'obras' | 'salas'>('tudo');
 
-  const sampleResults = [
-    {
-      id: 'res-1',
-      type: 'Curso',
-      title: 'Harmonia e Teoria Fundamental',
-      context: 'Academia • Cátedra de Teoria',
-      link: '/academia/course/harmonia-fundamental',
-      icon: BookOpen,
-    },
-    {
-      id: 'res-2',
-      type: 'Obra Canônica',
-      title: 'Sonata nº 1 em Sol menor (BWV 1001) - J. S. Bach',
-      context: 'Atlas Musical • Período Barroco',
-      link: '/worlds/work/bwv-1001',
-      icon: Music,
-    },
-    {
-      id: 'res-3',
-      type: 'Sala de Aula',
-      title: 'Cátedra Chopin: Prática e Interpretação Romântica',
-      context: 'Salas & Mestres • Prof. Gabriel Carvalho',
-      link: '/rooms/sala-chopin',
-      icon: Users,
-    },
-  ];
+  const [resultados, setResultados] = useState<Resultado[] | null>(null);
+
+  /**
+   * A busca é de verdade, e por isso só o que existe aparece.
+   *
+   * Esta tela mostrava três resultados CRAVADOS: um curso "Harmonia e Teoria
+   * Fundamental", uma obra do Atlas e uma "Cátedra Chopin" do Prof. Gabriel
+   * Carvalho. Nenhum dos três existe — o Atlas não tem obra nenhuma, e não há
+   * nenhum professor cadastrado.
+   *
+   * Pior que tela vazia: quem buscasse "Chopin" veria o resultado aparecer,
+   * clicaria, e cairia numa tela de "não localizado". A busca inventada
+   * quebra a confiança em tudo o que a plataforma mostra depois.
+   */
+  useEffect(() => {
+    const termo = query.trim();
+    if (termo.length < 2) {
+      setResultados(null);
+      return;
+    }
+
+    let vivo = true;
+    const t = window.setTimeout(() => {
+      academyService
+        .searchCatalog(termo)
+        .then(({ programs, paths, courses }) => {
+          if (!vivo) return;
+          setResultados([
+            ...courses.map((c) => ({
+              id: c.id,
+              tipo: 'Curso',
+              titulo: c.title,
+              contexto: c.subtitle ?? 'Academia',
+              destino: `/academia/course/${c.id}`,
+              Icone: BookOpen,
+            })),
+            ...paths.map((p) => ({
+              id: p.id,
+              tipo: 'Trilha',
+              titulo: p.title,
+              contexto: 'Academia',
+              destino: `/academia/path/${p.id}`,
+              Icone: Compass,
+            })),
+            ...programs.map((p) => ({
+              id: p.id,
+              tipo: 'Programa',
+              titulo: p.title,
+              contexto: 'Academia',
+              destino: `/academia/program/${p.id}`,
+              Icone: Layers,
+            })),
+          ]);
+        })
+        .catch(() => {
+          // Falhar em buscar não autoriza mostrar resultado nenhum como se fosse.
+          if (vivo) setResultados([]);
+        });
+    }, 250);
+
+    return () => {
+      vivo = false;
+      window.clearTimeout(t);
+    };
+  }, [query]);
 
   return (
     <ScreenContainer
       id="global-search"
-      title="Busca Global na Academia"
-      subtitle="Pesquise em todo o catálogo curricular, obras do Atlas, salas de aula e tópicos do fórum."
-      badgeLabel="Omnisearch"
+      title="Busca"
+      subtitle="Pesquise no catálogo da Academia: programas, trilhas e cursos."
+      badgeLabel="Catálogo"
       badgeVariant="neutral"
       emptyProps={{
         title: 'Nenhum resultado encontrado',
@@ -65,65 +104,76 @@ export const SearchScreen: React.FC = () => {
           />
         </div>
 
-        {/* Search Category Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-          {[
-            { id: 'tudo', label: 'Tudo' },
-            { id: 'cursos', label: 'Cursos & Lições' },
-            { id: 'obras', label: 'Obras & Partituras' },
-            { id: 'salas', label: 'Salas de Aula' },
-          ].map((cat) => (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => setActiveCategory(cat.id as any)}
-              className={`px-3 py-1.5 rounded-full transition-colors ${
-                activeCategory === cat.id
-                  ? 'bg-stone-900 text-white font-semibold'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
+        {/**
+          * As abas de categoria saíram.
+          *
+          * Eram "Tudo", "Cursos & Lições", "Obras & Partituras" e "Salas de
+          * Aula" — e, com a busca cobrindo só o catálogo da Academia, três
+          * delas não filtrariam nada. Botão que não age ainda não existe: ou
+          * ele age, ou sai da tela.
+          *
+          * Voltam quando o Atlas tiver acervo e as salas tiverem busca.
+          */}
 
-        {/* Results List */}
-        <div className="space-y-3">
-          <h2 className="text-xs font-mono uppercase tracking-wider text-stone-500">
-            Resultados Encontrados ({sampleResults.length})
-          </h2>
+        {/* Resultados */}
+        {resultados !== null && (
+          <div className="space-y-3">
+            <h2 className="text-xs font-mono uppercase tracking-wider text-stone-500">
+              {resultados.length === 0
+                ? 'Nenhum resultado'
+                : `${resultados.length} ${resultados.length === 1 ? 'resultado' : 'resultados'}`}
+            </h2>
 
-          <div className="divide-y divide-stone-200 rounded-lg border border-stone-200 bg-white overflow-hidden">
-            {sampleResults.map((item) => {
-              const IconComp = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => navigate(item.link)}
-                  className="w-full p-3.5 text-left hover:bg-stone-50 cursor-pointer transition-colors flex items-center justify-between gap-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded bg-stone-100 text-stone-700">
-                      <IconComp className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-stone-900">{item.title}</span>
-                        <Badge variant="neutral" size="sm">{item.type}</Badge>
+            {resultados.length === 0 ? (
+              <p className="rounded-lg border border-stone-200 bg-white p-4 text-sm leading-relaxed text-stone-600">
+                Nada no catálogo corresponde a <strong>{query}</strong>. A busca cobre programas,
+                trilhas e cursos da Academia — o Atlas e a Comunidade ainda não entram nela.
+              </p>
+            ) : (
+              <div className="divide-y divide-stone-200 rounded-lg border border-stone-200 bg-white overflow-hidden">
+                {resultados.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => navigate(item.destino)}
+                    className="w-full p-3.5 text-left hover:bg-stone-50 cursor-pointer transition-colors flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded bg-stone-100 text-stone-700">
+                        <item.Icone className="w-4 h-4" />
                       </div>
-                      <p className="text-[11px] text-stone-500 mt-0.5">{item.context}</p>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-stone-900">{item.titulo}</span>
+                          <Badge variant="neutral" size="sm">{item.tipo}</Badge>
+                        </div>
+                        <p className="text-[11px] text-stone-500 mt-0.5">{item.contexto}</p>
+                      </div>
                     </div>
-                  </div>
-
-                  <ArrowRight className="w-4 h-4 text-stone-400" />
-                </button>
-              );
-            })}
+                    <ArrowRight className="w-4 h-4 text-stone-400" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        )}
+
+        {resultados === null && (
+          <p className="text-sm leading-relaxed text-stone-500">
+            Escreva ao menos duas letras para buscar.
+          </p>
+        )}
+
       </div>
     </ScreenContainer>
   );
 };
+
+interface Resultado {
+  id: string;
+  tipo: string;
+  titulo: string;
+  contexto: string;
+  destino: string;
+  Icone: React.ElementType;
+}

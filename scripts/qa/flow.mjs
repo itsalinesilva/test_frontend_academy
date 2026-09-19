@@ -297,8 +297,22 @@ export function checkDataInsideScreen() {
   for (const { file, code: content } of uiFiles()) {
     if (file.includes('design-system-catalog')) continue; // vitrine do sistema
 
-    // const nome = [ { ... id: ... }, { ... } ]  — dois ou mais registros
-    for (const m of content.matchAll(/const\s+(\w+)\s*(?::[^=]+)?=\s*\[\s*\{([\s\S]{40,4000}?)\n\s*\];/g)) {
+    /**
+     * Duas formas de escrever a mesma coisa.
+     *
+     * `const nome = [ {...} ]` era a única coberta. `useState([ {...} ])`
+     * escapava — e foi ali que estavam as notificações inventadas: tarefa
+     * avaliada por um professor que não existe, menção num fórum onde
+     * ninguém escreveu.
+     */
+    const ocorrencias = [
+      ...content.matchAll(/const\s+(\w+)\s*(?::[^=]+)?=\s*\[\s*\{([\s\S]{40,4000}?)\n\s*\];/g),
+      ...content.matchAll(
+        /const\s*\[\s*(\w+)[^\]]*\]\s*=\s*useState\(?\s*\[\s*\{([\s\S]{40,4000}?)\n\s*\]/g
+      ),
+    ];
+
+    for (const m of ocorrencias) {
       const [, nome, corpo] = m;
       const registros = (corpo.match(/\n\s*\{/g) ?? []).length + 1;
       if (registros < 2) continue;
@@ -327,7 +341,38 @@ export function checkDataInsideScreen() {
        */
       const CAMPO_DE_DADO =
         /\b\w*(author|autor|teacher|professor|host|actor|ator|owner|email|timestamp|date|enrolled|inscrit|count|contagem|total|status|severity|version|xp|score|nota|grade|price|preco)\w*\s*:/i;
-      if (!CAMPO_DE_DADO.test(corpo)) continue;
+      /**
+       * Segundo sinal: registro que se ABRE.
+       *
+       * `sampleResults` não tinha nenhum campo da lista acima — só `type`,
+       * `title`, `context` e `link` — e passou batido, mostrando uma "Cátedra
+       * Chopin" que não existe e uma obra que o Atlas não tem.
+       *
+       * O que denuncia é a combinação: título legível **mais** destino ou
+       * corpo. Item de menu tem `label` e `path`; registro de produto tem
+       * `title` e `link`, porque é coisa do acervo, e não comando da interface.
+       */
+      const REGISTRO_QUE_ABRE =
+        /\btitle:\s*['"`]/.test(corpo) &&
+        /\b(link|href|url|slug|context|message)\s*:/.test(corpo);
+
+      /**
+       * Menu do próprio console **não** é dado do acervo.
+       *
+       * `adminModules` tem `title` e `link` como `sampleResults`, e a regra
+       * acima não os separava. O que separa é o DESTINO: item de navegação
+       * aponta para uma rota que o outlet atende exatamente — `/founder/users`
+       * —, enquanto registro de acervo aponta para um identificador inventado
+       * — `/academia/course/harmonia-fundamental`.
+       */
+      const destinos = [...corpo.matchAll(/\b(?:link|href|path)\s*:\s*['"`](\/[^'"`]*)['"`]/g)].map(
+        (d) => d[1]
+      );
+      const soNavegacao =
+        destinos.length > 0 && destinos.every((d) => servedRoutes().includes(d));
+      if (soNavegacao) continue;
+
+      if (!CAMPO_DE_DADO.test(corpo) && !REGISTRO_QUE_ABRE) continue;
       // um item que CARREGA a propria acao e um comando, nao um registro
       if (/[^A-Za-z]action:\s*\(/.test(corpo)) continue;
 
@@ -786,6 +831,64 @@ export function checkPersonalSectionWithoutSession() {
       line: code.slice(0, code.indexOf(m[0])).split('\n').length,
       detail: `escreve "${m[0]}" e não consulta a sessão — seção sem sujeito para quem não entrou`,
     });
+  }
+  return findings;
+}
+
+/**
+ * Número cravado apresentado como medida.
+ *
+ * O painel de administração mostrava "1.240 Usuários Matriculados", "42 Salas
+ * de Aula Ativas" e "8.920 Eventos Auditados" — numa plataforma que tem zero
+ * de cada um. Não era estado vazio mal desenhado: era **número inventado
+ * posando de medição**, na tela que a fundadora usaria para decidir.
+ *
+ * Por que os verificadores anteriores não pegaram: `checkFabricatedData`
+ * procura nome e imagem falsos; `checkInflatedAggregate` procura literal
+ * somado a agregado real. Nenhum olhava o número solto no JSX.
+ *
+ * A regra: dentro de tela, texto que é **só um número formatado** — com
+ * separador de milhar, porcentagem ou razão — é medida, e medida vem de
+ * medição. Número que vem de variável não casa, porque não é literal.
+ */
+const METRIC_LITERAL = /^\s*(\d{1,3}(?:[.,]\d{3})+|\d+\s*%|\d+\s*\/\s*\d+(?:\s*\(\d+%\))?)\s*$/;
+
+export function checkHardcodedMetric() {
+  const findings = [];
+
+  for (const { file, code } of sources()) {
+    if (!/\/ui\/screens\//.test(file) || file.includes('.test.')) continue;
+
+    const lines = code.split('\n');
+    for (const [i, line] of lines.entries()) {
+      /**
+       * Só onde o número é o conteúdo inteiro de um elemento: `>1.240<`.
+       * Atributo, classe e expressão ficam de fora.
+       */
+      const inner = line.match(/>([^<>{}]+)</);
+      if (!inner) continue;
+
+      const text = inner[1];
+      const formatted = METRIC_LITERAL.test(text);
+
+      /**
+       * Inteiro simples só conta quando as linhas acima trazem um RÓTULO de
+       * medida. `42` solto pode ser qualquer coisa; `42` embaixo de "Salas de
+       * Aula Ativas" é um número inventado.
+       */
+      const bare = /^\s*\d{1,6}\s*$/.test(text);
+      const labelNearby = lines
+        .slice(Math.max(0, i - 4), i)
+        .some((l) => /uppercase|text-xs text-stone-500|font-mono/.test(l) && />[^<>{}]*[A-Za-zÀ-ÿ]{4}/.test(l));
+
+      if (!formatted && !(bare && labelNearby)) continue;
+
+      findings.push({
+        file,
+        line: i + 1,
+        detail: `"${text.trim()}" está cravado na tela — medida vem de medição`,
+      });
+    }
   }
   return findings;
 }

@@ -90,6 +90,26 @@ tela para dizer à pessoa que ela não tem nada.
 | X-11 | **`/academy` → `/academia`** e os rótulos de tela em português | ✅ |
 | X-12 | Verificação contra a volta de `/admin` e contra nome técnico na tela | ✅ |
 
+## Fase M — o que a tela prometia e não existia
+
+Pente fino de frontend, 20/09. Cinco telas afirmavam coisas que ninguém
+apurou. Nenhuma foi pega pelos verificadores de então — as três classes novas
+estão abaixo.
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| M-1 | **Painel do console** mostrava 1.240 usuários, 42 salas, 8.920 eventos — cravados | ✅ mede de verdade |
+| M-2 | **Moderação** afirmava "Comunidade em Plena Conformidade" sem consultar nada | ✅ diz que não existe |
+| M-3 | **Notificações** inventava parecer de professor e menção no fórum | ✅ vazia e honesta |
+| M-4 | **Busca global** devolvia curso, obra e sala inexistentes | ✅ usa `searchCatalog` |
+| M-5 | `checkHardcodedMetric` — medida cravada no JSX | ✅ |
+| M-6 | `checkDataInsideScreen` passa a ver `useState([...])` e registro com título + destino | ✅ |
+| M-7 | **Denúncia no fórum** — botão, registro, fila e trilha de auditoria | ⬜ |
+| M-8 | **Domínio de notificação** — tipo, alvo, leitura, repositório por usuário | ⬜ |
+| M-9 | `WorkDetailScreen` e `MusicGraphScreen` ainda têm obra e grafo escritos na tela | ⬜ |
+| M-10 | `StudioHubScreen` e `ScoreEditorScreen` — fachadas, ver `79` | ⬜ |
+| M-11 | Busca cobrir Atlas e Comunidade; as abas de categoria voltam aí | ⬜ |
+
 ## Fase B — o acervo está vazio ⏸ **ADIADA POR DECISÃO DE 19/09**
 
 Medido em 18/09: **0 compositores**, **0 obras no Atlas**, 3 regiões, 4
