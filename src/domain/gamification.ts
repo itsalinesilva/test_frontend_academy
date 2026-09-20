@@ -149,6 +149,19 @@ export interface AtlasWorkPlacement {
   /** Ausente para obras sem instrumento ou disciplina solista definidos. */
   houseId?: EntityId;
   composerId: EntityId;
-  /** Nivel dentro da progressao da tribo, quando aplicavel. */
-  etapaDaTribo?: number;
+  /**
+   * Genero da obra: missa, motete, madrigal, opera, suite.
+   *
+   * ERA UM EIXO DE FILTRO SEM CAMPO.
+   * `AtlasFilter` declarava `genreId` desde sempre, e `AtlasWorkPlacement` nao
+   * tinha onde guardar genero nenhum — o filtro passava e o repositorio o
+   * ignorava em silencio. Quem filtrasse por "opera" receberia a lista
+   * inteira, sem nenhum sinal de que o recorte nao foi aplicado.
+   *
+   * Opcional porque nem toda obra do acervo tem genero canonico: um estudo
+   * tecnico ou uma escala nao sao genero, sao material.
+   */
+  generoId?: EntityId;
+  /** Nivel dentro da progressao da Casa, quando aplicavel. */
+  etapaDaCasa?: number;
 }

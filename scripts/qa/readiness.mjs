@@ -27,7 +27,7 @@
  * precisando de navegador e de olho humano, e estão declaradas como tal.
  */
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
-import { sources, stripComments } from './core.mjs';
+import { readSource, sourceExists, sources, stripComments } from './core.mjs';
 
 const OUTLET = 'src/ui/screens/AppRouterOutlet.tsx';
 const AUDIENCE = 'src/ui/navigation/audiencia.ts';
@@ -67,9 +67,20 @@ export const AREAS = [
     prefixos: ['/worlds'],
     publica: true,
     /** Sem acervo o Atlas é uma moldura. */
+    /**
+     * `HISTORICAL_MASTERS` NUNCA EXISTIU.
+     *
+     * A verificacao apontava para uma constante que nao esta em lugar nenhum
+     * do repositorio — e "constante ausente" contava como acervo vazio. O
+     * numero estava certo por acidente: o acervo era vazio mesmo. Quando
+     * deixou de ser, a medicao continuaria errada, e ninguem saberia.
+     *
+     * Agora aponta para a fonte de verdade: a tabela de compositores do
+     * acervo e o repertorio de onde as obras saem.
+     */
     acervo: [
-      { arquivo: 'src/data/seed-atlas.ts', constante: 'DEFAULT_WORKS', nome: 'obras' },
-      { arquivo: 'src/domain/gamification.ts', constante: 'HISTORICAL_MASTERS', nome: 'compositores' },
+      { arquivo: 'src/data/seed-acervo.ts', constante: 'COMPOSITORES', nome: 'compositores' },
+      { arquivo: 'src/data/seed-player-repertoire.ts', constante: 'REPERTORIO_DO_PLAYER', nome: 'obras' },
     ],
   },
   { id: 'comunidade', nome: 'Comunidade', pastas: ['community'], prefixos: ['/community'], publica: true },
@@ -89,7 +100,7 @@ export const AREAS = [
 // ---------------------------------------------------------------------------
 
 function outletMap() {
-  const lines = stripComments(readFileSync(OUTLET, 'utf-8')).split('\n');
+  const lines = stripComments(readSource(OUTLET)).split('\n');
   const pares = [];
   let pendentes = [];
   for (const line of lines) {
@@ -108,7 +119,7 @@ function outletMap() {
 }
 
 function audienceRoutes() {
-  const src = readFileSync(AUDIENCE, 'utf-8');
+  const src = readSource(AUDIENCE);
   return [...src.matchAll(/rota:\s*'([^']+)',\s*\n?\s*audiencia:\s*'(\w+)'/g)].map((m) => ({
     rota: m[1],
     audiencia: m[2],
@@ -200,8 +211,8 @@ function perguntas(area) {
    * inventa nada — porque não tem nada.
    */
   const acervoVazio = (area.acervo ?? []).filter((a) => {
-    if (!existsSync(a.arquivo)) return true;
-    const src = readFileSync(a.arquivo, 'utf-8');
+    if (!sourceExists(a.arquivo)) return true;
+    const src = readSource(a.arquivo);
     /**
      * Sem regex de propósito: montá-la por interpolação já colocou um
      * backspace no lugar de `\b` três vezes neste repositório. Aqui basta
@@ -210,11 +221,20 @@ function perguntas(area) {
     const i = src.indexOf(a.constante);
     if (i === -1) return true;
 
-    const abre = src.indexOf('[', i);
-    const fecha = src.indexOf(']', abre);
-    if (abre === -1 || fecha === -1) return true;
-
-    return src.slice(abre + 1, fecha).trim().length === 0;
+    /**
+     * A pergunta e "esta DECLARADO VAZIO?", e nao "o literal tem conteudo?".
+     *
+     * A versao anterior procurava o primeiro `[` depois do nome e exigia que
+     * houvesse algo dentro. Isso funciona para um literal escrito a mao e
+     * falha para acervo DERIVADO — `DEFAULT_WORKS` passou a sair de
+     * `obrasDoRepertorio().map(...)`, sem literal nenhum, e a verificacao
+     * diria "vazio" sobre dezessete obras.
+     *
+     * Declarar vazio e uma coisa que se ve: `= []`, `= {}`, `never[] = []`.
+     * Derivar de uma funcao e o oposto disso.
+     */
+    const trecho = src.slice(i, i + 200);
+    return /=\s*(\[\s*\]|\{\s*\})\s*;/.test(trecho);
   });
 
   /**
@@ -224,8 +244,8 @@ function perguntas(area) {
    * não há criação de lição. Ver um erro e não poder consertá-lo é o defeito
    * que a camada editorial existe para não ter.
    */
-  const alvosEditaveis = existsSync('src/domain/editorial-edit.ts')
-    ? readFileSync('src/domain/editorial-edit.ts', 'utf-8')
+  const alvosEditaveis = sourceExists('src/domain/editorial-edit.ts')
+    ? readSource('src/domain/editorial-edit.ts')
     : '';
   /**
    * Cada alvo declara como se prova que é editável.

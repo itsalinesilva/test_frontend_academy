@@ -17,6 +17,7 @@ import {
   AudienceVariant,
 } from '../../domain/academy';
 import { AcademyRepository, academyRepository } from '../../repositories/academy.repository';
+import { RoutineRepository, routineRepository } from '../../repositories/routine.repository';
 import { profileService, ProfileService } from './profile.service';
 import { analyticsService } from '../../infrastructure/telemetry/analytics-service';
 import { AnalyticsEventType } from '../../domain/analytics';
@@ -27,12 +28,16 @@ export class AcademyService {
   private repo: AcademyRepository;
   private profileSvc: ProfileService;
 
+  private rotina: RoutineRepository;
+
   constructor(
     repo: AcademyRepository = academyRepository,
-    profSvc: ProfileService = profileService
+    profSvc: ProfileService = profileService,
+    rotina: RoutineRepository = routineRepository
   ) {
     this.repo = repo;
     this.profileSvc = profSvc;
+    this.rotina = rotina;
   }
 
   // -------------------------------------------------------------------------
@@ -297,6 +302,27 @@ export class AcademyService {
     progress.progressPercentage = Math.min(100, Math.round((progress.completedLessonIds.length / totalLessons) * 100));
 
     const saved = await this.repo.saveProgress(progress);
+
+    /**
+     * A PONTE ENTRE A ACADEMIA E O LABORATORIO.
+     *
+     * `DailyActivity` sempre teve o campo `lessonsCompleted`, e nada nunca o
+     * preencheu. A ligacao entre as duas areas existia so como dois
+     * `navigate()` numa tela de licao — hiperlink, e nao integracao.
+     *
+     * Concluir uma licao e atividade do dia tanto quanto terminar uma sessao
+     * de pratica. A missao "conclua uma licao hoje" so pode ser cumprida
+     * porque esta linha existe.
+     *
+     * Falhar aqui NAO derruba a conclusao da licao: o progresso academico ja
+     * foi gravado, e perde-lo por causa da rotina seria trocar o registro
+     * que importa pelo que enfeita.
+     */
+    try {
+      await this.rotina.somarAtividade(userId, { lessonsCompleted: 1 });
+    } catch (e) {
+      console.warn('[AcademyService] rotina do dia nao registrada:', e);
+    }
 
     // Academic History Entry
     await this.repo.logHistoryEntry({

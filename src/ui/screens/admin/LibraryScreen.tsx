@@ -106,7 +106,7 @@ export const LibraryScreen: React.FC = () => {
       density="editorial"
       asideLabel="Acervo"
       state={isLoading ? 'loading' : erro ? 'error' : livros.length === 0 ? 'empty' : 'content'}
-      loadingMessage="Montando a biblioteca..."
+      loadingMessage="Montando a biblioteca…"
       errorProps={{ message: erro ?? '', onRetry: carregar }}
       emptyProps={{
         title: 'A biblioteca está vazia',

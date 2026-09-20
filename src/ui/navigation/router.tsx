@@ -89,6 +89,10 @@ export const CANONICAL_ROUTES = {
   PRACTICE_RANKING: '/practice/ranking',
   PRACTICE_PROFILE: '/practice/profile',
 
+  ACERVO: '/acervo',
+  ACERVO_OBRA: '/acervo/obra/:id',
+  ACERVO_COMPOSITOR: '/acervo/compositor/:id',
+
   SCORE: '/score',
 
   WORLDS: '/worlds',

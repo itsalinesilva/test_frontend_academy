@@ -29,6 +29,10 @@ declare module '*/qa/core.mjs' {
   export function sources(): { file: string; content: string; code: string }[];
   export function injectSources(files: { file: string; content: string }[]): void;
   export function clearInjectedSources(): void;
+  /** A segunda costura: poe conteudo no lugar do arquivo daquele caminho. */
+  export function injectFile(caminho: string, conteudo: string): void;
+  export function readSource(caminho: string): string;
+  export function sourceExists(caminho: string): boolean;
   export function checkerInventory(): {
     nome: string;
     arquivo: string;
@@ -39,19 +43,94 @@ declare module '*/qa/core.mjs' {
   export const checkEveryCheckerHasProof: QaCheck;
 }
 
+/**
+ * Cada export declarado pelo nome, e nao `Record<string, QaCheck>`.
+ *
+ * O atalho anterior era `export = checks` com um Record: o modulo inteiro
+ * virava um mapa de nome para verificador. Duas consequencias ruins. Os
+ * leitores de estrutura — `audienceRules`, `chavesDeArmazenamento`,
+ * `countingRows` — caiam no tipo generico e nao davam para usar. E um nome de
+ * verificador ERRADO compilava, porque qualquer chave servia num Record.
+ *
+ * Declarado assim, chamar um verificador que nao existe e erro de compilacao.
+ */
 declare module '*/qa/flow.mjs' {
-  const checks: Record<string, QaCheck>;
-  export = checks;
+  export function servedRoutes(): string[];
+  export const checkNavigationTargets: QaCheck;
+  export const checkDegreeClaims: QaCheck;
+  export const checkFreeCourseDisclaimer: QaCheck;
+  export const checkFabricatedData: QaCheck;
+  export const checkPublicDomainRepertoire: QaCheck;
+  export const checkDeadButton: QaCheck;
+  export const checkEmptyLiteralAsData: QaCheck;
+  export const checkSuccessWithoutEffect: QaCheck;
+  export const checkComingSoonPromise: QaCheck;
+  export const checkDataInsideScreen: QaCheck;
+  export const checkDevToolInProduction: QaCheck;
+  export const checkAccessibleName: QaCheck;
+  export const checkFieldLabel: QaCheck;
+  export const checkAltText: QaCheck;
+  export const checkKeyboardReach: QaCheck;
+  export const checkInflatedAggregate: QaCheck;
+  export const checkRetiredVocabulary: QaCheck;
+  export const checkPersonalSectionWithoutSession: QaCheck;
+  export const checkHardcodedMetric: QaCheck;
 }
 
 declare module '*/qa/security.mjs' {
-  const checks: Record<string, QaCheck>;
-  export = checks;
+  export function chavesDeArmazenamento(): Map<string, string[]>;
+  export const checkKeyCollision: QaCheck;
+  export const checkPerUserFilter: QaCheck;
+  export const checkPublishKeepsStudentData: QaCheck;
+  export const checkAdminAuthority: QaCheck;
+  export const checkConsoleLeak: QaCheck;
+  export const checkHtmlInjection: QaCheck;
+  export const checkSessionTeardown: QaCheck;
+  export const checkCommittedSecret: QaCheck;
+  export const checkRecordOwnership: QaCheck;
+  export function audienceRules(): { route: string; audience: string }[];
+  export function routeToScreen(): { route: string; screen: string }[];
+  export const checkAdminScreensBehindAdminAudience: QaCheck;
+  export const checkGuardCoversEveryAudience: QaCheck;
+  export const checkPersonalRouteInheritingPublic: QaCheck;
+  export const checkNoGuessableAdminRoute: QaCheck;
+  export const checkTechnicalNameInUi: QaCheck;
+}
+
+declare module '*/qa/economy.mjs' {
+  export function countingRows(): { line: string; lineNumber: number; columns: string[] }[];
+  export const checkCountingSymbol: QaCheck;
+  export const checkCountingVocabulary: QaCheck;
+  export const checkValueOutsideTable: QaCheck;
+  export const checkDivergentValue: QaCheck;
 }
 
 declare module '*/qa/text.mjs' {
-  const checks: Record<string, QaCheck>;
-  export = checks;
+  export function checkText(): {
+    ortografia: QaFinding[];
+    pontuacao: QaFinding[];
+    mojibake: QaFinding[];
+    inacabado: QaFinding[];
+    ingles: QaFinding[];
+  };
+  export const checkContentMarkdown: QaCheck;
+  export const checkEnglishLeakInSentence: QaCheck;
+}
+
+declare module '*/qa/institution.mjs' {
+  export const checkCourseHasChair: QaCheck;
+  export const checkChairHasCourse: QaCheck;
+  export const checkHouseStatusMatchesCorpus: QaCheck;
+  export const checkAtlasFilterIsApplied: QaCheck;
+  export const checkAcervoCatalogaTudo: QaCheck;
+  export const checkDisponibilidadeTemMotivo: QaCheck;
+  export const checkAtribuicaoDaPartitura: QaCheck;
+  export const checkNiveisDeMeioSeparados: QaCheck;
+  export const checkFiltroOferecidoEAplicado: QaCheck;
+  export const checkEixoUniversalAlcancaOAcervo: QaCheck;
+  export const checkFonteNaoCriaEntidade: QaCheck;
+  export const checkPapelEEixoProprio: QaCheck;
+  export const checkAtlasEAcervoMesmaVerdade: QaCheck;
 }
 
 declare module '*/qa/readiness.mjs' {

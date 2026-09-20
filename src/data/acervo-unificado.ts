@@ -1,0 +1,596 @@
+import {
+  CanonicalComposer,
+  CanonicalWork,
+  PublicDomainAssessment,
+  avaliarDominioPublico,
+  proveniencia,
+} from '../domain/music-knowledge';
+import { compositoresDoRepertorio, obrasDoRepertorio } from './seed-acervo';
+import {
+  COMPOSITORES_EXTERNOS,
+  CompositorExterno,
+} from './seed-acervo-externo';
+import { Partitura, carregarPartituras } from './seed-partituras';
+import { lerTitulo } from '../domain/title-reading';
+import { regioesDasCidadanias } from '../domain/wikidata-regions';
+import { RegistroPendente } from '../domain/catalog-resource';
+
+/**
+ * O ACERVO INTEIRO — o que extraímos, mais o que já era nosso.
+ *
+ * DUAS ORIGENS, UM CATÁLOGO
+ * -------------------------
+ * O acervo **externo** vem da extração: Open Opus deu nome, datas, época e a
+ * lista de obras; Wikidata deu biografia, retrato e os identificadores
+ * cruzados. São centenas de compositores e milhares de obras.
+ *
+ * O acervo **próprio** são as melodias transcritas à mão para o sintetizador
+ * da plataforma. São poucas, e são as únicas que **tocam aqui dentro** — a
+ * edição é nossa, e por isso não depende de permissão de ninguém.
+ *
+ * QUANDO OS DOIS SE ENCONTRAM
+ * ---------------------------
+ * O mesmo Bach chega pelas duas vias. A junção é por identificador legível, e
+ * o registro próprio **acrescenta** ao externo em vez de substituí-lo: ele
+ * traz a partitura tocável, e o externo traz a ficha completa. Perder qualquer
+ * um dos dois empobreceria o catálogo.
+ *
+ * A SITUAÇÃO DE DIREITO AUTORAL É RECALCULADA AQUI
+ * ------------------------------------------------
+ * Não se confia no que veio gravado no seed: o prazo corre, e um compositor
+ * que estava protegido na extração pode ter entrado em domínio público desde
+ * então. Calcular na leitura custa nada e evita um catálogo que envelhece
+ * errado.
+ */
+
+/** Transforma o registro extraído em compositor canônico. */
+function comoCanonico(e: CompositorExterno): CanonicalComposer {
+  /**
+   * Recalculado, e não copiado. O `situacao` gravado no seed é o retrato do
+   * dia da extração; o prazo continua correndo depois disso.
+   */
+  const publicDomain: PublicDomainAssessment = avaliarDominioPublico({
+    anoDeMorte: e.morte,
+    anoDeNascimento: e.nascimento,
+  });
+
+  return {
+    id: e.id,
+    canonicalName: e.nome,
+    sortName: e.ordenar,
+    birthYear: e.nascimento,
+    deathYear: e.morte,
+    biography: e.biografia ? { pt: e.biografia } : undefined,
+    periodIds: e.era ? [e.era] : [],
+    /** O recorte fino da fonte, preservado ao lado da era do Atlas. */
+    subPeriodo: e.epoca,
+    movements: [],
+    /**
+     * A REGIÃO, DERIVADA DA CIDADANIA — e o filtro mais indigno do acervo
+     * deixando de ser.
+     *
+     * Aqui havia `[]` fixo. Catorze compositores de duzentos e trinta e quatro
+     * tinham região, e o Atlas oferecia o recorte assim mesmo: quem clicava em
+     * "Europa Ocidental (14)" concluía que eram essas as que existiam.
+     *
+     * São duzentos e dezesseis agora. Os quatro que ficam de fora não têm
+     * cidadania declarada na fonte — e ficam sem região, e não numa gaveta
+     * chamada "outros", que não significaria lugar nenhum.
+     */
+    regionIds: regioesDasCidadanias(e.cidadanias ?? []),
+    /** Conteúdo de ficha: "nasceu em Eisenach" é o que se lê numa biografia. */
+    birthPlace: e.nasceuEm,
+    deathPlace: e.morreuEm,
+    /**
+     * O que a pessoa TOCAVA — e não o meio para que escreveu.
+     *
+     * São dois eixos diferentes: Berlioz escreveu para orquestra inteira e
+     * tocava violão e flauta. Confundi-los faria o filtro de instrumento
+     * responder a pergunta errada.
+     */
+    instrumentosPraticados: e.instrumentos ?? [],
+    portraitUrl: e.retrato,
+    externalIds: e.ids,
+    workIds: [],
+    provenance: [
+      proveniencia('canonicalName', 'OPEN_OPUS', e.ids.openOpus),
+      proveniencia('deathYear', 'OPEN_OPUS', e.ids.openOpus),
+      ...(e.biografia ? [proveniencia('biography', 'WIKIDATA', e.ids.wikidata)] : []),
+      ...(e.retrato ? [proveniencia('portraitUrl', 'COMMONS', e.ids.wikidata)] : []),
+    ],
+    publicDomain,
+    resolution: {
+      method: 'OPEN_OPUS',
+      resolvedAt: new Date().toISOString(),
+      /**
+       * Confiança pelo cruzamento: um registro que o Wikidata confirmou tem
+       * identidade resolvida; um que só o Open Opus conhece é um nome numa
+       * lista.
+       */
+      confidence: e.ids.wikidata ? 1 : 0.7,
+    },
+  };
+}
+
+/**
+ * Todos os compositores, com o registro próprio acrescentando ao externo.
+ *
+ * A ordem importa: o externo entra primeiro e o próprio sobrescreve o que
+ * souber melhor — as eras em que a plataforma de fato tem obra, e os
+ * movimentos que a curadoria atribuiu.
+ */
+/**
+ * A CHAVE DE IDENTIDADE POR NOME.
+ *
+ * Sem acento, sem pontuação, sem caixa, e com as palavras **ordenadas**. É a
+ * ordenação que faz `Johann Sebastian Bach` e `Bach, Johann Sebastian` caírem
+ * na mesma chave — e era exatamente aí que as duas fontes divergiam.
+ */
+function chaveDeIdentidade(nome: string): string {
+  return nome
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z ]/g, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .sort()
+    .join(' ');
+}
+
+/**
+ * De onde vem cada identificador que o catálogo já usou.
+ *
+ * O repertório próprio numera `bach-johann-sebastian`; a catalogação de origem
+ * numera `johann-sebastian-bach`. As obras próprias apontam para o primeiro e
+ * as vinte e cinco mil apontam para o segundo — e a fusão precisa deixar os
+ * dois caminhos funcionando.
+ */
+const apelidosDeCompositor = new Map<string, string>();
+
+/** O identificador canônico de um compositor, resolvendo apelidos antigos. */
+export function idCanonicoDoCompositor(id: string): string {
+  return apelidosDeCompositor.get(id) ?? id;
+}
+
+export function todosOsCompositores(hoje: Date = new Date()): CanonicalComposer[] {
+  const porId = new Map<string, CanonicalComposer>();
+  const porNome = new Map<string, string>();
+  apelidosDeCompositor.clear();
+
+  for (const e of COMPOSITORES_EXTERNOS) {
+    const c = comoCanonico(e);
+    porId.set(c.id, c);
+    porNome.set(chaveDeIdentidade(c.canonicalName), c.id);
+  }
+
+  for (const p of compositoresDoRepertorio(hoje)) {
+    /**
+     * 🔴 HAVIA DOIS BACHS, E DOIS DE MAIS OITO.
+     *
+     * A fusão era só por identificador, e as duas fontes numeram diferente:
+     * `bach-johann-sebastian` de um lado, `johann-sebastian-bach` do outro.
+     * Nove dos catorze compositores do repertório próprio — Bach, Beethoven,
+     * Brahms, Chopin, Grieg, Mozart, Pachelbel, Schumann, Vivaldi — viviam
+     * duplicados.
+     *
+     * O estrago não era só a contagem. O dado bom ficava **partido**: a
+     * biografia autoral num registro sem obra, sem retrato e sem região; as
+     * oitocentas e trinta e oito obras noutro, com uma linha de descrição da
+     * fonte no lugar da biografia. Quem abria a ficha via metade, e a metade
+     * que faltava não dava sinal de existir.
+     *
+     * Casar por nome normalizado resolve, e o identificador que sobrevive é o
+     * **externo** — porque é para ele que as vinte e cinco mil obras apontam.
+     * O identificador próprio vira apelido, e as obras próprias continuam
+     * chegando.
+     */
+    const idExterno = porId.has(p.id) ? p.id : porNome.get(chaveDeIdentidade(p.canonicalName));
+    const externo = idExterno ? porId.get(idExterno) : undefined;
+
+    if (!externo || !idExterno) {
+      porId.set(p.id, p);
+      porNome.set(chaveDeIdentidade(p.canonicalName), p.id);
+      continue;
+    }
+
+    if (idExterno !== p.id) apelidosDeCompositor.set(p.id, idExterno);
+
+    porId.set(idExterno, {
+      ...externo,
+      /** A biografia autoral prevalece sobre a descrição curta da fonte. */
+      biography: p.biography ?? externo.biography,
+      /** As eras somam: a fonte diz a época, a curadoria diz onde há obra. */
+      periodIds: [...new Set([...externo.periodIds, ...p.periodIds])],
+      subPeriodo: externo.subPeriodo,
+      regionIds: [...new Set([...externo.regionIds, ...p.regionIds])],
+      birthPlace: externo.birthPlace ?? p.birthPlace,
+      deathPlace: externo.deathPlace ?? p.deathPlace,
+      instrumentosPraticados: [
+        ...new Set([
+          ...(externo.instrumentosPraticados ?? []),
+          ...(p.instrumentosPraticados ?? []),
+        ]),
+      ],
+      movements: [...new Set([...externo.movements, ...p.movements])],
+      provenance: [...externo.provenance, ...p.provenance],
+    });
+  }
+
+  return [...porId.values()].sort((a, b) => a.sortName.localeCompare(b.sortName, 'pt-BR'));
+}
+
+
+/** A forma curta em que as obras vivem no arquivo servido. */
+interface ObraServida {
+  id: string;
+  c: string;
+  t: string;
+  s?: string;
+  m?: string;
+  og?: string;
+  e?: string;
+  oo?: string;
+  /** Outras entradas da fonte para a mesma obra, colapsadas na geração. */
+  oo2?: string[];
+  r: boolean;
+  p: boolean;
+}
+
+/**
+ * As obras chegam SOB DEMANDA.
+ *
+ * Vinte e cinco mil registros dentro do módulo davam um pacote de 7,1 MB, e
+ * todo visitante baixaria o catálogo inteiro mesmo sem abrir o Acervo. Elas
+ * viraram arquivo servido: quem nunca abre o catálogo não paga por ele, e quem
+ * abre paga uma vez.
+ *
+ * O cache é de processo. Recarregar a página busca de novo — e é o certo, já
+ * que o arquivo é versionado junto do código e muda com ele.
+ */
+let obrasServidas: ObraServida[] | null = null;
+
+/**
+ * Por que o catálogo servido não chegou, quando não chegou.
+ *
+ * `null` significa "carregou" ou "ainda não tentou" — e a diferença entre as
+ * duas não importa para quem pergunta: o que importa é que **não há falha a
+ * relatar**. Ter um motivo aqui significa que a listagem está incompleta e a
+ * tela deve dizer isso em vez de mostrar um acervo mutilado como se fosse o
+ * acervo inteiro.
+ */
+let falhaAoCarregar: string | null = null;
+
+export function falhaAoCarregarOAcervo(): string | null {
+  return falhaAoCarregar;
+}
+
+/**
+ * 🔴 O CATALOGO DEIXOU DE SER BUSCADO POR CAMINHO, E PASSOU A SER IMPORTADO.
+ *
+ * O QUE ACONTECIA
+ * ---------------
+ * As vinte e cinco mil obras viviam em `public/acervo/obras.json` e chegavam
+ * por `fetch('/acervo/obras.json')`. Quando esse caminho nao existia no
+ * servidor, a resposta **nao era um erro**: era o `index.html` da aplicacao,
+ * porque um aplicativo de pagina unica responde qualquer caminho desconhecido
+ * com a propria pagina. O `JSON.parse` entao falhava com
+ * *"Unexpected token '<', \"<!DOCTYPE\"..."*, a tela caia para as dezessete
+ * obras do repertorio proprio e pedia para recarregar.
+ *
+ * Recarregar nunca resolveu, e nao tinha como resolver: o arquivo nao estava
+ * la. Ele **nunca foi versionado** — existia so na maquina onde a extracao
+ * rodou —, e toda construcao feita a partir do repositorio nascia sem
+ * catalogo. O aviso de "tente de novo" era, na pratica, uma mentira educada.
+ *
+ * POR QUE IMPORTAR RESOLVE, E TENTAR DE NOVO NAO RESOLVIA
+ * ------------------------------------------------------
+ * Importado, o catalogo vira **dependencia da construcao**: o empacotador o
+ * resolve em tempo de compilacao, e uma construcao que nao o encontre nao
+ * termina — falha ali, na maquina de quem publica, em vez de falhar no
+ * navegador de quem estuda. O arquivo ganha nome com marca de versao, servido
+ * de `/assets/`, onde nenhuma rota da aplicacao passa; e some a possibilidade
+ * de receber uma pagina HTML no lugar de dado.
+ *
+ * O `import()` e dinamico de proposito: sao cinco megabytes, e eles so devem
+ * viajar quando alguem abre o acervo — nao no primeiro carregamento de quem
+ * entrou para estudar uma licao.
+ */
+export async function carregarObrasExternas(): Promise<ObraServida[]> {
+  if (obrasServidas) return obrasServidas;
+  falhaAoCarregar = null;
+
+  try {
+    const modulo = await import('./acervo/obras.json');
+    const lido = (modulo.default ?? modulo) as ObraServida[];
+
+    /**
+     * NAO-VACUIDADE. Um arquivo presente e vazio passaria por catalogo, e a
+     * tela mostraria duzentas e vinte e cinco pessoas com zero obras cada sem
+     * uma palavra sobre o motivo.
+     */
+    if (!Array.isArray(lido) || lido.length === 0) {
+      throw new Error('o catalogo importado veio vazio');
+    }
+
+    obrasServidas = lido;
+    return obrasServidas;
+  } catch (e) {
+    /**
+     * Chegar aqui deixou de ser um acidente de rede e passou a ser um defeito
+     * de construcao. O motivo fica guardado, e a tela diz que a listagem esta
+     * incompleta — mas o vazio NAO fica guardado em `obrasServidas`, para que
+     * a proxima leitura tente de novo em vez de devolver dezessete obras.
+     */
+    falhaAoCarregar = e instanceof Error ? e.message : 'falha desconhecida';
+    return [];
+  }
+}
+
+/** Esquece o que foi carregado. Existe para o teste, e para reextração. */
+export function limparCacheDeObras(): void {
+  obrasServidas = null;
+  falhaAoCarregar = null;
+}
+
+/**
+ * Todas as obras: as catalogadas e as que tocam.
+ *
+ * As externas nascem **sem partitura** — o catálogo sabe que existem, e a
+ * experiência depende de haver edição redistribuível. As próprias trazem a
+ * transcrição, e são as que tocam.
+ */
+/**
+ * O parametro `buscar` sumiu junto com o `fetch`.
+ *
+ * Ele existia para que o teste pudesse substituir a rede. Nao ha mais rede a
+ * substituir: o catalogo e importado pelo empacotador, e o teste le o mesmo
+ * arquivo que a aplicacao le — que e, alias, o que ele deveria ter lido desde
+ * sempre. Um teste que substituia a rede por um punhado de obras de mentira
+ * provava que o codigo funciona sobre dado inventado, e nao sobre o acervo.
+ */
+export async function todasAsObras(hoje: Date = new Date()): Promise<CanonicalWork[]> {
+  const compositores = new Map(todosOsCompositores(hoje).map((c) => [c.id, c]));
+  const porId = new Map<string, CanonicalWork>();
+
+  for (const o of await carregarObrasExternas()) {
+    const c = compositores.get(o.c);
+    /**
+     * O QUE O TÍTULO JÁ DIZ, LIDO — e não deduzido.
+     *
+     * `Sonata in B flat major, K. 545` carrega forma, tonalidade e número de
+     * catálogo dentro do próprio título. Deixá-los presos na cadeia de texto
+     * fazia o catálogo ter campo vazio sobre informação que ele possui.
+     *
+     * Rende 46% de número de catálogo e 45% de forma, sem uma requisição —
+     * contra 4% e 11% medidos na base externa de identificadores cruzados.
+     */
+    const lido = lerTitulo(o.t);
+    porId.set(o.id, {
+      id: o.id,
+      canonicalTitle: { pt: o.t },
+      composerIds: [o.c],
+      /**
+       * O meio vem da fonte e entra em `instrumentation`, que é onde ele
+       * pertence. É meio GROSSO — "teclado" não é "piano" —, e o instrumento
+       * exato vem da partitura, quando há.
+       */
+      instrumentation: o.m ? [o.m] : [],
+      /**
+       * VAZIO de propósito, e é a correção de um defeito.
+       *
+       * A classificação da fonte estava gravada aqui, e ela é de meio. O
+       * filtro de gênero mostrava `vocal` ao lado de `minueto`, como se
+       * fossem do mesmo tipo. Forma de verdade virá de outra fonte; até lá o
+       * campo fica vazio, porque campo errado preenchido é pior que vazio —
+       * o vazio se vê, o errado não.
+       */
+      /**
+       * A forma LIDA do título, e vazia quando o título não a nomeia.
+       *
+       * O campo guardou MEIO por vinte e cinco mil registros — `vocal` ao lado
+       * de `minueto` no mesmo filtro. Agora só entra o que está escrito:
+       * "Manhã" e "Melodia" continuam sem forma, em vez de classificadas
+       * pela forma mais provável daquele compositor.
+       */
+      generoId: lido.forma,
+      /**
+       * As listas curadas da fonte, preservadas COM a origem.
+       *
+       * Foram extraídas e ficaram sem uso por serem juízo de terceiro. O erro
+       * não era trazê-las: era apresentá-las sem dizer de quem são.
+       */
+      selecoesDaFonte: [
+        ...(o.r ? ['RECOMENDADA' as const] : []),
+        ...(o.p ? ['POPULAR' as const] : []),
+      ],
+      catalogNumber: lido.numeroDeCatalogo,
+      key: lido.tonalidade,
+      periodId: o.e,
+      regionId: c?.regionIds[0],
+      movements: [],
+      scoreRefs: [],
+      recordingRefs: [],
+      externalIds: o.oo ? { openOpus: o.oo } : {},
+      provenance: [
+        proveniencia('canonicalTitle', 'OPEN_OPUS', o.oo),
+        /**
+         * A procedência destes três é o título da própria fonte, e não outra
+         * base. Quem auditar precisa saber que não houve consulta externa.
+         */
+        ...(lido.forma ? [proveniencia('generoId', 'OPEN_OPUS', o.oo)] : []),
+        ...(lido.numeroDeCatalogo ? [proveniencia('catalogNumber', 'OPEN_OPUS', o.oo)] : []),
+        ...(lido.tonalidade ? [proveniencia('key', 'OPEN_OPUS', o.oo)] : []),
+      ],
+      /**
+       * A obra herda do COMPOSITOR: é ele que morre, e é da morte dele que o
+       * prazo corre. Avaliar pela data da obra liberaria por engano uma peça
+       * de 1890 de quem morreu em 1960.
+       */
+      publicDomain: c?.publicDomain ?? avaliarDominioPublico({ hoje }),
+      resolution: {
+        method: 'OPEN_OPUS',
+        resolvedAt: new Date().toISOString(),
+        confidence: 1,
+      },
+    });
+  }
+
+  await ligarPartituras(porId, await carregarPartituras());
+
+  /**
+   * As próprias entram por último: elas trazem a partitura tocável.
+   *
+   * E os identificadores de compositor são **traduzidos** para o canônico. Sem
+   * isto, uma obra própria de Bach apontaria para `bach-johann-sebastian`, que
+   * deixou de existir na fusão — e a obra ficaria órfã, listada sem autor,
+   * enquanto a ficha de Bach não a contaria.
+   */
+  for (const p of obrasDoRepertorio(hoje)) {
+    porId.set(p.id, {
+      ...p,
+      composerIds: p.composerIds.map(idCanonicoDoCompositor),
+    });
+  }
+
+  return [...porId.values()];
+}
+
+/** Título comparável: sem acento, sem pontuação, sem caixa. */
+function normalizar(t: string): string {
+  return t
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * AS PARTITURAS SE LIGAM ÀS OBRAS — e o que não se liga NÃO VIRA OBRA.
+ *
+ * 🔴 O DEFEITO QUE ESTA FUNÇÃO CARREGAVA
+ * ------------------------------------
+ * Ela criava uma obra para cada partitura que não casava. Mil trezentas e
+ * trinta e uma obras falsas entraram no catálogo assim, e não por decisão:
+ * `Partitura` não existia como entidade, e a única forma de um arquivo entrar
+ * no acervo era sendo uma obra.
+ *
+ * **A ausência da entidade força a duplicata.** O modelo relacional
+ * (`catalog-resource.ts`) resolve a causa: partitura é recurso de obra, e
+ * recurso sem dono conhecido fica **pendente**, visível, esperando resolução.
+ *
+ * São três saídas possíveis, e duas são ruins:
+ *
+ *   descartar   — perde-se um recurso real, e ninguém fica sabendo;
+ *   criar obra  — o catálogo ganha duplicata com aparência de registro;
+ *   enfileirar  — o recurso existe, aparece, e não mente sobre o que é.
+ *
+ * COMO A LIGAÇÃO É TENTADA, EM DUAS PASSADAS
+ * -------------------------------------------
+ * **Número de catálogo primeiro.** `BWV 846` é o único dado capaz de provar que
+ * duas fontes falam da mesma peça. A leitura de título já extraiu onze mil
+ * deles do lado das obras, e a ficha por peça trouxe trezentos e noventa e
+ * três do lado das partituras — é esse cruzamento que a ontologia habilita.
+ *
+ * **Título depois**, e só exato. Aproximar por semelhança casaria préludios
+ * errados entre si, e um catálogo que junta a peça errada mente pior do que um
+ * que declara não saber.
+ */
+async function ligarPartituras(
+  porId: Map<string, CanonicalWork>,
+  partituras: Partitura[]
+): Promise<void> {
+  pendentes = [];
+
+  const porCatalogo = new Map<string, string>();
+  const porTitulo = new Map<string, string>();
+  for (const o of porId.values()) {
+    for (const c of o.composerIds) {
+      if (o.catalogNumber) porCatalogo.set(c + '|' + normalizar(o.catalogNumber), o.id);
+      porTitulo.set(c + '|' + normalizar(o.canonicalTitle.pt ?? ''), o.id);
+    }
+  }
+
+  for (const p of partituras) {
+    /**
+     * `FICHA`, e não `NATIVA`: o `.ly` é fonte simbólica que a plataforma
+     * **poderá** renderizar, e não renderiza — não há leitor de LilyPond aqui.
+     * Marcar nativa agora poria um botão de tocar que abre nada.
+     */
+    const ref = {
+      source: 'MUTOPIA' as const,
+      sourceRef: p.ly,
+      format: 'lilypond' as const,
+      render: 'FICHA' as const,
+      /** Licença DO ARQUIVO. Metade exige atribuição, e exigir é condição de uso. */
+      fileLicense: p.lic,
+      /** Quem transcreveu. Sem o nome, as sob Creative Commons são impublicáveis. */
+      editors: p.ed ? [p.ed] : undefined,
+    };
+
+    /** Catálogo primeiro: é prova de identidade. Título é indício. */
+    const porNumero = p.c && p.cat ? porCatalogo.get(p.c + '|' + normalizar(p.cat)) : undefined;
+    const porNome = p.c ? porTitulo.get(p.c + '|' + normalizar(p.t)) : undefined;
+    const alvo = porNumero ?? porNome;
+
+    if (!alvo) {
+      /**
+       * NÃO CRIA OBRA. O recurso entra na fila, com o que a fonte disse
+       * guardado inteiro para quem for resolver à mão.
+       */
+      pendentes.push({
+        id: 'pend-' + p.id,
+        recurso: 'PARTITURA',
+        recursoId: p.id,
+        motivo: p.c ? 'OBRA_NAO_ENCONTRADA' : 'PESSOA_NAO_ENCONTRADA',
+        descricaoNaFonte: `${p.cn} — ${p.t}${p.cat ? ' (' + p.cat + ')' : ''}`,
+        candidatos: [],
+        registradoEm: new Date().toISOString(),
+        fonteId: 'MUTOPIA',
+      });
+      continue;
+    }
+
+    const obra = porId.get(alvo)!;
+    porId.set(alvo, {
+      ...obra,
+      /** O instrumento exato da edição soma ao meio grosso da fonte. */
+      instrumentation: [...new Set([...obra.instrumentation, p.i])],
+      catalogNumber: obra.catalogNumber ?? p.cat,
+      date: obra.date ?? p.dc,
+      scoreRefs: [...obra.scoreRefs, ref],
+      provenance: [...obra.provenance, proveniencia('scoreRefs', 'MUTOPIA', p.id)],
+    });
+  }
+}
+
+/**
+ * AS PARTITURAS QUE AINDA NÃO ACHARAM OBRA.
+ *
+ * Preenchida por `ligarPartituras`, que roda dentro de `todasAsObras`. O
+ * acoplamento é deliberado e declarado: a fila é o resultado da mesma passada
+ * que liga o que casou, e calculá-la de novo percorreria vinte e cinco mil
+ * obras uma segunda vez para chegar à mesma resposta.
+ *
+ * Quem a consome precisa ter chamado `todasAsObras` antes. Ela devolve lista
+ * vazia até lá — e vazio aqui significa "ainda não apurado", que é diferente
+ * de "nada pendente"; por isso a contagem do acervo nunca a usa como zero.
+ */
+let pendentes: RegistroPendente[] = [];
+
+export function partiturasPendentes(): RegistroPendente[] {
+  return pendentes;
+}
+
+/**
+ * As obras que a plataforma consegue TOCAR, sem depender de rede.
+ *
+ * São as nossas transcrições. O Atlas — que é mapa de prática, e não catálogo
+ * — se alimenta daqui: um mapa com vinte e cinco mil marcadores não seria
+ * navegável, e a maioria deles não abriria nada.
+ */
+export function obrasTocaveis(hoje: Date = new Date()): CanonicalWork[] {
+  return obrasDoRepertorio(hoje);
+}

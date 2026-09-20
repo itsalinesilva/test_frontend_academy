@@ -125,10 +125,10 @@ export const InteractiveLessonScreen: React.FC = () => {
       density="editorial"
       asideLabel="Laboratorio"
       state={isLoading ? 'loading' : !lesson ? 'empty' : 'content'}
-      loadingMessage="Carregando o laboratorio..."
+      loadingMessage="Carregando o laboratório…"
       emptyProps={{
         title: 'Licao nao encontrada',
-        description: 'O identificador informado nao corresponde a uma licao do curriculo.',
+        description: 'O identificador informado não corresponde a uma lição do currículo.',
         actionLabel: 'Voltar ao catalogo',
         onAction: () => navigate('/academia/catalog'),
       }}

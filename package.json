@@ -17,7 +17,10 @@
     "qa": "node scripts/qa.mjs",
     "qa:json": "node scripts/qa.mjs --json",
     "verificar": "npm run typecheck && npm run lint && npm run qa && npm test",
-    "qa:todo": "node scripts/sync-todo.mjs"
+    "qa:todo": "node scripts/sync-todo.mjs",
+    "test:commit": "npm run qa && vitest run --exclude \"tests/ui/**\" --exclude \"tests/checkers-*.test.ts\" --exclude \"tests/report-curation.test.ts\" --exclude \"**/node_modules/**\"",
+    "test:push": "npm run typecheck && npm run qa && vitest run --exclude \"tests/checkers-*.test.ts\" --exclude \"tests/report-curation.test.ts\" --exclude \"**/node_modules/**\"",
+    "test:tudo": "npm run typecheck && npm run verify:citations && npm run qa && vitest run"
   },
   "dependencies": {
     "clsx": "^2.1.1",

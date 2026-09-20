@@ -71,7 +71,7 @@ export const ProgramDetailScreen: React.FC = () => {
   return (
     <ScreenContainer
       id={`program-detail-${programId}`}
-      title={program?.title || 'Carregando Programa...'}
+      title={program?.title || 'Carregando Programa…'}
       subtitle={program?.subtitle || ''}
       badgeLabel="Programa Curricular Integrado"
       badgeVariant="brand"

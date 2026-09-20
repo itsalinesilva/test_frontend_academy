@@ -47,8 +47,9 @@ CONSERVATÓRIO MUSCICAPA
 │   └── CLUBES ─────────── fóruns independentes, criados pelos usuários
 │
 ├── ACADEMIA ───────────── estrutura curricular
-│   ├── Cursos, programas, disciplinas, lições, avaliações
-│   └── GRÊMIOS ────────── pertencimento acadêmico · um por curso
+│   ├── CADEIRAS ───────── campo de estudo · Teoria · História · Violino
+│   │     └── Cursos, programas, disciplinas, lições, avaliações
+│   └── GRÊMIOS ────────── pertencimento acadêmico · **um por cadeira**
 │         └── vincula os Clubes daquela área
 │
 ├── LABORATÓRIOS ───────── onde a atividade prática acontece
@@ -113,11 +114,42 @@ dinâmica. A Comunidade é o conjunto deles mais as pessoas.
 A estrutura curricular: cursos, programas, disciplinas, lições, atividades,
 simulados, provas, certificados. É o que já existe em `domain/academy.ts`.
 
+### Cadeira — o campo de estudo
+
+Entre a Academia e o curso há uma unidade que faltava: a **cadeira**. É o
+campo de estudo, e é ela — não o curso — que dá nome ao Grêmio.
+
+| Cadeira | Cursos hoje |
+| :--- | :--- |
+| Teoria da Música | Teoria da Música |
+| História da Música | História da Música Ocidental · História da Música Brasileira · História Social da Música Popular Brasileira |
+| Violino | Violino |
+
+**Cinco cursos, três cadeiras.** Curso novo de história entra na cadeira que
+já existe; cadeira nova só nasce quando aparece um campo de estudo que
+nenhuma das três cobre.
+
+A cadeira **não é** disciplina — disciplina é unidade dentro de um curso. E
+não é Casa — Casa é pertencimento prático, nasce do treino e não da matrícula.
+
 ### Grêmio — pertencimento acadêmico
 
-**Curso → Grêmio.** Matricular-se no Curso de Teoria Musical faz a pessoa
-pertencer ao Grêmio de Teoria Musical. Não há formulário, não há convite, não
-há escolha: o pertencimento é consequência da matrícula.
+**Cadeira → Grêmio.** Matricular-se no Curso de Teoria Musical faz a pessoa
+pertencer ao Grêmio de Teoria. Não há formulário, não há convite, não há
+escolha: o pertencimento é consequência da matrícula.
+
+> **Correção registrada em 19/09.** Este documento e `domain/membership.ts`
+> diziam "um Grêmio por curso". Com cinco cursos isso dava cinco Grêmios —
+> três deles de história. Partia os historiadores em três, e quebrava a regra
+> que o §7 deste mesmo documento enuncia: quem discute repertório barroco num
+> Clube já deve estar no Grêmio daquela área. Quem cursou História Ocidental e
+> quem cursou História Brasileira não se encontravam em Grêmio nenhum, e
+> portanto não podiam abrir o mesmo Clube.
+>
+> O recorte passou a ser a cadeira. `guildIdForCourse` continua existindo,
+> porque a matrícula é num curso — mas resolve **pela cadeira**, e devolve
+> `null` para curso que ninguém atribuiu a uma. `checkCourseHasChair` recusa
+> que esse `null` exista em produção.
 
 | O Grêmio reúne | |
 |---|---|
@@ -162,6 +194,52 @@ diferente de "estar fazendo um curso de violino".
 Uma pessoa pode ter Grêmio sem Casa — matriculou-se e não praticou. Pode ter
 Casa sem Grêmio — pratica sem cursar, que é caso previsto desde 18/09. E pode
 ter os dois, que é o percurso completo.
+
+#### Quantas Casas existem de fato — apurado em 19/09
+
+Sete estão **declaradas**. Uma tem corpus.
+
+| Casa | Cadeira que a alimenta | Corpus | Situação |
+| :--- | :--- | :---: | :--- |
+| Violinistas | Violino | 4 obras | em preparo |
+| Historiadores da música | História | — | anunciada |
+| Teóricos | Teoria | — | anunciada |
+| Pianistas · Cantores · Violonistas · Compositores | — | — | anunciada |
+
+Duas delas estavam marcadas "em preparo" **com zero obras** — e `IN_PREPARATION`
+significa, pela definição do próprio tipo, corpus presente. A lista afirmava um
+preparo que não havia começado. Corrigido, e `checkHouseStatusMatchesCorpus`
+passa a recusar.
+
+#### O caminho sedimentado
+
+As quatro Casas sem cadeira não são esboço nem promessa: são **o lugar
+marcado**. O campo `cadeiraId` fica ausente de propósito, e é ele que liga a
+Casa ao curso no dia em que houver um curso de piano que chegue ao
+Laboratório.
+
+> Uma Casa anunciada aparece na lista, fechada, com o motivo escrito — e
+> **nunca** é preenchida com conteúdo inventado para a tela não parecer vazia.
+
+#### Modo Casa, e o que o Atlas oferece nele
+
+O modo Casa se habilita quando a Casa tem as duas coisas: uma cadeira que a
+alimente **e** corpus de verdade. Só cadeira daria um modo vazio; só corpus
+daria um modo sem curso que leve ninguém até ele.
+
+Os filtros do modo Casa são **derivados**, e não declarados num campo à parte:
+
+| Filtro | Existe quando |
+| :--- | :--- |
+| por era | a Casa declara eras em que tem repertório |
+| por região | a Casa declara regiões de tradição documentada |
+| por competência | a Casa declara competências técnicas próprias |
+
+Haver um campo dizendo "esta Casa filtra por era" criaria duas fontes para o
+mesmo fato, e elas divergiriam. O filtro existe quando há o que filtrar. É
+assim que a orientação do Atlas se habilita por Casa: a Casa diz em que eras e
+regiões tem repertório, e o modo Casa oferece exatamente esses recortes — sem
+oferecer um filtro de era vazio para quem não declarou nenhuma.
 
 > **"Tribo" sai do projeto.** Era o nome que carregava sozinho a função que
 > agora se divide entre Grêmio, Casa e Clube — e por isso nunca coube em lugar

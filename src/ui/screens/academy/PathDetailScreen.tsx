@@ -76,7 +76,7 @@ export const PathDetailScreen: React.FC = () => {
   return (
     <ScreenContainer
       id={`path-detail-${pathId}`}
-      title={path?.title || 'Carregando Trilha...'}
+      title={path?.title || 'Carregando Trilha…'}
       subtitle={path?.subtitle || ''}
       badgeLabel={`Nível ${path?.level || ''}`}
       badgeVariant="brand"

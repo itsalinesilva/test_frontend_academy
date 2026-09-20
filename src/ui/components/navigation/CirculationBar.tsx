@@ -1,18 +1,7 @@
 import React from 'react';
 import { useRouter } from '../../navigation/router';
-import {
-  GraduationCap,
-  Target,
-  FileMusic,
-  Sliders,
-  User,
-  Users,
-  Calendar,
-  BookOpen,
-  ArrowRight,
-  ArrowLeft,
-  RefreshCw,
-} from 'lucide-react';
+import { PILARES } from '../../navigation/pilares';
+import { ArrowRight, ArrowLeft, RefreshCw } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -25,72 +14,22 @@ export interface CirculationStep {
   description: string;
 }
 
-export const CIRCULATION_CHAIN: CirculationStep[] = [
-  {
-    id: 'academy',
-    label: 'Academia',
-    shortLabel: 'Academia',
-    path: '/academia',
-    icon: GraduationCap,
-    description: 'Disciplinas, Cursos e Lições Teóricas',
-  },
-  {
-    id: 'practice',
-    label: 'Laboratório',
-    shortLabel: 'Prática',
-    path: '/practice',
-    icon: Target,
-    description: 'Treino Diário e Microcompetências',
-  },
-  {
-    id: 'score',
-    label: 'Score',
-    shortLabel: 'Partituras',
-    path: '/score',
-    icon: FileMusic,
-    description: 'Editor Notacional e Repertório Urtext',
-  },
-  {
-    id: 'studio',
-    label: 'Studio',
-    shortLabel: 'Estúdio',
-    path: '/studio',
-    icon: Sliders,
-    description: 'DAW Multicanal, Mixagem e Síntese',
-  },
-  {
-    id: 'profile',
-    label: 'Profile',
-    shortLabel: 'Perfil',
-    path: '/profile',
-    icon: User,
-    description: 'Evidências, Portfólio e Credenciais',
-  },
-  {
-    id: 'community',
-    label: 'Community',
-    shortLabel: 'Comunidade',
-    path: '/community',
-    icon: Users,
-    description: 'Fórum Musicológico e Diálogos Acadêmicos',
-  },
-  {
-    id: 'event',
-    label: 'Event',
-    shortLabel: 'Eventos',
-    path: '/community/events',
-    icon: Calendar,
-    description: 'Masterclasses e Recitais ao Vivo',
-  },
-  {
-    id: 'room',
-    label: 'Room',
-    shortLabel: 'Salas',
-    path: '/rooms',
-    icon: BookOpen,
-    description: 'Cátedras de Professores e Turmas',
-  },
-];
+/**
+ * A CORRENTE DE CIRCULAÇÃO SEGUE OS CINCO PILARES.
+ *
+ * Tinha oito passos — Score e Studio separados, mais Community, Event e Room.
+ * Corrente de oito não é corrente: é um terceiro menu, e ele divergia dos
+ * outros dois. O Acervo não estava em nenhum dos três.
+ */
+export const CIRCULATION_CHAIN: CirculationStep[] = PILARES.map((p) => ({
+  id: p.id,
+  label: p.label,
+  shortLabel: p.label,
+  path: p.path,
+  icon: p.icon,
+  description: p.hint,
+}));
+
 
 export interface CirculationBarProps {
   id?: string;

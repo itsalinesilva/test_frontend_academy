@@ -76,17 +76,81 @@ export function injectSources(arquivos) {
 
 export function clearInjectedSources() {
   arquivosInjetados = [];
+  arquivosFixosInjetados = new Map(); // limpa as DUAS costuras: um afterEach só
+}
+/**
+ * A segunda costura: arquivo FIXO.
+ *
+ * `injectSources` cobre os verificadores que varrem a árvore. Vinte e um
+ * outros não varrem nada — leem um caminho conhecido e só: a tabela da
+ * economia, o outlet, `audiencia.ts`, a guarda, o repositório do Academy, o
+ * serviço de autenticação. Nenhum deles podia ser provado, porque não havia
+ * como pôr um defeito na frente deles sem escrever no repositório de verdade.
+ *
+ * Eram justamente os verificadores de segurança mais pesados: quem cobre
+ * herança de audiência, cobertura da guarda e permanência do dado do aluno
+ * depois de publicar. Verificação que ninguém nunca viu acusar, no lugar em
+ * que acusar mais importa.
+ *
+ * `readSource` é a mesma leitura, passando por um mapa que o teste pode
+ * preencher. Em produção o mapa está vazio e a função é `readFileSync`.
+ */
+let arquivosFixosInjetados = new Map();
+
+/** Põe um conteúdo no lugar do arquivo daquele caminho, só para esta leitura. */
+export function injectFile(caminho, conteudo) {
+  arquivosFixosInjetados.set(caminho, conteudo);
+}
+
+/** Lê o caminho, preferindo o que foi injetado. */
+export function readSource(caminho) {
+  if (arquivosFixosInjetados.has(caminho)) return arquivosFixosInjetados.get(caminho);
+  return readFileSync(caminho, 'utf-8');
+}
+
+/** Existe de verdade, ou foi injetado para esta leitura. */
+export function sourceExists(caminho) {
+  return arquivosFixosInjetados.has(caminho) || existsSync(caminho);
+}
+
+
+/**
+ * A árvore de `src`, lida UMA vez por processo.
+ *
+ * POR QUE O CACHE, E POR QUE ELE É SEGURO
+ * ---------------------------------------
+ * Cada verificador chama `sources()`. O pente fino chama quarenta e dois
+ * verificadores; a tabela de cobertura chama um por teste, trezentas vezes. Sem
+ * cache, isso era **trezentas varreduras completas** de oitenta e quatro
+ * arquivos, com leitura de disco e remoção de comentários em cada uma — e a
+ * suíte de testes da própria suíte custava cento e seis segundos.
+ *
+ * O cache é seguro porque estes processos são de vida curta e não escrevem em
+ * `src`: o pente fino lê e relata, o teste lê e injeta. A injeção **não**
+ * invalida o cache, e não precisa — ela acrescenta arquivos ao resultado sem
+ * tocar nos reais.
+ *
+ * Se algum dia um verificador passar a escrever em `src`, este cache passa a
+ * mentir. É por isso que `limparCacheDeFontes` existe e está exportada.
+ */
+let cacheDeFontes = null;
+
+/** Descarta a árvore lida, para quem precisar reler o disco. */
+export function limparCacheDeFontes() {
+  cacheDeFontes = null;
 }
 
 export function sources() {
-  const reais = walk('src')
-    .filter((f) => ['.ts', '.tsx'].includes(extname(f)))
-    .map((f) => {
-      const content = readFileSync(f, 'utf-8');
-      return { file: norm(f), content, code: stripComments(content) };
-    });
+  if (cacheDeFontes === null) {
+    cacheDeFontes = walk('src')
+      .filter((f) => ['.ts', '.tsx'].includes(extname(f)))
+      .map((f) => {
+        const content = readFileSync(f, 'utf-8');
+        return { file: norm(f), content, code: stripComments(content) };
+      });
+  }
 
-  return arquivosInjetados.length ? [...reais, ...arquivosInjetados] : reais;
+  return arquivosInjetados.length ? [...cacheDeFontes, ...arquivosInjetados] : cacheDeFontes;
 }
 
 export function screens() {
@@ -117,7 +181,12 @@ export function uiStrings(file, content) {
   const ehTecnico = (t) =>
     /^[a-z0-9_\-./#@]+$/i.test(t) ||
     /^[/?#]|\?\w+=|^<!--/.test(t) || // caminho de rota, consulta, marcador de máquina
-    /^[a-z0-9_\-./#@$:{} ]+$/i.test(t) || // caminho com interpolação
+    (/[/{@#]|:\s*$/.test(t) && /^[a-z0-9_\-./#@$:{} ]+$/i.test(t)) || // caminho com interpolação
+    // ^ a exigência de um caractere DE CAMINHO é o conserto de um cegueira:
+    //   sem ela, `Primeira licao do modulo` — letras e espaços, sem acento —
+    //   era classificada como caminho e nunca chegava à verificação de
+    //   acentuação. O grupo que existe para achar falta de acento era cego a
+    //   texto sem acento nenhum.
     /^[\w+.-]+\/[\w+.-]+/.test(t) || // MIME
     /[{};]\s*$|^\s*[.#@][\w-]+\s*\{|font-family:|url\(/.test(t) || // CSS
     /^(\s*(?:[a-z]+:)?(?:-?[a-z]+-)*[a-z]+(?:-[\w[\]().,%/]+)*\s+)+$/i.test(t) || // classes utilitárias
@@ -216,8 +285,20 @@ export function printReport(results) {
 export function checkerInventory() {
   const arquivos = walk('scripts/qa').filter((f) => f.endsWith('.mjs'));
   const orquestrador = readFileSync('scripts/qa.mjs', 'utf-8');
+  /**
+   * ARQUIVO DE DECLARAÇÃO NÃO É TESTE.
+   *
+   * `qa-modules.d.ts` declara o TIPO de cada verificador para o TypeScript.
+   * Ele cita todos os nomes — e citar não é provar: um verificador recém-escrito
+   * passava a contar como "visto acusando" no instante em que alguém declarava
+   * o tipo dele, sem uma linha de teste.
+   *
+   * Aconteceu com dois verificadores desta mesma sessão, e a vigilância ficou
+   * verde sobre cobertura que não existia — que é exatamente o que ela existe
+   * para impedir.
+   */
   const testes = walk('tests')
-    .filter((f) => f.endsWith('.ts') || f.endsWith('.tsx'))
+    .filter((f) => (f.endsWith('.ts') || f.endsWith('.tsx')) && !f.endsWith('.d.ts'))
     .map((f) => readFileSync(f, 'utf-8'))
     .join('\n');
 

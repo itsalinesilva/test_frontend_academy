@@ -84,6 +84,17 @@ export const REGRAS_DE_AUDIENCIA: RegraDeAudiencia[] = [
     audiencia: 'publica',
     porque: 'Ajuda serve sobretudo a quem ainda não entrou.',
   },
+  {
+    rota: '/acervo',
+    audiencia: 'publica',
+    porque:
+      'Catálogo de instituição acadêmica. É a cara pública do Conservatório, e esconder o que existe só afastaria quem procura.',
+  },
+  {
+    rota: '/acervo/artigo',
+    audiencia: 'publica',
+    porque: 'Artigo do Conservatório é texto aberto, e é o que mostra o que a escola pensa.',
+  },
   { rota: '/worlds', audiencia: 'publica', porque: 'O atlas é acervo, não progresso.' },
   { rota: '/score', audiencia: 'publica', porque: 'Partituras de domínio público são públicas.' },
   {
@@ -159,9 +170,23 @@ export const REGRAS_DE_AUDIENCIA: RegraDeAudiencia[] = [
     porque: 'Conclusão de curso pressupõe matrícula.',
   },
   {
+    /**
+     * 🔴 O LABORATÓRIO ESTAVA FECHADO PARA QUEM CHEGA.
+     *
+     * A rota exigia login, e o visitante batia na porta — não havia conteúdo
+     * dele. Uma escola que não deixa ver a aula antes de matricular perde quem
+     * ia se matricular.
+     *
+     * O que fechava era a **medição**, e ela continua fechada: ofensiva, XP e
+     * histórico só existem para quem tem nome. O treino em si é síntese local e
+     * roda para qualquer um.
+     *
+     * É o mesmo desenho do Atlas, que já é público: a tela mostra o que faz, e
+     * o que pertence a alguém fica atrás do convite.
+     */
     rota: '/practice',
-    audiencia: 'exigeLogin',
-    porque: 'Prática grava medição em nome de alguém.',
+    audiencia: 'publica',
+    porque: 'O treino é síntese local. A medição, que exige nome, fica atrás do convite.',
   },
   { rota: '/profile', audiencia: 'exigeLogin', porque: 'Perfil é de quem está logado.' },
   { rota: '/studio', audiencia: 'exigeLogin', porque: 'Estúdio salva projeto em nome do autor.' },

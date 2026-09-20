@@ -158,7 +158,7 @@ export const KidsGuardianScreen: React.FC = () => {
       density="operational"
       asideLabel="Perfis"
       state={isLoading ? 'loading' : perfis.length === 0 ? 'empty' : 'content'}
-      loadingMessage="Carregando o acompanhamento..."
+      loadingMessage="Carregando o acompanhamento…"
       emptyProps={{
         title: 'Nenhum perfil infantil ainda',
         description:

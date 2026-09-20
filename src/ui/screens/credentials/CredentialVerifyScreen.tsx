@@ -61,7 +61,7 @@ export const CredentialVerifyScreen: React.FC = () => {
       form="focus"
       density="editorial"
       state={isLoading ? 'loading' : 'content'}
-      loadingMessage="Consultando o registro..."
+      loadingMessage="Consultando o registro…"
     >
       <PageLayout.Hero>
         <div className="space-y-1">

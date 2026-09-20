@@ -38,6 +38,53 @@ export interface FaixaDoPlayer {
 }
 
 // ---------------------------------------------------------------------------
+// Quem pode entrar
+// ---------------------------------------------------------------------------
+
+/**
+ * Por que cada autor deste acervo está em domínio público.
+ *
+ * O CABEÇALHO DESTE ARQUIVO NÃO BASTAVA
+ * -------------------------------------
+ * Ele diz, em prosa, que só entra domínio público. Prosa não é verificável, e
+ * `checkPublicDomainRepertoire` existia para cobrar isso — mas procurava
+ * registros na forma `{ id: '...' }`, e aqui as faixas são construídas pela
+ * função `faixa(...)`. O verificador não enxergava **uma faixa sequer**:
+ * passava verde por cegueira, sobre trinta e três faixas.
+ *
+ * Este rol é a mesma garantia, em forma que a máquina lê. Autor que não estiver
+ * aqui não entra, e o pente fino recusa. A justificativa é obrigatória porque
+ * uma lista de nomes sem motivo é uma lista que ninguém revisa.
+ *
+ * O critério é o da lei brasileira: obra em domínio público setenta anos após
+ * 1º de janeiro do ano seguinte ao da morte do autor. Melodia tradicional sem
+ * autor conhecido e material escrito pelo próprio Conservatório entram por
+ * outra porta, e a justificativa diz qual.
+ */
+export const AUTORES_DO_ACERVO: Record<string, string> = {
+  'Conservatório Muscicapa': 'material próprio, escrito para a plataforma',
+  'Referência de afinação': 'fato físico: 440 Hz não é obra de ninguém',
+  'Melodia tradicional': 'tradicional, sem autor conhecido',
+  'Melodia tradicional inglesa': 'tradicional, sem autor conhecido',
+  'Melodia tradicional francesa': 'tradicional, sem autor conhecido',
+  'Cânone tradicional francês': 'tradicional, sem autor conhecido',
+  'Johann Sebastian Bach': 'morto em 1750',
+  'Antonio Vivaldi': 'morto em 1741',
+  'Georg Friedrich Händel': 'morto em 1759',
+  'Johann Pachelbel': 'morto em 1706',
+  'Christian Petzold': 'morto em 1733',
+  'Wolfgang Amadeus Mozart': 'morto em 1791',
+  'Joseph Haydn': 'morto em 1809',
+  'Ludwig van Beethoven': 'morto em 1827',
+  'François-Joseph Gossec': 'morto em 1829',
+  'Frédéric Chopin': 'morto em 1849',
+  'Robert Schumann': 'morto em 1856',
+  'Piotr Ilitch Tchaikovsky': 'morto em 1893',
+  'Johannes Brahms': 'morto em 1897',
+  'Edvard Grieg': 'morto em 1907',
+};
+
+// ---------------------------------------------------------------------------
 // Conversão de nome de nota em frequência
 // ---------------------------------------------------------------------------
 

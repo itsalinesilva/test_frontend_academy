@@ -193,7 +193,7 @@ export const TeacherRoomModal: React.FC<TeacherRoomModalProps> = ({
               <textarea
         aria-label="Texto do aviso aos estudantes"
                 rows={2}
-                placeholder="Texto do aviso aos estudantes..."
+                placeholder="Texto do aviso aos estudantes…"
                 value={newAnnouncementContent}
                 onChange={(e) => setNewAnnouncementContent(e.target.value)}
                 className="w-full text-xs p-1.5 rounded border border-stone-300"

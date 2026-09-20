@@ -96,7 +96,7 @@ export const ActivityScreen: React.FC = () => {
       <ScreenContainer
         id="activity-loading"
         title="Atividade Prática"
-        subtitle="Carregando enunciado..."
+        subtitle="Carregando enunciado…"
       >
         <div className="p-8 text-center text-stone-500 font-mono text-xs">
           Buscando atividade avaliada...

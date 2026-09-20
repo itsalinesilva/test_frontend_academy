@@ -14,6 +14,7 @@ import {
   Interval,
 } from '../../../domain/interval-training';
 import { CirculationBar } from '../../components/navigation/CirculationBar';
+import { VisitorInvitation } from '../../components/visitor/VisitorInvitation';
 import {
   Target,
   Volume2,
@@ -228,7 +229,37 @@ export const PracticeScreen: React.FC = () => {
         {/* Circulation Bar */}
         <CirculationBar id="practice-circulation" />
 
-        {/* Practice Stats Header */}
+        {/*
+          O CONVITE DE QUEM AINDA NÃO ENTROU.
+
+          O Laboratório exigia login e o visitante batia na porta. O treino é
+          síntese local e roda para qualquer um; o que exige nome é a medição —
+          ofensiva, XP, histórico —, e ela fica logo abaixo, fechada.
+        */}
+        {!userId && (
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-5">
+            <VisitorInvitation
+              space="Laboratório"
+              summary="O treino de percepção roda aqui mesmo, sem cadastro. O que fica guardado — ofensiva, XP e histórico — depende de ter nome."
+              highlights={[
+                { value: 'livre', label: 'ouvir e responder' },
+                { value: 'com nome', label: 'medição guardada' },
+                { value: 'com nome', label: 'ofensiva e liga' },
+              ]}
+              primaryLabel="Entrar no Conservatório"
+              onPrimary={() => navigate('/auth/login')}
+            />
+          </div>
+        )}
+
+        {/*
+          A MEDIÇÃO É DE QUEM TEM NOME.
+
+          Ofensiva e XP de um visitante seriam zero — e zero aqui não significa
+          "você não praticou", significa "não há onde guardar". Mostrar o painel
+          zerado ensinaria que o treino não conta.
+        */}
+        {userId && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card variant="default" padding="sm" className="flex items-center gap-3">
             <div className="p-2 rounded bg-red-100 text-anil-800">
@@ -270,6 +301,7 @@ export const PracticeScreen: React.FC = () => {
             </div>
           </Card>
         </div>
+        )}
 
         {/* Skill Category Selector Tabs */}
         <div className="flex items-center gap-2 border-b border-stone-200 pb-2 text-xs font-semibold">

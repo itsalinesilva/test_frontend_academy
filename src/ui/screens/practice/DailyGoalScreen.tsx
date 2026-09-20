@@ -26,7 +26,22 @@ export const DailyGoalScreen: React.FC = () => {
 
   useEffect(() => {
     async function loadGoal() {
-      if (!userId) return;
+      /**
+       * 🔴 SAIR ANTES DE DESLIGAR O CARREGAMENTO TRAVA A TELA.
+       *
+       * O `return` acontecia **antes** do `finally` que desliga o
+       * carregamento, então quem não tem sessão ficava com o esqueleto do
+       * `ScreenContainer` para sempre: a tela não abre, não dá erro, e não
+       * diz nada.
+       *
+       * Desligar antes de sair faz a tela cair no próprio estado vazio, que
+       * é legível e diz o que falta.
+       */
+      if (!userId) {
+        setIsLoading(false);
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         const goal = await practiceService.getDailyGoal(userId);
@@ -73,7 +88,31 @@ export const DailyGoalScreen: React.FC = () => {
     );
   }
 
-  if (!dailyGoal) return null;
+  /**
+   * 🔴 `return null` é UMA PÁGINA EM BRANCO.
+   *
+   * Sem sessão não há o que mostrar, e a tela devolvia **nada** — nem título,
+   * nem explicação, nem caminho de volta. Quem chega vê o cabeçalho e um vazio,
+   * e conclui que a plataforma quebrou.
+   *
+   * Ausente e quebrado parecem a mesma coisa quando a tela não fala. Aqui ela
+   * fala: diz o que falta e por quê.
+   */
+  if (!dailyGoal) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-3 p-8 text-center">
+        <h1 className="font-serif text-xl font-bold text-stone-900">Meta do dia</h1>
+        <p className="text-sm leading-relaxed text-stone-600">A meta diária é medição de alguém — ela nasce do seu histórico de prática. Entre no Conservatório para o Laboratório começar a medir.</p>
+        <button
+          type="button"
+          onClick={() => router.navigate('/practice')}
+          className="text-sm font-medium text-anil-800 underline underline-offset-2"
+        >
+          Voltar ao Laboratório
+        </button>
+      </div>
+    );
+  }
 
   const minutesPct = Math.min(100, Math.round((dailyGoal.completedMinutes / dailyGoal.targetMinutes) * 100));
   const xpPct = Math.min(100, Math.round((dailyGoal.completedXp / dailyGoal.targetXp) * 100));

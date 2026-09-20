@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 
 export const ScoreEditorScreen: React.FC = () => {
   const { navigate } = useRouter();
-  const [clef, setClef] = useState<'treble' | 'bass'>('treble');
+  const [clef, setClef] = useState<'treble' | 'bass' | 'alto'>('treble');
   const [keySignature, setKeySignature] = useState('C Major');
   const [timeSignature, setTimeSignature] = useState('4/4');
   const [tempo, setTempo] = useState(60);
@@ -15,7 +15,7 @@ export const ScoreEditorScreen: React.FC = () => {
     <ScreenContainer
       id="score-editor"
       title="Editor de Partituras"
-      subtitle="Composição formal e gravação gráfica em pautas canônicas com suporte a MusicXML e MIDI."
+      subtitle="Composição formal e gravação gráfica em pautas canônicas."
       badgeLabel="Motor de Notação"
       badgeVariant="neutral"
       primaryAction={{
@@ -23,11 +23,20 @@ export const ScoreEditorScreen: React.FC = () => {
         icon: ArrowLeft,
         onClick: () => navigate('/studio'),
       }}
+      /**
+       * Sem ação no estado vazio, porque ainda não há o que ela faria.
+       *
+       * Havia aqui um "Iniciar Nova Pauta" com `onAction: () => {}` — rótulo
+       * de criação sobre manipulador vazio. O verificador de botão falso era
+       * cego a corpo vazio (capturava `() => {` em vez de `() => {}`), então
+       * isso atravessou toda a varredura anterior sem ser visto.
+       *
+       * Criar pauta exige persistência de partitura, que é a Fase E. Até lá a
+       * tela diz o que é, e não oferece o que não cumpre.
+       */
       emptyProps={{
         title: 'Nenhuma partitura carregada',
-        description: 'Crie uma nova pauta para iniciar a edição ou importe um arquivo MusicXML existente.',
-        actionLabel: 'Iniciar Nova Pauta',
-        onAction: () => {},
+        description: 'A criação e a importação de pautas ainda não estão disponíveis nesta versão do estúdio.',
       }}
     >
       <div className="space-y-6">
@@ -39,7 +48,7 @@ export const ScoreEditorScreen: React.FC = () => {
               <select
         aria-label="Clave"
                 value={clef}
-                onChange={(e) => setClef(e.target.value as any)}
+                onChange={(e) => setClef(e.target.value as 'treble' | 'bass' | 'alto')}
                 className="bg-stone-50 border border-stone-300 rounded px-2 py-1 text-xs"
               >
                 <option value="treble">Sol (2ª Linha)</option>

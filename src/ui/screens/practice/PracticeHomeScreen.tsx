@@ -48,19 +48,37 @@ export const PracticeHomeScreen: React.FC = () => {
 
   useEffect(() => {
     async function loadPracticeHome() {
-      if (!userId) return;
+      /**
+       * 🔴 O LABORATÓRIO NÃO ABRIA PARA VISITANTE.
+       *
+       * Aqui havia `if (!userId) return;` — e ele saía **antes** de
+       * `setIsLoading(false)`. Quem não está logado ficava com `isLoading`
+       * verdadeiro para sempre, e a tela era esqueleto eterno.
+       *
+       * Não havia erro, não havia aviso, e nenhum teste pegou: a fumaça de
+       * rota montava tudo **como administrador logado**, e por esse caminho a
+       * função rodava até o fim.
+       *
+       * O que depende de nome — ofensiva, meta do dia, liga — fica nulo e a
+       * tela não o desenha. O que é público — a árvore de competências, que é
+       * o mapa do que se pode treinar — carrega para qualquer um.
+       */
       try {
         setLoading(true);
-        const [treesData, streakData, goalData, rankData] = await Promise.all([
-          practiceService.listSkillTrees(),
-          practiceService.getStreak(userId),
-          practiceService.getDailyGoal(userId),
-          practiceService.getLeaderboard(),
-        ]);
+
+        const treesData = await practiceService.listSkillTrees();
         setTrees(treesData);
-        setStreak(streakData);
-        setDailyGoal(goalData);
-        setLeaderboard(rankData);
+
+        if (userId) {
+          const [streakData, goalData, rankData] = await Promise.all([
+            practiceService.getStreak(userId),
+            practiceService.getDailyGoal(userId),
+            practiceService.getLeaderboard(),
+          ]);
+          setStreak(streakData);
+          setDailyGoal(goalData);
+          setLeaderboard(rankData);
+        }
       } catch (err) {
         console.error('Failed to load practice home', err);
       } finally {

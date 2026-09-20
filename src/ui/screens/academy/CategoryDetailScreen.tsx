@@ -217,7 +217,7 @@ export const CategoryDetailScreen: React.FC = () => {
             <input
         aria-label="Filtrar nesta categoria"
               type="text"
-              placeholder="Filtrar nesta categoria..."
+              placeholder="Filtrar nesta categoria…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-3 py-1.5 text-xs bg-stone-50 border border-stone-200 rounded-lg focus:outline-hidden focus:border-stone-400 font-sans"

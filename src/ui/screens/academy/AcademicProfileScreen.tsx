@@ -40,10 +40,20 @@ export const AcademicProfileScreen: React.FC = () => {
     const loadAcademicProfile = async () => {
       try {
         const session = await authService.getActiveSession();
-        // Sem sessão não há perfil acadêmico. O objeto de reserva anterior
-        // apresentava a identidade da fundadora — com nome e e-mail
-        // inventados — a qualquer visitante (CLAUDE_AUDIT.md T-05/K-05).
-        if (!session) return;
+        /**
+         * 🔴 Sair aqui deixava a tela no esqueleto para SEMPRE — inclusive
+         * para quem está logado, porque o `return` pulava o `setIsLoading(false)`
+         * que fica **fora** do `try`.
+         *
+         * Sem sessão não há perfil acadêmico, e a tela precisa cair no próprio
+         * estado vazio em vez de carregar sem fim. O objeto de reserva anterior
+         * apresentava a identidade da fundadora a qualquer visitante
+         * (CLAUDE_AUDIT.md T-05/K-05), e por isso não volta.
+         */
+        if (!session) {
+          setIsLoading(false);
+          return;
+        }
         setUserProfile(session.user);
 
         const [allCourses, allProgresses, certs] = await Promise.all([

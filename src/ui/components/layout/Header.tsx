@@ -35,7 +35,11 @@ export const Header: React.FC<HeaderProps> = ({
   onSwitchRole,
   onTogglePlayer,
   isPlayerOpen = false,
-  showAdminTab = false,
+  /**
+   * Mantido no contrato e não usado aqui: a administração entra pelo Perfil,
+   * e não pelo menu. O menu tem os pilares, e nada mais.
+   */
+  showAdminTab: _showAdminTab = false,
 }) => {
   const { currentPath, navigate } = useRouter();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -62,11 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <div className="hidden sm:block">
-          <ExplorarMenu
-            id="header-explorar"
-            currentUserRole={currentUser?.primaryRole}
-            showAdminTab={showAdminTab}
-          />
+          <ExplorarMenu id="header-explorar" />
         </div>
 
         {currentUser && (

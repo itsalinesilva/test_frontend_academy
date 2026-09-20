@@ -17,7 +17,7 @@
  *   7. o encerramento de sessão apaga de fato a sessão local.
  */
 import { readFileSync, existsSync } from 'node:fs';
-import { sources, stripComments } from './core.mjs';
+import { readSource, sourceExists, sources, stripComments } from './core.mjs';
 
 const repositorios = () => sources().filter((f) => f.file.startsWith('src/repositories/'));
 
@@ -106,8 +106,8 @@ export function checkPerUserFilter() {
  */
 export function checkPublishKeepsStudentData() {
   const file = 'src/repositories/academy.repository.ts';
-  if (!existsSync(file)) return [{ file, detail: 'repositório do Academy não existe' }];
-  const src = stripComments(readFileSync(file, 'utf-8'));
+  if (!sourceExists(file)) return [{ file, detail: 'repositório do Academy não existe' }];
+  const src = stripComments(readSource(file));
   const bloco = src.match(/conteudoPublicado\s*\([^)]*\)[^{]*\{([\s\S]*?)\n\s{2}\}/);
   if (!bloco) return [{ file, detail: 'conteudoPublicado() não encontrado' }];
 
@@ -222,8 +222,8 @@ export function checkHtmlInjection() {
 /** Encerrar sessão tem de apagar a sessão local, não só avisar o servidor. */
 export function checkSessionTeardown() {
   const file = 'src/services/application/auth.service.ts';
-  if (!existsSync(file)) return [{ file, detail: 'serviço de autenticação não existe' }];
-  const src = stripComments(readFileSync(file, 'utf-8'));
+  if (!sourceExists(file)) return [{ file, detail: 'serviço de autenticação não existe' }];
+  const src = stripComments(readSource(file));
   const logout = src.match(/public\s+async\s+logout\s*\([^)]*\)[^{]*\{([\s\S]*?)\n\s{2}\}/);
   if (!logout) return [{ file, detail: 'logout() não encontrado' }];
   const findings = [];
@@ -328,8 +328,8 @@ const GUARD_FILE = 'src/ui/navigation/GuardaDeAudiencia.tsx';
 const OUTLET_FILE = 'src/ui/screens/AppRouterOutlet.tsx';
 
 /** As regras declaradas, como pares rota → audiência. */
-function audienceRules() {
-  const src = readFileSync(AUDIENCE_FILE, 'utf-8');
+export function audienceRules() {
+  const src = readSource(AUDIENCE_FILE);
   return [...src.matchAll(/rota:\s*'([^']+)',\s*\n?\s*audiencia:\s*'(\w+)'/g)].map((m) => ({
     route: m[1],
     audience: m[2],
@@ -348,8 +348,8 @@ function audienceOf(route, rules) {
 }
 
 /** Rota → tela, lido do outlet por varredura linha a linha. */
-function routeToScreen() {
-  const lines = stripComments(readFileSync(OUTLET_FILE, 'utf-8')).split('\n');
+export function routeToScreen() {
+  const lines = stripComments(readSource(OUTLET_FILE)).split('\n');
   const out = [];
   let pending = [];
 
@@ -406,13 +406,13 @@ export function checkAdminScreensBehindAdminAudience() {
  * fonte; a guarda precisa acompanhá-lo.
  */
 export function checkGuardCoversEveryAudience() {
-  const type = readFileSync(AUDIENCE_FILE, 'utf-8').match(
+  const type = readSource(AUDIENCE_FILE).match(
     /export type Audiencia\s*=\s*([^;]+);/
   );
   if (!type) return [{ file: AUDIENCE_FILE, detail: 'tipo Audiencia não encontrado' }];
 
   const levels = [...type[1].matchAll(/'(\w+)'/g)].map((m) => m[1]);
-  const guard = readFileSync(GUARD_FILE, 'utf-8');
+  const guard = readSource(GUARD_FILE);
 
   return levels
     .filter((level) => !guard.includes(`'${level}'`))

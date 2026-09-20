@@ -53,6 +53,7 @@ import {
   checkPersonalSectionWithoutSession,
   checkPublicDomainRepertoire,
   checkDeadButton,
+  checkEmptyLiteralAsData,
   checkSuccessWithoutEffect,
   checkDataInsideScreen,
   checkDevToolInProduction,
@@ -69,6 +70,21 @@ import {
   checkDivergentValue,
 } from './qa/economy.mjs';
 import { checkReadiness, readinessReport } from './qa/readiness.mjs';
+import {
+  checkCourseHasChair,
+  checkChairHasCourse,
+  checkHouseStatusMatchesCorpus,
+  checkAtlasFilterIsApplied,
+  checkAcervoCatalogaTudo,
+  checkDisponibilidadeTemMotivo,
+  checkAtribuicaoDaPartitura,
+  checkNiveisDeMeioSeparados,
+  checkFiltroOferecidoEAplicado,
+  checkEixoUniversalAlcancaOAcervo,
+  checkFonteNaoCriaEntidade,
+  checkPapelEEixoProprio,
+  checkAtlasEAcervoMesmaVerdade,
+} from './qa/institution.mjs';
 
 /** A auditoria de rotas já existia; entra aqui em vez de virar comando à parte. */
 function checarRotas() {
@@ -158,6 +174,77 @@ const SECTIONS = [
     ],
   },
   {
+    heading: 'INSTITUIÇÃO — Cadeira, Grêmio e Casa dizem o mesmo que o documento',
+    checks: [
+      report('todo curso pertence a uma cadeira', checkCourseHasChair(), G.BLOCKS),
+      report('nenhuma cadeira fica sem curso', checkChairHasCourse(), G.FIX),
+      report('o status da Casa bate com o corpus', checkHouseStatusMatchesCorpus(), G.FIX),
+      report(
+        'todo filtro do Atlas é aplicado de fato',
+        checkAtlasFilterIsApplied(),
+        G.BLOCKS
+      ),
+      report('o acervo cataloga tudo', checkAcervoCatalogaTudo(), G.BLOCKS),
+      report(
+        'toda ficha diz por que algo não está disponível',
+        checkDisponibilidadeTemMotivo(),
+        G.FIX
+      ),
+      /**
+       * BLOQUEIA: licença com cláusula de atribuição é condição de uso, e não
+       * boa prática. Publicar seiscentas edições sem creditar quem as fez é
+       * publicar sem licença — e isso não é coisa para corrigir depois.
+       */
+      report(
+        'quem transcreveu a partitura aparece na ficha',
+        checkAtribuicaoDaPartitura(),
+        G.BLOCKS
+      ),
+      report(
+        'meio grosso e instrumento exato não se misturam',
+        checkNiveisDeMeioSeparados(),
+        G.FIX
+      ),
+      /**
+       * BLOQUEIA: filtro oferecido e não aplicado é tela mentindo sobre o que
+       * faz. Quem clica vê a contagem mudar e o resultado ficar igual.
+       */
+      report(
+        'todo filtro oferecido é aplicado de fato',
+        checkFiltroOferecidoEAplicado(),
+        G.BLOCKS
+      ),
+      report(
+        'os eixos universais alcançam o acervo',
+        checkEixoUniversalAlcancaOAcervo(),
+        G.FIX
+      ),
+      /**
+       * BLOQUEIA: uma fonte que cria entidade canônica enche o catálogo de
+       * duplicatas com aparência de registro. Já encheu, com 1.331.
+       */
+      report(
+        'fonte externa enriquece, e não cria entidade',
+        checkFonteNaoCriaEntidade(),
+        G.BLOCKS
+      ),
+      report(
+        'papel, instrumento e voz são eixos próprios',
+        checkPapelEEixoProprio(),
+        G.FIX
+      ),
+      /**
+       * BLOQUEIA: duas verdades sobre o mesmo acervo é pior que uma verdade
+       * incompleta — as duas telas ficam "certas" e nenhuma denuncia a outra.
+       */
+      report(
+        'o mapa e a biblioteca leem o mesmo catálogo',
+        checkAtlasEAcervoMesmaVerdade(),
+        G.BLOCKS
+      ),
+    ],
+  },
+  {
     heading: 'A SUÍTE VIGIA A SI MESMA',
     checks: [
       report('todo verificador está ligado ao pente fino', checkEveryCheckerIsWired(), G.BLOCKS),
@@ -181,6 +268,11 @@ const SECTIONS = [
         G.BLOCKS
       ),
       report('todo destino de navegação existe', checkNavigationTargets(), G.BLOCKS),
+      report(
+        'nenhuma apuração roda sobre vazio literal',
+        checkEmptyLiteralAsData(),
+        G.BLOCKS
+      ),
     ],
   },
   {

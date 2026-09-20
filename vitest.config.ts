@@ -22,8 +22,20 @@ export default defineConfig({
      *
      * Baixar as iteracoes para o teste passar seria enfraquecer a protecao
      * de uma crianca para poupar quinze segundos de suite.
+     *
+     * SUBIU PARA 60 QUANDO O CATALOGO PASSOU A SER IMPORTADO.
+     *
+     * As vinte e cinco mil obras chegavam por `fetch`, que em teste nunca
+     * respondia — e a suite inteira rodava sobre as dezessete obras do
+     * repertorio proprio, sem que nada dissesse isso. O caminho que carrega o
+     * acervo de verdade nao era exercitado por teste nenhum.
+     *
+     * Importado, o arquivo de cinco megabytes e lido e convertido de fato, em
+     * cada arquivo de teste que toca o acervo. Isso custa segundos, e sao
+     * segundos gastos exercitando o codigo que vai para o navegador. O preco
+     * e o certo: o barato de antes era nao testar.
      */
-    testTimeout: 20000,
+    testTimeout: 60000,
   },
   resolve: { alias: { '@': path.resolve(__dirname, './src') } },
 });

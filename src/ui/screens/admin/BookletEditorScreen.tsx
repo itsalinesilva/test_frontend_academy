@@ -204,7 +204,7 @@ export const BookletEditorScreen: React.FC = () => {
       density="operational"
       asideLabel="Livretos"
       state={isLoading ? 'loading' : erro && !rascunho ? 'error' : livretos.length === 0 ? 'empty' : 'content'}
-      loadingMessage="Carregando os livretos..."
+      loadingMessage="Carregando os livretos…"
       errorProps={{ message: erro ?? '', onRetry: carregar }}
       emptyProps={{
         title: 'Nenhum livreto ainda',

@@ -57,6 +57,10 @@ import { ScoreScreen } from './score/ScoreScreen';
 import { NotFoundScreen } from './notfound/NotFoundScreen';
 
 import { WorldsAtlasScreen } from './worlds/WorldsAtlasScreen';
+import { AcervoScreen } from './acervo/AcervoScreen';
+import { ObraScreen } from './acervo/ObraScreen';
+import { CompositorScreen } from './acervo/CompositorScreen';
+import { ArtigoScreen } from './acervo/ArtigoScreen';
 import { WorkDetailScreen } from './worlds/WorkDetailScreen';
 import { MusicGraphScreen } from './worlds/MusicGraphScreen';
 
@@ -399,6 +403,20 @@ export const AppRouterOutlet: React.FC = () => {
   // 3. SCORE (SCORE HUB & URTEXT)
   if (currentPath === '/score') {
     return <ScoreScreen />;
+  }
+
+  // 4. ACERVO — o catálogo. O Atlas é o mapa; aqui se consulta.
+  if (currentPath === '/acervo') {
+    return <AcervoScreen />;
+  }
+  if (currentPath.startsWith('/acervo/obra/')) {
+    return <ObraScreen />;
+  }
+  if (currentPath.startsWith('/acervo/compositor/')) {
+    return <CompositorScreen />;
+  }
+  if (currentPath.startsWith('/acervo/artigo/')) {
+    return <ArtigoScreen />;
   }
 
   // 4. MUNDOS (WORLDS)

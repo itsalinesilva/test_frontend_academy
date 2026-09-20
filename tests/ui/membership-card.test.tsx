@@ -106,9 +106,17 @@ describe('vazio é vazio', () => {
 
 describe('o texto de cabeçalho explica a estrutura', () => {
   it('diz de onde vem cada pertencimento', () => {
+    /**
+     * Dizia "o Grêmio vem do curso", e virou verdade pela metade quando o
+     * Grêmio passou a ser por CADEIRA: três cursos de história dão um Grêmio
+     * só. Quem cursou História Brasileira e lesse "vem do curso" esperaria um
+     * Grêmio de História Brasileira, que não existe.
+     */
     montar(EMPTY_MEMBERSHIP_CARD);
     expect(
-      screen.getByText(/Grêmio vem do curso, a Casa vem da prática, o Clube vem de você/i)
+      screen.getByText(
+        /Grêmio vem da área que você estuda, a Casa vem da prática, o Clube vem de você/i
+      )
     ).toBeInTheDocument();
   });
 });

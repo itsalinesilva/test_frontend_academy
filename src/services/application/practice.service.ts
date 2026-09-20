@@ -25,6 +25,8 @@ import {
   RankingLeague,
 } from '../../domain/practice';
 import { PracticeRepository, practiceRepository } from '../../repositories/practice.repository';
+import { RoutineRepository, routineRepository } from '../../repositories/routine.repository';
+import { LeagueTier } from '../../domain/league';
 import { profileService, ProfileService } from './profile.service';
 import { analyticsService } from '../../infrastructure/telemetry/analytics-service';
 import { AnalyticsEventType } from '../../domain/analytics';
@@ -52,12 +54,16 @@ export class PracticeService {
   private repo: PracticeRepository;
   private profileSvc: ProfileService;
 
+  private rotina: RoutineRepository;
+
   constructor(
     repo: PracticeRepository = practiceRepository,
-    profSvc: ProfileService = profileService
+    profSvc: ProfileService = profileService,
+    rotina: RoutineRepository = routineRepository
   ) {
     this.repo = repo;
     this.profileSvc = profSvc;
+    this.rotina = rotina;
   }
 
   // ---------------------------------------------------------------------------
@@ -521,6 +527,52 @@ export class PracticeService {
     }
 
     await this.repo.saveResult(result);
+
+    /**
+     * A sessao alimenta a ROTINA: missoes do dia e liga da semana.
+     *
+     * Sem isto, `PracticeLeagueScreen` chamava `computeStandings([], ...)` com
+     * um array vazio literal e as missoes recebiam `EMPTY_ACTIVITY` cravada. A
+     * tela montava, os testes de componente passavam, e ela era
+     * estruturalmente incapaz de mostrar qualquer coisa — praticar todo dia
+     * nao mudava uma linha.
+     *
+     * So se credita o que foi medido. `newWorksOpened` fica de fora porque
+     * abrir obra e evento do Atlas, e nao desta sessao; preenche-lo aqui seria
+     * creditar uma leitura que ninguem fez.
+     */
+    const rodadasImpecaveis = attempts.length > 0 && attempts.every((a) => a.isCorrect) ? 1 : 0;
+
+    /**
+     * `earTrainingCorrect` fica de fora, e isso e deliberado.
+     *
+     * A medicao distingue ACOUSTICS de SIMBOLICA, e nenhuma das duas e
+     * "treino de ouvido": uma sessao de teclado e acustica sem ser percepcao
+     * auditiva. Creditar acerto de ouvido a partir do que existe hoje seria
+     * adivinhar, e a missao que depende desse numero passaria a ser cumprida
+     * por quem nunca fez percepcao.
+     *
+     * Fica zerado ate a sessao carregar o tipo do exercicio ate aqui. A
+     * missao correspondente simplesmente nao avanca — que e a verdade.
+     */
+    await this.rotina.somarAtividade(userId, {
+      xpToday: totalXp,
+      flawlessRounds: rodadasImpecaveis,
+      periodsPracticed: 1,
+    });
+
+    /**
+     * A inscricao na liga nasce da pratica, e nao de um botao. A faixa de
+     * entrada e a primeira: subir e descer e trabalho da apuracao semanal, e
+     * nao desta chamada.
+     */
+    await this.rotina.creditarXpDaSemana(
+      userId,
+      { type: 'PLATFORM' },
+      LeagueTier.BRONZE,
+      totalXp
+    );
+
     return result;
   }
 

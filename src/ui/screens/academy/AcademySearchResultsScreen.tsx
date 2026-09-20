@@ -89,7 +89,7 @@ export const AcademySearchResultsScreen: React.FC = () => {
             <input
         aria-label="Refinar termo de busca"
               type="text"
-              placeholder="Refinar termo de busca..."
+              placeholder="Refinar termo de busca…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-transparent text-xs sm:text-sm text-stone-900 w-full focus:outline-hidden"

@@ -27,6 +27,16 @@ dist/
 # Ver CLAUDE_STATE.md §8 (ADR-001.B) e docs/harness/PROMPTS.md (COMANDO 7/8).
 framework_knowledge/
 
+# Cache das extracoes
+#
+# `scripts/.*.json` e o que os extratores leem das fontes, antes de virar
+# catalogo. Sao 9 MB de material intermediario, e o que importa deles ja esta
+# versionado em `src/data/acervo/` — que e o que a construcao usa.
+#
+# O catalogo em si NAO entra aqui. Ele ja ficou de fora uma vez, e o resultado
+# foi toda construcao feita a partir do repositorio nascer sem as 25 mil obras.
+scripts/.*.json
+
 # Sistema operacional
 Thumbs.db
 ehthumbs.db

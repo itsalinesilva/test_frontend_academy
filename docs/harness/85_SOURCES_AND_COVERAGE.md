@@ -1,0 +1,310 @@
+# 85 — AS FONTES DO ACERVO, E O QUE ELAS NÃO COBREM
+
+Documento **interno**. Nada aqui aparece na plataforma: o conteúdo é autoral, e
+a origem dos dados é registro de engenharia.
+
+A exceção é o **link oficial** que a ficha de uma obra mostra — ali o assunto é
+*onde o item está disponível*, que é informação de catálogo e obrigação de
+atribuição. Diferente de citar de quem é a opinião editorial, que é o que este
+documento existe para manter fora do produto.
+
+---
+
+## 1 · O que foi adquirido, e de onde
+
+Extraído em **2026-09-19** por `scripts/extrair-acervo.mjs`.
+
+| fonte | o que deu | quantos |
+| :--- | :--- | ---: |
+| **Open Opus** | nome canônico, datas, época, lista de obras | 220 compositores · 25.195 obras |
+| **Wikidata** | biografia curta em pt, retrato, identificadores cruzados | 220 biografias · 220 retratos |
+| **acervo próprio** | transcrições para o sintetizador da plataforma | 14 compositores · 17 obras |
+
+Cruzamento obtido: **MusicBrainz 219 · VIAF 219 · ISNI** e **IMSLP 188** dos
+220.
+
+### Como cada uma responde
+
+**Open Opus** — API JSON sem chave, CORS aberto. Listagem por inicial
+(`/composer/list/name/<letra>.json`) devolve os 220; `pop` e `rec` devolvem
+recortes menores. Obras por compositor em `/work/list/composer/<id>/genre/all`.
+
+**Wikidata** — a **API de ação** (`w/api.php`), e não o endpoint SPARQL. O
+SPARQL exige User-Agent de política e devolve `403` sem ele; a API de ação não
+tem essa exigência e responde com CORS aberto. Duas chamadas por compositor:
+`wbsearchentities` resolve o Q-id, `wbgetentities` traz as propriedades.
+
+> **Erro registrado.** Durante esta sessão eu afirmei que o ambiente não tinha
+> rede, generalizando aquele `403` do SPARQL. Tinha. O erro custou tempo e
+> atrasou o acervo inteiro.
+
+---
+
+## 2 · Como a fonte classifica
+
+O Open Opus usa **dez épocas**. Elas são o eixo cronológico dele, e o mapa para
+as sete eras do Atlas é este:
+
+| época (fonte) | era do Atlas |
+| :--- | :--- |
+| Medieval | `era_medieval` |
+| Renaissance | `era_renascimento` |
+| Baroque | `era_barroco` |
+| Classical | `era_classicismo` |
+| Early Romantic · Romantic · Late Romantic | `era_romantismo` |
+| Post-Romantic · 20th Century | `era_moderna` |
+| Post-War · 21st Century | `era_contemporanea` |
+
+Três épocas caem na mesma era de Romantismo, e duas na mesma era Moderna. **A
+distinção não se perde**: o sub-período é guardado ao lado da era, no campo
+`subPeriodo`, e é recorte de consulta próprio.
+
+O Atlas tem sete eras porque é o recorte do curso — elas organizam o mapa. O
+sub-período refina a busca: separar romântico inicial de tardio é a diferença
+entre Schubert e Mahler, e essa diferença é o assunto de dois capítulos.
+
+Os dois eixos convivem, e nada é descartado.
+
+Gêneros da fonte — Keyboard, Orchestral, Chamber, Stage, Vocal, Popular — são
+**agrupamentos de meio**, e não formas. Não se confundem com os gêneros do
+Atlas (missa, fuga, minueto), que são formas. Os dois eixos coexistem.
+
+---
+
+## 3 · 🔴 O QUE A FONTE NÃO COBRE
+
+**Esta é a seção mais importante do documento.** Um acervo que não declara o
+próprio recorte deixa quem consulta supor que a ausência é do mundo, e não da
+fonte.
+
+O Open Opus é um catálogo de **música de concerto ocidental**. Fora disso, ele
+é mudo:
+
+| lacuna | tamanho | natureza |
+| :--- | :--- | :--- |
+| **Antiguidade** | 0 compositores | não é falha da fonte — sobreviveu pouquíssima música notada |
+| **Repertório brasileiro** | 3 nomes (Villa-Lobos, Camargo Guarnieri, Mignone, Carlos Gomes) | falha de cobertura: o repertório existe e é vasto |
+| **Tradições não-europeias** | ausentes | fora do escopo declarado da fonte |
+| **Música popular** | marginal | idem |
+| **Compositoras** | pouquíssimas | viés do cânone que a fonte reproduz |
+
+### O que isso significa para o curso
+
+A espinha europeia dos vinte capítulos de História da Música Ocidental está
+bem coberta — do Medieval ao século XX. Dois pontos ficam a descoberto:
+
+**O capítulo de abertura**, sobre a Antiguidade. E a lacuna aqui **não é de
+fonte**: sobreviveram cerca de quarenta fragmentos gregos notados, muitos
+ilegíveis. O que chegou inteiro foi a *teoria*, e é disso que o capítulo trata.
+
+Forçar o formato de ficha de obra nessa era seria o erro — não há obras a
+catalogar. A era precisa de **outro tipo de registro**: fragmento, tratado,
+sistema modal. Está registrado como `AC-5` no TO DO.
+
+**A unidade brasileira**, que é curso separado. Aqui o repertório existe e é
+vasto; o que falta é **edição digital redistribuível**. O formato atual serve —
+o que muda é a via: catalogação pela Música Brasilis, e editoração própria para
+as obras sem edição livre. Está como `AC-6`.
+
+---
+
+## 4 · Os recortes editoriais da fonte
+
+O Open Opus marca obras e compositores como *popular* e *recommended*. São
+**opinião editorial de terceiro** — curadoria de quem eles consideram entrada
+natural no repertório.
+
+**Esses recortes não entram no modelo de catalogação.** Nenhum filtro da
+plataforma usa `popular` ou `recommended`, e nenhuma ficha os exibe.
+
+Se virassem filtro, a plataforma estaria assinando embaixo de um juízo que não
+é dela. Pior no caso de `recommended`: a lista não é linhagem, nem escola, nem
+influência — chamá-la de "descendência" ou "os principais" afirmaria uma
+relação que o dado não carrega.
+
+### Onde eles entram
+
+Como **insumo de artigo autoral**. O artigo usa o recorte como ponto de
+partida, o Conservatório conclui o que conclui, e o texto é nosso. Ver
+`src/domain/article.ts`.
+
+O catálogo continua neutro; a curadoria continua existindo, separada e
+assinada.
+
+---
+
+## 4a · A fonte repete, e a repetição estava sumindo
+
+`obras.json` tinha 25.195 registros e **24.940 identificadores distintos**. 204
+ids apareciam mais de uma vez — 255 registros —, e o `Map.set` da geração
+deixava o último a chegar vencer.
+
+Conferidos um a um, **todos os 255 são a mesma obra digitada duas vezes na
+fonte**: mesmo número de catálogo, mudando só acento, caixa ou espaço final.
+
+```
+"O Jesulein suss, o Jesulein mild, BWV.493"
+"O Jesulein süss, o Jesulein mild, BWV.493"
+```
+
+O slug já colapsava as duas, porque ignora acento — mas colapsava **por
+acidente**. Acidente que dá o resultado certo continua sendo acidente: ali ele
+escolhia a grafia pior com a mesma probabilidade com que escolhia a melhor.
+
+Agora é deliberado e escolhe: vence o título com **mais acento** — grafia mais
+completa é a menos corrompida na transmissão — e, empatando, o mais curto, que
+é o sem espaço sobrando. Os identificadores das duas entradas ficam guardados
+em `oo2`, porque a fonte conhece as duas e perder isso quebraria a volta à
+origem.
+
+---
+
+## 4b · A segunda passada sobre as partituras
+
+A listagem da fonte dá título, instrumento, estilo, licença e os arquivos. Não
+dá **quem editorou**, que é condição de licença em 621 das 1.349 peças.
+
+A página por peça dá, e dá mais duas coisas que a listagem não tem:
+
+| Campo | Quantas | Para que serve |
+|---|---|---|
+| Mantenedor | **1.348** de 1.349 | Cumprir a cláusula de atribuição |
+| Número de catálogo | **393** | Único dado capaz de provar que duas fontes falam da mesma obra |
+| Data de composição | **866** | Situa a peça dentro da era, e não só na era |
+
+O campo `Opus` da fonte guardava **duas coisas**: em `BWV 846` e `D. 891` é
+número de catálogo; em `Orchésographie` e `Ayres and Lute Songs I` é o nome da
+coletânea. Gravar as duas no mesmo campo repetiria o erro do gênero, e foram
+separadas pela forma: sigla curta seguida de número é catálogo, o resto é
+título.
+
+**O ritmo foi deliberadamente lento** — quatro por vez, com pausa entre as
+levas. O `robots.txt` não proíbe este caminho, e não proibir não é convidar:
+um projeto de voluntários não deve pagar a conta de banda pela nossa pressa.
+
+---
+
+## 4c · Título não deduplica entre fontes
+
+Das 638 partituras com compositor reconhecido, **18** têm título que casa com
+uma obra já catalogada. As outras 620 não casam porque as duas fontes escrevem
+diferente:
+
+- uma diz `Das wohltemperierte Klavier`, a outra `Prelude and Fugue in C major`
+- uma lista a coleção inteira, a outra numera `14 Canons - 3`
+
+Aproximar por semelhança de texto casaria préludios errados entre si, e **um
+catálogo que junta a peça errada mente pior do que um que repete**.
+
+Então repete, e a repetição é declarada: as 1.331 entram como registro
+próprio, ligadas ao mesmo compositor. Quem abrir Bach vê a ficha da
+catalogação e a edição como duas linhas — e são duas coisas: uma diz que a
+obra existe, a outra diz que há arquivo e sob que licença.
+
+O que funde de verdade é **número de catálogo**. Já há 393; falta a passada
+por obra que os traga para o lado da catalogação de origem.
+
+---
+
+## 4d · As sete propriedades do Wikidata, conferidas contra a API
+
+Sete propriedades foram levantadas de conhecimento geral. **Quatro existem** em
+registro de pessoa e três não — e as três não existem porque a pergunta estava
+endereçada à entidade errada.
+
+| Propriedade | Em compositor? | Onde vive de verdade |
+|---|---|---|
+| **P19** local de nascimento | ✅ 219 de 220 | — |
+| **P20** local de morte | ✅ 212 | — |
+| **P27** cidadania | ✅ 216 | — |
+| **P1303** instrumento praticado | ✅ 181 | — |
+| **P135** movimento | ⚠️ 83, e mistura era com movimento | — |
+| P412 tessitura | ❌ | registro de **cantor** |
+| P571 data de criação | ❌ | registro de **obra** |
+| P870 instrumentação | ❌ | registro de **obra** |
+
+Escrever as três últimas teria produzido campos permanentemente vazios e a
+impressão de que o acervo é pobre — quando o que estava errado era a pergunta.
+
+### Por que a cidadania, e não o local de nascimento
+
+O local é um **ponto** — Eisenach, Bonn —, e resolver cidade até país exigiria
+uma consulta por cidade. A cidadania **já vem como Estado**.
+
+Os dois entram no acervo: o local é conteúdo de ficha — "nasceu em Eisenach" é
+o que se lê numa biografia —, e a cidadania alimenta o filtro.
+
+### O Estado vem histórico, e isso não é erro
+
+Bach é cidadão do **Sacro Império Romano-Germânico**; Mozart, do **Arcebispado
+de Salzburgo**; Chopin, do **Congresso da Polônia**. Nenhum desses Estados
+existe, e é correto que a fonte os declare: a pessoa viveu neles, e o mapa de
+hoje é uma leitura posterior.
+
+Mapear cada um explicitamente — **82 Estados para 8 regiões** — é mais
+trabalhoso que olhar o país de hoje, e é a única forma de não escrever geografia
+errada. O rótulo fica ao lado de cada Q-id porque um mapa de
+`Q183: 'reg_europa_ocidental'` ninguém confere.
+
+O **bruto vai para o seed** e o mapa fica em TypeScript: separar a Itália ou
+desdobrar a Europa Oriental passa a ser uma linha, em vez de reextrair duzentos
+e vinte compositores.
+
+### P135 não foi importado cru
+
+Debussy devolve "impressionismo na música", que é movimento. Bach devolve
+"música barroca", que é **era**. Dos 22 valores distintos, a maioria é era
+disfarçada — "música barroca" 28, "música clássica" 15, "era romântica" 15.
+
+Gravar junto poria "Barroco" ao lado de "Impressionismo" no filtro de movimento:
+o mesmo defeito que o campo de gênero carregou por vinte e cinco mil registros.
+
+---
+
+## 4e · 🔴 Três compositores tinham a ficha de outra pessoa
+
+| Quem o acervo dizia ser | Quem a ficha descrevia |
+|---|---|
+| `John Adams`, compositor de 1947 | o **2º presidente dos Estados Unidos**, de 1735 |
+| `Howard Hanson`, compositor | um **político de Minnesota** |
+| `Engelbert Humperdinck`, de 1854 | o **cantor pop** dos anos 60 |
+
+As três fichas estavam **completas** — biografia, retrato, identificadores
+cruzados — e completamente erradas. É a pior falha possível num acervo: não é
+dado faltando, que se vê, é dado errado com aparência de certo.
+
+**A causa**: a extração pedia `limit=1` à busca e ficava com `search[0]`.
+
+### O sinal que separa, e o que não separa
+
+**A data sozinha não serve.** Onze registros divergem no ano de nascimento, e
+**oito estão corretos**: Ockeghem é `1420` aqui e `1410` lá, Josquin `1450` e
+`1455`. É datação de século XV, que a historiografia dá por aproximação.
+Acusar os onze trataria incerteza histórica como defeito.
+
+**A ocupação separa.** `P106` traz `Q36834` (compositor) nos oito legítimos e em
+nenhum dos três errados.
+
+A correção exige **as duas coisas** — ocupação e ano —, porque há compositores
+homônimos de séculos diferentes. Candidato ambíguo **não entra**: dois que
+passam nos dois testes devolvem nada, porque escolher um seria adivinhar.
+
+Trocar só o Q-id seria pior que não trocar: a ficha ficaria com o identificador
+de um e a biografia de outro, e agora sem o sinal que permitiu flagrá-la.
+
+---
+
+## 5 · O que é igualável, e o que não é
+
+Cobertura **igual entre eras é impossível**: o Medieval tem menos obra
+catalogada que o Romantismo porque sobreviveu menos, e não porque ninguém
+procurou. Perseguir paridade de volume produziria preenchimento.
+
+O que deve ficar parelho é a **qualidade do registro**:
+
+- todo compositor com biografia
+- todo registro com proveniência por campo
+- toda ficha dizendo o que se pode fazer com a obra, e por quê
+- toda era com o tipo de registro adequado ao que ela tem
+
+Essa é a medida de completude do acervo — e não a contagem por era.

@@ -15,13 +15,13 @@
  * como "botão". Campo sem rótulo é campo que ninguém sabe preencher.
  */
 import { readFileSync, existsSync } from 'node:fs';
-import { sources, uiFiles, screens, stripComments } from './core.mjs';
+import { readSource, screens, sourceExists, sources, stripComments, uiFiles } from './core.mjs';
 
 const OUTLET = 'src/ui/screens/AppRouterOutlet.tsx';
 
 /** Rotas que o outlet atende, por igualdade, prefixo ou fragmento. */
 export function servedRoutes() {
-  const src = stripComments(readFileSync(OUTLET, 'utf-8'));
+  const src = stripComments(readSource(OUTLET));
   return [
     ...new Set(
       [
@@ -152,7 +152,7 @@ export function checkFabricatedData() {
     [/unsplash\.com|pexels\.com|placehold\.(co|it)|picsum\.photos|placekitten/i, 'imagem de banco genérico'],
     [/usr_founder|usr_demo|usr_fake|usr_teste/i, 'usuário fictício'],
     [/Clara\s+Schumann|John\s+Doe|Jane\s+Doe|Fulano|Beltrano|Sicrano/i, 'pessoa inventada'],
-    [/example\.com|test@/i, 'endereço de exemplo'],
+    [/example\.com|\btest@/i, 'endereço de exemplo'],
   ];
   const findings = [];
   for (const { file, code: content } of sources()) {
@@ -179,13 +179,211 @@ export function checkFabricatedData() {
  */
 export function checkPublicDomainRepertoire() {
   const file = 'src/data/seed-player-repertoire.ts';
-  if (!existsSync(file)) return [];
-  const src = stripComments(readFileSync(file, 'utf-8'));
+  if (!sourceExists(file)) return [];
+  const src = stripComments(readSource(file));
+
+  /**
+   * ESTE VERIFICADOR ERA VAZIO, E O PIOR TIPO DE VAZIO.
+   * ---------------------------------------------------
+   * Ele procurava `{ id: '...' }` e cobrava de cada bloco a palavra
+   * `dominioPublico`. O acervo, porém, é construído por chamadas a
+   * `faixa('id', 'título', 'autor', ...)` — não há um único bloco daquela
+   * forma no arquivo. O verificador varria trinta e três faixas e enxergava
+   * zero, devolvendo lista vazia para sempre.
+   *
+   * Verde por cegueira é pior que vermelho: o relatório afirmava que o
+   * repertório estava conferido, e ninguém tinha conferido nada.
+   *
+   * Agora ele lê o AUTOR de cada faixa e exige que esteja no rol declarado no
+   * próprio arquivo de dados, com justificativa. Nome novo sem justificativa
+   * não entra, que é a única forma de a regra valer para a faixa seguinte.
+   */
+  const rol = new Set(
+    [...(src.split('AUTORES_DO_ACERVO')[1] ?? '').matchAll(/'([^']+)':\s*'([^']+)'/g)].map(
+      (m) => m[1]
+    )
+  );
+
+  if (rol.size === 0) {
+    return [{ file, detail: 'AUTORES_DO_ACERVO não encontrado — a verificação ficaria vazia' }];
+  }
+
   const findings = [];
-  const faixas = [...src.matchAll(/\{\s*id:\s*'([^']+)'([\s\S]*?)\n\s{2}\}/g)];
-  for (const [, id, corpo] of faixas) {
-    if (!/dominioPublico|publicDomain|dom[íi]nio p[úu]blico/i.test(corpo)) {
-      findings.push({ file, detail: `faixa "${id}" não declara domínio público` });
+  const chamadas = [...src.matchAll(/faixa\(\s*'([^']+)',\s*'([^']+)',\s*'([^']+)'/g)];
+
+  if (chamadas.length === 0 && /faixa\(/.test(src)) {
+    return [{ file, detail: 'há chamadas a faixa() que este verificador não consegue ler' }];
+  }
+
+  for (const [, id, , autor] of chamadas) {
+    if (!rol.has(autor)) {
+      findings.push({
+        file,
+        detail: `faixa "${id}": o autor "${autor}" não está em AUTORES_DO_ACERVO — declare por que é domínio público`,
+      });
+    }
+  }
+  return findings;
+}
+
+/**
+ * Extrai o corpo de cada manipulador, contando chaves.
+ *
+ * A VERSÃO ANTERIOR ERA CEGA AO CASO MAIS COMUM
+ * ---------------------------------------------
+ * Ela capturava com `onClick=\{([^}]*(?:\{[^}]*\}[^}]*)*)\}`. Em
+ * `onClick={() => {}}` o `[^}]*` é guloso e engole também a chave de
+ * ABERTURA do corpo — porque `{` não é `}`. O casamento terminava na primeira
+ * chave de fechamento e o corpo capturado era `() => {`, que não casa com
+ * nada. O `.{0,160}` da segunda forma tinha o defeito espelhado: guloso até o
+ * fim da linha, trazia junto o que vinha depois e estragava a comparação.
+ *
+ * Resultado: `checkDeadButton` só via os `alert()`. Nunca viu um manipulador
+ * vazio. O `onAction: () => {}` do editor de partituras passou batido por
+ * isso, e acabou registrado à mão como pendência — quando a máquina deveria
+ * tê-lo pegado.
+ *
+ * Contar chaves resolve os dois casos, e é o que uma linguagem com blocos
+ * exige de quem quer ler o corpo de uma função.
+ */
+function manipuladores(content) {
+  const out = [];
+  const inicio = /\bon(?:Click|Action|Submit|Retry|Change)\s*[=:]\s*\{?\s*/g;
+
+  for (const m of content.matchAll(inicio)) {
+    let i = m.index + m[0].length;
+
+    // a lista de parâmetros, se houver
+    if (content[i] === '(') {
+      let prof = 0;
+      while (i < content.length) {
+        if (content[i] === '(') prof++;
+        else if (content[i] === ')' && --prof === 0) {
+          i++;
+          break;
+        }
+        i++;
+      }
+    } else if (/^\w+\s*=>/.test(content.slice(i, i + 40))) {
+      i += content.slice(i).match(/^\w+/)[0].length; // parâmetro sem parênteses
+    }
+
+    const seta = content.slice(i, i + 8).match(/^\s*=>\s*/);
+    if (!seta) continue; // referência a função nomeada: não é corpo para ler
+    i += seta[0].length;
+
+    let corpo;
+    if (content[i] === '{') {
+      let prof = 0;
+      let j = i;
+      while (j < content.length) {
+        if (content[j] === '{') prof++;
+        else if (content[j] === '}' && --prof === 0) {
+          j++;
+          break;
+        }
+        j++;
+      }
+      corpo = content.slice(i, j);
+    } else {
+      const fim = content.slice(i).search(/[\n;,]|\}/);
+      corpo = content.slice(i, fim === -1 ? content.length : i + fim);
+    }
+
+    out.push({ corpo: corpo.trim(), index: m.index });
+  }
+  return out;
+}
+
+
+/**
+ * Dado vazio LITERAL no lugar de uma leitura.
+ *
+ * O DEFEITO QUE ISTO PEGA
+ * -----------------------
+ * `PracticeLeagueScreen` chamava:
+ *
+ *     computeStandings([], scope, LeagueTier.BRONZE, weekOf(new Date()))
+ *
+ * com um array vazio literal, logo abaixo de um comentário afirmando que a
+ * apuração "roda sobre as inscrições da semana". As missões recebiam
+ * `EMPTY_ACTIVITY` cravada, a ofensiva recebia `streakDays={0}` e
+ * `freezes={0}`.
+ *
+ * Nada disso aparecia como falha em lugar nenhum. A tela montava, os testes de
+ * componente passavam, o estado vazio era elegante — e praticar todo dia
+ * durante um mês não mudaria uma linha, porque nenhum dado tinha por onde
+ * chegar ali. Nenhum verificador via, porque não há sintaxe errada: há uma
+ * ausência, e ausência não tem forma.
+ *
+ * O SINAL
+ * -------
+ * Dentro de tela, uma função de APURAÇÃO — nome que começa por compute,
+ * calcular, apurar, derive, resolve — recebendo `[]` ou `{}` literal como
+ * primeiro argumento. Apurar sobre o vazio literal não é estado vazio: é
+ * apurar sobre nada, sempre.
+ *
+ * Constante `EMPTY_*` passada a uma função de progresso cai na mesma regra.
+ *
+ * POR QUE ISTO NÃO ACUSA ESTADO INICIAL
+ * -------------------------------------
+ * `useState([])` e `useState(EMPTY_ACTIVITY)` são corretos e comuns: é o valor
+ * de partida até a leitura chegar. O que se acusa é o vazio entrando na
+ * APURAÇÃO, que é outra coisa.
+ */
+const APURACAO = /(compute|calcular|apurar|derive|resolver|rank|classificar|progress)\w*/i;
+
+export function checkEmptyLiteralAsData() {
+  const findings = [];
+
+  for (const { file, code } of sources()) {
+    if (!/\/ui\/screens\//.test(file) || file.includes('.test.')) continue;
+
+    for (const [i, line] of code.split('\n').entries()) {
+      // `useState([])` e o ponto de partida, e nao a apuracao
+      if (/useState\s*\(/.test(line)) continue;
+
+      /**
+       * Duas posicoes, e nao so a primeira.
+       *
+       * `missionProgress(missionsOfTheDay(u), EMPTY_ACTIVITY)` punha o vazio
+       * no SEGUNDO argumento, e a primeira versao deste verificador olhava so
+       * o primeiro — passava batido no defeito que o motivou.
+       */
+      /**
+       * Duas formas, e nao so a primeira posicao.
+       *
+       * `missionProgress(missionsOfTheDay(u), EMPTY_ACTIVITY)` punha o vazio
+       * no SEGUNDO argumento, depois de uma chamada aninhada. Qualquer regex
+       * de argumento que nao atravesse parenteses erra esse caso — e era
+       * justamente o defeito que motivou este verificador.
+       *
+       * Para a constante `EMPTY_*` a regra e mais simples e basta: dentro de
+       * tela, a linha que cita uma funcao de apuracao E uma constante vazia
+       * esta apurando sobre o vazio. `useState` ja saiu antes.
+       */
+      const ocorrencias = [
+        ...line.matchAll(/\b(\w+)\s*\(\s*(\[\s*\]|\{\s*\})\s*,/g),
+      ];
+
+      const vazioNomeado = line.match(/\b(EMPTY_\w+)\b/);
+      if (vazioNomeado) {
+        const chamada = line.match(/\b(\w+)\s*\(/);
+        if (chamada && APURACAO.test(chamada[1])) {
+          ocorrencias.push([line, chamada[1], vazioNomeado[1]]);
+        }
+      }
+
+      for (const m of ocorrencias) {
+        const [, nome, vazio] = m;
+        if (!APURACAO.test(nome)) continue;
+
+        findings.push({
+          file,
+          line: i + 1,
+          detail: `${nome}() apura sobre ${vazio} literal — nenhuma leitura chega ali, e o resultado e sempre o mesmo`,
+        });
+      }
     }
   }
   return findings;
@@ -214,18 +412,13 @@ export function checkDeadButton() {
      * segunda escapava, e era justamente onde estavam os alertas das ações
      * principais das telas de administração.
      */
-    const ocorrencias = [
-      ...content.matchAll(/onClick=\{([^}]*(?:\{[^}]*\}[^}]*)*)\}/g),
-      ...content.matchAll(/\bon(?:Click|Action|Submit|Retry):\s*(\([^)]*\)\s*=>.{0,160})/g),
-    ];
-    for (const m of ocorrencias) {
-      const corpo = m[1];
-      const line = content.slice(0, m.index).split('\n').length;
+    for (const { corpo, index } of manipuladores(content)) {
+      const line = content.slice(0, index).split('\n').length;
 
       if (/\balert\(|\bconfirm\(|\bprompt\(/.test(corpo)) {
         findings.push({ file, line, detail: `age só por alert do navegador: ${corpo.slice(0, 50)}` });
-      } else if (/^\(\)\s*=>\s*(\{\s*\}|undefined|null|void 0)\s*$/.test(corpo.trim())) {
-        findings.push({ file, line, detail: 'onClick vazio — o botão não faz nada' });
+      } else if (/^(\{\s*\}|undefined|null|void 0)$/.test(corpo)) {
+        findings.push({ file, line, detail: 'manipulador vazio — o controle não faz nada' });
       }
     }
   }
@@ -279,13 +472,43 @@ export function checkSuccessWithoutEffect() {
  */
 export function checkComingSoonPromise() {
   const findings = [];
-  for (const { file, code: content } of uiFiles()) {
-    for (const m of content.matchAll(/em breve|brevemente|ainda não disponível|indisponível no momento/gi)) {
-      findings.push({
-        file,
-        line: content.slice(0, m.index).split('\n').length,
-        detail: `promete para depois: "${m[0]}"`,
-      });
+
+  /**
+   * TODO o `src`, e não só a interface.
+   *
+   * A versão anterior lia só `uiFiles()`. Uma promessa escrita num SERVIÇO e
+   * renderizada pela tela passava intacta — o texto chega ao aluno do mesmo
+   * jeito, e o verificador não via de onde veio.
+   */
+  for (const { file, code: content } of sources()) {
+    if (file.includes('.test.')) continue;
+
+    for (const m of content.matchAll(
+      /em breve|brevemente|ainda n[ãa]o dispon[íi]vel|indispon[íi]vel no momento/gi
+    )) {
+      const line = content.slice(0, m.index).split('\n').length;
+      const texto = content.split('\n')[line - 1] ?? '';
+
+      /**
+       * `motivo:` é exceção, e é estreita de propósito.
+       *
+       * Pelo contrato de `DisponibilidadeNoConservatorio`, `motivo` é
+       * **obrigatório** e explica um estado JÁ DECLARADO: o item existe, está
+       * catalogado e contado, e a frase diz por que ele não abriu ainda. Os
+       * cinco livros do Conservatório são esse caso — existem, têm capítulos e
+       * questões contados do livreto, e aguardam curadoria editorial.
+       *
+       * O defeito que este verificador existe para pegar é outro: "esta
+       * funcionalidade estará disponível em breve" sobre o que não existe.
+       * Promessa sem estado declarado.
+       *
+       * LIMITE: não há como aferir daqui se o item do `motivo` existe de
+       * verdade. Quem escrevesse `motivo: 'em breve'` sobre vapor passaria —
+       * e isso está declarado em `72_QUALITY_SWEEP.md`.
+       */
+      if (/\bmotivo\s*:/.test(texto)) continue;
+
+      findings.push({ file, line, detail: `promete para depois: "${m[0]}"` });
     }
   }
   return findings;
@@ -613,16 +836,65 @@ export function checkAltText() {
 }
 
 /** Elemento clicável que o teclado não alcança. */
+/**
+ * A abertura inteira de uma etiqueta clicável, e não até o primeiro `>`.
+ *
+ * O DEFEITO QUE ISTO CORRIGE
+ * --------------------------
+ * A versão anterior casava `<(div|span|...)\b([^>]*onClick[^>]*)>`. O problema
+ * é que `[^>]*` não atravessa o `>` da SETA: em
+ *
+ *     <div onClick={() => abrir()} onKeyDown={aoTeclado}>
+ *
+ * a lista de atributos era cortada no `=>`, e virava ` onClick={() =`. Tudo
+ * que vinha DEPOIS do onClick — `onKeyDown`, `tabIndex`, `role` — ficava fora
+ * do que o verificador examinava.
+ *
+ * Como manipulador em seta embutida é a forma comum, o verificador acusava
+ * praticamente toda div clicável, inclusive as que tratam o teclado
+ * corretamente. Falso positivo em massa é pior que verificador ausente:
+ * ensina a ignorá-lo, e aí ele não serve nem para o caso verdadeiro.
+ *
+ * Quem achou isso não foi a varredura — foi o caso LIMPO da tabela de
+ * cobertura, que exige que código correto não seja acusado.
+ *
+ * Contar chaves resolve: dentro de `{...}` a profundidade é maior que zero, e
+ * o `>` da seta deixa de ser confundido com o fim da etiqueta.
+ */
+function aberturasClicaveis(content) {
+  const out = [];
+  for (const m of content.matchAll(/<(div|span|li|td|tr|section|article)\b/g)) {
+    let i = m.index + m[0].length;
+    let prof = 0;
+
+    while (i < content.length) {
+      const c = content[i];
+      if (c === '{') prof++;
+      else if (c === '}') prof--;
+      else if (c === '<' && prof === 0) break; // etiqueta que não fechou: desiste
+      else if (c === '>' && prof === 0) break;
+      i++;
+    }
+    if (content[i] !== '>') continue;
+
+    const attrs = content.slice(m.index + m[0].length, i);
+    if (!/onClick/.test(attrs)) continue;
+
+    out.push({ tag: m[1], attrs, index: m.index });
+  }
+  return out;
+}
+
 export function checkKeyboardReach() {
   const findings = [];
   for (const { file, code: content } of uiFiles()) {
-    for (const m of content.matchAll(/<(div|span|li|td|tr|section|article)\b([^>]*onClick[^>]*)>/g)) {
-      const attrs = m[2];
+    for (const m of aberturasClicaveis(content)) {
+      const attrs = m.attrs;
       if (/role=|tabIndex|onKeyDown|onKeyUp|onKeyPress/.test(attrs)) continue;
       findings.push({
         file,
         line: content.slice(0, m.index).split('\n').length,
-        detail: `<${m[1]} onClick> sem role nem tabIndex — o teclado não chega`,
+        detail: `<${m.tag} onClick> sem role nem tabIndex — o teclado não chega`,
       });
     }
   }
@@ -713,15 +985,46 @@ export function checkRetiredVocabulary() {
     for (const [i, line] of code.split('\n').entries()) {
       for (const [word, instead] of RETIRED_WORDS) {
         /**
-         * Só identificador, e não prosa: os comentários que EXPLICAM a
-         * remoção precisam poder citar a palavra removida. Apagá-los levaria
-         * embora a razão da mudança, que é o mais caro de reconstruir.
+         * Três formas, e nenhuma delas é "a palavra em qualquer lugar".
+         *
+         * A primeira versão exigia início de palavra, e por isso não via
+         * `etapaDaTribo`, `listarTribos` nem `setTriboId` — em camelCase a
+         * palavra vem depois de uma letra minúscula. Acusava ZERO sobre oito
+         * ocorrências vivas, e o fixture do teste (`triboId`) era justamente a
+         * única forma que ela enxergava: cobertura verde sobre cegueira.
+         *
+         * A correção ÓBVIA — permitir a palavra no meio — é pior que o
+         * defeito: `ilha` vive dentro de `trilha`, `filha`, `milha` e
+         * `empilhadas`. Sessenta e nove acusações, quase todas falsas, e
+         * falso positivo em massa ensina a ignorar o verificador.
+         *
+         * O que separa os dois casos é o limite de CAIXA. Em camelCase, um
+         * segmento novo começa com maiúscula: o `T` de `etapaDaTribo` é
+         * fronteira; o `i` de `trilha` não é.
          */
-        const asIdentifier = new RegExp(
+        const inicioDeIdentificador = new RegExp(
           `(?:^|[^a-zà-ú])${word}s?(?:[A-Z_]|Id\b|\s*[:=.[])`,
           'i'
         );
-        if (asIdentifier.test(line)) {
+
+        // Segmento de camelCase: minúscula seguida da palavra com inicial
+        // maiúscula. Sensível a caixa DE PROPÓSITO — é a caixa que informa.
+        const Palavra = word[0].toUpperCase() + word.slice(1);
+        const segmentoCamel = new RegExp(`[a-zà-ú]${Palavra}s?(?![a-zà-ú])`);
+
+        // Texto de tela: a palavra inteira, cercada por não-letras.
+        // `aria-label="Filtrar por tribo"` não é identificador, e mesmo
+        // assim é a palavra aposentada chegando ao aluno.
+        const textoDeTela = new RegExp(
+          `(?:^|[^a-zà-ú])${word}s?(?:[^a-zà-ú]|$)`,
+          'i'
+        );
+
+        if (
+          inicioDeIdentificador.test(line) ||
+          segmentoCamel.test(line) ||
+          textoDeTela.test(line)
+        ) {
           findings.push({
             file,
             line: i + 1,
@@ -768,7 +1071,7 @@ function screenRoutes() {
    * `/design-system`. Aqui a rota mais recente vale até aparecer a tela, que é
    * exatamente como o arquivo é escrito.
    */
-  const lines = stripComments(readFileSync(OUTLET, 'utf-8')).split('\n');
+  const lines = stripComments(readSource(OUTLET)).split('\n');
   const map = new Map();
   let pending = [];
 
@@ -789,7 +1092,7 @@ function screenRoutes() {
 
 /** Prefixos de rota que exigem login, lidos de `audiencia.ts`. */
 function loginOnlyRoutes() {
-  const src = readFileSync('src/ui/navigation/audiencia.ts', 'utf-8');
+  const src = readSource('src/ui/navigation/audiencia.ts');
   return [...src.matchAll(/rota:\s*'([^']+)',\s*audiencia:\s*'exigeLogin'/g)].map((m) => m[1]);
 }
 

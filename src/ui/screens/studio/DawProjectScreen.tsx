@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
-import { Button } from '../../components/base/Button';
 import {
   Play,
   Square,
   Circle,
-  Plus,
   RotateCcw,
   RotateCw,
   ArrowLeft,
@@ -160,14 +158,26 @@ export const DawProjectScreen: React.FC = () => {
                 {/* Volume slider */}
                 <div className="flex items-center gap-2 text-[11px] text-stone-500 font-mono">
                   <span>VOL:</span>
+                  {/*
+                    Desabilitado, e não fingindo.
+
+                    Era um controle CONTROLADO com `onChange={() => {}}`: o
+                    aluno arrastava e o React devolvia o valor ao lugar. Pior
+                    que não fazer nada — parecia quebrado.
+
+                    Mixagem exige motor de áudio, que não existe. Enquanto não
+                    existir, o valor é mostrado e o controle não se oferece.
+                  */}
                   <input
-        aria-label="VOL"
+                    aria-label={`Volume de ${track.name}`}
                     type="range"
                     min={0}
                     max={100}
                     value={track.vol}
-                    onChange={() => {}}
-                    className="w-full accent-anil-800 h-1 bg-stone-200 rounded"
+                    disabled
+                    readOnly
+                    title="A mixagem ainda não está disponível nesta versão do estúdio"
+                    className="w-full accent-anil-800 h-1 bg-stone-200 rounded disabled:opacity-60"
                   />
                   <span className="w-6 text-right">{track.vol}</span>
                 </div>
@@ -192,12 +202,20 @@ export const DawProjectScreen: React.FC = () => {
         </div>
 
         {/* Bottom Actions */}
-        <div className="flex items-center justify-between text-xs text-stone-500 font-mono">
-          <span>Formatos de exportação suportados: WAV 24-bit 48kHz, FLAC, MIDI 2.0 e MusicXML</span>
-          <Button variant="ghost" size="sm" onClick={() => {}}>
-            <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar Pista de Áudio
-          </Button>
-        </div>
+        {/*
+          Duas afirmações saíram daqui.
+
+          A primeira listava WAV 24-bit 48kHz, FLAC, MIDI 2.0 e MusicXML como
+          "formatos de exportação suportados". Nenhum deles é produzido em
+          lugar nenhum do código: era especificação de folheto escrita como
+          fato de produto.
+
+          A segunda era "Adicionar Pista de Áudio" com manipulador vazio.
+        */}
+        <p className="text-xs text-stone-500 font-mono">
+          Esta mesa mostra a estrutura do projeto. Gravação, mixagem e exportação
+          ainda não estão disponíveis nesta versão do estúdio.
+        </p>
       </div>
     </ScreenContainer>
   );

@@ -280,9 +280,9 @@ export const ProfileOverviewScreen: React.FC = () => {
         density="operational"
         asideLabel="Secoes"
         state={isLoading ? 'loading' : erro ? 'error' : 'empty'}
-        loadingMessage="Carregando perfil profissional..."
+        loadingMessage="Carregando perfil profissional…"
         errorProps={{
-          message: erro ?? 'Nao foi possivel carregar este perfil.',
+          message: erro ?? 'Não foi possível carregar este perfil.',
           onRetry: () => {
             setIsLoading(true);
             loadProfile(isPreviewPublic);
@@ -429,7 +429,7 @@ export const ProfileOverviewScreen: React.FC = () => {
             lugar de seis <button> com classes condicionais a mao. */}
         <SegmentedControl
           id="profile-clusters"
-          ariaLabel="Agrupar secoes do perfil"
+          ariaLabel="Agrupar seções do perfil"
           sizeVariant="sm"
           value={selectedCluster}
           onChange={setSelectedCluster}

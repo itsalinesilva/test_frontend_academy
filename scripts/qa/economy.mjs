@@ -23,13 +23,13 @@
  * afirmado sem ressalva.
  */
 import { readFileSync } from 'node:fs';
-import { sources } from './core.mjs';
+import { readSource, sources } from './core.mjs';
 
 const DOC = 'docs/harness/76_PROGRESS_ECONOMY.md';
 
 /** As linhas de tabela da §2, já separadas em colunas. */
-function countingRows() {
-  const doc = readFileSync(DOC, 'utf-8');
+export function countingRows() {
+  const doc = readSource(DOC);
   const section = doc.split('## 2 · Tabela de contagem')[1]?.split('\n## ')[0] ?? '';
 
   return section
@@ -137,7 +137,7 @@ export function checkValueOutsideTable() {
 
 /** As constantes de `XP` no código, lidas do único módulo autorizado a declará-las. */
 function xpConstants() {
-  const src = readFileSync('src/domain/progress-economy.ts', 'utf-8');
+  const src = readSource('src/domain/progress-economy.ts');
   const bloco = src.split('export const XP = {')[1]?.split('} as const;')[0] ?? '';
   const table = new Map();
   for (const m of bloco.matchAll(/^\s*([A-Z_]+):\s*(\d+)\s*,/gm)) {
