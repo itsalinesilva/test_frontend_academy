@@ -126,10 +126,73 @@ describe('a região chega ao acervo de verdade', () => {
     expect(brasileiros.length).toBeGreaterThan(0);
   });
 
-  it('a ficha traz local de nascimento para a quase totalidade', () => {
+  it('🔴 o local de nascimento é DECLARADO por fonte, e não fingido no todo', () => {
+    /**
+     * ESTE CASO EXIGIA 90% DO ACERVO INTEIRO, E DEIXOU DE PODER EXIGIR.
+     *
+     * Enquanto o catálogo tinha 225 compositores, todos vindos de Open Opus
+     * cruzado com Wikidata, o campo chegava a 96%. Com os 783 compositores de
+     * Música Brasilis o acervo quadruplicou, e a fonte brasileira **não
+     * publica local de nascimento** — nem na listagem, nem na página de cada
+     * compositor, que traz biografia e mais nada. A cobertura caiu para 22%.
+     *
+     * Há duas saídas erradas e uma certa. Errado seria baixar o piso e seguir
+     * como se nada tivesse mudado; errado também seria preencher com o que
+     * "deve ser" — a fonte cataloga música brasileira, e supor que todo
+     * catalogado nasceu no Brasil inventaria a biografia de italianos que
+     * compuseram aqui.
+     *
+     * O certo é o que a regra da dignidade do filtro já diz: **eixo universal
+     * cobra piso, eixo seletivo declara cobertura**. `birthPlace` nunca foi
+     * filtro — é texto de ficha, "nasceu em Eisenach" — e quem é filtro aqui é
+     * `regionIds`, que continua acima de 90% porque a cidadania brasileira é
+     * declarada para todos os 783.
+     *
+     * Então o que se cobra é o que se pode cobrar: que o campo **não regrida
+     * onde a fonte o tem**, e que ele fique vazio onde a fonte não o tem, em
+     * vez de ser preenchido por suposição.
+     */
     const todos = todosOsCompositores();
-    const com = todos.filter((c) => c.birthPlace).length;
-    expect(com / todos.length).toBeGreaterThan(0.9);
+    const com = todos.filter((c) => c.birthPlace);
+
+    /** Não-vacuidade: o campo não pode simplesmente ter sumido. */
+    expect(com.length, 'o local de nascimento desapareceu do acervo').toBeGreaterThan(200);
+
+    /**
+     * Onde a Wikidata cobre — o recorte ocidental —, a cobertura continua
+     * quase total. É a medida que o piso original queria proteger.
+     */
+    /**
+     * O recorte é pelo MÉTODO DE RESOLUÇÃO, e não pelo identificador.
+     *
+     * Classificar por `externalIds.musicaBrasilis` punha do lado ocidental os
+     * 28 brasileiros que só aparecem assinando partitura e não têm página
+     * própria na fonte — eles saem com identificadores vazios. O método de
+     * resolução diz qual catalogação trouxe cada registro, que é a pergunta.
+     */
+    const ocidentais = todos.filter((c) => c.resolution.method !== 'MUSICA_BRASILIS');
+    const comOcidental = ocidentais.filter((c) => c.birthPlace).length;
+
+    expect(ocidentais.length, 'o recorte ocidental sumiu').toBeGreaterThan(200);
+    expect(
+      comOcidental / ocidentais.length,
+      'o local de nascimento regrediu onde a fonte o publica'
+    ).toBeGreaterThan(0.9);
+
+    /**
+     * E onde a fonte não publica, fica vazio — e não preenchido por dedução a
+     * partir da região.
+     */
+    const brasileiros = todos.filter((c) => c.resolution.method === 'MUSICA_BRASILIS');
+    const inventados = brasileiros.filter(
+      (c) => c.birthPlace && !c.provenance.some((p) => p.field === 'birthPlace')
+    );
+
+    expect(brasileiros.length, 'o corpus brasileiro sumiu').toBeGreaterThan(700);
+    expect(
+      inventados.map((c) => c.canonicalName),
+      'apareceu local de nascimento sem fonte que o declare'
+    ).toEqual([]);
   });
 });
 

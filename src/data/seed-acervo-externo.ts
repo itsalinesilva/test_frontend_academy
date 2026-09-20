@@ -47,6 +47,18 @@ export interface CompositorExterno {
   instrumentos: string[];
   situacao: 'PUBLIC_DOMAIN' | 'PROTECTED' | 'LIKELY_PUBLIC_DOMAIN' | 'UNDETERMINED';
   nota: string;
+  /**
+   * QUAL CATALOGAÇÃO DE ORIGEM TROUXE ESTE REGISTRO.
+   *
+   * Ausente significa Open Opus, que era a única quando esta forma nasceu.
+   *
+   * O campo existe porque a proveniência precisa dizer a verdade: os 783
+   * compositores brasileiros vêm de Música Brasilis, e sem isto cada um deles
+   * declararia que o nome e a data de morte saíram do Open Opus — que nunca os
+   * catalogou. Proveniência errada é pior que proveniência ausente, porque
+   * quem for conferir procura no lugar errado e conclui que o dado é falso.
+   */
+  fonte?: 'OPEN_OPUS' | 'MUSICA_BRASILIS';
 }
 
 /** Forma curta de propósito: são milhares de linhas, e o nome longo pesaria. */

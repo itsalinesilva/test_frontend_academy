@@ -416,6 +416,27 @@ export const WorldsAtlasScreen: React.FC = () => {
               </p>
             )}
 
+            {/*
+              O TETO DE PLOTAGEM, DITO EM VOZ ALTA.
+
+              A era Moderna alcança quase trezentas pessoas desde que o corpus
+              brasileiro entrou, e um mapa com trezentos pontos é uma lista
+              desenhada sobre uma imagem. O teto existe por isso.
+
+              O que ele NÃO pode ser é corte em silêncio: sem este aviso, quem
+              olhasse a era concluiria que ali existem cento e cinquenta
+              pessoas, e o mapa estaria mentindo sobre o tamanho do acervo —
+              que é o defeito original deste projeto, em escala menor.
+            */}
+            {vista.naoPlotados > 0 && (
+              <p className="rounded-lg border border-ouro-200 bg-ouro-50 px-3 py-2 text-xs leading-relaxed text-stone-700">
+                Esta vista alcança <strong>{vista.naoPlotados.toLocaleString('pt-BR')}</strong>{' '}
+                pessoas além das plotadas, e o mapa mostra primeiro quem tem o compêndio maior.
+                Escolha uma região, um movimento ou um gênero para chegar às demais — elas estão
+                todas no acervo.
+              </p>
+            )}
+
             {vista.marcadores.length === 0 ? (
               <EmptyState
                 icon={<Library className="h-8 w-8 stroke-1" aria-hidden="true" />}

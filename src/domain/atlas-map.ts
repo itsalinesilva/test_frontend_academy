@@ -206,6 +206,66 @@ function anos(c: CanonicalComposer): string | undefined {
  * depois **onde**, depois **o quê**. Aplicar movimento antes de era daria um
  * mapa que muda de tempo sozinho ao trocar de filtro.
  */
+interface AcervoDoMapa {
+  compositores: CanonicalComposer[];
+  obras: CanonicalWork[];
+  movimentos: MusicalMovement[];
+}
+
+/**
+ * Quem a posição alcança — sem teto nenhum.
+ *
+ * Separado de `marcadoresDaPosicao` porque duas perguntas diferentes precisam
+ * da mesma conta: quantos plotar, e **quantos existem**. Recalcular por fora
+ * faria as duas divergirem no dia em que um filtro mudasse.
+ */
+export function compositoresDaPosicao(
+  posicao: PosicaoNoMapa,
+  acervo: AcervoDoMapa
+): CanonicalComposer[] {
+  const { eraId, regionId, movimentoId, composerId } = posicao;
+  const movimentoFoco = movimentoId
+    ? acervo.movimentos.find((m) => m.id === movimentoId)
+    : undefined;
+
+  return acervo.compositores.filter((c) => {
+    if (!c.periodIds.includes(eraId)) return false;
+    if (regionId && !c.regionIds.includes(regionId)) return false;
+    if (composerId && c.id !== composerId) return false;
+    /**
+     * Filtrar por movimento mostra **os fundadores e influentes dele** — é o
+     * que a pergunta "quem fez este movimento" quer saber. Listar todo mundo
+     * que viveu na mesma era e região devolveria o mapa inteiro de novo.
+     */
+    if (movimentoFoco && !movimentoFoco.founderComposerIds.includes(c.id)) return false;
+    return true;
+  });
+}
+
+/**
+ * 🔴 O TETO DE PESSOAS NO MAPA — e por que ele não esconde ninguém.
+ *
+ * Emitir toda obra como marcador dava nove mil pontos, e isso já tinha sido
+ * resolvido. Depois entraram os setecentos e oitenta e três compositores
+ * brasileiros, e a era Moderna passou a emitir **duzentas e noventa e nove
+ * pessoas**. Menos que nove mil, e ainda assim não é mapa: é uma lista de
+ * nomes desenhada sobre uma imagem.
+ *
+ * O teto ordena por tamanho de compêndio — quem tem mais obra catalogada
+ * aparece primeiro — e **quem sobra é contado**, por `pessoasNaoPlotadas`. A
+ * tela diz o número e diz como chegar ao resto: escolher uma região, um
+ * movimento ou um gênero. Nenhum nome sai do acervo; o que muda é quantos
+ * cabem numa vista de longe.
+ *
+ * Um mapa que corta em silêncio é pior que um mapa cheio, porque quem olha
+ * conclui que aquilo é tudo.
+ */
+export const TETO_DE_PESSOAS_NO_MAPA = 150;
+
+export function pessoasNaoPlotadas(posicao: PosicaoNoMapa, acervo: AcervoDoMapa): number {
+  return Math.max(0, compositoresDaPosicao(posicao, acervo).length - TETO_DE_PESSOAS_NO_MAPA);
+}
+
 export function marcadoresDaPosicao(
   posicao: PosicaoNoMapa,
   acervo: {
@@ -223,18 +283,7 @@ export function marcadoresDaPosicao(
     ? acervo.movimentos.find((m) => m.id === movimentoId)
     : undefined;
 
-  const compositores = acervo.compositores.filter((c) => {
-    if (!c.periodIds.includes(eraId)) return false;
-    if (regionId && !c.regionIds.includes(regionId)) return false;
-    if (composerId && c.id !== composerId) return false;
-    /**
-     * Filtrar por movimento mostra **os fundadores e influentes dele** — é o
-     * que a pergunta "quem fez este movimento" quer saber. Listar todo mundo
-     * que viveu na mesma era e região devolveria o mapa inteiro de novo.
-     */
-    if (movimentoFoco && !movimentoFoco.founderComposerIds.includes(c.id)) return false;
-    return true;
-  });
+  const compositores = compositoresDaPosicao(posicao, acervo);
 
   /**
    * 🔴 A OBRA SÓ ENTRA NO MAPA QUANDO HÁ FOCO.
@@ -276,7 +325,15 @@ export function marcadoresDaPosicao(
       })
     : [];
 
-  const deCompositores: AtlasMarker[] = compositores.map((c) => ({
+const deCompositores: AtlasMarker[] = compositores
+    .map((c) => ({
+      pessoa: c,
+      quantas: acervo.obras.filter((o) => o.composerIds.includes(c.id)).length,
+    }))
+    /** Quem tem mais obra catalogada aparece primeiro. Empate: ordem alfabética. */
+    .sort((a, b) => b.quantas - a.quantas || a.pessoa.sortName.localeCompare(b.pessoa.sortName, 'pt-BR'))
+    .slice(0, TETO_DE_PESSOAS_NO_MAPA)
+    .map(({ pessoa: c, quantas }) => ({
     id: c.id,
     kind: 'COMPOSITOR',
     titulo: c.canonicalName,
@@ -287,9 +344,9 @@ export function marcadoresDaPosicao(
       .filter((m) => m.founderComposerIds.includes(c.id))
       .map((m) => m.id),
     generoIds: [],
-    disponibilidade: disponibilidadeDoCompositor(c, acervo.obras),
-    contagem: acervo.obras.filter((o) => o.composerIds.includes(c.id)).length,
-  }));
+      disponibilidade: disponibilidadeDoCompositor(c, acervo.obras),
+      contagem: quantas,
+    }));
 
   const deObras: AtlasMarker[] = obras.map((o) => ({
     id: o.id,

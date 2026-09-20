@@ -8,6 +8,7 @@ import {
   RegiaoDoMapa,
   erasEmOrdem,
   marcadoresDaPosicao,
+  pessoasNaoPlotadas,
   navegarNoTempo,
   regioesDaEra,
   resumoDaVista,
@@ -73,6 +74,13 @@ export interface VistaDoMapa {
     apenasPontuados: number;
     comFonteOficial: number;
   };
+  /**
+   * Pessoas que esta vista alcança além do teto de plotagem.
+   *
+   * Não é defeito nem omissão: é a distância do mapa. Quem quiser chegar nelas
+   * escolhe uma região, um movimento ou um gênero — e a tela diz isso.
+   */
+  naoPlotados: number;
   /** Para onde o eixo do tempo pode andar. `null` nas pontas, e não a própria era. */
   eraAnterior: EraDoMapa | null;
   eraSeguinte: EraDoMapa | null;
@@ -171,6 +179,17 @@ export class AtlasService {
       regioes: regioesDaEra(DEFAULT_REGIONS, posicao.eraId),
       marcadores,
       indicadores: resumoDaVista(marcadores),
+      /**
+       * QUANTAS PESSOAS A VISTA ALCANÇA E NÃO COUBE PLOTAR.
+       *
+       * O mapa tem teto para continuar sendo mapa — a era Moderna alcança
+       * duzentas e noventa e nove pessoas depois que o corpus brasileiro
+       * entrou. O teto sem este número seria corte em silêncio, e quem olhasse
+       * concluiria que aquilo é tudo que existe na era.
+       *
+       * Zero quando tudo coube, que é o caso da maioria das eras.
+       */
+      naoPlotados: pessoasNaoPlotadas(posicao, acervo),
       /**
        * `null` nas pontas, e não a própria era: uma seta que não anda é pior
        * que seta ausente — quem clica conclui que a tela travou.

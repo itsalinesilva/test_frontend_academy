@@ -91,6 +91,19 @@ const limpo = (s) =>
  * `composer-name` casado longe do seu link ligaria a obra ao compositor errado,
  * e isso é o tipo de erro que não dá sinal.
  */
+/**
+ * O cartão de cada peça, lido de DENTRO.
+ *
+ * A primeira versão lia mil e duzentos caracteres antes do link. Dava certo
+ * por acidente: o que vem antes é o bloco móvel da **mesma** peça. Bastava a
+ * fonte trocar a ordem dos dois blocos para a obra receber o instrumento da
+ * peça anterior — que é o defeito que as datas dos compositores tiveram de
+ * verdade, e que não deu sinal nenhum.
+ *
+ * Lendo para frente, do link até o começo do próximo cartão, a peça responde
+ * por si. E aparece o `div.year`, que a leitura anterior nem via: é a data de
+ * composição, quando a fonte a tem.
+ */
 function lerPartituras(html) {
   const itens = [];
 
@@ -99,22 +112,27 @@ function lerPartituras(html) {
   )) {
     const [, caminho, id, titulo, compositor] = m;
 
-    /** O trecho ANTES do link traz o nome e os selos de instrumento. */
-    const antes = html.slice(Math.max(0, m.index - 1200), m.index);
+    /** Até o próximo cartão, ou até o fim: `custom-row` abre cada um. */
+    const adiante = html.slice(m.index, m.index + 4000);
+    const proximo = adiante.indexOf('class="custom-row"', 10);
+    const cartao = proximo > 0 ? adiante.slice(0, proximo) : adiante;
 
     const instrumentos = [
       ...new Set(
-        [...antes.matchAll(/<span class="badge[^"]*"[^>]*title="([^"]*)"/g)].map((b) =>
-          limpo(b[1])
-        )
+        [...cartao.matchAll(/<span class="badge[^"]*"[^>]*title="([^"]*)"/g)].map((b) => limpo(b[1]))
       ),
     ].filter(Boolean);
+
+    /** `<div class="year">1917</div>`, vazio na maioria. */
+    const ano = cartao.match(/<div class="year">\s*([^<]*?)\s*<\/div>/);
+    const dc = ano ? limpo(ano[1]) : '';
 
     itens.push({
       idNaFonte: id,
       titulo: limpo(titulo),
       compositor: limpo(compositor),
       instrumentos,
+      dc: dc || undefined,
       url: BASE + caminho,
     });
   }
@@ -169,6 +187,28 @@ async function todasAsPartituras() {
 // Compositores
 // ---------------------------------------------------------------------------
 
+/**
+ * 🔴 CADA COMPOSITOR RECEBEU AS DATAS DO COMPOSITOR ANTERIOR.
+ *
+ * A primeira versão lia novecentos caracteres **ANTES** do link, com o
+ * comentário "as datas vêm num selo logo acima". Não vêm: o selo fica
+ * **dentro do cartão, depois do link**. O que existe acima é o fim do cartão
+ * do compositor anterior — então cada um herdava as datas do vizinho, e quem
+ * vinha depois de um cartão sem selo ficava sem data nenhuma.
+ *
+ * Quatrocentos e cinco compositores saíram com datas erradas, e nada acusou:
+ * anos plausíveis, no formato certo, no campo certo. Camargo Guarnieri saiu
+ * como 1944–2011, Francisco Mignone como 1835–1923, e Villa-Lobos sem data.
+ *
+ * O ESTRAGO NÃO É COSMÉTICO. A data de morte decide o domínio público pela
+ * Lei 9.610/98 — morte + 71. Uma morte adiantada em sessenta anos faz a
+ * plataforma **declarar livre** obra que está protegida. É o erro mais caro
+ * que este catálogo pode cometer.
+ *
+ * A leitura agora é de DENTRO do cartão: do link até o `</a>` que o fecha, e
+ * nada além disso. O que está fora do cartão é de outra pessoa, por
+ * definição.
+ */
 function lerCompositores(html) {
   const itens = [];
 
@@ -177,13 +217,17 @@ function lerCompositores(html) {
   )) {
     const [, caminho, id, nome] = m;
 
-    /** As datas vêm num selo logo acima do link: `1858 - 1927`. */
-    const antes = html.slice(Math.max(0, m.index - 900), m.index);
-    const selos = [...antes.matchAll(/<span class="badge[^"]*">([^<]*)<\/span>/g)].map((b) =>
+    /**
+     * O CARTÃO, e só ele. O `</a>` seguinte é o fecho deste cartão: os
+     * cartões não se aninham, então o primeiro fecho é sempre o próprio.
+     */
+    const depois = html.slice(m.index, m.index + 3000);
+    const cartao = depois.slice(0, depois.indexOf('</a>') + 1 || depois.length);
+
+    const selos = [...cartao.matchAll(/<span class="badge[^"]*"[^>]*>([^<]*)<\/span>/g)].map((b) =>
       limpo(b[1])
     );
-    const datas = selos.reverse().find((s) => /\d{3,4}\s*[-–]\s*\d{0,4}/.test(s));
-
+    const datas = selos.find((t) => /\d{3,4}\s*[-–]\s*\d{0,4}/.test(t));
     const anos = datas ? datas.match(/(\d{3,4})\s*[-–]\s*(\d{3,4})?/) : null;
 
     itens.push({
@@ -196,6 +240,41 @@ function lerCompositores(html) {
   }
 
   return itens;
+}
+
+/**
+ * A CONFERÊNCIA CONTRA A PÁGINA DO PRÓPRIO COMPOSITOR.
+ *
+ * A leitura de dentro do cartão é correta por construção, e "correta por
+ * construção" foi exatamente o que se disse da versão anterior. Então uma
+ * amostra é conferida contra uma **segunda fonte dentro da mesma fonte**: a
+ * página individual do compositor, que traz as datas fora de qualquer
+ * listagem.
+ *
+ * Divergência aqui derruba a extração. Gravar datas erradas é pior que não
+ * gravar: elas decidem domínio público.
+ */
+async function conferirDatas(compositores) {
+  const comData = compositores.filter((c) => c.nascimento && c.morte);
+  if (comData.length === 0) return { conferidos: 0, divergentes: [] };
+
+  /** Espalhados pela lista, e não os primeiros: o defeito era posicional. */
+  const passo = Math.max(1, Math.floor(comData.length / 8));
+  const amostra = comData.filter((_, i) => i % passo === 0).slice(0, 8);
+
+  const divergentes = [];
+
+  for (const c of amostra) {
+    const html = await pagina(c.url.replace(BASE, ''));
+    await dormir(PAUSA_MS);
+    if (html === null) continue;
+
+    const texto = limpo(html.replace(/<[^>]+>/g, ' '));
+    const achou = texto.includes(`${c.nascimento}`) && texto.includes(`${c.morte}`);
+    if (!achou) divergentes.push(`${c.nome}: a listagem diz ${c.nascimento}-${c.morte}, a página dele não repete esses anos`);
+  }
+
+  return { conferidos: amostra.length, divergentes };
 }
 
 async function todosOsCompositores() {
@@ -253,6 +332,17 @@ async function main() {
 
   const compositores = await todosOsCompositores();
   console.log(`\n  compositores: ${compositores.length}`);
+
+  const { conferidos, divergentes } = await conferirDatas(compositores);
+  console.log(`  datas conferidas contra a pagina do compositor: ${conferidos}`);
+  if (divergentes.length > 0) {
+    console.error('\n✗ as datas nao batem com a fonte:');
+    for (const d of divergentes) console.error(`  ${d}`);
+    console.error(
+      '\n  Gravar data errada e pior que nao gravar: a data de morte decide o dominio publico pela Lei 9.610/98.'
+    );
+    process.exit(1);
+  }
 
   const partituras = await todasAsPartituras();
   console.log(`\n  partituras: ${partituras.length}`);

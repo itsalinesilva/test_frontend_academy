@@ -270,14 +270,15 @@ teste via e o que o navegador via, deixou de existir: era ela que escondeu três
 defeitos por sessões inteiras.
 
 ```
-obras no catálogo      24.957
-compositores              225   (eram 234, com 9 duplicados)
-partituras a resolver   1.169   (era 1.349 = sintoma de catálogo fora)
-com biografia             225
-com retrato               220
-com região                221
+obras no catálogo        31.874   (24.957 + 6.917 do Brasil)
+compositores              1.004   (225 + 783 do Brasil, 0 duplicados)
+com endereço de partitura 7.040   (era 180)
+com região                1.000 de 1.004
+em domínio público       24.258 · protegidas 5.688
+partituras a resolver     1.169
 
-Bach: 978 obras · retrato · biografia autoral, no MESMO registro
+Bach 978 obras · Villa-Lobos 250 · Nazareth 229 · Chiquinha Gonzaga 156
+Mignone PROTEGIDA até 2057 — com a data errada teria saído livre
 ```
 
 **A tela foi conferida com o servidor de verdade**: banner com "24.957", listagem
@@ -295,10 +296,22 @@ primeira página.
 | **Laboratório** | ❌ Corrigi apenas o fato de ele **abrir**. A tela documentada — banner hero, navbar fixa com as lições, práticas das Casas, mapa de expedições — **não foi construída**. Não está perto, e dizer o contrário seria mentira |
 | **Migração para a ontologia** | ❌ Os 24.957 registros ainda são `CanonicalComposer`/`CanonicalWork`. `Pessoa`/`Obra` existem como **tipo**, testados, e não é onde os dados vivem (ON-10) |
 | **Simulador ponta a ponta** | ❌ Nenhuma peça foi levada até o fim. Não há leitor de MIDI nem de LilyPond |
-| **Música Brasilis** | 🟡 em ingestão — ver MB-1 |
+| **Música Brasilis** | ✅ no catálogo — 783 compositores, 6.917 obras. Ver MB-1 |
 
 ---
 
+| MB-1 | ✅ **MÚSICA BRASILIS ESTÁ NO CATÁLOGO.** 783 compositores e 6.917 obras brasileiras. O acervo foi de **24.957 para 31.874 obras** e de **225 para 1.004 compositores**. O Brasil tinha quatro nomes — os que atravessaram para o catálogo do concerto europeu —, e passou a ter o corpus | ✅ |
+| MB-1a | 🔴🔴 **A PRIMEIRA EXTRAÇÃO DEU A CADA COMPOSITOR AS DATAS DO ANTERIOR.** O leitor pegava 900 caracteres **antes** do link, com o comentário "as datas vêm num selo logo acima". Não vêm: o selo fica **dentro do cartão, depois do link**. O que está acima é o fim do cartão do vizinho | ✅ corrigido |
+| MB-1b | Nada acusava: anos plausíveis, formato certo, campo certo. Camargo Guarnieri saiu 1944–2011 (é 1907–1993), Francisco Mignone 1835–1923 (é 1897–1986), Villa-Lobos sem data nenhuma | ✅ |
+| MB-1c | ⚖️ **E o estrago era jurídico.** A data de morte decide o domínio público pela Lei 9.610/98 — morte + 71. Com 1923, a obra de Mignone teria sido **declarada livre**; ela está protegida até 2057. Era o erro mais caro que este catálogo pode cometer | ✅ |
+| MB-1d | O leitor passou a ler **de dentro do cartão**, e a extração agora **confere uma amostra contra a página de cada compositor** — uma segunda fonte dentro da mesma fonte. Divergência derruba a extração. Datas subiram de 405 para **452** | ✅ |
+| MB-2 | Identidade resolvida pela mesma chave de nome ordenado que juntou os nove duplicados: Villa-Lobos, Carlos Gomes, Camargo Guarnieri e Francisco Mignone já estavam no acervo pelo lado ocidental e **não duplicaram**. 0 nomes repetidos em 1.004 | ✅ |
+| MB-3 | Proveniência deixou de mentir: era `OPEN_OPUS` cravado, e os 783 brasileiros passariam a declarar que o nome saiu de um catálogo que nunca os listou. `resolution.method` e a proveniência por campo agora dizem qual das duas catalogações trouxe cada registro | ✅ |
+| MB-4 | 🔴 **O MAPA PASSOU A EMITIR 299 PESSOAS NUMA ERA.** Menos que os 9.245 de antes, e ainda assim não é mapa. Teto de 150, ordenado por tamanho de compêndio — e **`naoPlotados` na tela**, dizendo quantas ficaram e como chegar nelas. Corte com número é recorte; corte sem número é mentira sobre o tamanho do acervo | ✅ |
+| MB-5 | ⚠️ **Local de nascimento caiu de 96% para 22%.** A fonte brasileira não publica o campo — nem na listagem, nem na página do compositor, que traz biografia e mais nada. O piso de 90% valia para **filtro**, e `birthPlace` é texto de ficha; o filtro é `regionId`, que está em **1.000 de 1.004**. O teste passou a cobrar o que dá para cobrar: não regredir onde a fonte publica, e **ficar vazio** onde não publica | ✅ |
+| PT-1 | ✅ **OBRAS COM ENDEREÇO DE PARTITURA: de 180 para 7.040.** Toda obra brasileira chega com a página da edição dela — na fonte, obra e edição são a mesma ficha. É o oposto das 1.169 partituras avulsas que procuram obra e não acham | ✅ |
+| PT-2 | ⬜ **Faltam 24.834 obras sem edição localizada.** O caminho é IMSLP/Petrucci, que cataloga por obra e por número de catálogo — e o acervo agora tem número de catálogo em 46% das obras, que é a chave de casamento. **Próximo passo do acervo** | ⬜ |
+| EN-1 | ⬜ **Enriquecer os 783 brasileiros pela Wikidata**: local de nascimento, biografia e identificadores cruzados. A desambiguação tem de casar **ano de nascimento e morte** com o que Música Brasilis declara — casar só por nome ligaria "Alberto Costa" a qualquer um, e importaria a biografia de outra pessoa | ⬜ |
 | CG-0 | 🔴🔴 **A CAUSA RAIZ DE "O CATÁLOGO COMPLETO NÃO CARREGOU": o arquivo NUNCA FOI VERSIONADO.** `public/acervo/obras.json` e `public/acervo/partituras.json` existiam **só na máquina onde a extração rodou**. Nunca entraram no git. Toda construção feita a partir do repositório nascia **sem catálogo** | ✅ resolvido |
 | CG-0a | E a falha não aparecia como falha. Um aplicativo de página única responde qualquer caminho desconhecido com o próprio `index.html`, **status 200**. O `fetch('/acervo/obras.json')` recebia HTML, o `JSON.parse` morria com *Unexpected token '<', "&lt;!DOCTYPE"...*, e a tela caía para as 17 obras próprias pedindo para recarregar. **Recarregar nunca ia resolver** — não havia o que buscar | ✅ |
 | CG-0b | Correção: os dois arquivos saíram de `public/` e foram para **`src/data/acervo/`**, e o carregamento deixou de ser `fetch` por caminho e passou a ser `import()` resolvido pelo empacotador. O catálogo virou **dependência da construção**: ou a construção o acha, ou ela falha — na máquina de quem publica, e não no navegador de quem estuda | ✅ |

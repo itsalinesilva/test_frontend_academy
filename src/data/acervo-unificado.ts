@@ -10,6 +10,7 @@ import {
   COMPOSITORES_EXTERNOS,
   CompositorExterno,
 } from './seed-acervo-externo';
+import { COMPOSITORES_BRASILIS } from './seed-brasilis';
 import { Partitura, carregarPartituras } from './seed-partituras';
 import { lerTitulo } from '../domain/title-reading';
 import { regioesDasCidadanias } from '../domain/wikidata-regions';
@@ -54,6 +55,10 @@ function comoCanonico(e: CompositorExterno): CanonicalComposer {
     anoDeNascimento: e.nascimento,
   });
 
+  /** Ausente significa Open Opus, que era a única fonte quando isto nasceu. */
+  const fonte = e.fonte ?? 'OPEN_OPUS';
+  const refDaFonte = fonte === 'MUSICA_BRASILIS' ? e.ids.musicaBrasilis : e.ids.openOpus;
+
   return {
     id: e.id,
     canonicalName: e.nome,
@@ -92,15 +97,26 @@ function comoCanonico(e: CompositorExterno): CanonicalComposer {
     portraitUrl: e.retrato,
     externalIds: e.ids,
     workIds: [],
+    /**
+     * A PROVENIÊNCIA DIZ QUAL DAS DUAS CATALOGAÇÕES TROUXE O REGISTRO.
+     *
+     * Aqui estava `OPEN_OPUS` cravado. Com uma fonte só, era verdade. Com os
+     * 783 compositores de Música Brasilis no catálogo, cada um deles passaria
+     * a declarar que o nome e a data de morte saíram do Open Opus — que nunca
+     * os catalogou.
+     *
+     * Proveniência errada é pior que proveniência ausente: quem for conferir
+     * procura no lugar errado, não acha, e conclui que o dado é inventado.
+     */
     provenance: [
-      proveniencia('canonicalName', 'OPEN_OPUS', e.ids.openOpus),
-      proveniencia('deathYear', 'OPEN_OPUS', e.ids.openOpus),
+      proveniencia('canonicalName', fonte, refDaFonte),
+      proveniencia('deathYear', fonte, refDaFonte),
       ...(e.biografia ? [proveniencia('biography', 'WIKIDATA', e.ids.wikidata)] : []),
       ...(e.retrato ? [proveniencia('portraitUrl', 'COMMONS', e.ids.wikidata)] : []),
     ],
     publicDomain,
     resolution: {
-      method: 'OPEN_OPUS',
+      method: fonte,
       resolvedAt: new Date().toISOString(),
       /**
        * Confiança pelo cruzamento: um registro que o Wikidata confirmou tem
@@ -158,10 +174,60 @@ export function todosOsCompositores(hoje: Date = new Date()): CanonicalComposer[
   const porNome = new Map<string, string>();
   apelidosDeCompositor.clear();
 
+  /**
+   * DUAS CATALOGAÇÕES DE ORIGEM, E NÃO UMA.
+   *
+   * O Open Opus cataloga o concerto ocidental; Música Brasilis cataloga o
+   * corpus brasileiro. As duas são **primárias no recorte delas**, e é por
+   * isso que as duas criam entidade — o que a ontologia proíbe às fontes de
+   * recurso, que só enriquecem quem já existe.
+   *
+   * A ordem importa: o ocidental primeiro, o brasileiro depois. Quando os dois
+   * trazem a mesma pessoa — Villa-Lobos, Carlos Gomes, Camargo Guarnieri e
+   * Francisco Mignone atravessaram para o catálogo europeu —, quem chega
+   * depois **acrescenta ao registro que já existe** em vez de abrir um
+   * segundo. É a mesma resolução por nome ordenado que juntou os nove
+   * compositores duplicados; o que ela impede aqui é o Brasil ganhar dois
+   * Villa-Lobos.
+   */
   for (const e of COMPOSITORES_EXTERNOS) {
     const c = comoCanonico(e);
     porId.set(c.id, c);
     porNome.set(chaveDeIdentidade(c.canonicalName), c.id);
+  }
+
+  for (const e of COMPOSITORES_BRASILIS) {
+    const c = comoCanonico(e);
+    const chave = chaveDeIdentidade(c.canonicalName);
+    const jaExiste = porNome.get(chave);
+
+    if (!jaExiste) {
+      porId.set(c.id, c);
+      porNome.set(chave, c.id);
+      continue;
+    }
+
+    /**
+     * Ele já está no catálogo pelo ocidental. O identificador brasileiro vira
+     * apelido — sem isto, as obras de Villa-Lobos que vêm daqui apontariam
+     * para um registro que não existe, e ficariam órfãs.
+     */
+    apelidosDeCompositor.set(c.id, jaExiste);
+
+    const atual = porId.get(jaExiste)!;
+    porId.set(jaExiste, {
+      ...atual,
+      /**
+       * A região BRASILEIRA se soma. Os quatro que atravessaram tinham região
+       * pela cidadania declarada no catálogo europeu; esta fonte confirma a
+       * mesma, e somar não duplica porque o conjunto é de valores únicos.
+       */
+      regionIds: [...new Set([...atual.regionIds, ...c.regionIds])],
+      periodIds: [...new Set([...atual.periodIds, ...c.periodIds])],
+      externalIds: { ...atual.externalIds, ...c.externalIds },
+      /** As duas proveniências ficam: cada campo continua dizendo de onde veio. */
+      provenance: [...atual.provenance, ...c.provenance],
+    });
   }
 
   for (const p of compositoresDoRepertorio(hoje)) {
@@ -327,6 +393,45 @@ export async function carregarObrasExternas(): Promise<ObraServida[]> {
   }
 }
 
+/**
+ * AS OBRAS BRASILEIRAS.
+ *
+ * Importadas, e não buscadas por caminho, pela mesma razao que as outras: um
+ * arquivo que o empacotador nao resolve some da publicacao sem avisar.
+ *
+ * São seis mil novecentas e dezessete, e cada uma chega **com o endereco da
+ * edicao dela** — o que faz delas o oposto das mil cento e sessenta e nove
+ * edicoes que nao acharam obra. Aqui obra e edicao nascem juntas e ja ligadas,
+ * porque na fonte elas sao a mesma ficha.
+ */
+interface ObraBrasileira {
+  id: string;
+  /** compositor */ c: string;
+  /** título */ t: string;
+  /** meio, como a fonte o nomeia */ i: string[];
+  /** era */ e?: string;
+  /** a página da edição na fonte */ u: string;
+}
+
+let obrasBrasileiras: ObraBrasileira[] | null = null;
+
+export async function carregarObrasBrasileiras(): Promise<ObraBrasileira[]> {
+  if (obrasBrasileiras) return obrasBrasileiras;
+
+  try {
+    const modulo = await import('./acervo/brasilis.json');
+    const lido = (modulo.default ?? modulo) as ObraBrasileira[];
+    if (!Array.isArray(lido) || lido.length === 0) {
+      throw new Error('o corpus brasileiro importado veio vazio');
+    }
+    obrasBrasileiras = lido;
+    return obrasBrasileiras;
+  } catch (e) {
+    falhaAoCarregar = e instanceof Error ? e.message : 'falha desconhecida';
+    return [];
+  }
+}
+
 /** Esquece o que foi carregado. Existe para o teste, e para reextração. */
 export function limparCacheDeObras(): void {
   obrasServidas = null;
@@ -430,6 +535,70 @@ export async function todasAsObras(hoje: Date = new Date()): Promise<CanonicalWo
       publicDomain: c?.publicDomain ?? avaliarDominioPublico({ hoje }),
       resolution: {
         method: 'OPEN_OPUS',
+        resolvedAt: new Date().toISOString(),
+        confidence: 1,
+      },
+    });
+  }
+
+  /**
+   * O CORPUS BRASILEIRO ENTRA COMO CATÁLOGO, e não como recurso.
+   *
+   * Cada registro daqui é uma obra com autoria nomeada e com a página da
+   * edição. A `scoreRefs` sai preenchida na origem: é a diferença entre esta
+   * fonte e as partituras avulsas, que precisam procurar a obra a que
+   * pertencem e frequentemente não acham.
+   *
+   * O identificador do compositor é **traduzido pelo canônico**. Villa-Lobos,
+   * Carlos Gomes, Camargo Guarnieri e Francisco Mignone já estavam no catálogo
+   * pelo lado ocidental; sem a tradução, as obras deles que vêm por aqui
+   * apontariam para um registro que a fusão extinguiu, e ficariam órfãs — que
+   * é exatamente o que aconteceu com as obras próprias quando os nove
+   * duplicados foram unidos.
+   */
+  for (const o of await carregarObrasBrasileiras()) {
+    const idDoAutor = idCanonicoDoCompositor(o.c);
+    const c = compositores.get(idDoAutor);
+
+    /** Autoria que não resolve não vira obra sem autor: não vira obra. */
+    if (!c) continue;
+
+    const lido = lerTitulo(o.t);
+
+    porId.set(o.id, {
+      id: o.id,
+      canonicalTitle: { pt: o.t },
+      composerIds: [idDoAutor],
+      instrumentation: o.i,
+      generoId: lido.forma,
+      catalogNumber: lido.numeroDeCatalogo,
+      key: lido.tonalidade,
+      periodId: o.e,
+      regionId: c.regionIds[0],
+      movements: [],
+      /**
+       * `FICHA`, e não `NATIVA`: o que se guarda é o endereço da página onde a
+       * edição está, e não um arquivo que a plataforma saiba renderizar.
+       * Marcar nativa poria um botão de tocar que não toca.
+       *
+       * E é a PÁGINA, não o arquivo: o `robots.txt` da fonte proíbe `/media/`,
+       * que é onde os PDF vivem. O download acontece lá, com quem publica.
+       */
+      scoreRefs: [
+        {
+          source: 'MUSICA_BRASILIS' as const,
+          sourceRef: o.u,
+          format: 'pdf' as const,
+          render: 'FICHA' as const,
+        },
+      ],
+      recordingRefs: [],
+      externalIds: { musicaBrasilisUrl: o.u },
+      provenance: [proveniencia('canonicalTitle', 'MUSICA_BRASILIS', o.u)],
+      /** A obra herda do compositor: é dele que o prazo corre. */
+      publicDomain: c.publicDomain,
+      resolution: {
+        method: 'MUSICA_BRASILIS' as const,
         resolvedAt: new Date().toISOString(),
         confidence: 1,
       },

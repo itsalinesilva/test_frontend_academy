@@ -310,13 +310,26 @@ export interface ExternalIds {
   imslp?: string;
   commonsCategory?: string;
   mutopia?: string;
+  /** O identificador na Música Brasilis, e a URL da ficha de lá. */
+  musicaBrasilis?: string;
+  musicaBrasilisUrl?: string;
   viaf?: string;
   isni?: string;
 }
 
 export interface ResolutionMetadata {
   /** Como a identidade foi obtida. **Nunca** por suposição. */
-  method: 'WIKIDATA_SPARQL' | 'MUSICBRAINZ_LOOKUP' | 'OPEN_OPUS' | 'MANUAL_CURATION';
+  method:
+    | 'WIKIDATA_SPARQL'
+    | 'MUSICBRAINZ_LOOKUP'
+    | 'OPEN_OPUS'
+    /**
+     * A catalogação brasileira resolve identidade como a ocidental resolve: a
+     * fonte é quem diz que aquela pessoa é aquela pessoa. Faltava aqui porque
+     * só havia uma catalogação de origem quando esta lista nasceu.
+     */
+    | 'MUSICA_BRASILIS'
+    | 'MANUAL_CURATION';
   resolvedAt: ISOTimestamp;
   /** Concordância entre fontes. Abaixo de 1 exige revisão antes de publicar. */
   confidence: number;
