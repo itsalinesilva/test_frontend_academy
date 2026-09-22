@@ -6,17 +6,21 @@ import { useRouter } from '../../navigation/router';
 import { bookService } from '../../../services/application/book.service';
 import { bookletService } from '../../../services/application/booklet.service';
 import { academyService } from '../../../services/application/academy.service';
+import { editorialService } from '../../../services/application/editorial.service';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import {
   LivroDoConservatorio,
   SecaoDoLivro,
+  SecaoEditadaDoLivro,
   secoesEditaveis,
   countWords,
+  idDaSecaoEditada,
   RESSALVA_EDITORIAL,
   INSTITUICAO,
   AUTORIA_PADRAO,
 } from '../../../domain/book';
 import { AcademyCourse, AcademyModule } from '../../../domain/academy';
-import { BookOpen, Download, Pencil, Lock, FileText, Info } from 'lucide-react';
+import { BookOpen, Download, Pencil, Lock, FileText, Info, RotateCcw, Save, X } from 'lucide-react';
 
 /**
  * Biblioteca Oficial do Conservatório.
@@ -33,6 +37,11 @@ import { BookOpen, Download, Pencil, Lock, FileText, Info } from 'lucide-react';
  *
  * Seções EDITÁVEIS — capa, folha de rosto, ficha, prefácio, colofão — são do
  * livro e não existem no curso. Regenerar preserva o que foi escrito nelas.
+ *
+ * 🔴 E ELAS SE EDITAM AQUI (EE-19). A tela dizia "editável" sobre seções que
+ * não tinham editor, e o livro é regenerado a cada leitura: o que fosse
+ * escrito não tinha onde ficar. O texto agora grava na camada editorial,
+ * volta a cada leitura por cima do gerado, e viaja no pacote.
  */
 export const LibraryScreen: React.FC = () => {
   const { navigate } = useRouter();
@@ -40,6 +49,10 @@ export const LibraryScreen: React.FC = () => {
   const [selecionado, setSelecionado] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const [edicoes, setEdicoes] = useState<SecaoEditadaDoLivro[]>([]);
+  const [pendentes, setPendentes] = useState(0);
+  const [editando, setEditando] = useState<string | null>(null);
+  const { nome } = useCurrentUser();
 
   const carregar = useCallback(async () => {
     try {
@@ -62,7 +75,9 @@ export const LibraryScreen: React.FC = () => {
         montados.push(leitura, imersao);
       }
 
-      setLivros(montados);
+      setLivros(await editorialService.livrosComEdicoes(montados));
+      setEdicoes(await editorialService.secoesDeLivro());
+      setPendentes(await editorialService.pendentes());
       setSelecionado((atual) => atual ?? montados[0]?.id ?? null);
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Falha ao montar a biblioteca.');
@@ -76,6 +91,8 @@ export const LibraryScreen: React.FC = () => {
   }, [carregar]);
 
   const livro = livros.find((l) => l.id === selecionado) ?? null;
+  const edicaoDe = (livroId: string, secaoId: string) =>
+    edicoes.find((e) => e.id === idDaSecaoEditada(livroId, secaoId)) ?? null;
 
   /**
    * Baixa o livro em Markdown.
@@ -190,6 +207,34 @@ export const LibraryScreen: React.FC = () => {
               </Button>
             </div>
 
+            {pendentes > 0 && (
+              <p
+                role="status"
+                className="rounded-lg border border-ouro-300 bg-ouro-50 p-3 text-xs leading-relaxed text-stone-800"
+              >
+                <strong>
+                  {pendentes} {pendentes === 1 ? 'mudança' : 'mudanças'} gravadas neste navegador.
+                </strong>{' '}
+                Elas já valem para você, e <strong>ainda não chegaram a mais ninguém</strong>:
+                exporte o pacote em Lições e exercícios e leve-o ao repositório por commit.
+              </p>
+            )}
+
+            {editando && livro.secoes.some((s) => s.id === editando) && (
+              <EditorDaSecao
+                key={`${livro.id}:${editando}`}
+                livro={livro}
+                secao={livro.secoes.find((s) => s.id === editando)!}
+                edicao={edicaoDe(livro.id, editando)}
+                editadaPor={nome ?? ''}
+                onFechar={() => setEditando(null)}
+                onGravou={async () => {
+                  setEditando(null);
+                  await carregar();
+                }}
+              />
+            )}
+
             <Card variant="default" padding="md" className="border-amber-200 bg-amber-50">
               <p className="text-[11px] leading-relaxed text-amber-900">{RESSALVA_EDITORIAL}</p>
             </Card>
@@ -217,8 +262,22 @@ export const LibraryScreen: React.FC = () => {
                       )}
                       <span className="flex-1 truncate text-stone-800">{s.titulo}</span>
                       <span className="shrink-0 font-mono text-[10px] text-stone-400">
-                        {s.origem === 'EDITAVEL' ? 'editável' : 'gerada do curso'}
+                        {s.origem === 'GERADA'
+                          ? 'gerada do curso'
+                          : edicaoDe(livro.id, s.id)
+                            ? 'escrita'
+                            : 'texto de partida'}
                       </span>
+                      {s.origem === 'EDITAVEL' && (
+                        <button
+                          type="button"
+                          onClick={() => setEditando(s.id)}
+                          aria-label={`Editar ${s.titulo}`}
+                          className="shrink-0 rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold text-ouro-800 hover:bg-ouro-100"
+                        >
+                          Editar
+                        </button>
+                      )}
                     </li>
                   ))}
               </ul>
@@ -250,5 +309,106 @@ export const LibraryScreen: React.FC = () => {
         )}
       </PageLayout.Main>
     </PageLayout>
+  );
+};
+
+/**
+ * O editor de uma seção escrita do livro.
+ *
+ * Markdown puro, numa caixa de texto: é o formato do livro inteiro, e o que
+ * `npm run livros` converte para impressão. Um editor visual aqui esconderia
+ * justamente o que vai sair no papel.
+ */
+const EditorDaSecao: React.FC<{
+  livro: LivroDoConservatorio;
+  secao: SecaoDoLivro;
+  edicao: SecaoEditadaDoLivro | null;
+  editadaPor: string;
+  onFechar: () => void;
+  onGravou: () => void | Promise<void>;
+}> = ({ livro, secao, edicao, editadaPor, onFechar, onGravou }) => {
+  const [texto, setTexto] = useState(secao.conteudo);
+  const [falha, setFalha] = useState<string | null>(null);
+  const [gravando, setGravando] = useState(false);
+
+  const gravar = async () => {
+    setGravando(true);
+    setFalha(null);
+    try {
+      await editorialService.salvarSecaoDeLivro({
+        livro,
+        secaoId: secao.id,
+        conteudo: texto,
+        editadaPor,
+      });
+      await onGravou();
+    } catch (e) {
+      setFalha(e instanceof Error ? e.message : 'Não foi possível gravar a seção.');
+    } finally {
+      setGravando(false);
+    }
+  };
+
+  const reverter = async () => {
+    await editorialService.reverterSecaoDeLivro(livro.id, secao.id);
+    await onGravou();
+  };
+
+  return (
+    <Card variant="default" padding="md" className="space-y-3 border-ouro-300">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <h3 className="font-serif text-base font-bold text-stone-900">{secao.titulo}</h3>
+          <p className="text-[11px] text-stone-500">
+            {edicao
+              ? `Escrita por ${edicao.editadaPor} em ${new Date(edicao.editadaEm).toLocaleDateString('pt-BR')}.`
+              : 'Ainda com o texto de partida que o livro gera.'}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onFechar}
+          aria-label="Fechar o editor"
+          className="rounded p-1 text-stone-500 hover:bg-stone-100"
+        >
+          <X className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </div>
+
+      <label className="block space-y-1">
+        <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+          Texto em Markdown
+        </span>
+        <textarea
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          rows={12}
+          className="w-full rounded border border-stone-300 p-2 font-mono text-xs leading-relaxed text-stone-800"
+        />
+      </label>
+
+      {!editadaPor && (
+        <p className="text-[11px] text-stone-500">
+          Entre com sua conta para gravar: toda edição leva autoria.
+        </p>
+      )}
+
+      {falha && (
+        <p role="alert" className="rounded border border-red-200 bg-red-50 p-2 text-xs text-red-800">
+          {falha}
+        </p>
+      )}
+
+      <div className="flex flex-wrap gap-2">
+        <Button variant="primary" size="sm" onClick={gravar} disabled={gravando || !editadaPor}>
+          <Save className="mr-1 h-3.5 w-3.5" /> Gravar seção
+        </Button>
+        {edicao && (
+          <Button variant="secondary" size="sm" onClick={reverter}>
+            <RotateCcw className="mr-1 h-3.5 w-3.5" /> Voltar ao texto de partida
+          </Button>
+        )}
+      </div>
+    </Card>
   );
 };

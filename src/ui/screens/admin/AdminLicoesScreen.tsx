@@ -42,6 +42,11 @@ import { CamposDoBloco } from './CamposDoBloco';
  * Por isso o aviso de pendências é permanente enquanto houver mudança não
  * exportada, e não um rodapé discreto.
  */
+/** "1 correção", "3 correções" — o recado conta tudo o que viaja no pacote. */
+function contar(n: number, um: string, varios: string): string {
+  return `${n} ${n === 1 ? um : varios}`;
+}
+
 export const AdminLicoesScreen: React.FC = () => {
   const { navigate } = useRouter();
   const { nome } = useCurrentUser();
@@ -104,7 +109,7 @@ export const AdminLicoesScreen: React.FC = () => {
 
     setRecado({
       tom: 'ok',
-      texto: `${resumo.edicoes} ${resumo.edicoes === 1 ? 'correção' : 'correções'} e ${resumo.licoesCriadas} ${resumo.licoesCriadas === 1 ? 'lição criada' : 'lições criadas'}, em ${nomeDoArquivo}. Falta o commit para chegar ao aluno.`,
+      texto: `${contar(resumo.edicoes, 'correção', 'correções')}, ${contar(resumo.licoesCriadas, 'lição criada', 'lições criadas')}, ${contar(resumo.artigos, 'artigo', 'artigos')}, ${contar(resumo.livretos, 'livreto', 'livretos')} (${contar(resumo.questoes, 'questão', 'questões')}) e ${contar(resumo.secoesDeLivro, 'seção de livro', 'seções de livro')}, em ${nomeDoArquivo}. Falta o commit para chegar ao aluno.`,
     });
   }
 
@@ -122,7 +127,18 @@ export const AdminLicoesScreen: React.FC = () => {
      */
     setRecado({
       tom: 'ok',
-      texto: `Edições: ${r.edicoes!.adicionadas} novas, ${r.edicoes!.substituidas} atualizadas, ${r.edicoes!.mantidas} mantidas por serem mais recentes. Lições: ${r.licoes!.adicionadas} novas.`,
+      texto: ([
+        ['Edições', r.edicoes!],
+        ['Lições', r.licoes!],
+        ['Artigos', r.artigos!],
+        ['Livretos', r.livretos!],
+        ['Seções de livro', r.secoesDeLivro!],
+      ] as const)
+        .map(
+          ([nome, c]) =>
+            `${nome}: ${c.adicionadas} novas, ${c.substituidas} atualizadas, ${c.mantidas} mantidas por serem mais recentes.`
+        )
+        .join(' '),
     });
 
     const lics = (await Promise.all(modulos.map((m) => academyService.getLessons(m.id)))).flat();

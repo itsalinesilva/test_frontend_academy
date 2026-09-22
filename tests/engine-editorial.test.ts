@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { EditorialService } from '../src/services/application/editorial.service';
 import { EditorialRepository } from '../src/repositories/editorial.repository';
+import { SecaoEditadaDoLivro } from '../src/domain/book';
 import {
   EditorialEdit,
   EditorialLesson,
@@ -94,10 +95,23 @@ class RepoDeMemoria implements EditorialRepository {
     edicoes: EditorialEdit[];
     licoesCriadas: EditorialLesson[];
     artigos: EdicaoDeArtigo[];
+    secoesDeLivro: SecaoEditadaDoLivro[];
   }) {
     this.edicoes = entrada.edicoes;
     this.licoes = entrada.licoesCriadas;
     this.arts = entrada.artigos;
+    this.secoes = entrada.secoesDeLivro;
+  }
+  public secoes: SecaoEditadaDoLivro[] = [];
+  async secoesDeLivro() {
+    return this.secoes;
+  }
+  async salvarSecaoDeLivro(e: SecaoEditadaDoLivro) {
+    this.secoes = [...this.secoes.filter((x) => x.id !== e.id), e];
+    return e;
+  }
+  async reverterSecaoDeLivro(id: string) {
+    this.secoes = this.secoes.filter((x) => x.id !== id);
   }
 }
 
@@ -551,13 +565,13 @@ describe('🔴 o PACOTE — como a edição sai do navegador', () => {
       edicoes: [{ id: 'x' }],
       licoesCriadas: [],
       artigos: [],
-      livretos: [],
+      livretos: [], secoesDeLivro: [],
     });
     expect((lerPacote(edicaoTorta) as { motivo: string }).motivo).toMatch(/lessonId/);
   });
 
   it('🔴 pacote de outra versão é RECUSADO, e não adivinhado', () => {
-    const futuro = JSON.stringify({ versao: 99, edicoes: [], licoesCriadas: [], artigos: [], livretos: [] });
+    const futuro = JSON.stringify({ versao: 99, edicoes: [], licoesCriadas: [], artigos: [], livretos: [], secoesDeLivro: [] });
     const r = lerPacote(futuro) as { ok: false; motivo: string };
 
     expect(r.ok).toBe(false);
@@ -602,7 +616,7 @@ describe('🔴 o PACOTE — como a edição sai do navegador', () => {
       edicoes: [antiga],
       licoesCriadas: [],
       artigos: [],
-      livretos: [],
+      livretos: [], secoesDeLivro: [],
     });
 
     const r = await servico.importarPacote(pacote);

@@ -1,6 +1,7 @@
 import { EditorialEdit, EditorialLesson } from './editorial-edit';
 import { EdicaoDeArtigo } from './editorial-artigo';
 import { Livreto } from './booklet';
+import { SecaoEditadaDoLivro } from './book';
 
 /**
  * O PACOTE EDITORIAL — como a edição sai do navegador.
@@ -46,8 +47,12 @@ import { Livreto } from './booklet';
  * os espera gravaria a lista como ausente — o que é indistinguível de "nenhum
  * artigo editado". A recusa é o comportamento certo, e `lerPacote` a aplica
  * nos dois sentidos.
+ *
+ * Subiu para 3 com os livretos, e para 4 com as seções escritas dos livros da
+ * Biblioteca — pela mesma razão: um pacote que não traz a lista não pode ser
+ * lido como "nenhuma seção escrita".
  */
-export const VERSAO_DO_PACOTE = 3;
+export const VERSAO_DO_PACOTE = 4;
 
 export interface PacoteEditorial {
   versao: number;
@@ -74,6 +79,12 @@ export interface PacoteEditorial {
    * exatamente a mesma base de partida.
    */
   livretos: Livreto[];
+  /**
+   * Prefácio, dedicatória, colofão e as demais seções escritas dos livros da
+   * Biblioteca. Sem isto, o texto ficaria preso no navegador de quem escreveu
+   * — e `npm run livros` imprimiria o texto de partida.
+   */
+  secoesDeLivro: SecaoEditadaDoLivro[];
 }
 
 export interface ResumoDoPacote {
@@ -81,6 +92,7 @@ export interface ResumoDoPacote {
   licoesCriadas: number;
   artigos: number;
   livretos: number;
+  secoesDeLivro: number;
   /** Quantas questões viajam no pacote. É a medida que importa a quem revisa. */
   questoes: number;
   /** Quantas lições distintas o pacote toca. */
@@ -94,6 +106,7 @@ export function montarPacote(entrada: {
   licoesCriadas: EditorialLesson[];
   artigos: EdicaoDeArtigo[];
   livretos: Livreto[];
+  secoesDeLivro: SecaoEditadaDoLivro[];
   exportadoPor?: string;
   agora?: Date;
 }): PacoteEditorial {
@@ -105,6 +118,7 @@ export function montarPacote(entrada: {
     licoesCriadas: entrada.licoesCriadas,
     artigos: entrada.artigos,
     livretos: entrada.livretos,
+    secoesDeLivro: entrada.secoesDeLivro,
   };
 }
 
@@ -119,6 +133,7 @@ export function resumirPacote(p: PacoteEditorial): ResumoDoPacote {
     licoesCriadas: p.licoesCriadas.length,
     artigos: p.artigos.length,
     livretos: p.livretos.length,
+    secoesDeLivro: p.secoesDeLivro.length,
     questoes: p.livretos.reduce(
       (n, l) => n + l.capitulos.reduce((m, c) => m + c.questoes.length, 0),
       0
@@ -199,6 +214,10 @@ export function lerPacote(texto: string): LeituraDoPacote {
     return { ok: false, motivo: 'O pacote está sem a lista de livretos.' };
   }
 
+  if (!Array.isArray(p.secoesDeLivro)) {
+    return { ok: false, motivo: 'O pacote está sem a lista de seções dos livros.' };
+  }
+
   /**
    * Conferência de forma, item a item.
    *
@@ -244,6 +263,17 @@ export function lerPacote(texto: string): LeituraDoPacote {
     }
   }
 
+  for (const [i, e] of p.secoesDeLivro.entries()) {
+    if (!e || typeof e !== 'object') {
+      return { ok: false, motivo: `A seção de livro ${i + 1} não é um registro.` };
+    }
+    for (const campo of ['id', 'livroId', 'secaoId', 'conteudo', 'editadaEm'] as const) {
+      if (typeof (e as SecaoEditadaDoLivro)[campo] !== 'string') {
+        return { ok: false, motivo: `A seção de livro ${i + 1} está sem "${campo}".` };
+      }
+    }
+  }
+
   return {
     ok: true,
     pacote: {
@@ -254,6 +284,7 @@ export function lerPacote(texto: string): LeituraDoPacote {
       licoesCriadas: p.licoesCriadas as EditorialLesson[],
       artigos: p.artigos as EdicaoDeArtigo[],
       livretos: p.livretos as Livreto[],
+      secoesDeLivro: p.secoesDeLivro as SecaoEditadaDoLivro[],
     },
   };
 }
@@ -400,4 +431,34 @@ export function fundirLivretos(
   }
 
   return { resultado: [...porCurso.values()], adicionadas, substituidas, mantidas };
+}
+
+/** Mesma regra dos outros: a mais nova vence, por identificador. */
+export function fundirSecoesDeLivro(
+  atuais: readonly SecaoEditadaDoLivro[],
+  doPacote: readonly SecaoEditadaDoLivro[]
+): { resultado: SecaoEditadaDoLivro[]; adicionadas: number; substituidas: number; mantidas: number } {
+  const porId = new Map(atuais.map((e) => [e.id, e]));
+  let adicionadas = 0;
+  let substituidas = 0;
+  let mantidas = 0;
+
+  for (const nova of doPacote) {
+    const atual = porId.get(nova.id);
+
+    if (!atual) {
+      porId.set(nova.id, nova);
+      adicionadas++;
+      continue;
+    }
+
+    if (Date.parse(nova.editadaEm) > Date.parse(atual.editadaEm)) {
+      porId.set(nova.id, nova);
+      substituidas++;
+    } else {
+      mantidas++;
+    }
+  }
+
+  return { resultado: [...porId.values()], adicionadas, substituidas, mantidas };
 }

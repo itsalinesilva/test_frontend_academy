@@ -1,6 +1,7 @@
 import { LocalStorageAdapter } from '../infrastructure/storage/local-storage';
 import { EditorialEdit, EditorialLesson } from '../domain/editorial-edit';
 import { EdicaoDeArtigo } from '../domain/editorial-artigo';
+import { SecaoEditadaDoLivro } from '../domain/book';
 
 /**
  * Camada editorial — as correções feitas por quem edita o Conservatório.
@@ -52,11 +53,23 @@ export interface EditorialRepository {
   salvarArtigo(edicao: EdicaoDeArtigo): Promise<EdicaoDeArtigo>;
   removerArtigo(artigoId: string): Promise<void>;
 
+  /**
+   * 🔴 AS SEÇÕES ESCRITAS DOS LIVROS — prefácio, dedicatória, colofão.
+   *
+   * O livro é gerado do curso a cada leitura. Sem esta chave, o que se
+   * escrevesse numa seção editável não tinha onde ficar, e sumia na leitura
+   * seguinte (EE-19).
+   */
+  secoesDeLivro(): Promise<SecaoEditadaDoLivro[]>;
+  salvarSecaoDeLivro(edicao: SecaoEditadaDoLivro): Promise<SecaoEditadaDoLivro>;
+  reverterSecaoDeLivro(id: string): Promise<void>;
+
   /** Troca a camada inteira de uma vez — é o que a importação de pacote faz. */
   substituirTudo(entrada: {
     edicoes: EditorialEdit[];
     licoesCriadas: EditorialLesson[];
     artigos: EdicaoDeArtigo[];
+    secoesDeLivro: SecaoEditadaDoLivro[];
   }): Promise<void>;
 }
 
@@ -73,6 +86,7 @@ export class PersistentEditorialRepository implements EditorialRepository {
    */
   private readonly CHAVE_LICOES = 'amd_academy_licoes_criadas_v1';
   private readonly CHAVE_ARTIGOS = 'amd_acervo_artigos_editoriais_v1';
+  private readonly CHAVE_LIVROS = 'amd_biblioteca_secoes_editadas_v1';
 
   constructor(storage: LocalStorageAdapter = new LocalStorageAdapter()) {
     this.storage = storage;
@@ -185,14 +199,40 @@ export class PersistentEditorialRepository implements EditorialRepository {
     );
   }
 
+  public async secoesDeLivro(): Promise<SecaoEditadaDoLivro[]> {
+    return this.storage.get<SecaoEditadaDoLivro[]>(this.CHAVE_LIVROS) ?? [];
+  }
+
+  public async salvarSecaoDeLivro(edicao: SecaoEditadaDoLivro): Promise<SecaoEditadaDoLivro> {
+    const atuais = await this.secoesDeLivro();
+    const i = atuais.findIndex((e) => e.id === edicao.id);
+
+    if (i >= 0) atuais[i] = edicao;
+    else atuais.push(edicao);
+
+    this.storage.set(this.CHAVE_LIVROS, atuais);
+    return edicao;
+  }
+
+  /** Reverter apaga a edição: a seção volta ao texto de partida do livro. */
+  public async reverterSecaoDeLivro(id: string): Promise<void> {
+    const atuais = await this.secoesDeLivro();
+    this.storage.set(
+      this.CHAVE_LIVROS,
+      atuais.filter((e) => e.id !== id)
+    );
+  }
+
   public async substituirTudo(entrada: {
     edicoes: EditorialEdit[];
     licoesCriadas: EditorialLesson[];
     artigos: EdicaoDeArtigo[];
+    secoesDeLivro: SecaoEditadaDoLivro[];
   }): Promise<void> {
     this.storage.set(this.CHAVE, entrada.edicoes);
     this.storage.set(this.CHAVE_LICOES, entrada.licoesCriadas);
     this.storage.set(this.CHAVE_ARTIGOS, entrada.artigos);
+    this.storage.set(this.CHAVE_LIVROS, entrada.secoesDeLivro);
   }
 }
 

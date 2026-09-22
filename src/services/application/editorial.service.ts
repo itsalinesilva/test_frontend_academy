@@ -18,12 +18,20 @@ import {
   problemasDoArtigo,
 } from '../../domain/editorial-artigo';
 import {
+  LivroDoConservatorio,
+  SecaoEditadaDoLivro,
+  aplicarSecoesEditadas,
+  idDaSecaoEditada,
+  problemasDaSecao,
+} from '../../domain/book';
+import {
   PacoteEditorial,
   ResumoDoPacote,
   fundirArtigos,
   fundirEdicoes,
   fundirLivretos,
   fundirLicoesCriadas,
+  fundirSecoesDeLivro,
   lerPacote,
   montarPacote,
   nomeDoArquivo,
@@ -303,6 +311,7 @@ export class EditorialService {
       licoesCriadas: await this.repo.licoesCriadas(),
       artigos: await this.repo.artigos(),
       livretos: await this.livretos.listarLivretos(),
+      secoesDeLivro: await this.repo.secoesDeLivro(),
       exportadoPor,
     });
 
@@ -332,6 +341,7 @@ export class EditorialService {
     licoes?: { adicionadas: number; substituidas: number; mantidas: number };
     artigos?: { adicionadas: number; substituidas: number; mantidas: number };
     livretos?: { adicionadas: number; substituidas: number; mantidas: number };
+    secoesDeLivro?: { adicionadas: number; substituidas: number; mantidas: number };
   }> {
     const leitura = lerPacote(texto);
     if (!leitura.ok) return { ok: false, motivo: leitura.motivo };
@@ -346,6 +356,10 @@ export class EditorialService {
       await this.livretos.listarLivretos(),
       leitura.pacote.livretos
     );
+    const secoesDeLivro = fundirSecoesDeLivro(
+      await this.repo.secoesDeLivro(),
+      leitura.pacote.secoesDeLivro
+    );
 
     /**
      * O livreto é gravado um a um: o repositório dele guarda por curso, e não
@@ -358,6 +372,7 @@ export class EditorialService {
       edicoes: edicoes.resultado,
       licoesCriadas: licoes.resultado,
       artigos: artigos.resultado,
+      secoesDeLivro: secoesDeLivro.resultado,
     });
 
     return {
@@ -382,6 +397,11 @@ export class EditorialService {
         substituidas: livretos.substituidas,
         mantidas: livretos.mantidas,
       },
+      secoesDeLivro: {
+        adicionadas: secoesDeLivro.adicionadas,
+        substituidas: secoesDeLivro.substituidas,
+        mantidas: secoesDeLivro.mantidas,
+      },
     };
   }
 
@@ -390,7 +410,8 @@ export class EditorialService {
     const edicoes = await this.repo.todas();
     const licoes = await this.repo.licoesCriadas();
     const artigos = await this.repo.artigos();
-    return edicoes.length + licoes.length + artigos.length;
+    const secoes = await this.repo.secoesDeLivro();
+    return edicoes.length + licoes.length + artigos.length + secoes.length;
   }
 
   // -------------------------------------------------------------------------
@@ -458,6 +479,58 @@ export class EditorialService {
    */
   public async removerArtigo(artigoId: string): Promise<void> {
     return this.repo.removerArtigo(artigoId);
+  }
+
+  // -------------------------------------------------------------------------
+  // Livros da Biblioteca — as seções escritas (EE-19)
+  // -------------------------------------------------------------------------
+
+  public async secoesDeLivro(): Promise<SecaoEditadaDoLivro[]> {
+    return this.repo.secoesDeLivro();
+  }
+
+  /** Os livros como devem ser lidos: os gerados, com o que foi escrito por cima. */
+  public async livrosComEdicoes(
+    livros: readonly LivroDoConservatorio[]
+  ): Promise<LivroDoConservatorio[]> {
+    const edicoes = await this.repo.secoesDeLivro();
+    return livros.map((l) => aplicarSecoesEditadas(l, edicoes));
+  }
+
+  /**
+   * Grava o texto de uma seção editável.
+   *
+   * 🔴 Recebe o LIVRO, e não só o id da seção: é o livro que diz se a seção é
+   * editável. Confiar na tela para isso deixaria um capítulo ser gravado —
+   * e o livro passaria a divergir do curso que o gerou.
+   */
+  public async salvarSecaoDeLivro(entrada: {
+    livro: LivroDoConservatorio;
+    secaoId: string;
+    conteudo: string;
+    editadaPor: string;
+  }): Promise<SecaoEditadaDoLivro> {
+    if (!entrada.editadaPor.trim()) {
+      throw new Error('Toda edição precisa de autoria: a trilha de revisão depende dela.');
+    }
+
+    const secao = entrada.livro.secoes.find((s) => s.id === entrada.secaoId);
+    const problemas = problemasDaSecao(secao, entrada.conteudo);
+    if (problemas.length > 0) throw new Error(problemas.join(' '));
+
+    return this.repo.salvarSecaoDeLivro({
+      id: idDaSecaoEditada(entrada.livro.id, entrada.secaoId),
+      livroId: entrada.livro.id,
+      secaoId: entrada.secaoId,
+      conteudo: entrada.conteudo,
+      editadaPor: entrada.editadaPor,
+      editadaEm: new Date().toISOString(),
+    });
+  }
+
+  /** A seção volta ao texto de partida que o livro gera. */
+  public async reverterSecaoDeLivro(livroId: string, secaoId: string): Promise<void> {
+    return this.repo.reverterSecaoDeLivro(idDaSecaoEditada(livroId, secaoId));
   }
 }
 
