@@ -389,7 +389,22 @@ const deCompositores: AtlasMarker[] = compositores
           contagem: m.founderComposerIds.length,
         }));
 
-  return [...deMovimentos, ...deCompositores, ...deObras];
+  /**
+   * Cada grupo em ordem alfabética, e os grupos na ordem de leitura do mapa:
+   * movimento (o recorte mais largo), pessoa, obra.
+   *
+   * Os compositores já vêm ordenados por tamanho de compêndio, porque é isso
+   * que o teto de plotagem escolhe — reordenar aqui desfaria a escolha e
+   * plotaria outros. Alfabética se aplica a quem não passa por teto.
+   */
+  const alfabetica = (a: AtlasMarker, b: AtlasMarker) =>
+    a.titulo.localeCompare(b.titulo, 'pt-BR');
+
+  return [
+    ...deMovimentos.sort(alfabetica),
+    ...deCompositores,
+    ...deObras.sort(alfabetica),
+  ];
 }
 
 /**

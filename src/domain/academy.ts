@@ -215,7 +215,151 @@ export type LessonBlock =
    * aula gravada entrará. Deve ser visualmente discreto: uma linha, nunca um
    * card grande que sugira conteúdo ausente.
    */
-  | { kind: 'VIDEO_PLACEHOLDER'; id: string; topic: string };
+  | { kind: 'VIDEO_PLACEHOLDER'; id: string; topic: string }
+
+  // -------------------------------------------------------------------------
+  // 🔴 A BIBLIOTECA DE BLOCOS FUNCIONAIS
+  //
+  // Cada um destes tem componente que o desenha e faz o que promete. Nenhum é
+  // mostruário: bloco sem renderizador produz lição com buraco, e o buraco só
+  // aparece para o aluno.
+  //
+  // A ordem em que entraram segue a auditoria de paridade
+  // (`docs/claude/02_REFERENCE_PARITY_AUDIT.md`), que mediu 24 componentes
+  // construídos e nunca usados — `Player`, `PianoRoll`, `Tuner`, `Waveform`
+  // entre eles. Eram peças prontas esperando quem as chamasse.
+  // -------------------------------------------------------------------------
+
+  /**
+   * Toca um trecho, com transporte e forma de onda.
+   *
+   * Diferente de `AUDIO_EXAMPLE`, que é um botão: aqui há barra de progresso,
+   * repetição e meia velocidade. A forma de onda é **derivada das notas**, e
+   * não uma imagem — desenhar picos que não correspondem ao som seria enfeite
+   * com aparência de medição.
+   */
+  | {
+      kind: 'PLAYER';
+      id: string;
+      title: string;
+      description?: string;
+      notes: string[];
+      playMode: 'SEQUENCE' | 'CHORD';
+      bpm?: number;
+      /** Permite ouvir a metade da velocidade. Útil em condução de vozes. */
+      permiteMeiaVelocidade?: boolean;
+    }
+
+  /**
+   * Rolo de piano: as notas no tempo, como num sequenciador.
+   *
+   * É o que torna visível o que a pauta esconde de quem ainda não lê — duração
+   * e simultaneidade viram comprimento e empilhamento.
+   */
+  | {
+      kind: 'PIANO_ROLL';
+      id: string;
+      title?: string;
+      notas: Array<{ nota: string; inicioEmTempos: number; duracaoEmTempos: number }>;
+      totalDeTempos?: number;
+      caption?: string;
+    }
+
+  /**
+   * 🔴 LABORATÓRIO DE AFINAÇÃO — o bloco que OUVE.
+   *
+   * Pede uma nota e mede o que a pessoa canta ou toca, em cents reais, pelo
+   * microfone. É a medição do Astra Trainer, e é o que separa "treino medido"
+   * de "clicar na alternativa certa".
+   *
+   * Sem microfone, o bloco **declara** que não está medindo. Um mostrador que
+   * se mexe sem sinal é o pior tipo de mentira: parece instrumento.
+   */
+  | {
+      kind: 'TUNER_LAB';
+      id: string;
+      title: string;
+      /** A nota alvo, em notação científica. */
+      notaAlvo: string;
+      /** Tolerância em cents. Abaixo disso, conta como acertado. */
+      toleranciaCents?: number;
+      prompt?: string;
+    }
+
+  /**
+   * Tabela comparativa.
+   *
+   * Comparar quatro coisas em quatro dimensões dentro de um parágrafo obriga
+   * quem lê a montar a tabela de cabeça. Markdown tem tabela, mas sem
+   * cabeçalho declarado ela não é legível por leitor de tela.
+   */
+  | {
+      kind: 'TABELA';
+      id: string;
+      title?: string;
+      colunas: string[];
+      linhas: string[][];
+      caption?: string;
+    }
+
+  /**
+   * Citação com fonte.
+   *
+   * A fonte é **obrigatória**. Citação sem atribuição num conservatório é o
+   * começo de plágio — e o acervo inteiro é construído sobre proveniência.
+   */
+  | {
+      kind: 'CITACAO';
+      id: string;
+      texto: string;
+      fonte: string;
+      /** Ano, página, ou o que localize a passagem. */
+      localizacao?: string;
+    }
+
+  /**
+   * Linha do tempo histórica.
+   *
+   * Nasceu para História da Música, onde a ordem dos acontecimentos É o
+   * conteúdo. Uma lista com datas no meio do texto não mostra distância — e
+   * distância no tempo é o que explica por que uma coisa veio da outra.
+   */
+  | {
+      kind: 'LINHA_DO_TEMPO';
+      id: string;
+      title: string;
+      marcos: Array<{ ano: number; titulo: string; texto?: string }>;
+      caption?: string;
+    }
+
+  /**
+   * 🔴 SESSÃO DE EXERCÍCIOS — o loop do Duolingo, dentro da lição.
+   *
+   * `CHECKPOINT` é uma pergunta solta no meio da leitura. Esta é uma
+   * **sequência**: várias perguntas, barra de progresso, faixa de veredito que
+   * sobe, e o resultado no fim.
+   *
+   * A auditoria de paridade mediu `ExerciseSessionScreen` em 21/100, com 1.255
+   * linhas e seis vetores fixos. O que faltava não era tela: era o exercício
+   * poder ser **escrito por quem edita**, em vez de codificado.
+   */
+  | {
+      kind: 'SESSAO_DE_EXERCICIOS';
+      id: string;
+      title: string;
+      /** Quantos erros a sessão tolera antes de encerrar. Zero desliga a regra. */
+      vidas?: number;
+      questoes: Array<{
+        id: string;
+        enunciado: string;
+        alternativas: string[];
+        corretaIndex: number;
+        explicacao: string;
+        /** Toca antes de responder — é o que faz a pergunta ser de ouvido. */
+        notas?: string[];
+        playMode?: 'SEQUENCE' | 'CHORD';
+      }>;
+    };
 
 export interface LessonSection {
   id: string;

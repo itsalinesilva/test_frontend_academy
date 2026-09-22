@@ -77,7 +77,26 @@ const PROIBIDOS = [
   'Tinhorao',
 
   // Metodos de instrumento.
-  'Suzuki',
+  //
+  // 🔴 'Suzuki' SAIU DESTA LISTA, e a decisao e da Aline.
+  //
+  // A regra existe para manter fora da plataforma a BIBLIOGRAFIA DE ESTUDO —
+  // os livros que a gente le para escrever conteudo, e cujo texto e de
+  // terceiros. Citar Grout ou Kostka numa tela seria pendurar a plataforma
+  // numa fonte que ela nao pode reproduzir.
+  //
+  // O repertorio graduado de violino e outra coisa. O indice de um volume
+  // pedagogico — quais pecas estao nele, em que ordem — e FATO, e fato nao se
+  // protege. E as pecas sao de Bach, Handel, Purcell, Schumann, Boccherini:
+  // dominio publico, com autoria propria, catalogadas aqui em nome de quem as
+  // escreveu.
+  //
+  // O que continua proibido, e mais importante que o nome: **reproduzir as
+  // pecas do proprio Shinichi Suzuki**. Ele morreu em 1998, e pela Lei
+  // 9.610/98 art. 41 a obra dele esta protegida ate 2069. As Variacoes sobre
+  // Twinkle, o Allegro, o Perpetual Motion, o Allegretto, o Andantino e o
+  // Etude entram no catalogo como REGISTRO — existem, sao dele, e nao tocam
+  // aqui.
   'Hans Sitt',
   'Maia Bang',
   'Berklee',
@@ -94,12 +113,47 @@ const PROIBIDOS = [
  * A separação é a mínima: esta função decide, e a parte de baixo lê o disco e
  * relata. A regra não mudou; o que mudou é que agora dá para prová-la.
  */
+/**
+ * 🔴 TERMOS PROIBIDOS QUE TAMBEM SAO TITULO DE OBRA.
+ *
+ * `Gradus ad Parnassum` esta na lista porque e o tratado de contraponto do Fux
+ * — bibliografia de estudo, que nao se cita na plataforma.
+ *
+ * Mas e tambem o nome de pecas de musica reais: a *Doctor Gradus ad Parnassum*
+ * que abre o **Children's Corner** de Debussy, e a colecao de Clementi. Elas
+ * estao no catalogo porque existem, e o titulo de uma obra e **fato sobre a
+ * obra** — nao e citacao de tratado nenhum.
+ *
+ * A distincao e por LUGAR, e o lugar e estreito: os arquivos de dado do
+ * acervo, gerados a partir das fontes, que contem titulos e endereços e mais
+ * nada. Prosa da plataforma continua proibida de citar, inclusive nestes
+ * mesmos termos.
+ */
+const TAMBEM_SAO_TITULO = ['Gradus ad Parnassum'];
+
+/**
+ * O dado do acervo — titulos como as fontes os escrevem.
+ *
+ * `src/data/acervo/` e o que os geradores escrevem: obras, aliases, endereços.
+ * Nao ha prosa ali, e por isso um termo que caia num titulo nao e citacao.
+ * No pacote construido esses arquivos viram pedacos com o mesmo nome.
+ */
+const ehDadoDoAcervo = (file) =>
+  /src[\\/]data[\\/]acervo[\\/]/.test(file) ||
+  /(obras|brasilis|imslp|alias|partituras)-[A-Za-z0-9_-]+\.js$/.test(file);
+
 export function citacoesProibidas(arquivos) {
   const achados = [];
   for (const { file, content } of arquivos) {
     if (ISENTOS.some((i) => file.endsWith(i))) continue;
 
     for (const termo of PROIBIDOS) {
+      /**
+       * O termo que tambem e titulo de obra nao acusa dentro do dado do
+       * acervo — e continua acusando em qualquer outro lugar.
+       */
+      if (TAMBEM_SAO_TITULO.includes(termo) && ehDadoDoAcervo(file)) continue;
+
       if (content.includes(termo)) {
         const linha = content.slice(0, content.indexOf(termo)).split('\n').length;
         achados.push({ file, line: linha, termo, detail: `${file}:${linha} menciona "${termo}"` });

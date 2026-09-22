@@ -8,6 +8,7 @@ import {
   progress,
 } from '../../../domain/music-exercise';
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
+import { FiguraDoExercicio } from './FiguraDoExercicio';
 import { X, Volume2, Turtle, Check, RotateCcw, Flag } from 'lucide-react';
 
 interface ExerciseScreenProps {
@@ -193,6 +194,15 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
         <h1 className="font-serif text-2xl font-bold leading-snug text-stone-900">
           {exercise.prompt}
         </h1>
+
+        {/*
+          🔴 A FIGURA VEM ANTES DAS ALTERNATIVAS.
+
+          O enunciado diz "Que nota está escrita na pauta?" — se a pauta
+          aparecesse depois das alternativas, ou não aparecesse, a pergunta
+          apontaria para o vazio.
+        */}
+        {exercise.figura && <FiguraDoExercicio figura={exercise.figura} />}
 
         {exercise.audio && (
           <div className="mt-6 flex items-center gap-3">

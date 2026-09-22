@@ -10,7 +10,7 @@
  * Ninguém percebeu porque nada verificava. Estes verificadores existem para
  * que o próximo curso não reintroduza o problema em silêncio.
  */
-import { readSource, sourceExists, stripComments } from './core.mjs';
+import { readSource, sourceExists, sources, stripComments } from './core.mjs';
 
 const CHAIR = 'src/domain/chair.ts';
 const SEED_HOUSES = 'src/data/seed-houses.ts';
@@ -793,6 +793,99 @@ export function checkAtlasEAcervoMesmaVerdade() {
       findings.push({
         file: MAPA_DO_ATLAS,
         detail: 'o mapa perdeu a regra de foco \u2014 ele volta a emitir milhares de obras como marcadores',
+      });
+    }
+  }
+
+  return findings;
+}
+
+/**
+ * O PRAZO DE PROTEÇÃO TEM UM LUGAR SÓ, E ELE DECLARA O REGIME.
+ *
+ * 🔴 A pergunta "conta da morte ou da publicação?" apareceu três vezes nesta
+ * sessão, e a resposta é **as duas**, conforme a natureza da obra:
+ *
+ *   autor conhecido      → morte + 70    (Lei 9.610/98, art. 41)
+ *   anônima ou pseudônima → publicação + 70 (art. 43)
+ *   audiovisual          → divulgação + 70  (art. 44)
+ *
+ * Tratar como regra única produz os dois erros possíveis, e só um deles tem
+ * consequência jurídica: contar sempre da publicação faz a plataforma
+ * **declarar liberado o que está protegido**.
+ *
+ * Este verificador impede que a conta volte a ser espalhada — e impede que
+ * alguém invente uma data para fazer o cálculo fechar, que foi o que a
+ * Antiguidade fazia com `anoDeMorte: 500` sobre um epitáfio anônimo.
+ */
+const PRAZO = 'src/domain/copyright-term.ts';
+
+export function checkPrazoDeProtecao() {
+  const findings = [];
+
+  if (!sourceExists(PRAZO)) {
+    findings.push({
+      file: PRAZO,
+      detail: 'o dominio do prazo nao existe — a verificacao ficaria vazia',
+    });
+    return findings;
+  }
+
+  const codigo = readSource(PRAZO);
+
+  /** Os regimes que a lei distingue, e os artigos que os sustentam. */
+  for (const exigido of ['AUTOR_CONHECIDO', 'ANONIMA_OU_PSEUDONIMA', 'art. 41', 'art. 43']) {
+    if (!codigo.includes(exigido)) {
+      findings.push({
+        file: PRAZO,
+        detail: `${exigido} sumiu — sem o regime declarado, o prazo volta a ser contado por palpite`,
+      });
+    }
+  }
+
+  /**
+   * O `+ 1` do 1o de janeiro seguinte. Sem ele a obra e liberada um ano antes
+   * da hora, e um ano e tempo de alguem publicar o que nao podia.
+   */
+  if (!/PRAZO_EM_ANOS \+ 1/.test(stripComments(codigo))) {
+    findings.push({
+      file: PRAZO,
+      detail:
+        'a conta perdeu o 1o de janeiro seguinte — a obra entra em dominio publico um ano antes da hora',
+    });
+  }
+
+  return findings;
+}
+
+/**
+ * 🔴 DATA DE MORTE INVENTADA PARA FAZER A CONTA FECHAR.
+ *
+ * `anoDeMorte: 500` sobre um fragmento anonimo do seculo II dava o resultado
+ * certo pelo metodo errado: a ficha declarava dominio publico "por morte do
+ * autor em 500" de alguem que ninguem sabe quem foi.
+ *
+ * Quando a liberdade e constatacao, o regime e `ANTERIOR_A_QUALQUER_PRAZO`, e
+ * nao ha o que contar. Quando e calculo, a data tem de vir do registro da
+ * pessoa — nunca de um literal escolhido para dar certo.
+ *
+ * Verificador separado do `checkPrazoDeProtecao` de proposito: aquele le um
+ * arquivo conhecido, este VARRE a arvore. Sao dois mecanismos, e a tabela de
+ * provas cobre cada um do seu jeito — misturar os dois deixaria metade sem
+ * prova.
+ */
+export function checkDataDeMorteCravada() {
+  const findings = [];
+
+  for (const { file, code } of sources()) {
+    if (file.includes('.test.')) continue;
+    if (!file.startsWith('src/domain/')) continue;
+
+    for (const m of stripComments(code).matchAll(/anoDeMorte:\s*(\d{1,4})[,\s}]/g)) {
+      findings.push({
+        file,
+        line: code.slice(0, m.index).split('\n').length,
+        detail: `data de morte cravada (${m[1]}) — se e constatacao, o regime e ANTERIOR_A_QUALQUER_PRAZO; se e calculo, a data vem do registro`,
       });
     }
   }

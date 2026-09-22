@@ -116,13 +116,26 @@ describe('o número de catálogo escrito no título', () => {
     }
   });
 
-  it('LIMITE DECLARADO: Hoboken com algarismo romano não é lido', () => {
+  it('🔴 o LIMITE do Hoboken caiu: romano e dois-pontos são lidos', () => {
     /**
-     * `Hob. III:12` usa romano e dois pontos, e o leitor espera dígitos. Fica
-     * SEM número, e não com um número errado — declarar o limite é o que
-     * impede alguém de confiar numa cobertura que não existe.
+     * Este caso declarava o contrário — que `Hob. III:12` ficava sem número —,
+     * e o limite era real enquanto o leitor esperava só dígitos.
+     *
+     * Ele caiu porque custava caro: o número de catálogo é a chave forte do
+     * cruzamento com bibliotecas de partitura, e um número truncado vira chave
+     * ambígua, que por regra não casa nada. `TWV 43:h3` saía como `TWV 43`,
+     * comum a dezenas de quartetos de Telemann, e quinhentas e uma obras dele
+     * ficavam sem endereço de partitura por causa disso.
+     *
+     * O que o leitor entende agora: grupo em algarismo romano, número, e
+     * continuações por dois-pontos.
      */
-    expect(catalogoDoTitulo('String Quartet, Hob. III:12')).toBeUndefined();
+    expect(catalogoDoTitulo('String Quartet, Hob. III:12')).toBe('Hob. III:12');
+    expect(catalogoDoTitulo('Quartet in B minor, TWV. 43:h3')).toBe('TWV 43:h3');
+    expect(catalogoDoTitulo('Piano Sonata, Hob.XVI:52')).toBe('Hob. XVI:52');
+
+    /** E o que não tem número continua sem: o limite caiu, a regra não. */
+    expect(catalogoDoTitulo('Clair de lune')).toBeUndefined();
   });
 });
 

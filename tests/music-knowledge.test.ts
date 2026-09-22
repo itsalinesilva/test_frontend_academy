@@ -289,12 +289,50 @@ describe('o que a ficha diz sobre a disponibilidade', () => {
     }
   });
 
-  it('domínio público SEM edição livre: catalogada, e o motivo é nosso', () => {
-    // Aqui o limite não é a lei — é não termos ainda uma edição redistribuível.
+  it('🔴 domínio público COM partitura localizada: diz onde ela está', () => {
+    /**
+     * O caso que faltava, e cuja ausência deixou a ficha mentir para sete mil
+     * obras. Partitura localizada não é edição renderizável — mas também não é
+     * ausência, e a frase precisa distinguir as duas.
+     */
+    const d = avaliarDisponibilidade(
+      obraCom({
+        scoreRefs: [
+          {
+            source: 'IMSLP',
+            sourceRef: 'https://imslp.org/wiki/Exemplo',
+            format: 'pdf',
+            render: 'FICHA',
+            aponta: 'PAGINA',
+          },
+        ],
+      })
+    );
+
+    expect(d.modo).toBe('SOMENTE_CATALOGO');
+    expect(d.motivo).toContain('partitura localizada');
+    expect(d.motivo, 'disse que não localizou o que localizou').not.toContain(
+      'Ainda não localizamos'
+    );
+  });
+
+  it('domínio público SEM edição NENHUMA: catalogada, e o motivo é nosso', () => {
+    /**
+     * Aqui o limite não é a lei — é ninguém ter localizado uma edição.
+     *
+     * 🔴 A frase mudou porque havia DOIS estados onde existem três. "Não há
+     * edição redistribuível" era dito também sobre obra cuja edição a
+     * plataforma sabe onde fica, e só não sabe renderizar. Sete mil obras
+     * recebiam esse recado, e ele mandava a pessoa desistir de procurar o que
+     * está a um clique.
+     *
+     * Os três: toca aqui · partitura achada · ainda procurando. Este caso é o
+     * terceiro, e é o único que pode dizer que não localizamos nada.
+     */
     const d = avaliarDisponibilidade(obraCom({ scoreRefs: [] }));
 
     expect(d.modo).toBe('SOMENTE_CATALOGO');
-    expect(d.motivo).toContain('edição redistribuível');
+    expect(d.motivo).toContain('Ainda não localizamos edição');
     expect(d.motivo).not.toContain('protegida');
   });
 

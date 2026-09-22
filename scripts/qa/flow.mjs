@@ -81,6 +81,43 @@ export function checkNavigationTargets() {
 
 // --------------------------------------------------------------- negócio ---
 
+/**
+ * 🔴 TEXTO CITADO DE FONTE EXTERNA NÃO É AFIRMAÇÃO DA PLATAFORMA.
+ *
+ * Duas verificações acusaram o corpus brasileiro: uma biografia dizia que o
+ * compositor "fez curso superior", outra que ele nasceu numa "ilha".
+ *
+ * As duas regras estão certas e o alvo estava errado. `curso superior` existe
+ * para impedir que o Conservatório prometa titulação que curso livre não dá;
+ * `ilha` existe para impedir que uma palavra aposentada do projeto volte ao
+ * vocabulário. Nenhuma das duas tem a ver com o que a Música Brasilis escreveu
+ * sobre a formação de um compositor morto em 1935, nem com a geografia do
+ * lugar onde ele nasceu.
+ *
+ * Acusar aqui teria consequência pior que o falso positivo: a saída óbvia
+ * seria **editar a biografia** para o verificador calar — e aí a plataforma
+ * passaria a publicar como citação um texto que ela alterou.
+ *
+ * O recorte é estreito de propósito:
+ *
+ *   o arquivo tem de estar em `src/data/`, onde vivem os seeds;
+ *   a linha tem de ser o valor de uma chave `"biografia"` **entre aspas** — o
+ *   resto do arquivo segue sob as mesmas regras.
+ *
+ * A aspa na chave não é detalhe: é a assinatura de objeto gerado por
+ * `JSON.stringify`. Seed escrito à mão usa identificador de TypeScript
+ * (`biography: { pt: '...' }`), e continua verificado — biografia que nós
+ * escrevemos é afirmação nossa.
+ *
+ * A primeira versão desta função procurava "GERADO POR" no cabeçalho, e não
+ * funcionava: `sources()` entrega o código **sem comentários**, e o cabeçalho
+ * é um comentário. Ela nunca casava, e a exclusão que eu tinha acabado de
+ * escrever não excluía nada.
+ */
+function ehBiografiaCitada(file, linha) {
+  return file.includes('src/data/') && /^\s*"biografia":\s*"/.test(linha);
+}
+
 /** Afirmações que o Conservatório não pode fazer sobre a própria titulação. */
 const PROMESSA_INDEVIDA = [
   /reconhecid[oa]\s+pelo\s+MEC/i,
@@ -96,14 +133,27 @@ export function checkDegreeClaims() {
   const findings = [];
   for (const { file, code: content } of sources()) {
     if (file.includes('.test.')) continue;
-    for (const re of PROMESSA_INDEVIDA) {
-      const m = content.match(re);
-      if (m) {
-        findings.push({
-          file,
-          line: content.slice(0, content.indexOf(m[0])).split('\n').length,
-          detail: `promete o que curso livre não dá: "${m[0]}"`,
-        });
+
+    /**
+     * Linha a linha, e não sobre o conteúdo inteiro.
+     *
+     * Casar contra o arquivo todo dava a posição da PRIMEIRA ocorrência e
+     * parava ali — uma segunda promessa no mesmo arquivo passava batido. E,
+     * sem a linha em mãos, não havia como distinguir uma promessa nossa de uma
+     * biografia citada que menciona a formação de alguém.
+     */
+    for (const [i, linha] of content.split('\n').entries()) {
+      if (ehBiografiaCitada(file, linha)) continue;
+
+      for (const re of PROMESSA_INDEVIDA) {
+        const m = linha.match(re);
+        if (m) {
+          findings.push({
+            file,
+            line: i + 1,
+            detail: `promete o que curso livre não dá: "${m[0]}"`,
+          });
+        }
       }
     }
   }
@@ -507,6 +557,19 @@ export function checkComingSoonPromise() {
        * e isso está declarado em `72_QUALITY_SWEEP.md`.
        */
       if (/\bmotivo\s*:/.test(texto)) continue;
+
+      /**
+       * Biografia citada da fonte — mesmo recorte de `ehBiografiaCitada`.
+       *
+       * "Em breve estreará sua ópera" dentro da biografia de um compositor é
+       * frase de quem a escreveu, sobre a vida dele, em algum momento do
+       * passado. Não é promessa do Conservatório sobre o produto.
+       *
+       * Acusar aqui teria a mesma consequência perversa do outro caso: a saída
+       * óbvia seria **editar a citação** para o verificador calar, e a
+       * plataforma passaria a publicar como citação um texto que ela alterou.
+       */
+      if (ehBiografiaCitada(file, texto)) continue;
 
       findings.push({ file, line, detail: `promete para depois: "${m[0]}"` });
     }
@@ -983,6 +1046,13 @@ export function checkRetiredVocabulary() {
     if (file.includes('.test.')) continue;
 
     for (const [i, line] of code.split('\n').entries()) {
+      /**
+       * Biografia citada de fonte externa não entra: "nasceu na ilha de
+       * Itaparica" é geografia, e não a palavra aposentada do projeto voltando
+       * ao vocabulário. Ver `ehBiografiaCitada`.
+       */
+      if (ehBiografiaCitada(file, line)) continue;
+
       for (const [word, instead] of RETIRED_WORDS) {
         /**
          * Três formas, e nenhuma delas é "a palavra em qualquer lugar".

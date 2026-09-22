@@ -763,11 +763,31 @@ const SINAIS: Sinal[] = [
         file: 'src/ui/screens/q/Q3Screen.tsx',
         content: `const texto = 'Trilha de estudo avancado em harmonia.';`,
       },
+      {
+        /**
+         * BIOGRAFIA CITADA DE FONTE EXTERNA NAO E PROMESSA DA PLATAFORMA.
+         *
+         * Uma biografia da Musica Brasilis diz que o compositor foi o primeiro
+         * brasileiro a ensinar violao em um curso superior. E um fato sobre um
+         * musico, e nao uma oferta de titulacao — e acusa-lo teria como saida
+         * obvia EDITAR a biografia para o verificador calar, publicando como
+         * citacao um texto alterado.
+         */
+        como: 'biografia citada que menciona curso superior',
+        file: 'src/data/seed-exemplo.ts',
+        content: [
+          '  {',
+          '    "nome": "Alguem",',
+          '    "biografia": "Foi o primeiro a ensinar violao em um curso superior, em 1966."',
+          '  }',
+        ].join('\n'),
+      },
     ],
     limites: [
       'a lista de promessas indevidas cresce a mao: formula nova passa ate alguem escreve-la',
       'nao entende negacao — uma frase dizendo que NAO e reconhecido pelo MEC seria acusada',
-      'acusa uma vez por padrao e por arquivo, e nao cada repeticao da mesma promessa',
+      'isenta a linha `"biografia": "..."` em `src/data/`: texto citado de fonte, e nao afirmacao nossa',
+      'a isencao e por FORMA — chave entre aspas, assinatura de objeto gerado. Biografia escrita a mao, em identificador de TypeScript, continua verificada',
     ],
   },
 
@@ -1636,6 +1656,60 @@ const SINAIS: Sinal[] = [
     ],
   },
 
+  {
+    nome: 'checkDataDeMorteCravada',
+    rodar: instituicao.checkDataDeMorteCravada,
+    variantes: [
+      {
+        /**
+         * 🔴 O DEFEITO REAL. A Antiguidade passava `anoDeMorte: 500` sobre um
+         * epitafio anonimo do seculo II: resultado certo pelo metodo errado, e
+         * a ficha declarava morte de quem ninguem sabe quem foi.
+         */
+        como: 'data de morte cravada para fazer a conta fechar',
+        file: 'src/domain/antigo-a.ts',
+        content: 'export const x = avaliarDominioPublico({ anoDeMorte: 500 });',
+      },
+      {
+        como: 'data cravada no meio de um objeto maior',
+        file: 'src/domain/antigo-b.ts',
+        content: 'export const y = { titulo: "Fragmento", anoDeMorte: 1200, regiao: "GR" };',
+      },
+      {
+        como: 'data cravada com espaco antes do numero',
+        file: 'src/domain/antigo-c.ts',
+        content: 'export const z = avaliarPrazo({ anoDeMorte:  800 });',
+      },
+    ],
+    limpos: [
+      {
+        /**
+         * O uso CORRETO: a data vem do registro da pessoa. O verificador nao
+         * pode confundir os dois, ou acusaria todo calculo legitimo.
+         */
+        como: 'data de morte lida de um registro',
+        file: 'src/domain/vivo-a.ts',
+        content: 'export const x = avaliarPrazo({ regime, anoDeMorte: pessoa.deathYear });',
+      },
+      {
+        como: 'outro campo numerico qualquer',
+        file: 'src/domain/vivo-b.ts',
+        content: 'export const TETO = 500; export const anoDeEntrada = 1955;',
+      },
+      {
+        /** Comentario que EXPLICA o defeito antigo nao e o defeito. */
+        como: 'o codigo cita o defeito num comentario',
+        file: 'src/domain/vivo-c.ts',
+        content: '/* Aqui havia anoDeMorte: 500, que era uma data inventada. */\nexport const x = 1;',
+      },
+    ],
+    limites: [
+      'so varre `src/domain/` — uma data inventada num seed de dados passaria sem acusacao',
+      'reconhece a forma `anoDeMorte: <numero>`: uma constante intermediaria com o mesmo efeito escapa',
+      'nao julga se a data e verdadeira, so se ela foi escrita a mao no codigo em vez de vir do registro',
+    ],
+  },
+
 ];
 
 afterEach(() => clearInjectedSources());
@@ -1817,6 +1891,24 @@ function fonteSadia(): Record<string, string> {
      */
     [TELA_DO_ACERVO]: "{ id: 'OBRAS', rotulo: 'Obras' }",
   };
+}
+
+const PRAZO_DO_DIREITO = 'src/domain/copyright-term.ts';
+
+/**
+ * Um dominio de prazo com tudo o que o verificador exige.
+ *
+ * Os regimes que a lei distingue, os artigos que os sustentam, e o `+ 1` do
+ * primeiro de janeiro seguinte — que e o detalhe que libera a obra um ano
+ * antes da hora quando some.
+ */
+function prazoSadio(): string {
+  return [
+    "export const PRAZO_EM_ANOS = 70;",
+    "export type RegimeDePrazo = 'AUTOR_CONHECIDO' | 'ANONIMA_OU_PSEUDONIMA';",
+    "export const ARTIGO = { AUTOR_CONHECIDO: 'Lei 9.610/98, art. 41', ANONIMA_OU_PSEUDONIMA: 'Lei 9.610/98, art. 43' };",
+    "export function anoDeEntrada(m) { return m + PRAZO_EM_ANOS + 1; }",
+  ].join('\n');
 }
 
 /** Um vocabulario com instrumentos, vozes e resolucao. */
@@ -3607,6 +3699,77 @@ const SINAIS_DE_ARQUIVO_FIXO: SinalDeArquivoFixo[] = [
       'confere presenca de `pendentes.push`: nao confere se o motivo esta certo',
       'confere que o servico CONTA a fila: nao confere que o numero esteja certo',
       'nao olha mais a tela \u2014 a fila deixou de ser assunto de quem estuda, e virou assunto de quem cataloga',
+    ],
+  },
+
+  {
+    nome: 'checkPrazoDeProtecao',
+    rodar: instituicao.checkPrazoDeProtecao,
+    variantes: [
+      {
+        /**
+         * O dominio do prazo sumiu. Sem ele, cada chamador escolhe o proprio
+         * marco — e foi assim que "morte ou publicacao?" ficou sem resposta
+         * consistente por tres rodadas.
+         */
+        como: 'o dominio do prazo nao existe',
+        arquivos: { [PRAZO_DO_DIREITO]: '' },
+      },
+      {
+        /** Sem o regime de autor conhecido, o art. 41 deixa de ser aplicavel. */
+        como: 'o regime de autor conhecido sumiu',
+        arquivos: { [PRAZO_DO_DIREITO]: prazoSadio().replace(/AUTOR_CONHECIDO/g, 'QUALQUER') },
+      },
+      {
+        /** Sem o regime de anonima, obra sem autor fica indeterminada para sempre. */
+        como: 'o regime de obra anonima sumiu',
+        arquivos: {
+          [PRAZO_DO_DIREITO]: prazoSadio().replace(/ANONIMA_OU_PSEUDONIMA/g, 'OUTRA'),
+        },
+      },
+      {
+        /** Sem citar o artigo, a ficha afirma prazo sem mostrar de onde ele sai. */
+        como: 'o artigo da lei sumiu do codigo',
+        arquivos: { [PRAZO_DO_DIREITO]: prazoSadio().replace('art. 41', 'a lei') },
+      },
+      {
+        /**
+         * 🔴 O 1o DE JANEIRO SEGUINTE.
+         *
+         * Sem o `+ 1`, a obra entra em dominio publico um ano antes da hora — e
+         * um ano e tempo de alguem publicar o que nao podia.
+         */
+        como: 'a conta perdeu o primeiro de janeiro seguinte',
+        arquivos: { [PRAZO_DO_DIREITO]: prazoSadio().replace('PRAZO_EM_ANOS + 1', 'PRAZO_EM_ANOS') },
+      },
+    ],
+    limpos: [
+      { como: 'o dominio do prazo inteiro', arquivos: { [PRAZO_DO_DIREITO]: prazoSadio() } },
+      {
+        /**
+         * Regime a mais nao e defeito: a lei tem seis, e o verificador cobra
+         * os dois que decidem o marco. Acusar o resto seria travar a evolucao.
+         */
+        como: 'regimes alem dos dois exigidos',
+        arquivos: {
+          [PRAZO_DO_DIREITO]:
+            prazoSadio() + "\nexport const OUTROS = ['AUDIOVISUAL_OU_FOTOGRAFICA', 'AUTOR_DESCONHECIDO'];",
+        },
+      },
+      {
+        /** Comentario longo explicando a regra nao muda o que o codigo faz. */
+        como: 'o codigo explica a distincao num comentario',
+        arquivos: {
+          [PRAZO_DO_DIREITO]:
+            '/* Morte para autor conhecido, publicacao para anonima. Ver art. 41 e art. 43. */\n' +
+            prazoSadio(),
+        },
+      },
+    ],
+    limites: [
+      'confere presenca de regime e de artigo: nao confere se o artigo citado e o correto para aquele regime',
+      'a varredura por data cravada vive em `checkDataDeMorteCravada`, que e outro mecanismo e tem tabela propria',
+      'nao valida a conta em si: quem prova o calculo e `tests/copyright-term.test.ts`',
     ],
   },
 

@@ -53,7 +53,24 @@ export type EditTarget =
    * de `secaoId`. O identificador da edição continua saindo do alvo, e não de
    * sorteio: corrigir duas vezes a mesma questão deixa **uma** edição.
    */
-  | { tipo: 'QUESTAO'; capitulo: number; questaoId: string };
+  | { tipo: 'QUESTAO'; capitulo: number; questaoId: string }
+  /**
+   * 🔴 A LISTA INTEIRA DE BLOCOS DE UMA SEÇÃO.
+   *
+   * O alvo `BLOCO` corrige um bloco que **já existe**. Com ele e só com ele,
+   * a camada editorial sabia consertar uma frase e não sabia acrescentar um
+   * pentagrama, tirar um aviso repetido nem trocar a ordem de dois trechos.
+   *
+   * Reordenar e inserir por índice seria pior: dois editores mexendo na mesma
+   * seção produziriam índices que já não apontam para o que apontavam. A lista
+   * inteira é uma decisão só, e a última vence — que é o comportamento que
+   * quem edita espera de um editor.
+   *
+   * A ordem de aplicação importa e está em `applyEdits`: a estrutura entra
+   * antes do conteúdo, para que a correção de um bloco pouse sobre a lista
+   * nova e não sobre a antiga.
+   */
+  | { tipo: 'BLOCOS_DA_SECAO'; variante: AudienceVariant; secaoId: string };
 
 export interface EditorialEdit {
   id: string;
@@ -67,9 +84,9 @@ export interface EditorialEdit {
    * pergunta deixando a explicação contradizê-la é o tipo de incoerência que
    * ninguém percebe até o aluno reclamar.
    */
-  conteudo: LessonBlock | Questao | string;
+  conteudo: LessonBlock | LessonBlock[] | Questao | string;
   /** Como estava antes. É o que permite desfazer e comparar. */
-  anterior: LessonBlock | string;
+  anterior: LessonBlock | LessonBlock[] | string;
   editadaPor: string;
   editadaEm: string;
   /** Por que a mudança foi feita. Aparece no histórico. */
@@ -100,6 +117,8 @@ export function editId(lessonId: string, alvo: EditTarget): string {
       return `ed_${lessonId}__${alvo.variante}.${alvo.secaoId}.titulo`;
     case 'QUESTAO':
       return `ed_${lessonId}__questao.${alvo.capitulo}.${alvo.questaoId}`;
+    case 'BLOCOS_DA_SECAO':
+      return `ed_${lessonId}__${alvo.variante}.${alvo.secaoId}.blocos`;
   }
 }
 
@@ -134,7 +153,26 @@ export function applyEdits(
       });
       const edicaoDoTitulo = porAlvo.get(idTitulo);
 
-      const blocos = (secao.blocks ?? []).map((bloco) => {
+      /**
+       * 🔴 A ESTRUTURA ENTRA ANTES DO CONTEÚDO.
+       *
+       * Se a correção de um bloco fosse aplicada primeiro, ela pousaria sobre
+       * a lista antiga e sumiria quando a lista nova substituísse tudo. Quem
+       * editasse um parágrafo e depois acrescentasse um pentagrama perderia o
+       * parágrafo — sem nada acusar.
+       */
+      const idDaLista = editId(licao.id, {
+        tipo: 'BLOCOS_DA_SECAO',
+        variante: nomeDaVariante,
+        secaoId: secao.id,
+      });
+      const edicaoDaLista = porAlvo.get(idDaLista);
+
+      const partida = Array.isArray(edicaoDaLista?.conteudo)
+        ? ((mudou = true), edicaoDaLista!.conteudo as LessonBlock[])
+        : (secao.blocks ?? []);
+
+      const blocos = partida.map((bloco) => {
         const idBloco = editId(licao.id, {
           tipo: 'BLOCO',
           variante: nomeDaVariante,
@@ -224,6 +262,245 @@ export function blockText(bloco: LessonBlock): string {
  */
 export function isTextualBlock(bloco: LessonBlock): boolean {
   return ['MARKDOWN', 'CALLOUT', 'CHECKPOINT', 'SLIDES'].includes(bloco.kind);
+}
+
+/**
+ * 🔴 BLOCOS MUSICAIS TAMBÉM SE EDITAM.
+ *
+ * `isTextualBlock` decidia o que tinha lápis, e deixava de fora exatamente o
+ * que faz a plataforma ser de música: o pentagrama, o teclado, o exemplo
+ * sonoro, os laboratórios e o diagrama.
+ *
+ * A consequência era concreta. Uma pauta com a nota errada ou um exemplo
+ * tocando o acorde trocado só podia ser consertado mudando o código e
+ * publicando de novo — e quem revisa conteúdo não é quem publica código. Erro
+ * que depende de outra pessoa para ser corrigido é erro que fica.
+ */
+export function isMusicalBlock(bloco: LessonBlock): boolean {
+  return [
+    'STAFF',
+    'KEYBOARD',
+    'AUDIO_EXAMPLE',
+    'DIAGRAM',
+    'INTERVAL_LAB',
+    'CHORD_LAB',
+    'SCALE_LAB',
+    /** A biblioteca funcional — ver `BlocosFuncionais.tsx`. */
+    'PLAYER',
+    'PIANO_ROLL',
+    'TUNER_LAB',
+  ].includes(bloco.kind);
+}
+
+/**
+ * Blocos de apresentação: organizam o texto sem serem texto nem som.
+ *
+ * Tabela, citação, linha do tempo e sessão de exercícios. Estão aqui, e não
+ * em `isTextualBlock`, porque a busca por texto os trata de outro jeito — e
+ * porque o editor deles tem campos próprios, não uma caixa de markdown.
+ */
+export function isCompositionBlock(bloco: LessonBlock): boolean {
+  return ['TABELA', 'CITACAO', 'LINHA_DO_TEMPO', 'SESSAO_DE_EXERCICIOS'].includes(bloco.kind);
+}
+
+/**
+ * O bloco pode ser editado no lugar?
+ *
+ * `VIDEO_PLACEHOLDER` fica de fora, e é a única exclusão: ele registra onde a
+ * aula gravada entrará, e a plataforma não hospeda vídeo (ADR-004). Um editor
+ * para ele produziria um campo que não leva a lugar nenhum.
+ */
+export function isEditableBlock(bloco: LessonBlock): boolean {
+  return isTextualBlock(bloco) || isMusicalBlock(bloco) || isCompositionBlock(bloco);
+}
+
+/**
+ * Os problemas de um bloco, antes de gravar.
+ *
+ * 🔴 VALIDAR AQUI, E NÃO NA TELA. Gravar uma pauta com nota que o
+ * renderizador não entende produz lição com pentagrama vazio — e quem gravou
+ * já saiu da tela quando o aluno encontra. A camada recusa na hora, com o
+ * motivo escrito.
+ *
+ * Devolve lista vazia quando está tudo certo.
+ */
+export function problemasDoBloco(bloco: LessonBlock): string[] {
+  const erros: string[] = [];
+  const cientifica = /^[A-Ga-g](#|b)?-?\d$/;
+
+  const conferirNotas = (notas: readonly string[], onde: string) => {
+    if (notas.length === 0) {
+      erros.push(`${onde}: nenhuma nota. Um bloco musical sem nota não mostra nada.`);
+      return;
+    }
+    for (const n of notas) {
+      if (!cientifica.test(n.trim())) {
+        erros.push(`${onde}: "${n}" não é notação científica — use dó central como C4.`);
+      }
+    }
+  };
+
+  switch (bloco.kind) {
+    case 'MARKDOWN':
+      if (!bloco.markdown.trim()) erros.push('O texto está vazio.');
+      break;
+
+    case 'CALLOUT':
+      if (!bloco.title.trim()) erros.push('O destaque está sem título.');
+      if (!bloco.text.trim()) erros.push('O destaque está sem texto.');
+      break;
+
+    case 'CHECKPOINT':
+      if (!bloco.question.trim()) erros.push('A verificação está sem pergunta.');
+      if (bloco.options.length < 2) erros.push('A verificação precisa de pelo menos duas alternativas.');
+      if (bloco.options.some((o) => !o.trim())) erros.push('Há alternativa em branco.');
+      if (bloco.correctIndex < 0 || bloco.correctIndex >= bloco.options.length) {
+        erros.push('A resposta certa aponta para uma alternativa que não existe.');
+      }
+      if (!bloco.explanation.trim()) {
+        erros.push('A verificação está sem explicação — ela é a parte que ensina.');
+      }
+      break;
+
+    case 'SLIDES':
+      if (bloco.slides.length === 0) erros.push('Não há lâmina nenhuma.');
+      if (bloco.slides.some((l) => !l.heading.trim())) erros.push('Há lâmina sem título.');
+      break;
+
+    case 'STAFF':
+      conferirNotas(bloco.notes, 'Pauta');
+      if (bloco.timeSignature && !/^\d+\/\d+$/.test(bloco.timeSignature)) {
+        erros.push(`Fórmula de compasso inválida: "${bloco.timeSignature}". Use 4/4, 3/4, 6/8.`);
+      }
+      break;
+
+    case 'KEYBOARD':
+      if (bloco.highlightNotes?.length) conferirNotas(bloco.highlightNotes, 'Teclado');
+      if (bloco.octaves !== undefined && (bloco.octaves < 1 || bloco.octaves > 4)) {
+        erros.push('O teclado cabe entre uma e quatro oitavas.');
+      }
+      break;
+
+    case 'AUDIO_EXAMPLE':
+      conferirNotas(bloco.notes, 'Exemplo sonoro');
+      if (!bloco.title.trim()) erros.push('O exemplo sonoro está sem título.');
+      if (bloco.bpm !== undefined && (bloco.bpm < 20 || bloco.bpm > 300)) {
+        erros.push('O andamento fica entre 20 e 300 batidas por minuto.');
+      }
+      break;
+
+    case 'INTERVAL_LAB':
+      conferirNotas([bloco.lowerNote, bloco.upperNote], 'Laboratório de intervalo');
+      break;
+
+    case 'CHORD_LAB':
+      conferirNotas(bloco.notes, 'Laboratório de acorde');
+      break;
+
+    case 'SCALE_LAB':
+      conferirNotas([bloco.tonic], 'Laboratório de escala');
+      break;
+
+    case 'DIAGRAM':
+      if (!bloco.title.trim()) erros.push('O diagrama está sem título.');
+      break;
+
+    case 'VIDEO_PLACEHOLDER':
+      break;
+
+    // ---- a biblioteca funcional -------------------------------------------
+    case 'PLAYER':
+      if (!bloco.title.trim()) erros.push('O player está sem título.');
+      conferirNotas(bloco.notes, 'Player');
+      if (bloco.bpm !== undefined && (bloco.bpm < 20 || bloco.bpm > 300)) {
+        erros.push('O andamento fica entre 20 e 300 batidas por minuto.');
+      }
+      break;
+
+    case 'PIANO_ROLL':
+      if (bloco.notas.length === 0) {
+        erros.push('O rolo de piano está sem nota nenhuma.');
+      }
+      conferirNotas(
+        bloco.notas.map((n) => n.nota),
+        'Rolo de piano'
+      );
+      for (const n of bloco.notas) {
+        if (n.duracaoEmTempos <= 0) {
+          erros.push(`A nota "${n.nota}" tem duração zero — não apareceria no desenho.`);
+        }
+        if (n.inicioEmTempos < 0) erros.push(`A nota "${n.nota}" começa antes do tempo zero.`);
+      }
+      break;
+
+    case 'TUNER_LAB':
+      if (!bloco.title.trim()) erros.push('O laboratório de afinação está sem título.');
+      conferirNotas([bloco.notaAlvo], 'Laboratório de afinação');
+      if (bloco.toleranciaCents !== undefined && bloco.toleranciaCents <= 0) {
+        /**
+         * Tolerância zero é inalcançável: nenhuma voz humana fica exatamente
+         * na frequência, e o bloco reprovaria todo mundo para sempre.
+         */
+        erros.push('A tolerância precisa ser maior que zero — ninguém canta exato.');
+      }
+      break;
+
+    case 'TABELA':
+      if (bloco.colunas.length === 0) erros.push('A tabela está sem coluna nenhuma.');
+      if (bloco.linhas.length === 0) erros.push('A tabela está sem linha nenhuma.');
+      for (const [i, linha] of bloco.linhas.entries()) {
+        if (linha.length !== bloco.colunas.length) {
+          /**
+           * Linha com tamanho diferente do cabeçalho desalinha a tabela
+           * inteira, e quem lê associa o valor à coluna errada.
+           */
+          erros.push(
+            `A linha ${i + 1} tem ${linha.length} células e o cabeçalho tem ${bloco.colunas.length}.`
+          );
+        }
+      }
+      break;
+
+    case 'CITACAO':
+      if (!bloco.texto.trim()) erros.push('A citação está vazia.');
+      if (!bloco.fonte.trim()) {
+        erros.push('A citação está sem fonte — citação sem atribuição é plágio começando.');
+      }
+      break;
+
+    case 'LINHA_DO_TEMPO':
+      if (!bloco.title.trim()) erros.push('A linha do tempo está sem título.');
+      if (bloco.marcos.length < 2) {
+        /** Um marco só não é linha do tempo: é uma data solta. */
+        erros.push('A linha do tempo precisa de pelo menos dois marcos.');
+      }
+      for (const m of bloco.marcos) {
+        if (!m.titulo.trim()) erros.push(`O marco de ${m.ano} está sem título.`);
+        if (!Number.isInteger(m.ano)) erros.push(`"${m.ano}" não é um ano.`);
+      }
+      break;
+
+    case 'SESSAO_DE_EXERCICIOS':
+      if (!bloco.title.trim()) erros.push('A sessão está sem título.');
+      if (bloco.questoes.length === 0) erros.push('A sessão está sem questão nenhuma.');
+
+      for (const [i, q] of bloco.questoes.entries()) {
+        const onde = `Questão ${i + 1}`;
+        if (!q.enunciado.trim()) erros.push(`${onde}: sem enunciado.`);
+        if (q.alternativas.length < 2) erros.push(`${onde}: precisa de pelo menos duas alternativas.`);
+        if (q.alternativas.some((a) => !a.trim())) erros.push(`${onde}: há alternativa em branco.`);
+        if (q.corretaIndex < 0 || q.corretaIndex >= q.alternativas.length) {
+          erros.push(`${onde}: a resposta certa aponta para uma alternativa que não existe.`);
+        }
+        if (!q.explicacao.trim()) {
+          erros.push(`${onde}: sem explicação — é a parte que ensina quem errou.`);
+        }
+        if (q.notas?.length) conferirNotas(q.notas, onde);
+      }
+      break;
+  }
+
+  return erros;
 }
 
 /**

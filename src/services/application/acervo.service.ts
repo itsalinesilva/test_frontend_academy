@@ -3,6 +3,7 @@ import {
   CanonicalWork,
   DisponibilidadeNoConservatorio,
   avaliarDisponibilidade,
+  temPartituraLocalizada,
   textoDe,
 } from '../../domain/music-knowledge';
 import { MusicalMovement, disponibilidadeDoCompositor } from '../../domain/atlas-map';
@@ -131,6 +132,19 @@ export interface FiltroDoAcervo {
   situacao?: string;
   /** Só o que a plataforma consegue tocar. */
   somenteTocaveis?: boolean;
+  /**
+   * SÓ AS OBRAS CUJA PARTITURA O ACERVO SABE ONDE ENCONTRAR.
+   *
+   * Distinto de `somenteTocaveis`, e a diferença não é sutil: **tocável** é a
+   * obra que a plataforma renderiza aqui dentro — são as dezessete montadas
+   * nota a nota. **Com partitura** é a obra cuja edição tem endereço: o
+   * Conservatório sabe onde ela está e abre o caminho.
+   *
+   * Os dois números precisam existir separados porque respondem a perguntas
+   * diferentes — "o que posso estudar aqui agora" e "de que obra eu consigo a
+   * partitura" —, e juntá-los num só faria um dos dois mentir.
+   */
+  comPartitura?: boolean;
 }
 
 /** Uma linha da listagem, já pronta para a tela desenhar. */
@@ -188,6 +202,25 @@ export interface ResumoDoAcervo {
    * Por isso a fila e **declarada**, e nao navegavel.
    */
   naFilaDeResolucao: number;
+  /**
+   * OBRAS CUJA PARTITURA TEM ENDEREÇO CONHECIDO, de qualquer fonte.
+   *
+   * Entra no resumo porque virou card na tela, e card que conta precisa contar
+   * de verdade: um número escrito à mão ali envelheceria calado, e este muda a
+   * cada rodada de enriquecimento.
+   */
+  comPartitura: number;
+  /**
+   * Os registros da Antiguidade.
+   *
+   * 🔴 Deixaram de ser recorte próprio: Antiguidade é **era**, e não tipo de
+   * entidade — o mesmo erro de categoria do Movimento. Eles agora entram como
+   * obras de `era_antiguidade` e o filtro de era os alcança sozinho.
+   *
+   * O número fica no resumo porque é medida do acervo, e porque quem catalogar
+   * precisa saber quantos são sem abrir a listagem.
+   */
+  antiguidade: number;
 }
 
 /**
@@ -308,7 +341,39 @@ export class AcervoService {
    * devolve resultado errado com cara de resultado — já aconteceu uma vez com
    * o gênero do Atlas, que existia no tipo e não existia no corpo.
    */
+  /**
+   * 🔴 A LISTAGEM SAÍA NA ORDEM EM QUE O ARQUIVO FOI LIDO.
+   *
+   * Que é a ordem da extração — ou seja, nenhuma ordem. Trinta e uma mil obras
+   * numa sequência sem critério fazem a página dois não ter relação com a
+   * página um, e tornam impossível saber se algo está no acervo sem percorrer
+   * mil quarenta páginas.
+   *
+   * Ordem alfabética não é enfeite: é o que faz uma lista longa ser
+   * consultável. `localeCompare` com `pt-BR` põe acento no lugar certo — sem
+   * ele, "Álvares" cai depois de "Zumbi", porque a comparação seria por
+   * código de caractere.
+   *
+   * Ordenar aqui, num lugar só, e não em cada ramo: um ramo esquecido sairia
+   * embaralhado e ninguém notaria até alguém procurar algo nele.
+   */
   public async listar(
+    secao: SecaoDoAcervo,
+    filtro: FiltroDoAcervo = {}
+  ): Promise<ItemDoAcervo[]> {
+    const itens = await this.listarSemOrdem(secao, filtro);
+
+    /**
+     * Os ARTIGOS são a exceção, e ela é deliberada: publicação própria se lê
+     * do mais recente para o mais antigo, como qualquer periódico. Alfabética
+     * ali esconderia o que acabou de sair.
+     */
+    if (secao === 'ARTIGOS') return itens;
+
+    return [...itens].sort((a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR'));
+  }
+
+  private async listarSemOrdem(
     secao: SecaoDoAcervo,
     filtro: FiltroDoAcervo = {}
   ): Promise<ItemDoAcervo[]> {
@@ -507,6 +572,12 @@ export class AcervoService {
           this.combina(textoDe(o.canonicalTitle), filtro.busca) ||
           this.combina(porId.get(o.composerIds[0])?.canonicalName, filtro.busca)
       )
+      /**
+       * O recorte "com partitura" é aplicado sobre a OBRA, e não sobre o item
+       * montado: é a obra que carrega as referências de edição, e o item só
+       * carrega o que a tela desenha.
+       */
+      .filter((o) => !filtro.comPartitura || temPartituraLocalizada(o))
       .map((o) => this.obraComoItem(o, porId))
       .filter((i) => !filtro.somenteTocaveis || i.disponibilidade.modo === 'EXPERIENCIA_COMPLETA');
   }
@@ -571,6 +642,15 @@ export class AcervoService {
        * devolveria zero, e zero aqui e a mentira exata que a fila combate.
        */
       naFilaDeResolucao: partiturasPendentes().length,
+      /**
+       * As obras cuja partitura tem endereço — de qualquer fonte.
+       *
+       * É o número que virou card, e por isso precisa ser contado e não
+       * escrito: um card que conta errado envelhece calado, e este muda a cada
+       * rodada de enriquecimento.
+       */
+      comPartitura: obras.filter(temPartituraLocalizada).length,
+      antiguidade: this.antiguidade().length,
     };
   }
 
@@ -596,9 +676,38 @@ export class AcervoService {
    * convidar ao beco sem saída.
    */
   public async facetas(secao: SecaoDoAcervo, filtro: FiltroDoAcervo = {}): Promise<Faceta[]> {
-    const nomeDaEra = (id: string) => DEFAULT_ERAS.find((e) => e.id === id)?.name ?? id;
+    /**
+     * 🔴 A ERA VOLTA A TRAZER A DATAÇÃO NO RÓTULO.
+     *
+     * "Barroco" sozinho exige que quem lê já saiba quando foi o Barroco — e
+     * quem está aprendendo história da música é exatamente quem não sabe. O
+     * intervalo é a metade útil do rótulo: é ele que transforma um nome de
+     * gaveta numa posição no tempo.
+     *
+     * Vem de `periodYears`, que é o que o Atlas já usa no eixo do tempo. As
+     * duas telas passam a dizer a mesma coisa sobre a mesma era, e sem
+     * ninguém escrever o intervalo duas vezes.
+     */
+    const nomeDaEra = (id: string) => {
+      const e = DEFAULT_ERAS.find((x) => x.id === id);
+      if (!e) return id;
+      return e.periodYears ? `${e.name} · ${e.periodYears}` : e.name;
+    };
     const nomeDaRegiao = (id: string) => DEFAULT_REGIONS.find((r) => r.id === id)?.name ?? id;
     const nomeDoGenero = (id: string) => DEFAULT_GENRES.find((g) => g.slug === id)?.name ?? id;
+    /**
+     * A ORDEM CRONOLÓGICA, e não a ordem por contagem.
+     *
+     * Toda faceta ordena por quantidade — é o certo para uma lista de opções,
+     * porque põe na frente o que devolve mais. Era é a exceção: ela tem ordem
+     * própria, e ordenar por contagem faria o Renascimento aparecer entre o
+     * Moderno e o Romântico.
+     *
+     * Importa para quem NAVEGA no tempo, e não só para quem escolhe: a tela
+     * anda nas eras com duas setas, e as setas seguem esta ordem. É por isso
+     * que ela vive aqui, e não na tela — a tela montar a própria lista fixa
+     * faria ela oferecer eras que devolvem zero.
+     */
     const ordemDasEras = DEFAULT_ERAS.map((e) => e.id);
 
     if (secao === 'PARTITURAS') {
@@ -975,14 +1084,61 @@ export class AcervoService {
     if (!compositor) return null;
 
     const todas = await this.repo.listarObras();
-    const dele = todas.filter((o) => o.composerIds.includes(canonico));
+
+    /**
+     * O compêndio sai em ordem alfabética.
+     *
+     * Bach tem 978 obras e elas saíam na ordem em que o arquivo foi lido — que
+     * é a ordem da extração, ou seja, nenhuma. Num compêndio desse tamanho,
+     * sem ordem, não dá para saber se uma peça está lá sem ler as 978.
+     *
+     * `localeCompare` com `pt-BR` põe o acento no lugar: sem ele a comparação
+     * é por código de caractere, e "Ária" cai depois de "Wachet auf".
+     */
+    const dele = todas
+      .filter((o) => o.composerIds.includes(canonico))
+      .sort((a, b) =>
+        (textoDe(a.canonicalTitle) ?? '').localeCompare(textoDe(b.canonicalTitle) ?? '', 'pt-BR')
+      );
 
     return {
       compositor,
       obras: dele,
-      movimentos: this.movimentos().filter((m) => m.founderComposerIds.includes(canonico)),
+      movimentos: this.movimentos()
+        .filter((m) => m.founderComposerIds.includes(canonico))
+        .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')),
       disponibilidade: disponibilidadeDoCompositor(compositor, todas),
     };
+  }
+
+  /**
+   * 🔴 VÁRIAS OBRAS DE UMA VEZ, e não uma chamada por obra.
+   *
+   * A tela do artigo buscava as obras citadas com `fichaDaObra` num laço —
+   * vinte e duas chamadas, e cada uma percorre as 31.952 obras procurando um
+   * identificador. Setecentas mil comparações para montar uma lista de vinte e
+   * duas linhas, e a tela levava dezenas de segundos para chegar ao estado
+   * final.
+   *
+   * Uma passada, um índice, e a busca vira consulta a mapa. O ganho não é de
+   * elegância: é a diferença entre a tela abrir e a tela parecer travada.
+   */
+  public async obrasPorIds(ids: string[]): Promise<Map<string, CanonicalWork>> {
+    const procurados = new Set(ids);
+    const todas = await this.repo.listarObras();
+
+    return new Map(todas.filter((o) => procurados.has(o.id)).map((o) => [o.id, o]));
+  }
+
+  /**
+   * Os compositores do catálogo.
+   *
+   * A tela do artigo precisa deles para transformar identificador em nome
+   * ligável — e sem este método ela alcançaria o repositório por fora, que é
+   * como uma tela passa a conhecer a forma de armazenamento.
+   */
+  public async compositores(): Promise<CanonicalComposer[]> {
+    return this.repo.listarCompositores();
   }
 
   /** A ficha completa de uma obra, para a tela de detalhe. */

@@ -31,6 +31,23 @@ import { useTocarFaixa } from '../../hooks/useTocarFaixa';
  * que ofereciam ação e abriam um alerta do navegador.
  */
 
+/**
+ * O NOME DA FONTE COMO ELA SE CHAMA, e não a chave interna.
+ *
+ * `MUSICA_BRASILIS` na tela é nome técnico vazando — o pente fino tem um
+ * verificador só para isso. Quem lê a ficha procura "Música Brasilis".
+ */
+const NOME_DA_FONTE: Partial<Record<string, string>> = {
+  MUSICA_BRASILIS: 'Música Brasilis',
+  IMSLP: 'IMSLP / Petrucci',
+  MUTOPIA: 'Mutopia Project',
+  WIKIDATA: 'Wikidata',
+  COMMONS: 'Wikimedia Commons',
+  INTERNET_ARCHIVE: 'Internet Archive',
+  MUSICBRAINZ: 'MusicBrainz',
+  OPEN_OPUS: 'Open Opus',
+};
+
 const formatarTempo = (s: number) =>
   `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
@@ -241,7 +258,21 @@ export const ObraScreen: React.FC = () => {
                 </button>
               </div>
             ) : (
-              ficha.disponibilidade.linkOficial && (
+              /*
+                🔴 "CONSULTAR EM…" SAIU QUANDO A FICHA JÁ MOSTRA A EDIÇÃO.
+
+                Ele aparecia sempre que havia link, e o bloco "Edição" logo
+                abaixo mostrava o MESMO link com mais contexto — fonte, formato,
+                licença, transcritor. Duas chamadas para o mesmo destino, e a de
+                cima sem nada do que a de baixo diz.
+
+                Agora ele só existe quando **não há bloco de edição**: é o
+                único caminho, e aí precisa estar visível. Havendo edição
+                catalogada, o caminho é o bloco — que é onde a informação
+                também está.
+              */
+              ficha.disponibilidade.linkOficial &&
+              ficha.obra.scoreRefs.length === 0 && (
                 <a
                   href={ficha.disponibilidade.linkOficial.url}
                   target="_blank"
@@ -272,7 +303,37 @@ export const ObraScreen: React.FC = () => {
                 bloco, e o formato fica para depois.
               */}
               <ul className="mt-2 space-y-2.5 text-xs text-stone-600">
-                {ficha.obra.scoreRefs.map((r) => (
+                {ficha.obra.scoreRefs.map((r) =>
+                  r.aponta === 'PAGINA' ? (
+                    /*
+                      PÁGINA DA OBRA NA FONTE — e não um arquivo.
+
+                      Aqui o link reúne várias edições, cada uma com seu editor
+                      e sua licença, declarados lá. Dizer "transcrição sem
+                      autoria declarada" e "licença não declarada" sobre uma
+                      página dessas seria acusar a fonte de omitir o que ela
+                      publica, e mandar a pessoa embora do lugar onde a resposta
+                      está.
+                    */
+                    <li key={r.sourceRef}>
+                      <p className="font-medium text-stone-800">
+                        Página da obra em {NOME_DA_FONTE[r.source] ?? r.source}
+                      </p>
+                      <p>
+                        As edições disponíveis, com o editor e a licença de cada uma, estão
+                        na fonte. O Conservatório registra onde a obra está; o download
+                        acontece lá.
+                      </p>
+                      <a
+                        href={r.sourceRef}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-anil-800 underline underline-offset-2"
+                      >
+                        Abrir a página da obra
+                      </a>
+                    </li>
+                  ) : (
                   <li key={r.sourceRef}>
                     {r.editors && r.editors.length > 0 ? (
                       <p className="font-medium text-stone-800">
@@ -302,7 +363,8 @@ export const ObraScreen: React.FC = () => {
                       Ver o arquivo na fonte
                     </a>
                   </li>
-                ))}
+                  )
+                )}
               </ul>
             </section>
           )}

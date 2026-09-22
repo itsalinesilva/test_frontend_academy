@@ -53,6 +53,19 @@ const esperarTela = () =>
     { timeout: 40000 }
   );
 
+/**
+ * OS CARDS SÃO A NAVEGAÇÃO, e por isso os casos falam com eles.
+ *
+ * Havia duas fileiras de cápsulas — recortes e eras — embaixo dos cards que
+ * contavam as mesmas coisas. Três linhas de controle antes da primeira obra.
+ * Os cards absorveram as duas: contam e recortam.
+ */
+const cartaoDeRecorte = (rotulo: string) =>
+  screen.getByText(rotulo).closest('button') as HTMLButtonElement;
+
+/** O card da era, que não é recorte: é um par de setas que anda no tempo. */
+const cartaoDaEra = () => screen.getByLabelText('Era anterior').closest('div')!.parentElement!;
+
 const irParaOAcervo = async (user: ReturnType<typeof userEvent.setup>) => {
   await user.click(screen.getByRole('button', { name: 'Acervo de compositores' }));
   return screen.findByRole('searchbox', { name: 'Buscar no acervo' });
@@ -104,10 +117,8 @@ describe('o banner diz o que a tela é', () => {
      * A busca é dentro do bloco de métricas, e não na tela toda: "Movimentos"
      * também é um recorte, e procurar solto acha os dois.
      */
-    const metricas = screen.getByText('Obras catalogadas').closest('dl')!;
-
-    for (const rotulo of ['Obras catalogadas', 'Compositores', 'Movimentos']) {
-      const caixa = within(metricas).getByText(rotulo).closest('div')!;
+    for (const rotulo of ['Obras catalogadas', 'Compositores', 'Obras disponíveis']) {
+      const caixa = cartaoDeRecorte(rotulo);
       const valor = within(caixa).getByText(/^[\d.]+$/).textContent!;
       expect(Number(valor.replace(/\D/g, '')), `${rotulo} apareceu zerado`).toBeGreaterThan(0);
     }
@@ -270,34 +281,87 @@ describe('🔴 o funil fica fechado, e a tela fica limpa', () => {
 });
 
 describe('o que se procura é uma escolha, e não uma aba', () => {
-  it('há quatro recortes, e obras é o padrão', async () => {
+  it('🔴 os CARDS recortam, e não há mais fileira de cápsulas', async () => {
+    /**
+     * Havia duas fileiras embaixo dos cards: uma de recortes, outra de eras,
+     * repetindo em pastilha o que o número em cima já dizia. Três linhas de
+     * controle antes da primeira obra.
+     *
+     * O número que conta e o botão que recorta são a mesma coisa: "31.874
+     * obras" é o que a pessoa quer ver, e clicar nele é o gesto óbvio. Um card
+     * que informa e não obedece é promessa não cumprida.
+     */
     const user = userEvent.setup();
     montar();
     await esperarTela();
     await irParaOAcervo(user);
 
-    const alvos = screen.getByRole('list', { name: 'O que você procura' });
+    expect(screen.queryByRole('list', { name: 'O que você procura' })).toBeNull();
+    expect(screen.queryByRole('list', { name: 'Filtrar por era' })).toBeNull();
+
+    for (const rotulo of ['Obras catalogadas', 'Compositores', 'Obras disponíveis']) {
+      expect(cartaoDeRecorte(rotulo), `"${rotulo}" não é clicável`).toBeInstanceOf(
+        HTMLButtonElement
+      );
+    }
+
     /**
-     * 🔴 PARTITURA SEM DONO SAIU DA TELA.
+     * 🔴 E ANTIGUIDADE DEIXOU DE SER CARD.
      *
-     * Havia dois recortes mostrando a mesma coisa: "Partituras" listava as
-     * 1.349 edições e "A resolver" listava as 1.169 que **não acharam obra** —
-     * 86% do primeiro era o segundo.
-     *
-     * Arquivo sem obra não é catálogo, é matéria-prima de catalogação. Elas
-     * continuam na fila (`partiturasPendentes`) e voltam quando tiverem obra;
-     * o que saiu foi a vitrine de coisa sem endereço.
+     * Antiguidade é **era**, e não tipo de entidade — o mesmo erro de
+     * categoria do Movimento. Os oito registros entraram como obras de
+     * `era_antiguidade`, e os chevrons deste banner os alcançam.
      */
-    expect(within(alvos).getAllByRole('button').map((b) => b.textContent)).toEqual([
-      'Obras',
-      'Pessoas',
-      'Movimentos',
-      'Antiguidade',
-    ]);
-    expect(within(alvos).getByRole('button', { name: 'Obras' })).toHaveAttribute(
-      'aria-current',
-      'true'
-    );
+    expect(screen.queryByText('Antiguidade')).toBeNull();
+
+    /**
+     * 🔴 E MOVIMENTO DEIXOU DE SER RECORTE.
+     *
+     * Medido: seis movimentos alcançando 3.102 das 31.874 obras — 9,7% — e 11
+     * dos 1.004 compositores. Um card com o mesmo peso de "Obras" promete o
+     * mesmo peso e entrega um décimo. Virou filtro, dentro do funil.
+     */
+    expect(screen.queryByText('Movimentos')).toBeNull();
+
+    expect(cartaoDeRecorte('Obras catalogadas')).toHaveAttribute('aria-current', 'true');
+  });
+
+  it('🔴 a ERA anda pelos dois chevrons, na ordem do tempo', async () => {
+    /**
+     * Movimento ocupava este card e alcança 9,7% do acervo. A era alcança 96%,
+     * e é o eixo com que um catálogo musical se navega.
+     *
+     * Os chevrons, e não uma lista: as eras têm ORDEM — medieval vem antes de
+     * barroco —, e cápsulas soltas descartavam essa ordem tratando-as como
+     * sete rótulos. Duas setas andam nela, que é o gesto que corresponde ao
+     * que o dado é.
+     */
+    const user = userEvent.setup();
+    montar();
+    await esperarTela();
+    await irParaOAcervo(user);
+
+    const voltar = await screen.findByLabelText('Era anterior');
+    const avancar = screen.getByLabelText('Era seguinte');
+
+    /** Na ponta, a seta desliga: dar a volta faz quem navega perder onde está. */
+    expect(voltar, 'sem era escolhida, voltar não deveria andar').toBeDisabled();
+    expect(avancar).toBeEnabled();
+
+    const antes = screen.getByText(/resultados?/).textContent;
+    await user.click(avancar);
+
+    /** Escolher a era tem de RECORTAR: filtro que não filtra é pior que nenhum. */
+    await waitFor(() => {
+      expect(screen.getByText(/resultados?/).textContent).not.toBe(antes);
+    });
+
+    /** E o card passa a dizer em que era se está, e não mais "Era". */
+    await waitFor(() => {
+      expect(within(cartaoDaEra()).queryByText('Era')).toBeNull();
+    });
+
+    expect(screen.getByLabelText('Era anterior'), 'andou, e voltar continua desligado').toBeEnabled();
   });
 
   it('trocar o alvo troca a listagem', async () => {
@@ -306,8 +370,7 @@ describe('o que se procura é uma escolha, e não uma aba', () => {
     await esperarTela();
     await irParaOAcervo(user);
 
-    const alvos = screen.getByRole('list', { name: 'O que você procura' });
-    await user.click(within(alvos).getByRole('button', { name: 'Pessoas' }));
+    await user.click(cartaoDeRecorte('Compositores'));
 
     await waitFor(() => {
       expect(screen.getByText(/\d+ resultados?/)).toBeInTheDocument();
@@ -336,8 +399,7 @@ describe('a listagem é paginada e o rosto aparece', () => {
     await esperarTela();
     await irParaOAcervo(user);
 
-    const alvos = screen.getByRole('list', { name: 'O que você procura' });
-    await user.click(within(alvos).getByRole('button', { name: 'Pessoas' }));
+    await user.click(cartaoDeRecorte('Compositores'));
 
     await waitFor(() => expect(cards().length).toBeGreaterThan(0));
     const comRosto = cards().filter(
@@ -387,8 +449,7 @@ describe('nada aqui promete o que não tem', () => {
     expect(screen.queryByText('O catalogo completo nao carregou')).toBeNull();
     expect(screen.queryByText(/o catálogo completo não carregou/i)).toBeNull();
 
-    const metricas = screen.getByText('Obras catalogadas').closest('dl')!;
-    const caixa = within(metricas).getByText('Obras catalogadas').closest('div')!;
+    const caixa = cartaoDeRecorte('Obras catalogadas');
     const obras = Number(within(caixa).getByText(/^[\d.]+$/).textContent!.replace(/\D/g, ''));
 
     /**

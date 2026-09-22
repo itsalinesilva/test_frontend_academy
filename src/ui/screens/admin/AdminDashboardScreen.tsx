@@ -15,6 +15,10 @@ import {
   Flag,
   History,
   ArrowRight,
+  Pencil,
+  ClipboardList,
+  Library,
+  FileText,
 } from 'lucide-react';
 
 /**
@@ -81,6 +85,38 @@ export const AdminDashboardScreen: React.FC = () => {
       icon: Activity,
       link: '/founder/engines',
       badge: 'Infraestrutura',
+    },
+    {
+      id: 'licoes',
+      title: 'Lições e exercícios',
+      desc: 'Editar o conteúdo das lições bloco a bloco — texto, pentagrama, player, diagrama e verificação. Criar, remover e reordenar.',
+      icon: Pencil,
+      link: '/founder/licoes',
+      badge: 'Engine editorial',
+    },
+    {
+      id: 'artigos',
+      title: 'Artigos da biblioteca',
+      desc: 'Escrever e corrigir os artigos: cabeçalho no padrão, corpo em .md, citações com motivo e rodapé calculado.',
+      icon: FileText,
+      link: '/founder/artigos',
+      badge: 'Engine editorial',
+    },
+    {
+      id: 'livretos',
+      title: 'Livretos e avaliações',
+      desc: 'Os cadernos de exercício de cada curso: capítulos, questões, simulado e prova. É daqui que saem as 378 questões do nivelamento.',
+      icon: ClipboardList,
+      link: '/founder/booklets',
+      badge: 'Banco de questões',
+    },
+    {
+      id: 'biblioteca',
+      title: 'Biblioteca do Conservatório',
+      desc: 'Os livros de leitura e os cadernos de prática de cada curso, para ler, baixar e revisar.',
+      icon: Library,
+      link: '/founder/biblioteca',
+      badge: 'Livros',
     },
     {
       id: 'content',

@@ -82,6 +82,8 @@ import {
   checkFiltroOferecidoEAplicado,
   checkEixoUniversalAlcancaOAcervo,
   checkFonteNaoCriaEntidade,
+  checkPrazoDeProtecao,
+  checkDataDeMorteCravada,
   checkPapelEEixoProprio,
   checkAtlasEAcervoMesmaVerdade,
 } from './qa/institution.mjs';
@@ -93,6 +95,18 @@ function checarRotas() {
   );
   return {
     orphans: r.orphans.map((n) => ({ file: n, detail: 'tela existe e nenhuma rota a abre' })),
+    /**
+     * 🔴 O ESPELHO DA TELA ÓRFÃ.
+     *
+     * `orphans` pergunta "existe rota que monta esta tela?". Esta pergunta é a
+     * outra: **alguém chega até ela?** Uma tela com rota e sem link nenhum não
+     * quebra, não dá erro, e simplesmente não é usada — foi assim que o editor
+     * de livretos e a Biblioteca ficaram construídos e invisíveis.
+     */
+    inalcancaveis: (r.inalcancaveis ?? []).map((n) => ({
+      file: n,
+      detail: 'a rota existe e nada aponta para ela',
+    })),
     leaking: r.leaking.map((n) => ({
       file: n,
       detail: 'promete ao visitante o que só o aluno tem',
@@ -234,6 +248,23 @@ const SECTIONS = [
         G.FIX
       ),
       /**
+       * BLOQUEIA porque o erro tem consequência jurídica.
+       *
+       * Contar o prazo do marco errado faz a plataforma declarar liberada obra
+       * que está protegida — e isso não é defeito de tela, é exposição de quem
+       * publica.
+       */
+      report(
+        'o prazo de proteção declara o regime',
+        checkPrazoDeProtecao(),
+        G.BLOCKS
+      ),
+      report(
+        'nenhuma data de morte cravada no domínio',
+        checkDataDeMorteCravada(),
+        G.BLOCKS
+      ),
+      /**
        * BLOQUEIA: duas verdades sobre o mesmo acervo é pior que uma verdade
        * incompleta — as duas telas ficam "certas" e nenhuma denuncia a outra.
        */
@@ -261,6 +292,7 @@ const SECTIONS = [
     heading: 'ROTAS E FLUXO — todo caminho chega a algum lugar',
     checks: [
       report('nenhuma tela órfã', routes.orphans, G.BLOCKS),
+      report('nenhuma tela inalcançável', routes.inalcancaveis, G.FIX),
       report('nenhuma tela vaza conteúdo de logado', routes.leaking, G.BLOCKS),
       report(
         'nenhuma seção pessoal em tela que o visitante alcança',

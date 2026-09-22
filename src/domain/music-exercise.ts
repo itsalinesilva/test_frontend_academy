@@ -77,14 +77,57 @@ export function requiresMicrophone(type: ExerciseType): boolean {
  * cobrar muda a disposição de quem responde. `REVISAO` é o caso em que o
  * exercício **volta** dentro da mesma lição, depois de ter sido errado.
  */
-export type ExerciseTag = 'NEW_CONTENT' | 'NEW_PATTERN' | 'PRACTICE' | 'REVIEW';
+export type ExerciseTag =
+  | 'NEW_CONTENT'
+  | 'NEW_PATTERN'
+  | 'PRACTICE'
+  | 'REVIEW'
+  /** Nivelamento: a pergunta não ensina, ela localiza. Ver `nivelamento.ts`. */
+  | 'PLACEMENT';
 
 export const TAG_TEXT: Record<ExerciseTag, string> = {
   NEW_CONTENT: 'Conteúdo novo',
   NEW_PATTERN: 'Padrão novo',
   PRACTICE: 'Prática',
   REVIEW: 'Corrija o erro de antes',
+  PLACEMENT: 'Nivelamento',
 };
+
+/**
+ * 🔴 A FIGURA SOBRE A QUAL SE PERGUNTA.
+ *
+ * Existe porque sem ela o enunciado precisa **dizer a resposta**. O gerador
+ * produzia "Que nota está uma si — qual destas é?", com a resposta dentro do
+ * texto, e "Que escala tem os graus 0, 2, 3, 5, 7, 8, 10?", que é consulta a
+ * uma tabela e não leitura de música.
+ *
+ * Perguntar sobre uma pauta desenhada é o que torna a pergunta uma pergunta:
+ * a informação está na figura, e lê-la é a competência que se treina.
+ *
+ * Os dois tipos aqui são os que têm renderizador de verdade — `Staff` e o
+ * teclado. Acrescentar um terceiro sem componente que o desenhe produziria
+ * exercício que a tela não sabe mostrar, que é o beco que o cabeçalho do
+ * gerador promete não criar.
+ */
+export type ExerciseFigure =
+  /** Pauta canônica: a informação está no que está escrito nela. */
+  | {
+      kind: 'STAFF';
+      clef: 'treble' | 'bass' | 'alto';
+      /** Notas em notação científica — "C4", "F#5". */
+      notes: string[];
+      timeSignature?: string;
+      /** Legenda. Nunca contém a resposta: ela descreve o que ver, não o que é. */
+      caption?: string;
+    }
+  /** Teclado com teclas em destaque, para o que se lê melhor na tecla. */
+  | {
+      kind: 'KEYBOARD';
+      highlightNotes: string[];
+      startOctave?: number;
+      octaves?: number;
+      caption?: string;
+    };
 
 /** Uma alternativa — seja nota, acorde, nome ou pauta. */
 export interface Choice {
@@ -126,6 +169,15 @@ export interface MusicExercise {
   correctIds: string[];
   /** O que o aluno lê depois de responder. É a parte que ensina. */
   explanation: string;
+
+  /**
+   * A figura sobre a qual se pergunta, quando há.
+   *
+   * Opcional porque o exercício de ouvido não precisa dela — ali a informação
+   * está no som. Nos de leitura ela é o que impede o enunciado de ter de dizer
+   * a resposta.
+   */
+  figura?: ExerciseFigure;
 
   /** Tonalidade do exercício — governa o som de acerto. Ver §B10.5. */
   tonicHz?: number;

@@ -1,3 +1,4 @@
+import { aoPraticarHoje } from '../../domain/defensiva';
 import {
   medirTentativa,
   naturezaDoExercicio,
@@ -422,7 +423,27 @@ export class PracticeService {
     let streakIncremented = false;
 
     if (streak.lastActiveDate !== todayStr) {
-      streak.currentStreakDays += 1;
+      /**
+       * 🔴 A TRANSIÇÃO INTEIRA VEM DO DOMÍNIO.
+       *
+       * Este bloco somava um dia sempre que a data mudasse, sem olhar **qual**
+       * data era: quem praticasse em janeiro e voltasse em julho encontrava a
+       * defensiva intacta, com um dia a mais. E não fechava ciclo nenhum — o
+       * nível era recalculado na tela, pela conta que o faz sumir na quebra.
+       *
+       * `aoPraticarHoje` decide as três coisas juntas, porque são a mesma
+       * decisão. Ver `domain/defensiva.ts`.
+       */
+      const depois = aoPraticarHoje({
+        ultimaData: streak.lastActiveDate,
+        hoje: todayStr,
+        diasSeguidos: streak.currentStreakDays,
+        ciclosCompletados: streak.completedCyclesCount ?? 0,
+      });
+
+      streak.currentStreakDays = depois.diasSeguidos;
+      streak.completedCyclesCount = depois.ciclosCompletados;
+
       if (streak.currentStreakDays > streak.longestStreakDays) {
         streak.longestStreakDays = streak.currentStreakDays;
       }
@@ -581,6 +602,24 @@ export class PracticeService {
     const found = await this.repo.findResultById(resultId);
     if (!found || found.userId !== userId) return null;
     return found;
+  }
+
+  /**
+   * 🔴 AS SESSÕES ABERTAS — o que a pessoa começou e não terminou.
+   *
+   * Distinto de `getPracticeHistory`, que devolve **resultados**, e resultado
+   * só existe quando a sessão acabou. O Feed do Laboratório dizia "em
+   * andamento" e listava sessões concluídas: o rótulo e o conteúdo diziam
+   * coisas opostas, e quem lê acredita no rótulo.
+   *
+   * Aberta é a sessão **sem `endedAt`**. Não há campo de status a consultar:
+   * o fim é o carimbo de hora, e a ausência dele é o que define o aberto.
+   */
+  public async sessoesAbertas(userId: string): Promise<PracticeSession[]> {
+    const todas = await this.repo.listSessionsByUser(userId);
+    return todas
+      .filter((s) => !s.endedAt)
+      .sort((a, b) => b.startedAt.localeCompare(a.startedAt));
   }
 
   public async getPracticeHistory(userId: string): Promise<PracticeResult[]> {

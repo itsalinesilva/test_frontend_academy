@@ -69,8 +69,23 @@ export const PILARES: Pilar[] = [
     icon: GraduationCap,
     hint: 'Cursos, programas e lições',
     subRotas: [
-      { label: 'Catálogo de cursos', path: '/academia/catalogo', hint: 'Tudo que se pode estudar' },
-      { label: 'Minha grade', path: '/academia/grade', hint: 'O que você cursa agora' },
+      /**
+       * 🔴 OS DOIS ESTAVAM MORTOS, e em português inventado.
+       *
+       * A barra apontava para `/academia/catalogo` e `/academia/grade`; o
+       * outlet atende `/academia/catalog` e `/academia/meu-aprendizado`. Os
+       * dois links da barra principal caíam em "não encontrado".
+       *
+       * A causa é a mesma do `/practice/daily`: sub-rota de pilar é **dado**,
+       * e o verificador de destino lê **código**. Dado que vira caminho agora
+       * tem prova própria, em `tests/ui/pilares-sub-rotas.test.tsx`.
+       */
+      { label: 'Catálogo de cursos', path: '/academia/catalog', hint: 'Tudo que se pode estudar' },
+      {
+        label: 'Minha grade',
+        path: '/academia/meu-aprendizado',
+        hint: 'O que você cursa agora',
+      },
     ],
   },
   {
@@ -80,8 +95,40 @@ export const PILARES: Pilar[] = [
     icon: Target,
     hint: 'Treino com medição real',
     subRotas: [
-      { label: 'Meta do dia', path: '/practice/daily', hint: 'O que praticar hoje' },
+      /**
+       * 🔴 ERA `/practice/daily`, E NINGUÉM SERVIA ESSA ROTA.
+       *
+       * O outlet atende `/practice/daily-goal`. O link da barra levava a uma
+       * tela que não existe — e o verificador de destino de navegação não
+       * pegou, porque ele lê chamadas `navigate('...')` literais, e a sub-rota
+       * de um pilar é **dado**, não chamada.
+       *
+       * Link morto na barra principal é pior que o de dentro de uma tela: é o
+       * primeiro que alguém clica.
+       */
+      { label: 'Meta do dia', path: '/practice/daily-goal', hint: 'O que praticar hoje' },
       { label: 'Liga', path: '/practice/league', hint: 'A tabela da semana' },
+      /**
+       * 🔴 CINCO TELAS CONSTRUÍDAS E INALCANÇÁVEIS.
+       *
+       * Ranking, defensiva, perfil de prática, matrícula e medidores existiam
+       * com rota no outlet e **nenhum link em lugar nenhum**. Não davam erro,
+       * não quebravam nada: simplesmente ninguém chegava nelas.
+       *
+       * O verificador de tela órfã não pegava, porque ele pergunta "existe rota
+       * que monta esta tela?" — e existia. A pergunta que faltava era a
+       * inversa, e agora ela está em `audit-routes.mjs`.
+       */
+      { label: 'Classificação', path: '/practice/ranking', hint: 'A tabela completa' },
+      { label: 'Defensiva', path: '/practice/streak', hint: 'A sequência de dias' },
+      { label: 'Perfil de prática', path: '/practice/profile', hint: 'O que já foi medido' },
+      { label: 'Matrícula', path: '/practice/enrollment', hint: 'Entrar numa trilha' },
+      /**
+       * O simulador de violino é uma das ferramentas maiores da plataforma, e
+       * estava sem porta nenhuma. Ele grava execução medida, e por isso a rota
+       * `/violin` exige nome — mas exigir nome nunca foi o mesmo que esconder.
+       */
+      { label: 'Simulador de violino', path: '/violin/simulator', hint: 'Tocar e ser medido' },
     ],
   },
   {

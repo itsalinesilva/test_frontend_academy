@@ -21,7 +21,7 @@
 > Item sobe de lá para cá ao virar trabalho imediato, e desce ao depender de
 > decisão ou de outra fase.
 
-### As sete perguntas — apuradas em 2026-09-20
+### As sete perguntas — apuradas em 2026-09-22
 
 > **Esta seção é escrita por máquina.** Não edite à mão: o próximo `qa:todo`
 > sobrescreve. O que foi resolvido sai sozinho; o que apareceu entra sozinho.
@@ -270,22 +270,50 @@ teste via e o que o navegador via, deixou de existir: era ela que escondeu três
 defeitos por sessões inteiras.
 
 ```
-obras no catálogo        31.874   (24.957 + 6.917 do Brasil)
+obras no catálogo        31.952
 compositores              1.004   (225 + 783 do Brasil, 0 duplicados)
-com endereço de partitura 7.040   (era 180)
-com região                1.000 de 1.004
-em domínio público       24.258 · protegidas 5.688
-partituras a resolver     1.169
+COM PARTITURA            16.820   52,6%  (era 180)
+  IMSLP                  11.221 · Música Brasilis 6.917 · Mutopia 181
+que TOCAM aqui               17   edição nossa, renderizável
+sem endereço             15.132   destas, 4.274 protegidas (não estão no IMSLP por lei)
+partituras a resolver     1.051
 
 Bach 978 obras · Villa-Lobos 250 · Nazareth 229 · Chiquinha Gonzaga 156
 Mignone PROTEGIDA até 2057 — com a data errada teria saído livre
 ```
 
-**A tela foi conferida com o servidor de verdade**: banner com "24.957", listagem
-com "24.957 resultados · página 1 de 1.040", nenhum aviso de falha, 24 cards na
-primeira página.
+### As três medidas não são a mesma, e confundi-las foi o defeito mais teimoso
 
-✅ 1.974 testes · 0 bloqueios · build `exit=0` · `tsc` limpo
+| | quantas | o que significa |
+| :--- | ---: | :--- |
+| **catalogadas** | 31.952 | a ficha existe: título, autoria, era, região |
+| **com partitura** | 16.626 | sabemos **onde a edição está**, e abrimos o caminho |
+| **que tocam aqui** | 17 | a plataforma **reproduz**: edição nossa, nota a nota |
+
+Das 16.626, o que temos é o **endereço** e não o arquivo: IMSLP proíbe
+`/images/`, Música Brasilis proíbe `/media/`, e nada foi baixado das duas. A
+exceção é o Mutopia, redistribuível, onde o link é do próprio `.ly`.
+
+### Cobertura medida
+
+| obras (31.952) | | compositores (1.004) | |
+| :--- | ---: | :--- | ---: |
+| meio | 99,8% | região | 99,6% |
+| região | 98,7% | biografia | 89,6% |
+| era | 96,0% | data de morte | 65,9% |
+| número de catálogo | 42,8% | retrato | 21,9% |
+| gênero | 36,5% | | |
+| tonalidade | 19,8% | | |
+
+Direito autoral: **24.336 em domínio público · 5.688 protegidas · 1.928
+indeterminadas**. Protegida aparece no catálogo, diz de quem é e aponta para
+onde está publicada — o prazo impede tocar aqui dentro, e nada além disso.
+
+✅ 1.987 testes · 0 bloqueios · build `exit=0` · `tsc` limpo
+
+O mapa completo — de onde veio cada coisa, onde está a partitura de cada obra,
+e por que 11.046 ainda não casaram — está em
+[`docs/harness/85_SOURCES_AND_COVERAGE.md`](docs/harness/85_SOURCES_AND_COVERAGE.md).
 
 ---
 
@@ -294,12 +322,179 @@ primeira página.
 | | Estado |
 |---|---|
 | **Laboratório** | ❌ Corrigi apenas o fato de ele **abrir**. A tela documentada — banner hero, navbar fixa com as lições, práticas das Casas, mapa de expedições — **não foi construída**. Não está perto, e dizer o contrário seria mentira |
-| **Migração para a ontologia** | ❌ Os 24.957 registros ainda são `CanonicalComposer`/`CanonicalWork`. `Pessoa`/`Obra` existem como **tipo**, testados, e não é onde os dados vivem (ON-10) |
-| **Simulador ponta a ponta** | ❌ Nenhuma peça foi levada até o fim. Não há leitor de MIDI nem de LilyPond |
-| **Música Brasilis** | ✅ no catálogo — 783 compositores, 6.917 obras. Ver MB-1 |
+| **Simulador ponta a ponta** | ❌ Nenhuma peça foi levada até o fim. **Não há leitor de MIDI nem de LilyPond** — e é isto, e só isto, que separa as 181 obras com arquivo Mutopia das 17 que tocam. O `.ly` está catalogado; falta quem o leia |
+| **Migração para a ontologia** | ❌ Os **31.952** registros ainda são `CanonicalComposer`/`CanonicalWork`. `Pessoa`/`Obra` existem como **tipo**, testados, e não é onde os dados vivem (ON-10) |
+| **Tabela de equivalência entre catálogos** | ⬜ A maior causa das 11.046 sem endereço: nosso Monteverdi é `SV` e o do IMSLP é `CND`; nosso C.P.E. Bach é `Wq` e o deles é `Helm`. Nenhuma chave resolve — é trabalho de musicologia |
+| **Música Brasilis** | ✅ no catálogo — 783 compositores, 6.917 obras, 679 biografias. Ver MB-1 |
+| **IMSLP** | ✅ 11.027 endereços, e o índice em cache — melhorar a chave custa segundos, não 20 min da banda deles. Ver IM-1 |
+| **MusicBrainz** | ⬜ nunca consultada, e **não resolve partitura**: é base de metadados. Serviria para melhorar casamento com títulos alternativos |
 
 ---
 
+| MB-12 | ✅ **MUSICBRAINZ FECHOU: 3.849 obras com título alternativo, 29.322 títulos, 4.096 identificadores cruzados.** 5.273 consultas, 1 falha de rede, política de 1 req/s respeitada | ✅ |
+| MB-13 | O casamento do IMSLP rodou **do cache**, em segundos: **11.075 → 11.269**. As chaves de título saltaram de 32.330 para **50.958** | ✅ |
+| MB-14 | **Obras com partitura: 16.626 → 16.820 = 52,6%** (IMSLP 11.221 · Brasilis 6.917 · Mutopia 181). Sem endereço: 15.132, das quais **4.274 protegidas** — essas não estão no IMSLP por lei | ✅ |
+| MB-15 | Números propagados para os três lugares que os afirmam: tabela do artigo de auditoria, `85_SOURCES_AND_COVERAGE.md` e este relatório. O guarda `artigos-numeros-conferem` acusou o desvio sozinho — era 607, virou 623 | ✅ |
+| LB-11 | 🔴 **A VISTA LOGADA NUNCA TINHA SIDO RENDERIZADA.** A tela foi construída e auditada como visitante; ao abri-la com nome pela primeira vez, três defeitos | ✅ |
+| LB-12 | 🔴 **Dois marcos `complementary` com o mesmo nome**, aninhados: o layout monta o painel e o componente montava outro dentro. Um leitor de tela anunciava dois painéis idênticos | ✅ |
+| LB-13 | 🔴 **O Feed dizia "em andamento" e listava sessões CONCLUÍDAS** — vinha de `getPracticeHistory`, e resultado só existe quando a sessão acabou. Agora vem de `sessoesAbertas()`: sessão **sem `endedAt`**, que é o que define o aberto | ✅ |
+| LB-14 | 🔴 **"Em movimento agora" listava três medidas paradas em zero** — a seção diz no próprio texto que não são as maiores, são as que mudaram. Agora só entra o que se moveu, e quando nada se moveu ela declara isso | ✅ |
+| LB-15 | 8 casos novos em `tests/ui/laboratorio-logado.test.tsx` — 19 no total entre as duas vistas | ✅ |
+| LB-1 | ✅ **O LABORATÓRIO FOI RECONSTRUÍDO.** Navbar **fixa** com três seções — Feed · Lições · Práticas —, painel lateral em todas as três, e `docs/harness/88_LABORATORIO.md` com a estrutura e a origem de cada peça na paridade | ✅ |
+| LB-2 | 🔴 **A tela anterior não tinha navegação nenhuma.** Coluna única com 25 botões, sem marco de página e sem região: um leitor de tela recebia a lista inteira sem nome de seção | ✅ |
+| LB-3 | 🔴🔴 **POSIÇÃO DE LIGA INVENTADA.** O código era `leaderboard.find(...)?.rankPosition \|\| 3` — quem não estava na tabela aparecia em **terceiro lugar**. É o antipadrão que a auditoria de referência nomeia, e que já tinha acontecido com Bach em primeiro | ✅ |
+| LB-4 | 🔴 **Medida pessoal desenhava para visitante**: "Ofensiva 0 Dias", "Meta Diária 0%", "Liga Semanal". Medida de alguém sobre ninguém. Agora o painel diz **o que mede** e convida; o que é público — as competências — carrega para qualquer um | ✅ |
+| LB-5 | O painel tem **hierarquia obrigatória**: três em destaque escolhidas por **movimento** (a que mais subiu, a que mais caiu, a que está a um passo de mudar de faixa) e o resto em dropdown por tópico — ligas, habilidades, pontuação, percursos. Lista plana de dezenas de números não informa: esconde | ✅ |
+| LB-6 | Topo do painel: **calendário do mês** com os dias praticados, e as **7 defensivas em track** no rodapé — os últimos sete dias, e não a semana do calendário, porque a sequência que se sustenta não recomeça no domingo | ✅ |
+| LB-7 | Tópico sem medida mostra **esqueleto** — cinza, sem nome, sem número. É a melhor solução de estado vazio das capturas, e o contrário de preencher com gente que não existe | ✅ |
+| LB-8 | Lições: destaque por agremiação e casa, e o carrossel bloqueado **com o motivo escrito** — cadeado que diz o que falta, não cadeado mudo. A amostra é esqueleto, e não trilhas inventadas | ✅ |
+| LB-9 | ⚠️ **Práticas declara que o mapa ainda não é mapa.** O globo com forma geográfica, régua de eras que repovoa e zoom por compositor **não existe**. A tela diz isso e leva ao Atlas, em vez de chamar lista de mapa | ℹ️ |
+| LB-10 | 10 casos de auditoria em `tests/ui/laboratorio.test.tsx`, inclusive um que procura `#\d` no texto inteiro — qualquer volta do `\|\| 3` reaparece assim | ✅ |
+| LB-16 | 🔴 **LIÇÕES ERAM TÓPICOS SOLTOS.** A aba listava `SkillTree[]` — teoria, percepção, ritmo — sem curso, sem módulo e sem ordem. A estrutura acadêmica já existia inteira e ordenada; o Laboratório a ignorava e inventava a própria. Agora é **Cadeira → Curso → Módulo → Lição**, com seções numeradas em sequência: 126 lições, 3 cadeiras, 5 cursos | ✅ `arvore-de-licoes.ts`, 10 casos |
+| LB-17 | A ordem é **sugestão, e não cadeado**: nenhuma lição sai `disabled`, e há caso que conta os bloqueados e exige zero. Quem quiser fazer a vigésima da décima seção pode — o que o sistema faz é dizer **onde aquilo fica**, e `feitasForaDeOrdem()` informa sem impedir | ✅ |
+| LB-18 | 🔴 **O VISITANTE RECEBIA VINTE PORTAS.** Disciplinas soltas para quem ainda não sabe qual é a sua — escolher pressupõe saber o que já se sabe. Agora a aba abre um **NIVELAMENTO**: perguntas na ordem real do curso (`pedagogicalOrder`), e onde a pessoa para é por onde ela entra | ✅ `nivelamento.ts`, 19 casos de domínio + 12 de tela |
+| LB-19 | 🔴 **Um erro só não encerra.** A confirmação é outra pergunta da mesma dimensão, com outra semente — repetir mediria memória do clique. Encerrar no primeiro erro faria um deslize de um segundo determinar meses de estudo, e a pessoa entraria **abaixo** do que sabe | ✅ |
+| LB-20 | O diagnóstico aponta **módulo que existe**: casa o capítulo com `AcademyModule.order`, e há caso que confere os dois lados contra o acervo. Montar `mod_teoria_07` na tela seria uma segunda convenção de identificador, que continuaria compilando no dia em que a primeira mudasse | ✅ |
+| LB-21 | O resultado **declara o que não cobre**: só entram dimensões com gerador, e o rodapé conta quantas ficaram de fora. Teste curto apresentado como completo faria alguém concluir que domina o curso inteiro por ter passado em seis frentes | ✅ |
+| DF-1 | 🔴🔴 **A DEFENSIVA NUNCA QUEBRAVA.** O serviço somava um dia sempre que a data mudasse, **sem olhar qual data era**. Quem praticasse em janeiro e voltasse em julho encontrava a defensiva intacta, com um dia a mais: a "sequência de 40 dias" podia ser 40 dias espalhados por dois anos. Contador que nunca quebra não mede constância, mede visitas | ✅ |
+| DF-2 | 🔴🔴 **E o nível SUMIA quando ela quebrava.** O painel fazia `estadoDaDefensiva(currentStreakDays)` — conta de `dias / 7`. Zerar os dias zerava o nível junto: quem fechou três semanas e faltou um dia via "Sem defensiva ativa". É o oposto exato da regra — cada defensiva completa vale um nível **a mais, para sempre** | ✅ |
+| DF-3 | Os dois vinham da mesma causa: **a transição não existia em lugar nenhum**. Agora é `aoPraticarHoje()`, que decide continuar, quebrar e fechar ciclo **juntos**, porque são a mesma decisão sobre as mesmas datas. `completedCyclesCount` é guardado, e não derivado — derivar de um contador que zera é garantir que o nível zere junto | ✅ 24 casos em `tests/defensiva.test.ts` |
+| DF-4 | Praticar duas vezes no mesmo dia **não conta dobrado**, e a virada de mês e de ano continuam sendo dias consecutivos — aritmética de data, e não subtração de milissegundos sobre o relógio local | ✅ |
+| NV-3 | 🔴 **O NIVELAMENTO ENTRAVA DIRETO EM TEORIA.** Ele foi montado sobre `exercise-generator`, que só cobre Teoria — "escolher a cadeira" seria escolha de mentira, com as três levando ao mesmo lugar. Agora é sobre os **livretos**: 378 questões escritas à mão, 126 capítulos, 5 trilhas, distratores que correspondem a enganos reais | ✅ 31 casos de domínio |
+| NV-4 | A tela abre num **seletor de cadeira**. História aparece com as **três trilhas separadas** — os cursos dela não são sequência um do outro, e fundi-los colocaria quem sabe música brasileira a responder sobre a ocidental, lendo o erro como lacuna | ✅ |
+| NV-5 | **Trocar de cadeira e encerrar, a qualquer momento**, com a saída no topo e não escondida no rodapé. Teste do qual só se sai respondendo até o fim é teste que se abandona fechando a aba | ✅ 18 casos de tela |
+| NV-6 | 🔴 **Sair no meio NÃO é errar.** Quem parou no capítulo 12 sem errar não tem ponto de entrada medido — tem um **piso**. O diagnóstico de quem interrompeu diz isso e não aponta módulo; dizer "você entra no 12" afirmaria o que o teste não apurou | ✅ |
+| NV-7 | O módulo casa por **curso e capítulo**, e não só pelo número: capítulo 3 existe em todos os cursos, e casar só pelo número entregaria o capítulo 3 de Teoria a quem nivelou Violino | ✅ |
+| QG-1 | 🔴🔴 **AS PERGUNTAS GERADAS TRAZIAM A RESPOSTA NO ENUNCIADO.** Em produção, na tela do percurso: *"Que nota está uma si — qual destas é?"* → resposta **si**. Não mede música, mede leitura do enunciado. E a frase não é português | ✅ |
+| QG-2 | 🔴 **E as outras ditavam a fórmula.** *"De si, subindo 8 semitons — que intervalo é?"* e *"Que escala tem os graus 0, 2, 3, 5, 7, 8, 10?"* são consulta a tabela com o gabarito ao lado. A de escala nem dizia a tônica — estava **incompleta e mesmo assim respondível**, sinal de que não era sobre música | ✅ |
+| QG-3 | **Causa raiz: não havia onde desenhar.** `MusicExercise` não tinha figura, então o enunciado precisava dizer o que deveria estar escrito. Agora tem `ExerciseFigure` (pauta e teclado), e a pergunta é **sobre a figura** | ✅ `FiguraDoExercicio.tsx`, 8 casos |
+| QG-4 | 🔴 **A grafia na pauta estava errada.** Lá aumentado saía **A–C#–F**: lido como está, é fá maior invertido, e não um acorde aumentado. Agora soletra **por grau** — cada grau toma a próxima letra —, e sai A–C#–**E#**, fá diminuto = F–A♭–**C♭**, si menor harmônica com **lá♯** | ✅ |
+| QG-5 | Si aumentado exige **fá♯♯**, que a pauta não desenha: a raiz é sorteada **depois** da qualidade, entre as que se escrevem. Antes disso, 34 exercícios saíam **sem pauta** perguntando "que acorde está escrito na pauta?" | ✅ |
+| QG-6 | 🔴 **O teste curto deu verde numa versão com o defeito.** A varredura ia a 40 sementes e "si aumentado" nunca era sorteado. Amostra pequena não é conferência: é sorteio. Agora são 400 | ✅ |
+| QG-7 | **Português e explicações.** *"1 semitom formam"*, *"Que figura vale 1/2 semínimas?"*, *"A semibreve vale 1 da semibreve"* (tautologia sem unidade), *"classe de altura 11"* (jargão de quem programa afinação). E *"Que figura dura o mesmo que uma semínima?"* com resposta **semínima** — a referência nunca pode ser a própria resposta | ✅ 20 casos em `nexo-das-perguntas.test.ts` |
+| QG-8 | **RECONHECER e NOMEAR eram a mesma pergunta**, mudando só de 3 para 4 distratores — o cabeçalho do próprio gerador prometia "sem apoio no enunciado" e não cumpria. Agora `NAME` alterna clave de sol e de fá, e a mesma posição passa a ser outra nota | ✅ |
+| EE-1 | 🔴🔴 **NÃO HAVIA CAMINHO DE ESCRITA PARA CONTEÚDO.** `academy.repository` só salva progresso, tentativa, submissão e certificado — nunca curso, módulo, lição ou atividade. O conteúdo vive em `src/data/seed-*.ts`, compilado. A engine editorial não estava incompleta: **não existia** | ✅ |
+| EE-2 | 🔴 **Só TEXTO era editável.** `isTextualBlock` deixava de fora justamente o que faz a plataforma ser de música: pentagrama, teclado, player, laboratórios e diagrama. Pauta com nota errada só se consertava mudando o código — e quem revisa conteúdo não é quem publica código | ✅ `isMusicalBlock` |
+| EE-3 | **Não sabia acrescentar nem remover bloco**, só trocar o conteúdo de um existente. Novo alvo `BLOCOS_DA_SECAO` cobre acrescentar, remover e reordenar numa decisão só | ✅ |
+| EE-4 | 🔴 **A estrutura entra ANTES do conteúdo.** Ao contrário, quem editasse um parágrafo e depois acrescentasse um pentagrama **perderia o parágrafo**, sem nada acusar | ✅ caso dedicado |
+| EE-5 | 🔴 **`EditorialLesson` e `mergeCreatedLessons` existiam e NADA os chamava** — nem repositório, nem serviço, nem tela. Criar lição estava projetado e desligado. Capacidade desligada é pior que ausente: parece presente | ✅ ligados |
+| EE-6 | **Validação antes de gravar.** "dó" em vez de "C4" produz pentagrama vazio na lição, e quem gravou já saiu da tela quando o aluno encontra. `problemasDoBloco` recusa na hora, nomeando o problema, e a tela acusa **enquanto se edita** | ✅ |
+| EE-7 | 🔴 **O PACOTE — como a edição sai do navegador.** Sem ele a engine era rascunho com aparência de publicação. Exporta JSON indentado (o destino é um commit), importa **fundindo** com a regra "a mais nova vence por data", e recusa versão diferente em vez de adivinhar | ✅ `pacote-editorial.ts` |
+| EE-8 | A tela **diz que a edição não chegou ao aluno**, em aviso permanente enquanto houver pendência. Sem isso, quem corrige vinte lições vai embora achando que publicou | ✅ 16 casos de tela |
+| EE-9 | `/founder/licoes` — editor por curso → módulo → lição → bloco, com campos próprios por tipo (clave, notas, o que o player toca e como, andamento, tipo de diagrama, alternativas). **Um editor que exigisse conhecer a forma interna do dado seria o arquivo com outra roupa** | ✅ |
+| EE-10 | 🔴 **ARTIGOS: o mesmo defeito, no outro canto da casa.** Viviam em `seed-articles.ts`, compilados — corrigir uma vírgula exigia mudar o código. Agora têm camada, validação, tela e pacote | ✅ `/founder/artigos`, 33 casos de domínio + 21 de tela |
+| EE-11 | A anatomia é a do artigo: **cabeçalho** (natureza, título, subtítulo, resumo, autoria, instituição, data, etiquetas), **corpo** em `.md` com seções reordenáveis, **citações** com motivo, **rodapé calculado** | ✅ |
+| EE-12 | 🔴 **O RODAPÉ NÃO SE EDITA.** É derivado do artigo. Um rodapé digitado diverge do corpo no dia em que uma citação entra e ninguém lembra de atualizá-lo — e aí a peça diz "12 obras" e percorre 14. A tela mostra como vai sair, e explica por que não tem campos | ✅ |
+| EE-13 | A validação é **mais dura** que a das lições, porque o artigo sai assinado e datado: resumo curto é recusado (ele é o que decide se alguém abre), citação sem motivo é recusada nos três tipos, obra inexistente no acervo é recusada — percurso que não se pode percorrer | ✅ |
+| EE-14 | 🔴 **`atualizadoEm` é gravado pelo SERVIÇO**, e não aceito da tela. É registro, não campo: deixar a tela mandar permitiria gravar uma revisão datada de ontem, e o rodapé mentiria sobre quando foi revista | ✅ |
+| EE-15 | A camada entra na **leitura**: `AcervoScreen` e `ArtigoScreen` passaram a ler com as edições aplicadas. Sem isso a correção ficaria gravada e invisível — e o artigo escrito pela curadoria daria "não encontrado", porque não está no seed | ✅ |
+| EE-16 | O pacote subiu para a **versão 2** e leva os artigos. Um pacote v1 não traz a lista, e importá-lo gravaria "nenhum artigo editado" — indistinguível de ausência. A recusa é o comportamento certo, nos dois sentidos | ✅ |
+| EE-17 | **O editor de livretos EDITA de verdade** — salva, cria capítulo e questão, altera enunciado e alternativas. Estava só inalcançável. Conferido, e agora ligado ao console | ✅ |
+| EE-18 | 🔴 **E as 378 questões não tinham como sair do navegador.** O editor gravava em `localStorage` e o pacote não as levava: corrigir uma alternativa errada de prova era conserto que nunca chegava a aluno nenhum. Pacote subiu para **versão 3** e leva os livretos inteiros | ✅ |
+| EE-19 | ⬜ **As seções editoriais do livro** — prefácio, dedicatória, colofão — têm `OrigemDaSecao = 'EDITAVEL'` no modelo, prevendo que regenerar preserve. **Não há persistência**: o livro é gerado do curso a cada leitura, e o que for escrito nessas seções se perde. Quarto caso do mesmo padrão: projetado, não ligado | ⬜ |
+| BL-1 | 🔴 **A BIBLIOTECA DE BLOCOS FUNCIONAIS.** A auditoria de paridade mediu **24 componentes construídos e nunca usados**, em 57 pontos de aplicação — `Player`, `PianoRoll`, `Tuner`, `Waveform` entre eles. Peças prontas esperando quem as chamasse. O que faltava não era componente: era **poder usá-los sem escrever código** | ✅ 7 blocos novos, 28 casos |
+| BL-2 | **Player com onda** — transporte, repetição, meia velocidade. A forma de onda é **derivada das notas**, e não desenhada: picos que não correspondem ao som seriam enfeite com aparência de medição | ✅ |
+| BL-3 | **Rolo de piano** — duração vira comprimento e simultaneidade vira empilhamento. É o que torna visível o que a pauta esconde de quem ainda não lê | ✅ |
+| BL-4 | 🔴 **Afinador** — o bloco que OUVE, pelo microfone, em cents reais. Sem permissão ele **declara** que não está medindo: um ponteiro parado no zero é lido como "afinado" por qualquer pessoa | ✅ |
+| BL-5 | **Tabela** com `scope` nos cabeçalhos (sem ele, leitor de tela recebe sopa de células), **citação** com fonte obrigatória, e **linha do tempo** em que a distância no desenho é a distância no tempo — espaçar por igual a transformaria numa lista com datas | ✅ |
+| BL-6 | 🔴 **Sessão de exercícios — o loop do Duolingo dentro da lição.** Progresso, vidas, e a **faixa de veredito que sobe de baixo** com a explicação, sem sair da pergunta. A auditoria mediu `ExerciseSessionScreen` em 21/100, com 1.255 linhas e seis vetores fixos; o que faltava era o exercício poder ser **escrito por quem edita** | ✅ |
+| BL-7 | 🔴 **GUARDA DE EXAUSTIVIDADE no renderizador.** O `switch` compilava com retorno `JSX.Element \| undefined`, e um tipo novo saía **em silêncio** — a lição ficava com um buraco que só o aluno via. Agora `never` recusa em tempo de compilação, e um caso percorre todos os tipos conferindo que desenham | ✅ |
+| BL-8 | Cada bloco novo tem **custo em minutos declarado** em `workload.ts` — o compilador exigiu, porque a tabela é `Record` total. Sessão de exercícios custa zero de propósito: o custo é o das questões, e um número ali somaria duas vezes | ✅ |
+| QA-1 | 🔴 **FURO NO PENTE FINO: rota que existe e nada aponta para ela.** O verificador de tela órfã pergunta "existe rota que monta esta tela?" — e `/founder/licoes` tinha rota, então passou, mesmo sem link nenhum. É o espelho dos três links mortos da barra: lá o link apontava para rota inexistente, aqui a rota existe e ninguém aponta | ✅ `nenhuma tela inalcançável` |
+| QA-2 | 🔴🔴 **E ELE ACHOU NOVE TELAS CONSTRUÍDAS E INVISÍVEIS.** Não davam erro, não quebravam nada: ninguém chegava nelas. Entre elas **o editor de livretos** (610 linhas, de onde saem as 378 questões do nivelamento), **a Biblioteca do Conservatório** (254 linhas) e **o simulador de violino** | ✅ 8 ligadas |
+| QA-3 | Ligadas: livretos e Biblioteca no console; classificação, defensiva, perfil de prática e matrícula nas sub-rotas do Laboratório; simulador de violino idem; recuperação de conta no rodapé do login — quem não consegue entrar não tinha como chegar à única tela que explica por quê | ✅ `pilares-sub-rotas` foi de 14 para 19 casos |
+| QA-4 | ⬜ **`AcademySearchResultsScreen` é duplicata.** Lê `?q=` da URL; `AcademySearchScreen` mostra os resultados na própria tela e nunca navega para ela. Duas telas para o mesmo trabalho, uma inalcançável. Ligar criaria dois caminhos para a mesma coisa; apagar são 250 linhas — **decisão de escopo, não de passagem** | ⬜ |
+| QA-5 | O verificador mede a **TELA**, e não a grafia da rota. A primeira versão acusava `/kids`, que divide o mesmo `if` com `/kids/manage` — a tela abre, só aquele apelido não é usado. Acusar ali seria pedir um link inútil, e é assim que um verificador perde a confiança de quem o lê | ✅ |
+| QA-6 | Limites declarados: fragmentos (`.includes`), prefixos dinâmicos (`/practice/attempt/`) e pontos de entrada externos ficam de fora — o caminho deles é montado em tempo de execução, e medir por literal acusaria todos | ✅ |
+| FL-1 | 🔴 **SEIS CASOS VERDES ISOLADOS E VERMELHOS NA SUÍTE COMPLETA.** `acervo-fichas` usava `waitFor` com o prazo padrão de um segundo para carregar 5 MB de catálogo. Numa máquina ociosa cabia; com a suíte em paralelo, não. Teste que depende de a máquina estar livre não mede o código — mede a máquina, e ensina a ignorar vermelho | ✅ 9 esperas com prazo explícito |
+| LX-1 | ⬜ 🔴 **A SEGUNDA ÁRVORE AINDA VIVE.** `SEED_SKILL_TREES` — 5 árvores escritas à mão, 32 nós, com `tier`, `prerequisites` e `masteryLevel` próprios que **não casam** com capítulo nenhum nem com `pedagogicalOrder()`. O Laboratório deixou de usá-la; ela segue em `/practice/skill-tree`, em 8 telas que apontam para lá, e em 5 métodos de serviço/repositório. Duas organizações sobre o mesmo conteúdo é pior que nenhuma. **Cirurgia própria — ver `88_LABORATORIO.md` §7.3** | ⬜ |
+| NV-1 | 🔴 **TRÊS LINKS MORTOS NA BARRA PRINCIPAL.** `Meta do dia` → `/practice/daily` (o outlet serve `/practice/daily-goal`), `Catálogo de cursos` → `/academia/catalogo` (é `/academia/catalog`), `Minha grade` → `/academia/grade` (é `/academia/meu-aprendizado`) | ✅ |
+| NV-2 | O verificador de destino não pegava, e **não é defeito dele**: ele lê `navigate('...')` no **código**, e sub-rota de pilar é **dado**. Novo caso abre as **14 entradas** da barra com o roteador de verdade — foi ele que achou os dois da Academia | ✅ |
+| PZ-1 | ✅ **O PRAZO PASSOU A DECLARAR O REGIME.** `src/domain/copyright-term.ts`: seis regimes, cada um com o marco e o artigo que o sustenta. A pergunta "morte ou publicação?" tem resposta — **as duas**, conforme a natureza da obra | ✅ |
+| PZ-2 | **autor conhecido → morte + 70** (art. 41) · **coautoria → morte do último** (art. 42) · **anônima/pseudônima → publicação + 70** (art. 43) · **audiovisual/fotográfica → divulgação + 70** (art. 44) · **autor desconhecido → domínio público** (art. 45, II) · **anterior a qualquer prazo** → constatação, sem conta | ✅ |
+| PZ-3 | 🔴 Contar **sempre da morte** deixa obra anônima do séc. XVIII indeterminada para sempre — o acervo esconde o que é livre. Contar **sempre da publicação** libera obra de autor morto há pouco — o acervo **declara livre o que está protegido**. Só o segundo tem consequência jurídica, e é por isso que a escolha de regime erra para o lado que protege | ✅ |
+| PZ-4 | O `+ 1` do **1º de janeiro seguinte** está testado: morte em 1955 → livre em 1º/1/2026, e não em 2025. Um ano é tempo de alguém publicar o que não podia | ✅ |
+| PZ-5 | 🔴 **A Antiguidade passava `anoDeMorte: 500`** — data inventada para a conta fechar, sobre um epitáfio anônimo do séc. II. Resultado certo, método errado: a ficha declarava morte de quem ninguém sabe quem foi. Agora usa `ANTERIOR_A_QUALQUER_PRAZO`, que é constatação | ✅ |
+| PZ-6 | Dois verificadores novos, **bloqueantes**: `checkPrazoDeProtecao` (o regime e o artigo existem, e o `+1` não sumiu) e `checkDataDeMorteCravada` (nenhuma data escrita à mão no domínio). Com tabela de provas: 5 e 3 variantes, 3 limpos cada, limites declarados | ✅ |
+| MB-7 | ✅ **MusicBrainz ligado** — `scripts/enriquecer-musicbrainz.ts`. Entra **pela obra** e não pelo compositor: uma consulta por número de catálogo, que é prova de identidade, com o identificador do compositor na mesma consulta. 1 req/s respeitado (pausa de 1.100 ms), UA identificado, cache gravado a cada 50 | ✅ |
+| MB-8 | **Ensaio com 200 obras**: 161 ganharam título alternativo (80%), 180 ganharam identificador cruzado, 0 falhas de rede | ✅ |
+| MB-9 | ⚠️ **Medição honesta do rendimento.** A fonte **não expõe** os atributos de catálogo (vêm vazios) nem os aliases traduzidos — o crosswalk `SV`↔`CND` e `Wq`↔`Helm` **não está lá**. O que ela dá é a grafia do título dela, que difere da nossa | ℹ️ |
+| MB-10 | Rendimento medido no casamento com o IMSLP: **+7 obras sobre 161 enriquecidas (4,3%)**. Extrapolado para as 5.273, algo como **+200 obras com endereço**. O ganho maior é outro: **~4.700 obras ganham identificador cruzado**, que é completude de catálogo | ℹ️ |
+| MB-11 | 🔴 **O alias estava ANULANDO casamentos que funcionavam.** A guarda de ambiguidade tratava alias como título: chave repetida virava `null` e derrubava os dois. Com 161 obras o ganho foi **+1**. Agora o alias **preenche vaga vazia e nunca anula** — indício não desfaz afirmação — e o mesmo dado rendeu **+7** | ✅ |
+| PF-1 | 🔴 **A tela do artigo fazia 22 buscas no catálogo inteiro**, uma por obra citada — 700 mil comparações para montar 22 linhas. Uma passada e um índice: o teste caiu de **62 s para 13 s** | ✅ |
+| BUG-1 | 🔴🔴 **O ARTIGO NÃO ABRIA, e o meu teste passava.** A tabela de rotas tinha `/acervo/obra/:id` e `/acervo/compositor/:id` e **não tinha** `/acervo/artigo/:id`. Sem padrão, `parseParams` não tem contra o que casar: `params.id` vinha **vazio**, a tela montava e dizia "artigo não encontrado" sobre artigo que estava ali | ✅ |
+| BUG-1a | O teste que eu escrevi **substituía o roteador** e entregava o `id` na mão — substituir a peça quebrada é a forma mais eficiente de não encontrar o defeito dela. Novo caso monta `RouterProvider` + `AppRouterOutlet` de verdade, navega pela URL, e clica no card da vitrine | ✅ |
+| BUG-2 | 🔴 **A MÉTRICA CONTAVA UM TERÇO E CHAMAVA DE TOTAL.** O card dizia "22 obras citadas" sobre artigo que percorre 22 obras, 20 pessoas e 20 coletâneas. Não estava inflada — estava **cega** | ✅ |
+| BUG-2a | Agora conta por tipo, e separado: `10 obras · 8 pessoas` / `11 obras · 12 pessoas` / `22 obras · 20 pessoas · 20 coletâneas`. Um número só esconderia se são sessenta e duas obras ou sessenta e dois nomes | ✅ |
+| IX-1 | ✅ **PESSOAS E COLETÂNEAS VIRARAM REFERÊNCIA INDEXADA.** `PessoaCitada` e `ColetaneaCitada` no domínio, com motivo obrigatório como as obras. **40 pessoas e 20 coletâneas** indexadas nos três artigos, todos os identificadores conferidos contra o catálogo | ✅ |
+| IX-2 | `papel` distingue quem **compôs** de quem **editou, compilou ou coletou** — Laforge, Mário de Andrade, Spix e von Martius não escreveram uma nota | ✅ |
+| IX-3 | A tela do artigo ganhou as duas seções, navegáveis: pessoa abre a ficha, coletânea mostra **o índice na ordem do volume** com cada peça ligada à obra. Coletânea por abrir diz "índice ainda não aberto" — não é coletânea vazia | ✅ |
+| IX-4 | **Referências por artigo: 18 · 23 · 62 — total 103**, contra 43 antes. E cada uma é caminho, não texto | ✅ |
+| CO-1 | ✅ **COLETÂNEA VIROU ENTIDADE**, na cadeia que você especificou: `Compositor → Coletânea → Obra → Edição → Partitura`. `src/domain/collection.ts` + `src/data/seed-collections.ts`, com as 20 do corpus brasileiro | ✅ |
+| CO-2 | **41 peças casadas, 41 de 41** — Gallet (12), Álvares Pinto (7), Barrozo Netto (7), Oswald/Machiette (12), Nepomuceno/Quartetos (3). Todas com obra e partitura localizada | ✅ |
+| CO-3 | 🔴 A coletânea guarda a **ordem**, e a ordem é conteúdo: `Valsa op. 2 nº 3` é a terceira peça de um livro, não uma valsa solta. Guardar como etiqueta perderia isso, e `numeracaoQuebrada()` impede índice com buraco | ✅ |
+| CO-4 | 🔴 **Peça não cria obra.** Índice de livro com títulos é exatamente como as 1.331 obras falsas entraram. Peça que não casa fica sem `obraId` e continua listada com o título do volume | ✅ |
+| CO-5 | **Três estados declarados**: INTEIRA (5), PARCIAL (0), SÓ FICHA (15). Coletânea sem peças listadas **não é** coletânea vazia — as duas desenham igual, e confundi-las declararia ausência onde há trabalho por fazer | ✅ |
+| CO-6 | Quem **editou** é campo separado de quem **compôs**: Pierre Laforge editou (1842), Mário de Andrade compilou, Spix e von Martius coletaram — nenhum compôs uma nota. E a *Coleção de modinhas* tem 17 assinaturas num volume: catalogá-la sob um autor apagaria 16 | ✅ |
+| OO-1 | ✅ **A curadoria do Open Opus entrou na auditoria**, medida no nosso dado: **1.245 recomendadas · 401 populares · 363 nas duas** (606 e 214 com partitura). 204 compositores com obra recomendada, 148 com popular. As listas de compositores da fonte — 23 populares, 77 recomendados — são outra coisa, e o texto diz isso | ✅ |
+| OO-2 | O artigo diz o que os números **não são**: não mediram execução, não são linhagem, e não são juízo do Conservatório. A própria fonte conta que as listas nasceram de enciclopédia e catálogo de biblioteca e foram padronizadas depois | ✅ |
+| SZ-1 | ⚠️ **'Suzuki' saiu da lista de fontes proibidas — decisão da Aline, registrada.** A regra existe para manter fora a **bibliografia de estudo**; o índice de um volume pedagógico é fato, e fato não se protege | ✅ |
+| SZ-2 | 🔴 **O que continua proibido é reproduzir as peças do próprio Shinichi Suzuki.** Ele morreu em 1998 — protegidas até **2069** pela Lei 9.610/98. As 6 do Volume 1 (Variações sobre *Twinkle*, Allegro, Perpetual Motion, Allegretto, Andantino, Etude) entram como registro: existem, são dele, não tocam aqui | ✅ |
+| SZ-3 | Modelado como você pediu: **método → volume → item → Obra → Compositor**, e não Suzuki como autor de tudo. 36 peças, **15 autores** — Bach (8 no total), Händel, Purcell, Schumann, Weber, Brahms, Paganini, Thomas, Lully, Beethoven, Boccherini, Martini, Dvořák, Becker, Bayly | ✅ |
+| AR-9 | ✅ O artigo brasileiro virou **"Seleção de Coletâneas Brasileiras"**, refeito em 5 seções em torno dos volumes. **22 obras citadas** | ✅ |
+| AR-10 | 🔴 O teste dos artigos mantinha uma **segunda lista de proibidos**, escrita à mão, que vedava nomear **qualquer** fonte — inclusive a de catálogo cuja curadoria o artigo precisa atribuir. Atribuir é o conserto do erro de "os mais tocados"; proibir o nome tornava o conserto impossível. Agora há **uma lista só**, a do verificador | ✅ |
+| ER-1 | ✅ A era voltou a trazer **a datação no rótulo** — "Barroco · c. 1600 – 1750". Vem de `periodYears`, o mesmo campo que o Atlas usa: as duas telas dizem a mesma coisa sem ninguém escrever o intervalo duas vezes | ✅ |
+| AR-1 | ✅ **Artigo novo: "O Brasil tinha quatro nomes neste acervo"** — 16 obras citadas, 5 seções. Cobre **as 8 partituras mais buscadas** da fonte e **obra de cada um dos 8 compositores em destaque**, mais três representantes de coletânea (Luís Álvares Pinto, Luciano Gallet, Henrique Oswald) | ✅ |
+| AR-1a | 🔴 **Primeira versão citava 7, e deixava 6 dos 8 em destaque sem obra nenhuma.** Eles apareciam numa tabela e não viravam caminho — artigo que nomeia e não liga é lista, não percurso. Corrigido antes de fechar | ✅ |
+| AR-1b | **Referências por artigo: 10 · 11 · 16 — total 37**, contra 8 antes desta rodada | ✅ |
+| AR-7 | ✅ **O percurso de violino foi de 3 para 5 níveis.** Os três primeiros tocam aqui; **4 e 5 têm só o endereço da partitura**, e a seção nova diz por que isso é o degrau e não uma limitação: até o nível 3 imitar o som é atalho legítimo, e a partir dali o que separa quem avança é **ler** | ✅ |
+| AR-8 | O caso dos níveis cobrava exatamente `[1,2,3]`. Passou a cobrar **sequência sem buraco** e **pelo menos duas peças por nível** — nível de peça única é exemplo, não degrau | ✅ |
+| AR-2 | 🔴 **O rótulo do recorte é a parte que importa.** A fonte publica "principais compositores" e "top 8 mais buscadas"; o artigo diz **de quem é a medida** e **o que ela mede** — "em destaque no catálogo de origem", "mais procuradas lá". "Os mais importantes" seria juízo nosso sem apuração; "os mais tocados" seria pior, porque mediram **busca no site**, não execução | ✅ |
+| AR-3 | As 20 coletâneas entraram como o que são: **objetos editoriais**, não listas de recomendação. A *Coleção de modinhas* de Pierre Laforge (1842), as *Modinhas coletadas por Spix e von Martius*, as *Modinhas Imperiais* de Mário de Andrade. Coletânea foi publicada assim, por alguém, num ano — é fonte primária de como o repertório circulava | ✅ |
+| AR-4 | ✅ A **auditoria** foi corrigida: afirmava que o repertório brasileiro "existe e aguarda edição" e que a Antiguidade não tinha obra. As duas deixaram de ser verdade. E a seção do Brasil passou a dizer onde estava a leitura errada — faltava **quem catalogasse**, e não edição | ✅ |
+| AR-5 | 🔴 **O teste de citação media um universo menor que o acervo.** Conferia contra `obrasDoRepertorio` — as 17 obras próprias — e passava porque os artigos só citavam essas. Agora confere contra as 31.952, com piso de não-vacuidade | ✅ |
+| AR-6 | ⚠️ **O repertório graduado de violino já existe, e não pode nomear o método.** O artigo `art_percurso_violino_nivelado` é exatamente esse percurso — Gossec, minueto em Sol, Brahms, *Jesu*, Händel, Vivaldi —, com as peças em domínio público e a ordem autoral. O nome do método está entre as **18 fontes proibidas** de `verify-no-citations.mjs`, que roda no build | ℹ️ |
+| CT-1 | ⬜ **Carlos Gomes tem quatro registros de "Fosca"**: um do Open Opus (sem partitura) e três da Música Brasilis (com). 174 compositores têm título repetido. Parte é legítima — a fonte cataloga cada arranjo como partitura própria —, parte é a mesma obra por duas fontes. Precisa de deduplicação por obra, e não por ficha | ⬜ |
+| DI-1 | ✅ **OBRAS COM PARTITURA: 180 → 16.626 = 52,0% do acervo.** IMSLP 11.027 · Música Brasilis 6.917 · Mutopia 181 (com arquivo). O card "Antiguidade" deu lugar a **"Obras disponíveis"**, que conta e filtra esse número | ✅ |
+| DI-2 | ⚠️ **Ressalva feita uma vez e registrada:** o que temos é o **endereço** da partitura, não o arquivo — IMSLP e Música Brasilis proíbem `/images/` e `/media/` no `robots.txt`, e nada foi baixado. As que a plataforma **reproduz** continuam sendo 17, montadas nota a nota aqui. Rótulo decidido pela Aline | ℹ️ |
+| IM-1 | 🔴 **`` VIROU BACKSPACE na expressão de número de catálogo.** Escrita como cadeia comum, `''` é o caractere de retrocesso, não a fronteira de palavra: a expressão **compilava, rodava e nunca casava**. Corrigida com `String.raw`, que é a única forma segura | ✅ |
+| IM-2 | A lista de siglas foi de 9 para 36 do lado do IMSLP e de 16 para 40 do nosso — Sz, BB, L., FP, TrV, JW, Kk, MWV, SV, WAB, Z, W. Chaves de número: 10.089 → **11.696** | ✅ |
+| IM-3 | 🔴 **O número não era só um número.** `TWV 43:h3` saía como `TWV 43`, comum a dezenas de quartetos de Telemann, e `Hob.XVI:52` não casava nada — começa com romano. Chave ambígua não casa, por regra, e **501 obras de Telemann** sobravam por isso. O leitor entende romano, número e continuação por dois-pontos | ✅ |
+| IM-4 | O caso que declarava "LIMITE: Hoboken com romano não é lido" foi **invertido**: o limite caiu, e o teste agora cobra que seja lido | ✅ |
+| IM-5 | Casamento por **prefixo de título** (20 caracteres, com guarda de ambiguidade): o IMSLP escreve "Symphony No.5, Op.67" e nós "Symphony No. 5 in C minor, Op. 67" | ✅ |
+| IM-6 | ✅ **O ÍNDICE FICOU EM CACHE** — 259 mil entradas, 33 MB, não versionado. A primeira passada descartava tudo depois de casar, e cada ideia nova custava 20 min de banda da fonte. Agora custa **segundos e zero requisições**; `--rastejar` força releitura. Foi o que permitiu ir de 9.625 → 10.560 → 10.808 → **11.075** sem tocar no IMSLP de novo | ✅ |
+| MU-1 | ✅ **Mutopia: 106 → 181 obras com ARQUIVO** (`.ly`, e MIDI em 37). É a única fonte cujo arquivo pode ficar aqui: Mutopia é redistribuível, IMSLP e Brasilis não | ✅ |
+| MU-2 | Nome abreviado deixou de derrubar a resolução: `M. Giuliani` não casava com `Mauro Giuliani` pela chave de palavras ordenadas. Sobrenome + inicial resolve, e **só quando é inequívoco** — dois com o mesmo sobrenome e inicial somem da tabela | ✅ |
+| MU-3 | 🔴 **75 obras criadas com PROVA.** A regra "fonte de recurso não cria entidade" ganhou uma exceção estreita e cumulativa: autoria resolvida + número de catálogo + número **inédito naquele compositor**. `BWV 1087` não está em obra nenhuma de Bach — não é duplicata, é obra que falta | ✅ |
+| MU-4 | ⬜ **Faltam 1.051 pendentes**, e 700 são por compositor ausente do catálogo: Giuliani (88), Horetzky (60), Carcassi (36), Aguado (26) — repertório de violão que a catalogação de origem não cobre. 106 são `Traditional`/`Anonymous` e não têm autoria a resolver | ⬜ |
+| AN-1 | ✅ **ANTIGUIDADE É ERA, E NÃO TIPO DE ENTIDADE.** Os 8 registros entraram como obras de `era_antiguidade` — com suporte e datação no lugar de tonalidade e número de catálogo, que `CanonicalWork` já previa. O filtro de era os alcança sozinho, e o card pôde sair sem nada ficar inalcançável | ✅ |
+| AN-2 | Obra **sem autoria** passou a ser permitida ali, e só ali: a música antiga que sobreviveu é quase toda anônima, e inventar autor para preencher campo seria o pior tipo de dado fabricado. O teste distingue **anônimo de fato** de **autoria não resolvida** | ✅ |
+| LK-1 | ✅ "Consultar em…" sai quando a ficha já tem bloco de Edição — eram dois links para o mesmo destino, e o de cima sem fonte, formato, licença nem transcritor. Fica só quando é o **único** caminho | ✅ |
+| MB-6 | ℹ️ **MusicBrainz nunca foi consultada, e não resolve partitura.** É base de metadados — obra, gravação, relações —, não biblioteca de partitura. Temos 220 identificadores vindos do Wikidata. Serve para **melhorar casamento** (títulos alternativos das obras), e é assim que ela entra, se entrar | ⬜ |
+| LA-1 | ✅ **AS DUAS FILEIRAS DE CÁPSULAS SAÍRAM.** Havia uma de recortes e uma de eras, logo abaixo dos cards que contavam as mesmas coisas — três linhas de controle antes da primeira obra. Os cards do banner absorveram as duas: **contam e recortam**. "31.874 obras" é o que a pessoa quer ver, e clicar nele é o gesto óbvio | ✅ |
+| LA-2 | O card de Movimentos virou **card de Era, com dois chevrons**. Eras têm ordem — medieval antes de barroco —, e cápsulas soltas descartavam essa ordem tratando-as como sete rótulos. A sequência começa em "todas as eras", e voltar da primeira **devolve ao acervo inteiro**: sem esse degrau, quem entra numa era não sai pelo card | ✅ |
+| LA-3 | 🔴 A tela montava a lista de eras de `DEFAULT_ERAS` e o pente fino acusou, com razão: lista fixa na tela não sabe quantos itens cada opção devolve, e oferece as que devolvem zero. A ordem cronológica vive no **serviço**, que já a passava para a faceta; a tela só lê `faceta.opcoes` | ✅ |
+| PT-8 | ✅ **IMSLP FECHOU: 9.625 obras casadas** — 6.638 por número de catálogo, 2.987 por título, sobre 256 mil entradas lidas do índice deles. `Crawl-delay: 2` respeitado; `/images/` e `/imglnks/` nunca tocados | ✅ |
+| PT-9 | **Obras com endereço de partitura: 180 → 15.138 = 47,5%** (IMSLP 9.625 · Música Brasilis 6.917 · Mutopia 106) | ✅ |
+| PT-10 | ⬜ **Faltam 16.736 sem endereço, e elas se dividem em três** — a distinção importa porque só uma é trabalho de casamento: **4.436 protegidas** (não estão no IMSLP por lei — é biblioteca de domínio público; só chegam por catálogo de editora) · **11.659 em domínio público** (o IMSLP provavelmente tem, e o casamento não achou) · **641 indeterminadas** | ⬜ |
+| PT-11 | ⬜ **Por que o casamento não achou as 11.659**, medido e não suposto: (a) o título do IMSLP é mais curto — "Symphony No.5, Op.67" contra "Symphony No. 5 in C minor, Op. 67" —, e a chave de título exige igualdade após normalizar; (b) a expressão que extrai o número de catálogo cobre 9 siglas (BWV, K, KV, D, Op, HWV, RV, Hob, WoO, S) e a musicologia usa dezenas (Sz, BB, L., FP, TrV, JW, Anh., B., CD…). **4.570 das sem endereço já têm número de catálogo apurado do nosso lado** — é a chave mais forte, sobrando | ⬜ |
+| PT-12 | ⬜ Uma segunda passada custaria outros 20 min de banda da fonte. Antes dela, o índice precisa ser **guardado em cache** (`scripts/.imslp-indice.json`): a passada atual descartou as 256 mil entradas depois de casar, e sem cache toda melhoria de casamento exige rastejar tudo de novo | ⬜ |
+| FI-1 | ✅ **MOVIMENTO SAIU DOS RECORTES, ERA ENTROU.** Medido: 6 movimentos alcançam **3.102 de 31.874 obras = 9,7%**, e 11 dos 1.004 compositores. Era alcança **30.587 = 96,0%**. Um recorte exposto ao lado de "Obras" e "Pessoas" promete o mesmo peso e entregava um décimo | ✅ |
+| FI-2 | Movimento **não sumiu**: continua no funil como filtro de obras e pessoas — que é onde eixo seletivo pertence —, e lá traz a contagem de antemão. A era exposta escreve no MESMO estado da etapa 2 do funil: duas interfaces, um estado só, senão divergem | ✅ |
+| NU-1 | ⚠️ **"17" NÃO É O NÚMERO DE PARTITURAS.** São três números diferentes, e a tela mostrava um rótulo para cada: **31.874 obras catalogadas** · **7.040 com partitura localizada** · **17 que TOCAM aqui** (edição nossa, renderizável). Os 17 são "Para estudo aqui" | ℹ️ |
+| NU-2 | Não foram extraídas 32 mil partituras, e dizer que sim seria mentira. O que existe são 31.874 **fichas de obra**. Partitura com endereço: 7.040 hoje, e o casamento com IMSLP acrescenta ~8.500 | ⬜ em andamento |
+| OR-1 | ✅ **AS LISTAS SAEM EM ORDEM ALFABÉTICA.** Saíam na ordem em que o arquivo foi lido — a ordem da extração, ou seja, nenhuma. Com 31.874 obras isso faz a página 2 não ter relação com a página 1, e torna impossível saber se algo está no acervo sem percorrer 1.040 páginas. Ordenado num lugar só, em `listar()`, e não em cada ramo: ramo esquecido sairia embaralhado sem ninguém notar | ✅ |
+| OR-2 | `localeCompare` com `pt-BR`, e não comparação por código de caractere — sem isso "Ária" cai **depois** de "Zumbi", e uma parte do catálogo em português vai parar num fim de lista que ninguém alcança | ✅ |
+| OR-3 | O compêndio da ficha também: Bach tem 978 obras, e sem ordem procurar uma exige ler as 978. Os artigos ficam de fora, por decisão: publicação própria se lê do mais recente para o mais antigo | ✅ |
+| BIO-1 | ✅ **BIOGRAFIAS: de 225 para 900 de 1.004 compositores.** Os 783 brasileiros entraram sem nenhuma; a fonte publica a biografia na página de cada um, e não na listagem. 679 colhidas, com proveniência apontando para a página de origem | ✅ |
+| BIO-2 | 🔴 Villa-Lobos, Carlos Gomes, Guarnieri e Mignone ficavam com a **linha de descritor da Wikidata** — "compositor brasileiro (1887–1959)" — porque a fusão preservava o registro ocidental sem olhar o conteúdo. Agora vence a biografia mais substantiva, e a autoral do Conservatório continua vencendo as duas | ✅ |
+| BIO-3 | Duas verificações acusaram as biografias: "curso superior" e "ilha". As regras estão certas e o alvo estava errado — é texto **citado**, sobre gente morta. A saída óbvia seria editar a biografia para o verificador calar, publicando como citação um texto alterado. Isentada a linha `"biografia":` em `src/data/`, **pela forma** (chave entre aspas = objeto gerado); biografia escrita à mão continua verificada | ✅ |
+| PT-3 | 🔴 **A FICHA DIZIA "NÃO HÁ EDIÇÃO CATALOGADA" SOBRE 7.040 OBRAS QUE TÊM.** Havia dois estados onde existem três: *toca aqui* · *partitura achada* · *ainda procurando*. O segundo não existia, e as obras com endereço recebiam o recado do terceiro — que manda a pessoa desistir de procurar o que está a um clique | ✅ |
+| PT-4 | E o link não aparecia: `linkOficial` não conhecia a chave do corpus brasileiro, e as partituras do Mutopia ligavam a obra **sem gravar o identificador** — obra com edição casada e botão "consultar na fonte" que não aparecia | ✅ |
+| PT-5 | 🔴 Referência de **página** não é referência de **arquivo**. A ficha declarava "transcrição sem autoria declarada" e "licença não declarada" sobre páginas do IMSLP e da Música Brasilis, onde autoria e licença estão declaradas — de cada edição, uma por uma. Campo `aponta: 'ARQUIVO' \| 'PAGINA'`, e a ficha fala diferente de cada | ✅ |
+| PT-6 | ✅ **IMSLP / Petrucci ligado.** `scripts/casar-imslp.ts` percorre o índice público da fonte e casa por **compositor + número de catálogo**, com título como segunda chave. `robots.txt` lido: `Crawl-delay: 2` respeitado, `/images/` e `/imglnks/` nunca tocados — entra o link da página, nunca o arquivo | ✅ |
+| PT-7 | O casamento **não cria obra nenhuma**: linha do índice que não acha obra é linha descartada. É a regra que as 1.331 duplicatas ensinaram, aplicada a uma fonte que tem 240 mil entradas e poderia inundar o catálogo | ✅ |
+| DP-1 | ⚖️ **Registro, ficha e biografia não dependem de direito autoral** — fato não se protege. O que o prazo do art. 41 decide é se a obra **toca aqui dentro**, e nada além disso. Obra protegida aparece, diz de quem é, e aponta para onde está publicada | ✅ |
 | MB-1 | ✅ **MÚSICA BRASILIS ESTÁ NO CATÁLOGO.** 783 compositores e 6.917 obras brasileiras. O acervo foi de **24.957 para 31.874 obras** e de **225 para 1.004 compositores**. O Brasil tinha quatro nomes — os que atravessaram para o catálogo do concerto europeu —, e passou a ter o corpus | ✅ |
 | MB-1a | 🔴🔴 **A PRIMEIRA EXTRAÇÃO DEU A CADA COMPOSITOR AS DATAS DO ANTERIOR.** O leitor pegava 900 caracteres **antes** do link, com o comentário "as datas vêm num selo logo acima". Não vêm: o selo fica **dentro do cartão, depois do link**. O que está acima é o fim do cartão do vizinho | ✅ corrigido |
 | MB-1b | Nada acusava: anos plausíveis, formato certo, campo certo. Camargo Guarnieri saiu 1944–2011 (é 1907–1993), Francisco Mignone 1835–1923 (é 1897–1986), Villa-Lobos sem data nenhuma | ✅ |

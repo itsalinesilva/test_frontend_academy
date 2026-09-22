@@ -36,6 +36,18 @@ beforeEach(() => {
   navigate.mockClear();
 });
 
+/**
+ * 🔴 AS ESPERAS TÊM PRAZO EXPLÍCITO, e não o padrão de um segundo.
+ *
+ * Estas fichas leem o catálogo inteiro — mais de 5 MB de JSON. Numa máquina
+ * ociosa isso cabe no prazo padrão de `waitFor`; com a suíte inteira rodando em
+ * paralelo, ou com outro processo pesado na máquina, não cabe.
+ *
+ * Seis destes casos falharam exatamente assim: verdes isolados, vermelhos na
+ * suíte completa. Teste que depende de a máquina estar livre não mede o
+ * código — mede a máquina, e ensina a ignorar vermelho.
+ */
+
 describe('a ficha do compositor', () => {
   beforeEach(() => {
     paramId = 'bach-johann-sebastian';
@@ -94,7 +106,7 @@ describe('a ficha do compositor', () => {
 
   it('lista os movimentos que ele ajudou a definir, com descrição', async () => {
     render(<CompositorScreen />);
-    await waitFor(() => expect(screen.getByText('Contraponto tardio')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Contraponto tardio')).toBeInTheDocument(), { timeout: 40000 });
     expect(screen.getByText(/baixo contínuo tinha aberto/)).toBeInTheDocument();
   });
 
@@ -104,7 +116,7 @@ describe('a ficha do compositor', () => {
      * esconderia metade da obra de quem veio consultar.
      */
     render(<CompositorScreen />);
-    await waitFor(() => expect(screen.getByText('Compêndio de obras')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Compêndio de obras')).toBeInTheDocument(), { timeout: 40000 });
 
     const obras = screen.getAllByText(/Disponível para estudo|Catalogada/);
     expect(obras.length).toBeGreaterThan(1);
@@ -113,7 +125,7 @@ describe('a ficha do compositor', () => {
   it('cada obra do compêndio abre a ficha dela', async () => {
     const user = userEvent.setup();
     render(<CompositorScreen />);
-    await waitFor(() => expect(screen.getByText('Compêndio de obras')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Compêndio de obras')).toBeInTheDocument(), { timeout: 40000 });
 
     await user.click(screen.getByText(/Prelúdio em dó maior/));
     expect(navigate).toHaveBeenCalledWith(expect.stringContaining('/acervo/obra/'));
@@ -122,8 +134,9 @@ describe('a ficha do compositor', () => {
   it('compositor inexistente mostra o vazio, e não uma ficha em branco', async () => {
     paramId = 'nao-existe-ninguem';
     render(<CompositorScreen />);
-    await waitFor(() =>
-      expect(screen.getByText(/Compositor não encontrado/)).toBeInTheDocument()
+    await waitFor(
+      () => expect(screen.getByText(/Compositor não encontrado/)).toBeInTheDocument(),
+      { timeout: 40000 }
     );
   });
 });
@@ -135,7 +148,7 @@ describe('a ficha da obra', () => {
 
   it('traz a ficha com compositor, era e gênero', async () => {
     render(<ObraScreen />);
-    await waitFor(() => expect(screen.getByText('Ficha')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Ficha')).toBeInTheDocument(), { timeout: 40000 });
 
     // O nome aparece no subtítulo E na ficha; os dois são corretos.
     expect(screen.getAllByText('Johann Sebastian Bach').length).toBeGreaterThan(0);
@@ -145,7 +158,7 @@ describe('a ficha da obra', () => {
 
   it('OFERECE AS TRÊS AÇÕES quando há edição renderizável', async () => {
     render(<ObraScreen />);
-    await waitFor(() => expect(screen.getByRole('button', { name: /Tocar/ })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /Tocar/ })).toBeInTheDocument(), { timeout: 40000 });
 
     expect(screen.getByRole('button', { name: /Abrir na partitura/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Levar à prática/ })).toBeInTheDocument();
@@ -154,7 +167,7 @@ describe('a ficha da obra', () => {
   it('levar à partitura e à prática navega carregando a obra', async () => {
     const user = userEvent.setup();
     render(<ObraScreen />);
-    await waitFor(() => expect(screen.getByRole('button', { name: /Abrir na partitura/ })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /Abrir na partitura/ })).toBeInTheDocument(), { timeout: 40000 });
 
     await user.click(screen.getByRole('button', { name: /Abrir na partitura/ }));
     expect(navigate).toHaveBeenCalledWith('/score?obra=obra-bar-bach-prelude');
@@ -169,7 +182,7 @@ describe('a ficha da obra', () => {
      * distinta do domínio público da obra.
      */
     render(<ObraScreen />);
-    await waitFor(() => expect(screen.getByText('Edição')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Edição')).toBeInTheDocument(), { timeout: 40000 });
 
     expect(screen.getByText(/Transcrição própria do Conservatório/)).toBeInTheDocument();
   });
@@ -177,7 +190,7 @@ describe('a ficha da obra', () => {
   it('leva à ficha do compositor', async () => {
     const user = userEvent.setup();
     render(<ObraScreen />);
-    await waitFor(() => expect(screen.getByText(/Ver a ficha de/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Ver a ficha de/)).toBeInTheDocument(), { timeout: 40000 });
 
     await user.click(screen.getByText(/Ver a ficha de/));
     /**
@@ -211,6 +224,6 @@ describe('a ficha da obra', () => {
   it('obra inexistente mostra o vazio', async () => {
     paramId = 'obra-que-nao-existe';
     render(<ObraScreen />);
-    await waitFor(() => expect(screen.getByText(/Obra não encontrada/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Obra não encontrada/)).toBeInTheDocument(), { timeout: 40000 });
   });
 });

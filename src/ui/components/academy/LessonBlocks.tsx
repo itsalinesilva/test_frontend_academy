@@ -7,6 +7,15 @@ import { Button } from '../base/Button';
 import { Staff } from '../domain/Staff';
 import { InstrumentKeyboard } from '../domain/InstrumentKeyboard';
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
+import {
+  BlocoAfinador,
+  BlocoCitacao,
+  BlocoLinhaDoTempo,
+  BlocoPianoRoll,
+  BlocoPlayer,
+  BlocoSessaoDeExercicios,
+  BlocoTabela,
+} from './BlocosFuncionais';
 import { engineGateway } from '../../../adapters/engines/gateway/engine-gateway';
 
 /**
@@ -654,5 +663,47 @@ export const LessonBlockRenderer: React.FC<{ block: LessonBlock }> = ({ block })
 
     case 'CHECKPOINT':
       return <Checkpoint block={block} />;
+
+    // ---- a biblioteca de blocos funcionais --------------------------------
+    case 'PLAYER':
+      return <BlocoPlayer bloco={block} />;
+
+    case 'PIANO_ROLL':
+      return <BlocoPianoRoll bloco={block} />;
+
+    case 'TUNER_LAB':
+      return <BlocoAfinador bloco={block} />;
+
+    case 'TABELA':
+      return <BlocoTabela bloco={block} />;
+
+    case 'CITACAO':
+      return <BlocoCitacao bloco={block} />;
+
+    case 'LINHA_DO_TEMPO':
+      return <BlocoLinhaDoTempo bloco={block} />;
+
+    case 'SESSAO_DE_EXERCICIOS':
+      return <BlocoSessaoDeExercicios bloco={block} />;
+
+    default:
+      /**
+       * 🔴 A GUARDA DE EXAUSTIVIDADE.
+       *
+       * Sem ela, este `switch` compilava com o tipo de retorno inferido como
+       * `JSX.Element | undefined` — e um bloco novo renderizava **nada**, em
+       * silêncio. A lição ficava com um buraco, e o buraco só aparecia para o
+       * aluno.
+       *
+       * Agora o compilador recusa: `never` só aceita um caso não tratado se
+       * todos os outros estiverem. Quem acrescentar um tipo de bloco descobre
+       * aqui, e não em produção.
+       */
+      return naoTratado(block);
   }
 };
+
+/** Falha em tempo de compilação quando um tipo de bloco fica sem desenho. */
+function naoTratado(bloco: never): never {
+  throw new Error(`Bloco sem renderizador: ${JSON.stringify(bloco)}`);
+}

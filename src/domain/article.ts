@@ -67,6 +67,25 @@ export interface ObraCitada {
   nivel?: number;
 }
 
+/**
+ * Uma pessoa que o artigo percorre — compositor, editor, compilador.
+ *
+ * `papel` existe porque nem todo nome citado compôs: Pierre Laforge editou,
+ * Mário de Andrade compilou, Spix e von Martius coletaram. Chamar os três de
+ * compositor seria atribuir obra a quem não a escreveu.
+ */
+export interface PessoaCitada {
+  pessoaId: EntityId;
+  motivo: string;
+  papel?: 'COMPOSITOR' | 'EDITOR' | 'COMPILADOR' | 'INTERPRETE';
+}
+
+/** Uma coletânea que o artigo percorre. */
+export interface ColetaneaCitada {
+  coletaneaId: EntityId;
+  motivo: string;
+}
+
 export interface ArtigoDoConservatorio {
   id: EntityId;
   tipo: TipoDeArtigo;
@@ -82,6 +101,21 @@ export interface ArtigoDoConservatorio {
   secoes: SecaoDoArtigo[];
   /** Obras do acervo que o artigo percorre, com o motivo de cada uma. */
   obras: ObraCitada[];
+  /**
+   * 🔴 AS PESSOAS E AS COLETÂNEAS QUE O ARTIGO PERCORRE.
+   *
+   * Faltavam, e a falta aparecia como número errado: o card dizia "22 obras
+   * citadas" sobre um artigo que percorre vinte coletâneas, quarenta e uma
+   * peças e quinze autorias. A métrica não estava inflada — estava **cega**,
+   * contando um dos três tipos de referência e chamando o resultado de total.
+   *
+   * Pior que o número: o que não é indexado **não vira caminho**. Um artigo que
+   * nomeia Chiquinha Gonzaga no texto e não a liga obriga quem lê a sair dali e
+   * procurar de novo, com o nome na memória. Referência que não leva a lugar
+   * nenhum é citação de papel.
+   */
+  pessoas: PessoaCitada[];
+  coletaneas: ColetaneaCitada[];
   /** Era, região, movimento ou casa a que o artigo se liga. */
   etiquetas: string[];
   publicadoEm: ISOTimestamp;
@@ -103,7 +137,31 @@ export function obrasInexistentes(
 
 /** Toda obra citada explica por quê. */
 export function citacoesSemMotivo(artigo: ArtigoDoConservatorio): string[] {
-  return artigo.obras.filter((o) => o.motivo.trim().length < 15).map((o) => o.obraId);
+  const curto = (m: string) => m.trim().length < 15;
+  return [
+    ...artigo.obras.filter((o) => curto(o.motivo)).map((o) => o.obraId),
+    ...artigo.pessoas.filter((p) => curto(p.motivo)).map((p) => p.pessoaId),
+    ...artigo.coletaneas.filter((c) => curto(c.motivo)).map((c) => c.coletaneaId),
+  ];
+}
+
+/**
+ * Quantas referências o artigo tem, por tipo.
+ *
+ * Existe para a tela **não somar tudo num número só**. "Trinta e sete
+ * referências" esconde se são trinta e sete obras ou trinta e sete nomes, e as
+ * duas coisas dizem coisas diferentes sobre o que o artigo é.
+ */
+export function referenciasDoArtigo(artigo: ArtigoDoConservatorio): {
+  obras: number;
+  pessoas: number;
+  coletaneas: number;
+  total: number;
+} {
+  const obras = artigo.obras.length;
+  const pessoas = artigo.pessoas.length;
+  const coletaneas = artigo.coletaneas.length;
+  return { obras, pessoas, coletaneas, total: obras + pessoas + coletaneas };
 }
 
 /**
@@ -123,10 +181,22 @@ export function niveisForaDeOrdem(artigo: ArtigoDoConservatorio): boolean {
 
 /** Molde com a identidade editorial já preenchida. */
 export function novoArtigo(
-  base: Omit<ArtigoDoConservatorio, 'autoria' | 'instituicao' | 'publicadoEm' | 'atualizadoEm'>
+  base: Omit<
+    ArtigoDoConservatorio,
+    'autoria' | 'instituicao' | 'publicadoEm' | 'atualizadoEm' | 'pessoas' | 'coletaneas'
+  > &
+    Partial<Pick<ArtigoDoConservatorio, 'pessoas' | 'coletaneas'>>
 ): ArtigoDoConservatorio {
   const agora = new Date().toISOString();
   return {
+    /**
+     * Pessoas e coletâneas nascem vazias quando o artigo não as declara — e
+     * vazio aqui é **zero referências daquele tipo**, que é diferente de campo
+     * ausente. A tela conta os três, e um `undefined` faria a contagem
+     * estourar em vez de dizer zero.
+     */
+    pessoas: [],
+    coletaneas: [],
     ...base,
     autoria: AUTORIA_PADRAO,
     instituicao: INSTITUICAO,

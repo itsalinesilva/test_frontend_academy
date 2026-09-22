@@ -8,11 +8,11 @@ import {
   ResumoDoAcervo,
   SecaoDoAcervo,
 } from '../../../services/application/acervo.service';
+import { editorialService } from '../../../services/application/editorial.service';
 import { Faceta, descreverCobertura } from '../../../domain/catalog-facets';
 import {
   AlvoDaBusca,
   EtapaMontada,
-  ROTULO_DO_ALVO,
   montarFunil,
   quantosRecortes,
 } from '../../../domain/catalog-funnel';
@@ -78,7 +78,63 @@ const POR_VITRINE = 3;
  * resolução, em `partiturasPendentes()`, e voltam à tela quando tiverem obra.
  * O que sai é a **vitrine de coisa sem endereço**.
  */
-const ALVOS: AlvoDaBusca[] = ['OBRAS', 'COMPOSITORES', 'MOVIMENTOS', 'ANTIGUIDADE'];
+/**
+ * 🔴 MOVIMENTO DEIXOU DE SER RECORTE DE NAVEGAÇÃO, e virou filtro.
+ *
+ * Medido: são **seis** movimentos, e eles alcançam **3.102 das 31.874 obras —
+ * 9,7%**. Do lado das pessoas é pior: 11 dos 1.004 compositores têm movimento
+ * declarado.
+ *
+ * Um recorte exposto com o mesmo peso de "Obras" e "Pessoas" promete o mesmo
+ * peso, e quem clica encontra um décimo do acervo. A regra da dignidade do
+ * filtro já dizia isso para eixo universal; vale igual para recorte de
+ * navegação, que é a forma mais visível de oferta que a tela tem.
+ *
+ * No lugar dele entra **Era**, que alcança 30.587 de 31.874 — **96%**. É o
+ * eixo com que um catálogo musical se navega de fato.
+ *
+ * Movimento não sumiu: continua no funil, como filtro de obras e de pessoas,
+ * onde um eixo seletivo pertence — e lá ele traz a contagem, que diz de
+ * antemão quanto cada opção devolve.
+ */
+
+/**
+ * Os recortes que viram CARD, com o número que cada um conta.
+ *
+ * A ordem é a do catálogo: a obra é a unidade, a pessoa é quem a fez, e a
+ * Antiguidade é o recorte que não cabe nas duas — registros anteriores à
+ * notação que o resto do acervo usa.
+ */
+const RECORTES_EM_CARD: Array<{
+  alvo: AlvoDaBusca;
+  rotulo: string;
+  quantos: (r: ResumoDoAcervo) => number;
+  /** Quando presente, o card não troca de recorte: liga um filtro. */
+  filtro?: 'comPartitura';
+}> = [
+  { alvo: 'OBRAS', rotulo: 'Obras catalogadas', quantos: (r) => r.obras },
+  { alvo: 'COMPOSITORES', rotulo: 'Compositores', quantos: (r) => r.compositores },
+  /**
+   * 🔴 O CARD DE ANTIGUIDADE SAIU, e não por corte: por correção.
+   *
+   * Antiguidade é **era**, e não tipo de entidade. Pô-la ao lado de "Obras" e
+   * "Compositores" era o mesmo erro de categoria do Movimento: as duas
+   * primeiras dizem *o que a coisa é*, e antiguidade diz *quando*.
+   *
+   * Os oito registros entraram no catálogo como obras de `era_antiguidade`, e
+   * o filtro de era os alcança sozinho — pelos chevrons deste mesmo banner.
+   * Nada ficou inalcançável; o que mudou é que a era passou a bastar.
+   *
+   * No lugar dele entra o que a pessoa de fato procura num acervo de música:
+   * de quantas obras ela consegue a partitura.
+   */
+  {
+    alvo: 'OBRAS',
+    rotulo: 'Obras disponíveis',
+    quantos: (r) => r.comPartitura,
+    filtro: 'comPartitura',
+  },
+];
 
 // ---------------------------------------------------------------------------
 // Peças
@@ -434,12 +490,35 @@ export const AcervoScreen: React.FC = () => {
     for (const [campo, valor] of Object.entries(escolhas)) {
       if (valor && valor !== TODOS) recortado[campo] = valor;
     }
-    return { ...recortado, busca: busca.trim() || undefined };
+
+    /**
+     * `comPartitura` é booleano, e os demais recortes são texto.
+     *
+     * Ele vive em `escolhas` junto dos outros porque é assim que a contagem de
+     * recortes e o "limpar" enxergam tudo num lugar só — e vira booleano aqui,
+     * na fronteira com o serviço, que é onde o tipo tem de estar certo.
+     */
+    const { comPartitura, ...demais } = recortado;
+
+    return {
+      ...demais,
+      comPartitura: comPartitura ? true : undefined,
+      busca: busca.trim() || undefined,
+    };
   }, [escolhas, busca]);
 
   useEffect(() => {
-    setArtigos(acervoService.artigos());
     let vivo = true;
+    /**
+     * 🔴 A CAMADA EDITORIAL ENTRA NA LEITURA.
+     *
+     * Sem isto, a correção feita pelo admin ficaria gravada e invisível — e
+     * quem corrigiu veria o texto errado na própria tela, concluindo que a
+     * edição não funcionou.
+     */
+    editorialService
+      .artigosComEdicoes(acervoService.artigos())
+      .then((lidos: ArtigoDoConservatorio[]) => vivo && setArtigos(lidos));
     acervoService.resumo().then((r) => vivo && setResumo(r));
     return () => {
       vivo = false;
@@ -510,6 +589,58 @@ export const AcervoScreen: React.FC = () => {
       document.removeEventListener('mousedown', aoClicarFora);
     };
   }, [funilAberto]);
+
+  /**
+   * AS ERAS VÊM DA FACETA, e a tela não monta lista nenhuma.
+   *
+   * 🔴 A primeira versão importava `DEFAULT_ERAS` e ordenava aqui. O pente
+   * fino acusou, e tinha razão: lista fixa na tela não sabe quantos itens cada
+   * opção devolve, e oferece as que devolvem zero — um chevron que leva a uma
+   * tela vazia é um chevron quebrado.
+   *
+   * A faceta já resolve as duas coisas: descarta o que devolve zero **no
+   * estado atual dos outros filtros**, e devolve na ordem cronológica, porque
+   * o serviço passa `ordemDasEras` justamente para ela não sair ordenada por
+   * contagem.
+   */
+  const erasNavegaveis = useMemo(
+    () => facetas.find((f) => f.campo === 'eraId')?.opcoes ?? [],
+    [facetas]
+  );
+
+  const eraEscolhida = erasNavegaveis.find((o) => o.id === escolhas.eraId);
+  const indiceDaEra = eraEscolhida ? erasNavegaveis.indexOf(eraEscolhida) : -1;
+
+  /**
+   * A SEQUÊNCIA COMEÇA EM "TODAS AS ERAS", e não na primeira era.
+   *
+   * O card nasce mostrando o acervo inteiro; andar para a frente entra na era
+   * mais antiga, e andar para trás a partir dela **volta ao acervo inteiro**.
+   *
+   * Sem esse degrau, quem entrasse numa era não teria como sair pelo card —
+   * teria de abrir o funil e limpar o campo, que é um caminho que ninguém
+   * adivinha. Uma seta que leva a um beco é pior que seta ausente.
+   *
+   * Na outra ponta a seta desliga, e não dá a volta: voltar ao começo sem
+   * avisar faz quem navega perder onde está.
+   */
+  const podeAndarNaEra = (passo: number) => {
+    if (erasNavegaveis.length === 0) return false;
+    const destino = indiceDaEra + passo;
+    return destino >= -1 && destino < erasNavegaveis.length;
+  };
+
+  const andarNaEra = (passo: number) => {
+    if (!podeAndarNaEra(passo)) return;
+    const destino = indiceDaEra + passo;
+
+    setEscolhas((r) => {
+      const proximo = { ...r };
+      if (destino === -1) delete proximo.eraId;
+      else proximo.eraId = erasNavegaveis[destino].id;
+      return proximo;
+    });
+  };
 
   const etapas = useMemo(() => montarFunil(alvo, facetas, escolhas), [alvo, facetas, escolhas]);
   const recortes = quantosRecortes(escolhas);
@@ -640,8 +771,29 @@ export const AcervoScreen: React.FC = () => {
                   <p className="mt-1 text-xs text-stone-500">{a.subtitulo}</p>
                   <p className="mt-2 flex-1 text-xs leading-relaxed text-stone-700">{a.resumo}</p>
                   <p className="mt-3 border-t border-stone-100 pt-2 font-mono text-[11px] text-stone-500">
-                    {a.autoria} · {new Date(a.publicadoEm).getFullYear()} · {a.obras.length}{' '}
-                    {a.obras.length === 1 ? 'obra citada' : 'obras citadas'}
+                    {/*
+                      🔴 A MÉTRICA CONTAVA UM TERÇO E CHAMAVA DE TOTAL.
+
+                      Dizia "22 obras citadas" sobre um artigo que percorre
+                      vinte coletâneas, vinte pessoas e vinte e duas obras. Não
+                      estava inflada: estava **cega**, contando um dos três
+                      tipos de referência.
+
+                      E os três precisam aparecer separados. "62 referências"
+                      esconderia se são sessenta e duas obras ou sessenta e dois
+                      nomes, e as duas coisas dizem coisas diferentes sobre o
+                      que o artigo é.
+                    */}
+                    {a.autoria} · {new Date(a.publicadoEm).getFullYear()} ·{' '}
+                    {[
+                      `${a.obras.length} ${a.obras.length === 1 ? 'obra' : 'obras'}`,
+                      a.pessoas.length > 0 &&
+                        `${a.pessoas.length} ${a.pessoas.length === 1 ? 'pessoa' : 'pessoas'}`,
+                      a.coletaneas.length > 0 &&
+                        `${a.coletaneas.length} ${a.coletaneas.length === 1 ? 'coletânea' : 'coletâneas'}`,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
                   </p>
                   <span className="mt-2 text-xs font-medium text-anil-800 underline underline-offset-2">
                     Ler o artigo
@@ -724,22 +876,115 @@ export const AcervoScreen: React.FC = () => {
               */}
               {resumo && (
                 <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {[
-                    { t: 'Obras catalogadas', v: resumo.obras },
-                    { t: 'Compositores', v: resumo.compositores },
-                    { t: 'Movimentos', v: resumo.movimentos },
-                    { t: 'Para estudo aqui', v: resumo.tocaveis },
-                  ].map((m) => (
-                    <div
-                      key={m.t}
-                      className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2"
-                    >
-                      <dt className="text-[11px] leading-tight text-stone-600">{m.t}</dt>
+                  {/*
+                    OS CARDS SÃO A NAVEGAÇÃO, e não só um placar.
+
+                    🔴 Antes havia duas fileiras de cápsulas embaixo — uma de
+                    recortes, outra de eras — repetindo em pastilha o que estes
+                    cards já diziam em número. Três linhas de controle antes da
+                    primeira obra, e a tela voltava a ser o amontoado que ela
+                    deixou de ser.
+
+                    O número que conta e o botão que recorta são a mesma coisa:
+                    "31.874 obras" é o que a pessoa quer ver, e clicar nele é o
+                    gesto óbvio. Um card que informa e não obedece é uma
+                    promessa não cumprida.
+                  */}
+                  {RECORTES_EM_CARD.map((c) => {
+                    /**
+                     * Dois comportamentos no mesmo lugar, e a seleção diz qual.
+                     *
+                     * Os dois primeiros trocam o RECORTE; o terceiro liga um
+                     * FILTRO sobre o recorte de obras. Um card ligado enquanto
+                     * o outro parece ligado confundiria — por isso "Obras
+                     * catalogadas" deixa de constar como escolhido quando o
+                     * filtro de partitura está ativo: não é ele que manda.
+                     */
+                    const selecionado = c.filtro
+                      ? !!escolhas[c.filtro]
+                      : alvo === c.alvo && !escolhas.comPartitura;
+
+                    return (
+                      <button
+                        key={c.rotulo}
+                        type="button"
+                        onClick={() =>
+                          c.filtro
+                            ? setEscolhas((r) => {
+                                const proximo = { ...r };
+                                if (proximo[c.filtro!]) delete proximo[c.filtro!];
+                                else proximo[c.filtro!] = 'sim';
+                                return proximo;
+                              })
+                            : setAlvo(c.alvo)
+                        }
+                        aria-current={selecionado ? 'true' : undefined}
+                        className={`rounded-lg border px-3 py-2 text-left transition-colors ${
+                          selecionado
+                            ? 'border-anil-800 bg-anil-50'
+                            : 'border-stone-200 bg-stone-50 hover:border-anil-700'
+                        }`}
+                      >
+                        <dt className="text-[11px] leading-tight text-stone-600">{c.rotulo}</dt>
+                        <dd className="font-mono text-lg font-bold leading-none text-stone-900">
+                          {c.quantos(resumo).toLocaleString('pt-BR')}
+                        </dd>
+                      </button>
+                    );
+                  })}
+
+                  {/*
+                    A ERA NO LUGAR DE MOVIMENTO, e com os dois chevrons.
+
+                    Movimento ocupava este card e alcança 9,7% do acervo — 6
+                    movimentos sobre 31.874 obras. A era alcança 96%, e é o
+                    eixo com que um catálogo musical se navega.
+                  */}
+                  <div
+                    className={`rounded-lg border px-3 py-2 ${
+                      eraEscolhida ? 'border-ouro-600 bg-ouro-50' : 'border-stone-200 bg-stone-50'
+                    }`}
+                  >
+                    <dt className="text-[11px] leading-tight text-stone-600">
+                      {eraEscolhida ? eraEscolhida.rotulo : 'Era'}
+                    </dt>
+                    <div className="mt-0.5 flex items-center justify-between gap-1">
+                      {/*
+                        ANDAR NO TEMPO, e não escolher numa lista.
+
+                        As eras têm ORDEM — medieval vem antes de barroco —, e
+                        uma lista de cápsulas descartava essa ordem tratando-as
+                        como sete rótulos soltos. Dois chevrons andam nela, que
+                        é o gesto que corresponde ao que o dado é.
+
+                        A ponta desliga o botão em vez de dar a volta: uma seta
+                        que volta ao começo faz quem navega perder onde está.
+                      */}
+                      <button
+                        type="button"
+                        onClick={() => andarNaEra(-1)}
+                        disabled={!podeAndarNaEra(-1)}
+                        aria-label="Era anterior"
+                        className="rounded p-0.5 text-stone-600 disabled:opacity-30 enabled:hover:text-anil-800"
+                      >
+                        <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                      </button>
+
                       <dd className="font-mono text-lg font-bold leading-none text-stone-900">
-                        {m.v.toLocaleString('pt-BR')}
+                        {(eraEscolhida?.quantos ?? itens.length).toLocaleString('pt-BR')}
                       </dd>
+
+                      <button
+                        type="button"
+                        onClick={() => andarNaEra(1)}
+                        disabled={!podeAndarNaEra(1)}
+                        aria-label="Era seguinte"
+                        className="rounded p-0.5 text-stone-600 disabled:opacity-30 enabled:hover:text-anil-800"
+                      >
+                        <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                      </button>
                     </div>
-                  ))}
+                  </div>
                 </dl>
               )}
 
@@ -821,27 +1066,19 @@ export const AcervoScreen: React.FC = () => {
               )}
             </div>
 
-            {/* ----------------------------------------------- o que se procura */}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <ul className="flex flex-wrap gap-1.5" aria-label="O que você procura">
-                {ALVOS.map((a) => (
-                  <li key={a}>
-                    <button
-                      type="button"
-                      onClick={() => setAlvo(a)}
-                      aria-current={alvo === a ? 'true' : undefined}
-                      className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-                        alvo === a
-                          ? 'border-anil-800 bg-anil-800 text-white'
-                          : 'border-stone-300 bg-white text-stone-600 hover:border-anil-700'
-                      }`}
-                    >
-                      {ROTULO_DO_ALVO[a]}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+            {/*
+              🔴 AS DUAS FILEIRAS DE CÁPSULAS SAÍRAM DAQUI.
 
+              Havia uma de recortes — Obras, Pessoas, Antiguidade — e uma de
+              eras, logo abaixo dos cards que já contavam as mesmas coisas.
+              Três linhas de controle antes da primeira obra, dizendo em
+              pastilha o que o número em cima já dizia.
+
+              Os cards absorveram as duas: eles contam e recortam. O que sobra
+              aqui é a única informação que nenhum deles dá — quantos
+              resultados o estado atual devolve, e em que página se está.
+            */}
+            <div className="flex flex-wrap items-center justify-end gap-3">
               <p className="font-mono text-xs text-stone-500">
                 {itens.length.toLocaleString('pt-BR')}{' '}
                 {itens.length === 1 ? 'resultado' : 'resultados'}

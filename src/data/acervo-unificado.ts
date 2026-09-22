@@ -4,6 +4,7 @@ import {
   PublicDomainAssessment,
   avaliarDominioPublico,
   proveniencia,
+  textoDe,
 } from '../domain/music-knowledge';
 import { compositoresDoRepertorio, obrasDoRepertorio } from './seed-acervo';
 import {
@@ -15,6 +16,7 @@ import { Partitura, carregarPartituras } from './seed-partituras';
 import { lerTitulo } from '../domain/title-reading';
 import { regioesDasCidadanias } from '../domain/wikidata-regions';
 import { RegistroPendente } from '../domain/catalog-resource';
+import { REGISTROS_DA_ANTIGUIDADE } from './seed-antiquity';
 
 /**
  * O ACERVO INTEIRO — o que extraímos, mais o que já era nosso.
@@ -111,7 +113,19 @@ function comoCanonico(e: CompositorExterno): CanonicalComposer {
     provenance: [
       proveniencia('canonicalName', fonte, refDaFonte),
       proveniencia('deathYear', fonte, refDaFonte),
-      ...(e.biografia ? [proveniencia('biography', 'WIKIDATA', e.ids.wikidata)] : []),
+      /**
+       * A biografia do recorte brasileiro vem da própria Música Brasilis, e
+       * não da Wikidata — que é onde a do recorte ocidental vive. Dizer
+       * Wikidata para as duas mandaria quem for conferir procurar no lugar
+       * errado.
+       */
+      ...(e.biografia
+        ? [
+            fonte === 'MUSICA_BRASILIS'
+              ? proveniencia('biography', 'MUSICA_BRASILIS', e.ids.musicaBrasilisUrl)
+              : proveniencia('biography', 'WIKIDATA', e.ids.wikidata),
+          ]
+        : []),
       ...(e.retrato ? [proveniencia('portraitUrl', 'COMMONS', e.ids.wikidata)] : []),
     ],
     publicDomain,
@@ -224,6 +238,24 @@ export function todosOsCompositores(hoje: Date = new Date()): CanonicalComposer[
        */
       regionIds: [...new Set([...atual.regionIds, ...c.regionIds])],
       periodIds: [...new Set([...atual.periodIds, ...c.periodIds])],
+      /**
+       * A BIOGRAFIA MAIS SUBSTANTIVA VENCE.
+       *
+       * 🔴 Villa-Lobos ficava com `"compositor brasileiro (1887–1959)"` — a
+       * linha de descritor da Wikidata — enquanto Música Brasilis traz uma
+       * biografia inteira dele. A fusão preservava o registro ocidental sem
+       * olhar o conteúdo, e o resultado era a ficha mais pobre dos dois.
+       *
+       * O critério é o tamanho do texto, e ele é grosseiro de propósito: um
+       * descritor de uma linha e uma biografia de parágrafos não se confundem
+       * por comprimento. A biografia autoral do Conservatório continua
+       * vencendo as duas, porque ela entra depois, na passada do repertório
+       * próprio.
+       */
+      biography:
+        (textoDe(c.biography) ?? '').length > (textoDe(atual.biography) ?? '').length
+          ? c.biography
+          : atual.biography,
       externalIds: { ...atual.externalIds, ...c.externalIds },
       /** As duas proveniências ficam: cada campo continua dizendo de onde veio. */
       provenance: [...atual.provenance, ...c.provenance],
@@ -432,6 +464,46 @@ export async function carregarObrasBrasileiras(): Promise<ObraBrasileira[]> {
   }
 }
 
+/**
+ * ONDE ESTÁ A PARTITURA DE CADA OBRA — o índice do IMSLP.
+ *
+ * Gerado por `scripts/casar-imslp.ts`, que percorre o índice público da fonte
+ * e casa por **compositor + número de catálogo**, com o título como segunda
+ * chave. O que entra aqui é o link da página da obra, e nunca o arquivo: o
+ * `robots.txt` da fonte proíbe `/images/` e `/imglnks/`, que é onde os PDF
+ * ficam, e o download acontece lá, com quem publica.
+ *
+ * Por que um arquivo separado, e não um campo dentro de `obras.json`: o
+ * casamento é reexecutável e o catálogo não. Regravar cinco megabytes de obras
+ * para acrescentar um link em cada uma faria toda rodada de enriquecimento
+ * reescrever o acervo inteiro, e a revisão de mudanças ficaria ilegível.
+ */
+interface PartituraLocalizada {
+  /** id da obra no nosso catálogo */ o: string;
+  /** link permanente da página na fonte */ u: string;
+}
+
+let indiceImslp: Map<string, string> | null = null;
+
+async function carregarIndiceImslp(): Promise<Map<string, string>> {
+  if (indiceImslp) return indiceImslp;
+
+  try {
+    const modulo = await import('./acervo/imslp.json');
+    const lido = (modulo.default ?? modulo) as PartituraLocalizada[];
+    indiceImslp = new Map(lido.map((r) => [r.o, r.u]));
+    return indiceImslp;
+  } catch {
+    /**
+     * Ausência aqui NÃO é falha do catálogo: é enriquecimento que ainda não
+     * rodou. As obras continuam listadas, e a ficha diz que a edição ainda não
+     * foi localizada — que é a verdade quando o índice não existe.
+     */
+    indiceImslp = new Map();
+    return indiceImslp;
+  }
+}
+
 /** Esquece o que foi carregado. Existe para o teste, e para reextração. */
 export function limparCacheDeObras(): void {
   obrasServidas = null;
@@ -590,6 +662,7 @@ export async function todasAsObras(hoje: Date = new Date()): Promise<CanonicalWo
           sourceRef: o.u,
           format: 'pdf' as const,
           render: 'FICHA' as const,
+          aponta: 'PAGINA' as const,
         },
       ],
       recordingRefs: [],
@@ -605,7 +678,95 @@ export async function todasAsObras(hoje: Date = new Date()): Promise<CanonicalWo
     });
   }
 
-  await ligarPartituras(porId, await carregarPartituras());
+  /**
+   * O ENDEREÇO DA PARTITURA ENTRA NA OBRA QUE JÁ EXISTE.
+   *
+   * 🔴 E **não cria obra nenhuma** — que é a regra que as mil trezentas e
+   * trinta e uma duplicatas ensinaram. O índice é casamento por identidade:
+   * uma linha dele que não ache obra é uma linha descartada, e não uma obra
+   * nova com nome de página da fonte.
+   *
+   * `FICHA`, e não `NATIVA`: sabemos onde a edição está e não sabemos
+   * renderizá-la aqui. Marcar nativa poria um botão de tocar que não toca.
+   */
+  const imslp = await carregarIndiceImslp();
+  for (const [obraId, url] of imslp) {
+    const obra = porId.get(obraId);
+    if (!obra) continue;
+
+    porId.set(obraId, {
+      ...obra,
+      scoreRefs: [
+        ...obra.scoreRefs,
+        {
+          source: 'IMSLP' as const,
+          sourceRef: url,
+          format: 'pdf' as const,
+          render: 'FICHA' as const,
+          aponta: 'PAGINA' as const,
+        },
+      ],
+      externalIds: { ...obra.externalIds, imslpUrl: url },
+    });
+  }
+
+  /**
+   * 🔴 A ANTIGUIDADE É UMA ERA, E NÃO UM TIPO DE ENTIDADE.
+   *
+   * Os oito registros viviam fora do catálogo de obras, como
+   * `RegistroDaAntiguidade`, e a tela precisava de um recorte próprio para
+   * eles — ao lado de "Obras" e "Compositores", como se fossem uma terceira
+   * categoria de coisa.
+   *
+   * Era erro de categoria, o mesmo do Movimento: obra e pessoa são **o que a
+   * coisa é**; antiguidade é **quando**. E o preço aparecia no filtro: a era
+   * `era_antiguidade` tinha **zero obras**, então ela sumia da faceta — que
+   * descarta opção que devolve zero — e os oito ficavam sem caminho nenhum
+   * depois que as cápsulas saíram da tela.
+   *
+   * Entrando como obra, o filtro de era os alcança sozinho, sem exceção em
+   * lugar nenhum. O que muda é a ficha: um epitáfio de Seikilos não tem
+   * tonalidade nem número de catálogo — tem suporte, estado de conservação e
+   * datação. `CanonicalWork` já prevê campo vazio, e é para isso.
+   */
+  for (const r of REGISTROS_DA_ANTIGUIDADE) {
+    porId.set(r.id, {
+      id: r.id,
+      canonicalTitle: r.titulo,
+      /**
+       * SEM AUTORIA, e declarado.
+       *
+       * Não é descuido de catalogação: a música da Antiguidade que sobreviveu
+       * é quase toda anônima, e inventar um autor para preencher o campo seria
+       * o pior tipo de dado fabricado. A regra "obra não nasce sem compositor"
+       * vale para obra que **tem** autor e não foi resolvido — aqui não há.
+       *
+       * E é por isso que o regime de prazo destes registros é
+       * `ANTERIOR_A_QUALQUER_PRAZO`, e não "indeterminado": um fragmento do
+       * século II não precisa de conta, e submetê-lo à regra de morte do autor
+       * produziria "não dá para afirmar" sobre o que nenhum jurista discutiria.
+       */
+      composerIds: [],
+      date: r.datacao,
+      /** O suporte no lugar do meio: é o que esta ficha tem para dizer. */
+      instrumentation: [r.suporte],
+      periodId: r.eraId,
+      regionId: r.regionId,
+      movements: [],
+      scoreRefs: [],
+      recordingRefs: [],
+      externalIds: {},
+      provenance: [proveniencia('canonicalTitle', 'MANUAL_CURATION', r.procedencia)],
+      publicDomain: r.publicDomain,
+      resolution: {
+        method: 'MANUAL_CURATION',
+        resolvedAt: new Date().toISOString(),
+        confidence: 1,
+      },
+    });
+  }
+
+  await ligarPartituras(porId, await carregarPartituras(), [...compositores.values()]);
 
   /**
    * As próprias entram por último: elas trazem a partitura tocável.
@@ -669,7 +830,8 @@ function normalizar(t: string): string {
  */
 async function ligarPartituras(
   porId: Map<string, CanonicalWork>,
-  partituras: Partitura[]
+  partituras: Partitura[],
+  compositoresConhecidos: CanonicalComposer[]
 ): Promise<void> {
   pendentes = [];
 
@@ -681,6 +843,57 @@ async function ligarPartituras(
       porTitulo.set(c + '|' + normalizar(o.canonicalTitle.pt ?? ''), o.id);
     }
   }
+
+  /**
+   * OS NÚMEROS DE CATÁLOGO QUE CADA COMPOSITOR JÁ TEM.
+   *
+   * Serve a uma pergunta só, e é a que decide se uma partitura vira obra: o
+   * catálogo já conhece esta peça? `BWV 1087` não está em obra nenhuma de
+   * Bach, e por isso a partitura das *14 Canons* não é duplicata — é uma obra
+   * que falta.
+   */
+  const catalogosDoCompositor = new Map<string, Set<string>>();
+  for (const o of porId.values()) {
+    if (!o.catalogNumber) continue;
+    for (const c of o.composerIds) {
+      const atual = catalogosDoCompositor.get(c) ?? new Set<string>();
+      atual.add(normalizar(o.catalogNumber));
+      catalogosDoCompositor.set(c, atual);
+    }
+  }
+
+  /**
+   * 🔴 A FONTE ESCREVE O NOME ABREVIADO, e a resolução falhava por isso.
+   *
+   * `M. Giuliani`, `A. Diabelli`, `F. Horetzky`. A chave de palavras ordenadas
+   * — a mesma que juntou os nove compositores duplicados — não casa `M` com
+   * `Mauro`, e setecentas e onze partituras ficaram sem dono.
+   *
+   * Sobrenome mais inicial resolve, **quando é inequívoco**. Dois compositores
+   * com o mesmo sobrenome e a mesma inicial tornam a chave um sorteio, e ela
+   * some da tabela: ligar a partitura à pessoa errada é pior que deixá-la na
+   * fila, porque a ficha passa a afirmar autoria falsa com ar de apurada.
+   */
+  const porSobrenomeEInicial = new Map<string, string | null>();
+  for (const c of compositoresConhecidos) {
+    const palavras = normalizar(c.canonicalName).split(' ').filter(Boolean);
+    if (palavras.length < 2) continue;
+    const k = palavras[palavras.length - 1] + '|' + palavras[0][0];
+    porSobrenomeEInicial.set(k, porSobrenomeEInicial.has(k) ? null : c.id);
+  }
+
+  /** `Traditional` e `Anonymous` não são pessoas: não resolvem, e não criam. */
+  const SEM_AUTORIA = /^(traditional|anonymous|unknown|various|anon)/i;
+
+  const resolverPessoa = (p: Partitura): string | undefined => {
+    if (p.c) return p.c;
+    if (SEM_AUTORIA.test(p.cn)) return undefined;
+
+    const palavras = normalizar(p.cn).split(' ').filter(Boolean);
+    if (palavras.length < 2) return undefined;
+
+    return porSobrenomeEInicial.get(palavras[palavras.length - 1] + '|' + palavras[0][0]) ?? undefined;
+  };
 
   for (const p of partituras) {
     /**
@@ -699,10 +912,81 @@ async function ligarPartituras(
       editors: p.ed ? [p.ed] : undefined,
     };
 
+    const pessoa = resolverPessoa(p);
+
     /** Catálogo primeiro: é prova de identidade. Título é indício. */
-    const porNumero = p.c && p.cat ? porCatalogo.get(p.c + '|' + normalizar(p.cat)) : undefined;
-    const porNome = p.c ? porTitulo.get(p.c + '|' + normalizar(p.t)) : undefined;
-    const alvo = porNumero ?? porNome;
+    const porNumero = pessoa && p.cat ? porCatalogo.get(pessoa + '|' + normalizar(p.cat)) : undefined;
+    const porNome = pessoa ? porTitulo.get(pessoa + '|' + normalizar(p.t)) : undefined;
+    let alvo = porNumero ?? porNome;
+
+    /**
+     * 🔴 QUANDO A PARTITURA **VIRA** OBRA — e é uma exceção estreita.
+     *
+     * A regra continua: fonte de recurso não cria entidade. Foi assim que mil
+     * trezentas e trinta e uma obras falsas entraram no catálogo, e o que as
+     * fazia falsas era não haver **prova** de que aquela peça era outra.
+     *
+     * O número de catálogo é essa prova. `BWV 1087` não está em obra nenhuma
+     * de Bach neste acervo — e não porque a peça não exista, mas porque a
+     * catalogação de origem não a lista. Criar a obra aqui não duplica nada:
+     * duplicar exigiria que ela já estivesse lá com outro nome, e o número diz
+     * que não está.
+     *
+     * As três condições são cumulativas, e cada uma remove um jeito de errar:
+     *
+     *   autoria resolvida       — obra não nasce sem autor;
+     *   número de catálogo      — sem ele não há prova, e volta a ser palpite;
+     *   número inédito naquele
+     *   compositor              — com ele, seria a mesma obra por outro nome.
+     *
+     * Sem as três, continua valendo a fila: o recurso existe, aparece, e não
+     * mente sobre o que é.
+     */
+    const catalogoInedito =
+      pessoa &&
+      p.cat &&
+      !alvo &&
+      !(catalogosDoCompositor.get(pessoa) ?? new Set()).has(normalizar(p.cat));
+
+    if (catalogoInedito) {
+      const lido = lerTitulo(p.t);
+      const autor = compositoresConhecidos.find((c) => c.id === pessoa);
+
+      alvo = 'mut-obra-' + p.id;
+      porId.set(alvo, {
+        id: alvo,
+        canonicalTitle: { pt: p.t },
+        composerIds: [pessoa],
+        date: p.dc,
+        instrumentation: [p.i],
+        generoId: lido.forma,
+        catalogNumber: p.cat,
+        key: lido.tonalidade,
+        periodId: p.e ?? autor?.periodIds[0],
+        regionId: autor?.regionIds[0],
+        movements: [],
+        scoreRefs: [],
+        recordingRefs: [],
+        externalIds: {},
+        provenance: [proveniencia('canonicalTitle', 'MUTOPIA', p.id)],
+        /** A obra herda do compositor: é dele que o prazo corre. */
+        publicDomain: autor?.publicDomain ?? avaliarDominioPublico({}),
+        resolution: { method: 'MANUAL_CURATION', resolvedAt: new Date().toISOString(), confidence: 1 },
+      });
+
+      /**
+       * E o número passa a constar como conhecido daquele compositor.
+       *
+       * Sem isto, duas partituras do MESMO número de catálogo — movimentos de
+       * uma suíte, por exemplo — criariam duas obras iguais, e a criação que
+       * existe para não duplicar passaria a duplicar.
+       */
+      catalogosDoCompositor.set(
+        pessoa,
+        (catalogosDoCompositor.get(pessoa) ?? new Set<string>()).add(normalizar(p.cat!))
+      );
+      porCatalogo.set(pessoa + '|' + normalizar(p.cat!), alvo);
+    }
 
     if (!alvo) {
       /**
@@ -713,7 +997,7 @@ async function ligarPartituras(
         id: 'pend-' + p.id,
         recurso: 'PARTITURA',
         recursoId: p.id,
-        motivo: p.c ? 'OBRA_NAO_ENCONTRADA' : 'PESSOA_NAO_ENCONTRADA',
+        motivo: pessoa ? 'OBRA_NAO_ENCONTRADA' : 'PESSOA_NAO_ENCONTRADA',
         descricaoNaFonte: `${p.cn} — ${p.t}${p.cat ? ' (' + p.cat + ')' : ''}`,
         candidatos: [],
         registradoEm: new Date().toISOString(),
@@ -730,6 +1014,18 @@ async function ligarPartituras(
       catalogNumber: obra.catalogNumber ?? p.cat,
       date: obra.date ?? p.dc,
       scoreRefs: [...obra.scoreRefs, ref],
+      /**
+       * 🔴 A EDIÇÃO ENTRAVA E O IDENTIFICADOR NÃO.
+       *
+       * A obra ganhava a referência da partitura e continuava sem nada em
+       * `externalIds` — e é de lá que `linkOficial` monta o link que a ficha
+       * oferece. Resultado: obra com edição casada, e um botão "consultar na
+       * fonte" que não aparecia.
+       *
+       * O identificador do Mutopia é o da própria peça, e é o que resolve a
+       * página dela na fonte.
+       */
+      externalIds: { ...obra.externalIds, mutopia: obra.externalIds.mutopia ?? p.id },
       provenance: [...obra.provenance, proveniencia('scoreRefs', 'MUTOPIA', p.id)],
     });
   }

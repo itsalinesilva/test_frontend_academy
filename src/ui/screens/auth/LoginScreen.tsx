@@ -125,6 +125,24 @@ export const LoginScreen: React.FC = () => {
             Precisa de ajuda?
           </button>
         </p>
+
+        {/*
+          🔴 A RECUPERAÇÃO NÃO TINHA PORTA.
+
+          `RecoveryScreen` existia com rota e nenhum link em lugar nenhum. Quem
+          não conseguia entrar não tinha como chegar à única tela que explica
+          por quê — e a explicação importa: aqui não há senha para redefinir, o
+          acesso é do Google e é lá que se recupera.
+        */}
+        <p className="text-center text-xs text-stone-500">
+          <button
+            type="button"
+            onClick={() => navigate('/auth/recovery')}
+            className="underline underline-offset-2 hover:text-stone-800"
+          >
+            Não consegue entrar na sua conta?
+          </button>
+        </p>
       </main>
     </div>
   );

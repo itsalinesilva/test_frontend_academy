@@ -5,7 +5,8 @@ import {
   niveisForaDeOrdem,
   obrasInexistentes,
 } from '../src/domain/article';
-import { obrasDoRepertorio } from '../src/data/seed-acervo';
+import { todasAsObras } from '../src/data/acervo-unificado';
+import { FONTES_PROIBIDAS } from '../scripts/verify-no-citations.mjs';
 
 /**
  * OS ARTIGOS — curadoria autoral, separada do catálogo.
@@ -24,10 +25,27 @@ import { obrasDoRepertorio } from '../src/data/seed-acervo';
  */
 
 const EM_2026 = new Date('2026-06-15T12:00:00.000Z');
-const IDS = new Set(obrasDoRepertorio(EM_2026).map((o) => o.id));
 
 describe('todo artigo aponta para obra que existe', () => {
-  it('NENHUMA CITAÇÃO APONTA PARA FORA DO ACERVO', () => {
+  it('NENHUMA CITAÇÃO APONTA PARA FORA DO ACERVO', async () => {
+    /**
+     * 🔴 O UNIVERSO DA CONFERÊNCIA ERA MENOR QUE O ACERVO.
+     *
+     * Aqui se conferia contra `obrasDoRepertorio` — as **17** obras próprias,
+     * as que a plataforma reproduz. Enquanto os artigos só citavam essas, o
+     * caso passava; passou a acusar no primeiro artigo que cita o catálogo,
+     * que tem 31.952.
+     *
+     * O que "fora do acervo" quer dizer é fora do CATÁLOGO, e não fora do
+     * repertório tocável. Um artigo que percorre obra catalogada e não
+     * reproduzível continua sendo um percurso válido: a ficha dela diz onde a
+     * partitura está.
+     */
+    const IDS = new Set((await todasAsObras(EM_2026)).map((o) => o.id));
+
+    /** Não-vacuidade: conferir contra um conjunto vazio aprovaria qualquer coisa. */
+    expect(IDS.size, 'o acervo veio vazio — o caso passaria à toa').toBeGreaterThan(1000);
+
     for (const a of SEED_ARTICLES) {
       expect(obrasInexistentes(a, IDS), `"${a.titulo}" cita obra inexistente`).toEqual([]);
     }
@@ -63,26 +81,64 @@ describe('o percurso nivelado está em ordem', () => {
     }
   });
 
-  it('o percurso de violino tem os três níveis', () => {
+  it('o percurso de violino tem os cinco níveis, sem buraco', () => {
+    /**
+     * Eram três, e os três tocavam aqui dentro. Os níveis 4 e 5 entraram como
+     * **destino declarado**: peças cuja partitura o acervo localizou e que a
+     * plataforma não reproduz.
+     *
+     * A mudança é do percurso, e não do teste — o que se cobra continua sendo
+     * que os níveis formem uma sequência **sem buraco**. Um percurso que pula
+     * do 3 para o 5 manda quem estuda atravessar um degrau que ninguém
+     * escreveu.
+     */
     const p = SEED_ARTICLES.find((a) => a.id === 'art_percurso_violino_nivelado')!;
-    expect([...new Set(p.obras.map((o) => o.nivel))].sort()).toEqual([1, 2, 3]);
+    const niveis = [...new Set(p.obras.map((o) => o.nivel))].sort((a, b) => (a ?? 0) - (b ?? 0));
+
+    expect(niveis).toEqual([1, 2, 3, 4, 5]);
+
+    /** Todo nível com pelo menos duas peças: um nível de peça única é um exemplo, não um degrau. */
+    for (const n of niveis) {
+      expect(
+        p.obras.filter((o) => o.nivel === n).length,
+        `o nível ${n} tem uma peça só`
+      ).toBeGreaterThan(1);
+    }
   });
 });
 
-describe('o artigo é autoral, e não cita fonte', () => {
-  it('NENHUM TEXTO NOMEIA UMA FONTE EXTERNA', () => {
+describe('o artigo é autoral, e a fonte da curadoria é nomeada', () => {
+  it('🔴 NENHUM TEXTO CITA A BIBLIOGRAFIA DE ESTUDO', () => {
     /**
-     * A origem dos dados é registro de engenharia e fica em
-     * `85_SOURCES_AND_COVERAGE.md`. O texto que o aluno lê é do Conservatório.
+     * ESTE CASO MANTINHA UMA SEGUNDA LISTA, E ELA DIVERGIU.
+     *
+     * Havia aqui um vetor escrito à mão — Open Opus, Wikidata, IMSLP,
+     * MusicBrainz, Mutopia, Suzuki — proibindo **nomear fonte nenhuma**. Duas
+     * coisas estavam misturadas nele, e só uma é regra:
+     *
+     * O que não pode entrar é a **bibliografia de estudo**: os livros de
+     * terceiros que a gente lê para escrever conteúdo. Citá-los pendura a
+     * plataforma num texto que ela não pode reproduzir. Essa lista vive em
+     * `verify-no-citations.mjs`, roda no build, e é a que vale.
+     *
+     * O que **deve** entrar é o nome de quem fez a curadoria que o artigo usa.
+     * Um artigo que diz "os oito mais buscados" sem dizer **onde** assina um
+     * juízo que ninguém aqui apurou — e foi exatamente esse o erro que esta
+     * suíte passou uma sessão inteira corrigindo. Atribuir é o conserto, e
+     * proibir o nome tornava o conserto impossível.
+     *
+     * Agora há uma lista só, e ela é a do verificador.
      */
-    const proibidos = ['Open Opus', 'Wikidata', 'IMSLP', 'MusicBrainz', 'Mutopia', 'Suzuki'];
-
     for (const a of SEED_ARTICLES) {
       const texto = [a.titulo, a.subtitulo, a.resumo, ...a.secoes.map((s) => s.markdown)].join(' ');
-      for (const p of proibidos) {
-        expect(texto.includes(p), `"${a.titulo}" cita "${p}"`).toBe(false);
+      for (const p of FONTES_PROIBIDAS) {
+        expect(texto.includes(p), `"${a.titulo}" cita a bibliografia de estudo: "${p}"`).toBe(false);
       }
     }
+  });
+
+  it('a lista de proibidos não está vazia — o caso passaria à toa', () => {
+    expect(FONTES_PROIBIDAS.length).toBeGreaterThan(10);
   });
 
   it('a autoria e a instituição vêm preenchidas', () => {

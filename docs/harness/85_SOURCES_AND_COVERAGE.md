@@ -12,31 +12,156 @@ documento existe para manter fora do produto.
 
 ## 1 · O que foi adquirido, e de onde
 
-Extraído em **2026-09-19** por `scripts/extrair-acervo.mjs`.
+Medido em **2026-09-20**, contra o catálogo que a tela lê — e não contra os
+arquivos crus, que divergem dele.
 
 | fonte | o que deu | quantos |
 | :--- | :--- | ---: |
-| **Open Opus** | nome canônico, datas, época, lista de obras | 220 compositores · 25.195 obras |
+| **Open Opus** | nome canônico, datas, época, lista de obras | 225 compositores · 24.940 obras |
 | **Wikidata** | biografia curta em pt, retrato, identificadores cruzados | 220 biografias · 220 retratos |
+| **Música Brasilis** | o corpus brasileiro: compositor, datas, biografia, e a página da edição | 783 compositores · 6.917 obras |
+| **IMSLP / Petrucci** | onde está a partitura de obra que já temos | 11.221 endereços |
+| **Mutopia** | o **arquivo** da partitura (`.ly`, e MIDI em 37) | 181 obras · 1.051 na fila |
+| **Antiguidade** | registro próprio: fragmento, tratado, sistema modal | 8 obras |
 | **acervo próprio** | transcrições para o sintetizador da plataforma | 14 compositores · 17 obras |
 
-Cruzamento obtido: **MusicBrainz 219 · VIAF 219 · ISNI** e **IMSLP 188** dos
-220.
+**Total: 31.952 obras · 1.004 compositores.**
+
+### 🔴 A distinção que a plataforma inteira depende
+
+Três números diferentes, e confundi-los foi o defeito mais persistente desta
+sessão:
+
+| | quantas | o que significa |
+| :--- | ---: | :--- |
+| **catalogadas** | 31.952 | a ficha existe: título, autoria, era, região |
+| **com partitura** | 16.820 | sabemos **onde a edição está**, e abrimos o caminho |
+| **que tocam aqui** | 17 | a plataforma **reproduz**: edição nossa, montada nota a nota |
+
+O que temos das 16.820 é o **endereço**, e não o arquivo — IMSLP proíbe
+`/images/` e `/imglnks/`, Música Brasilis proíbe `/media/`, e nada foi baixado
+de nenhuma das duas. A exceção é o Mutopia, cujo material é redistribuível: ali
+o que se guarda é o link do próprio `.ly`.
+
+Uma ficha que dissesse "obra disponível" sobre as 16.820 estaria afirmando
+posse de dezesseis mil partituras que não estão conosco.
 
 ### Como cada uma responde
 
 **Open Opus** — API JSON sem chave, CORS aberto. Listagem por inicial
-(`/composer/list/name/<letra>.json`) devolve os 220; `pop` e `rec` devolvem
-recortes menores. Obras por compositor em `/work/list/composer/<id>/genre/all`.
+(`/composer/list/name/<letra>.json`); obras por compositor em
+`/work/list/composer/<id>/genre/all`.
 
 **Wikidata** — a **API de ação** (`w/api.php`), e não o endpoint SPARQL. O
 SPARQL exige User-Agent de política e devolve `403` sem ele; a API de ação não
 tem essa exigência e responde com CORS aberto. Duas chamadas por compositor:
 `wbsearchentities` resolve o Q-id, `wbgetentities` traz as propriedades.
 
-> **Erro registrado.** Durante esta sessão eu afirmei que o ambiente não tinha
+> **Erro registrado.** Durante uma sessão eu afirmei que o ambiente não tinha
 > rede, generalizando aquele `403` do SPARQL. Tinha. O erro custou tempo e
 > atrasou o acervo inteiro.
+
+**Música Brasilis** — HTML paginado (`?page=N`, 20 por página). O fim da lista
+é sinalizado com **erro 500**, e não com página vazia: tratar isso como falha
+abortou a primeira extração na página 85. A biografia não está na listagem, só
+na página de cada compositor. `robots.txt` proíbe `/media/` — retrato e arquivo
+ficam de fora.
+
+**IMSLP** — a interface pública `/imslpscripts/API.ISCR.php`, 1.000 entradas
+por chamada, 259 mil no total. `robots.txt` pede **`Crawl-delay: 2`**, e
+proíbe `/index.php`, `/images/`, `/imglnks/`, `/wiki/File:`, `/works` e
+`/work/`. O índice fica **em cache** (`scripts/.imslp-indice.json`, 33 MB, não
+versionado): sem ele, cada ajuste de chave custava vinte minutos de banda de
+quem mantém isso de graça.
+
+**Mutopia** — `?startat` para paginar, `piece-info.cgi` por peça. A segunda
+passada por peça foi obrigatória: a listagem dá licença e não dá **transcritor**,
+e 621 arquivos sob licença com cláusula de atribuição são impublicáveis sem o
+nome de quem os produziu.
+
+---
+
+## 1a · 🔴 O MAPA DO ENDEREÇO — onde está a partitura de cada obra
+
+```
+31.952  obras catalogadas
+├── 16.820  COM PARTITURA  (52,6%)
+│   ├── 11.221  IMSLP / Petrucci      link da página da obra
+│   ├──  6.917  Música Brasilis       link da página da edição
+│   └──    181  Mutopia               link do ARQUIVO (.ly)
+│       └──  17  que a plataforma reproduz  (edição nossa)
+└── 15.132  SEM ENDEREÇO  (47,4%)
+    ├──  4.274  protegidas            não estão no IMSLP, por lei
+    └── 10.858  em domínio público    o casamento ainda não achou
+```
+
+As somas por fonte passam de 16.820 porque uma obra pode ter mais de um
+endereço — Mutopia e IMSLP para a mesma peça, por exemplo.
+
+### Por que as 11.046 ainda não casaram
+
+Medido, e não suposto. Quatro causas, em ordem de tamanho:
+
+**Sistema de catálogo diferente dos dois lados.** É a maior, e nenhuma chave a
+resolve: nosso Monteverdi é `SV`, o do IMSLP é `CND`; nosso C.P.E. Bach é `Wq`,
+o deles é `Helm`; nosso Byrd é `MB`, o deles é `T`. Exige **tabela de
+equivalência** entre catálogos, que é trabalho de musicologia e não de
+normalização.
+
+**Compositor ausente do índice deles** — 4.639 obras.
+
+**Título escrito diferente** sem número de catálogo em nenhum dos lados. O
+casamento por prefixo de 20 caracteres pega parte, e para onde o prefixo é
+ambíguo ele **não casa nada**, por regra.
+
+**Obra que a fonte simplesmente não tem.**
+
+### O que já foi corrigido, e quanto rendeu
+
+| correção | de → para |
+| :--- | ---: |
+| `` virava BACKSPACE na expressão de catálogo — compilava e nunca casava | — |
+| siglas de catálogo: 9 → 36 (fonte) e 16 → 40 (nosso lado) | 9.625 → 10.560 |
+| cache do índice, e casamento por prefixo | → 10.808 |
+| número com romano e dois-pontos: `Hob.XVI:52`, `TWV 43:h3` | → **11.075** |
+| títulos alternativos do MusicBrainz, como chave adicional | → **11.269** |
+
+A terceira sozinha valeu **501 obras de Telemann**: `TWV 43:h3` saía truncado
+como `TWV 43`, que é comum a dezenas de quartetos — e chave ambígua não casa
+nada, por regra.
+
+---
+
+## 1b · A matriz de completude, medida
+
+Sobre as 31.952 obras:
+
+| campo | cobertura | eixo |
+| :--- | ---: | :--- |
+| meio | 99,8% | universal |
+| região | 98,7% | universal |
+| era | 96,0% | universal |
+| número de catálogo | 42,8% | seletivo — lido do título |
+| gênero (forma) | 36,5% | seletivo — lido do título |
+| tonalidade | 19,8% | seletivo — lida do título |
+
+Sobre os 1.004 compositores:
+
+| campo | cobertura |
+| :--- | ---: |
+| região | 99,6% |
+| biografia | 89,6% |
+| data de morte | 65,9% |
+| retrato | 21,9% |
+
+**Retrato e data de morte caíram** quando o corpus brasileiro entrou, e a causa
+é a fonte: Música Brasilis publica datas para 452 dos 756, e o retrato dela
+está sob `/media/`, que o `robots.txt` proíbe. A queda é honesta — o que não se
+pode é oferecer como filtro um campo que alcança 22%.
+
+Direito autoral, sobre as obras: **24.336 em domínio público · 5.688 protegidas
+· 1.928 indeterminadas**. Obra protegida **aparece no catálogo**, diz de quem é
+e aponta para onde está publicada; o que o prazo impede é tocá-la aqui dentro.
 
 ---
 
@@ -71,65 +196,73 @@ Atlas (missa, fuga, minueto), que são formas. Os dois eixos coexistem.
 
 ---
 
-## 3 · 🔴 O QUE A FONTE NÃO COBRE
+## 3 · 🔴 O QUE AS FONTES NÃO COBREM
 
 **Esta é a seção mais importante do documento.** Um acervo que não declara o
 próprio recorte deixa quem consulta supor que a ausência é do mundo, e não da
 fonte.
 
 O Open Opus é um catálogo de **música de concerto ocidental**. Fora disso, ele
-é mudo:
+é mudo — e foi por isso que outras fontes entraram.
 
-| lacuna | tamanho | natureza |
+| lacuna | estado hoje | natureza |
 | :--- | :--- | :--- |
-| **Antiguidade** | 0 compositores | não é falha da fonte — sobreviveu pouquíssima música notada |
-| **Repertório brasileiro** | 3 nomes (Villa-Lobos, Camargo Guarnieri, Mignone, Carlos Gomes) | falha de cobertura: o repertório existe e é vasto |
-| **Tradições não-europeias** | ausentes | fora do escopo declarado da fonte |
-| **Música popular** | marginal | idem |
-| **Compositoras** | pouquíssimas | viés do cânone que a fonte reproduz |
+| **Repertório brasileiro** | ✅ **783 compositores, 6.917 obras** | era falha de cobertura, e foi resolvida: Música Brasilis cataloga o corpus como corpus |
+| **Antiguidade** | ✅ 8 registros, como obras da era | não é falha de fonte: sobreviveu pouquíssima música notada |
+| **Repertório de violão** | ⬜ 700 partituras sem compositor | Giuliani (88), Horetzky (60), Carcassi (36), Aguado (26). O Mutopia os tem; o Open Opus, não |
+| **Tradições não-europeias** | ⬜ ausentes | fora do escopo declarado de toda fonte usada |
+| **Música popular** | ⬜ marginal | idem |
+| **Compositoras** | ⬜ pouquíssimas | viés do cânone que a fonte reproduz. Música Brasilis melhorou: Chiquinha Gonzaga entra com 156 obras |
 
-### O que isso significa para o curso
+### O que mudou desde a primeira versão desta tabela
 
-A espinha europeia dos vinte capítulos de História da Música Ocidental está
-bem coberta — do Medieval ao século XX. Dois pontos ficam a descoberto:
+**O Brasil deixou de ser lacuna.** Ele aparecia com quatro nomes — os que
+atravessaram para o catálogo do concerto europeu —, e hoje tem 783. A regra de
+ontologia "fonte externa enriquece, e não cria" ganhou aqui a sua **exceção
+declarada**: para o recorte brasileiro, Música Brasilis ocupa o lugar que o
+Open Opus ocupa no ocidental, e por isso cria entidade.
 
-**O capítulo de abertura**, sobre a Antiguidade. E a lacuna aqui **não é de
-fonte**: sobreviveram cerca de quarenta fragmentos gregos notados, muitos
-ilegíveis. O que chegou inteiro foi a *teoria*, e é disso que o capítulo trata.
+**A Antiguidade deixou de precisar de tratamento especial.** Ela era um tipo de
+registro à parte, com recorte próprio na tela, e isso era erro de categoria:
+obra e pessoa são *o que a coisa é*, antiguidade é *quando*. Os oito registros
+entraram como obras de `era_antiguidade`, com suporte e datação no lugar de
+tonalidade e número de catálogo — campos que `CanonicalWork` já previa vazios.
 
-Forçar o formato de ficha de obra nessa era seria o erro — não há obras a
-catalogar. A era precisa de **outro tipo de registro**: fragmento, tratado,
-sistema modal. Está registrado como `AC-5` no TO DO.
-
-**A unidade brasileira**, que é curso separado. Aqui o repertório existe e é
-vasto; o que falta é **edição digital redistribuível**. O formato atual serve —
-o que muda é a via: catalogação pela Música Brasilis, e editoração própria para
-as obras sem edição livre. Está como `AC-6`.
+**Obra sem autoria é permitida ali, e só ali.** A música antiga que sobreviveu
+é quase toda anônima, e inventar um autor para preencher campo seria o pior
+tipo de dado fabricado. Fora da Antiguidade, obra sem autor é defeito.
 
 ---
 
 ## 4 · Os recortes editoriais da fonte
 
-O Open Opus marca obras e compositores como *popular* e *recommended*. São
-**opinião editorial de terceiro** — curadoria de quem eles consideram entrada
-natural no repertório.
+O Open Opus marca obras como *popular* e *recommended* — **1.245 recomendadas e
+401 populares**. São **opinião editorial de terceiro**: a curadoria de quem eles
+consideram entrada natural no repertório.
 
-**Esses recortes não entram no modelo de catalogação.** Nenhum filtro da
-plataforma usa `popular` ou `recommended`, e nenhuma ficha os exibe.
+### 🔴 Correção: eles ENTRAM na plataforma, com o rótulo dizendo de quem são
 
-Se virassem filtro, a plataforma estaria assinando embaixo de um juízo que não
-é dela. Pior no caso de `recommended`: a lista não é linhagem, nem escola, nem
-influência — chamá-la de "descendência" ou "os principais" afirmaria uma
-relação que o dado não carrega.
+Este documento afirmava que "nenhum filtro da plataforma usa `popular` ou
+`recommended`". **Deixou de ser verdade**, e a mudança foi deliberada: eles são
+uma faceta chamada `selecao`, com duas opções:
 
-### Onde eles entram
+- **"Recomendadas pela fonte"**
+- **"Em destaque no catálogo de origem"**
 
-Como **insumo de artigo autoral**. O artigo usa o recorte como ponto de
-partida, o Conservatório conclui o que conclui, e o texto é nosso. Ver
+O que estava certo no raciocínio antigo era o *risco*, e não a proibição.
+Rotulá-las "os principais" ou "os mais tocados" afirmaria uma apuração que
+ninguém fez, e "descendência" afirmaria uma linhagem que o dado não carrega —
+`rec` não é escola, nem influência. O rótulo que nomeia a fonte resolve isso
+sem jogar fora um recorte útil.
+
+O catálogo continua neutro: a plataforma não assina o juízo, ela **diz de quem
+ele é**.
+
+### Onde eles entram também
+
+Como **insumo de artigo autoral**. O artigo usa o recorte como ponto de partida,
+o Conservatório conclui o que conclui, e o texto é nosso. Ver
 `src/domain/article.ts`.
-
-O catálogo continua neutro; a curadoria continua existindo, separada e
-assinada.
 
 ---
 
@@ -302,9 +435,30 @@ procurou. Perseguir paridade de volume produziria preenchimento.
 
 O que deve ficar parelho é a **qualidade do registro**:
 
-- todo compositor com biografia
-- todo registro com proveniência por campo
-- toda ficha dizendo o que se pode fazer com a obra, e por quê
-- toda era com o tipo de registro adequado ao que ela tem
+| medida | onde está | |
+| :--- | ---: | :--- |
+| todo compositor com biografia | 89,6% | 104 sem, quase todos da fonte que não publica |
+| todo registro com proveniência por campo | 100% | e ela diz **qual** das fontes, desde que passaram a ser quatro |
+| toda ficha dizendo o que se pode fazer, e por quê | 100% | três estados: toca aqui · partitura achada · ainda procurando |
+| toda era com o tipo de registro adequado | ✅ | a Antiguidade foi a última, e entrou como obra |
+
+### 🔴 A distribuição por era não é meta, e é medida
+
+```
+Romantismo    10.389        Renascimento   2.255
+Moderna        8.054        Classicismo    2.175
+Barroco        5.086        Medieval         161
+Contemporânea  2.537        Antiguidade        8
+sem era        1.287
+```
+
+O Medieval tem 161 e o Romantismo 10.389 porque **sobreviveu menos**, e não
+porque ninguém procurou. Perseguir paridade aqui produziria preenchimento — que
+é a forma mais discreta de dado fabricado, porque cada linha inventada parece
+uma linha a mais de trabalho feito.
+
+As **1.287 sem era** são o único número desta lista que é dívida: são obras cuja
+fonte não declarou época e cujo compositor não tem data que permita derivá-la.
+
 
 Essa é a medida de completude do acervo — e não a contagem por era.

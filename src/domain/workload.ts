@@ -52,6 +52,26 @@ export const MINUTES_PER_BLOCK: Record<LessonBlock['kind'], number> = {
   CHECKPOINT: 2,
   SLIDES: 2,
   VIDEO_PLACEHOLDER: 0,
+
+  /**
+   * Os blocos da biblioteca funcional.
+   *
+   * 🔴 Estes números não são impressão: saem do que a interação **exige**.
+   * O player custa mais que o exemplo sonoro porque tem repetição e meia
+   * velocidade, e quem estuda usa as duas. O laboratório de afinação custa
+   * mais que qualquer outro porque envolve preparar o microfone, cantar,
+   * olhar o desvio e corrigir — quatro passos, e o último se repete.
+   *
+   * A sessão de exercícios é a exceção: ela **não** tem custo fixo, porque o
+   * custo é o das questões dentro dela. Um número aqui somaria duas vezes.
+   */
+  PLAYER: 2,
+  PIANO_ROLL: 1,
+  TUNER_LAB: 5,
+  TABELA: 1,
+  CITACAO: 0, // é texto; o tempo já está nas palavras
+  LINHA_DO_TEMPO: 2,
+  SESSAO_DE_EXERCICIOS: 0, // contada pelas questões, em `MINUTES_PER_QUESTION`
 };
 
 /**

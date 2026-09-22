@@ -294,6 +294,21 @@ export interface StreakTracker {
   userId: EntityId;
   currentStreakDays: number;
   longestStreakDays: number;
+  /**
+   * 🔴 QUANTAS DEFENSIVAS DE SETE DIAS JÁ FECHARAM. É O NÍVEL.
+   *
+   * Guardado, e não derivado de `currentStreakDays`. Cada defensiva completa
+   * vale um nível **a mais, para sempre**: quem fechou três semanas e faltou
+   * um dia continua no nível 3, e o que recomeça do dia 1 é a contagem.
+   *
+   * Derivar de um contador que zera é garantir que o nível zere junto — que é
+   * exatamente o que a tela fazia. Ver `domain/defensiva.ts`.
+   *
+   * Opcional porque as fichas gravadas antes deste campo não o têm; quem lê
+   * usa `nivelDaDefensiva`, que nesse caso devolve o mínimo que a sequência
+   * atual garante, e nunca rebaixa.
+   */
+  completedCyclesCount?: number;
   lastActiveDate: string; // YYYY-MM-DD
   freezeDaysAvailable: number;
   calendarHistory: { date: string; completedMinutes: number; xp: number }[];

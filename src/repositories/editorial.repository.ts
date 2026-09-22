@@ -1,5 +1,6 @@
 import { LocalStorageAdapter } from '../infrastructure/storage/local-storage';
-import { EditorialEdit } from '../domain/editorial-edit';
+import { EditorialEdit, EditorialLesson } from '../domain/editorial-edit';
+import { EdicaoDeArtigo } from '../domain/editorial-artigo';
 
 /**
  * Camada editorial — as correções feitas por quem edita o Conservatório.
@@ -26,12 +27,52 @@ export interface EditorialRepository {
   reverter(id: string): Promise<void>;
   /** Histórico completo, do mais recente ao mais antigo. */
   historico(limite?: number): Promise<EditorialEdit[]>;
+
+  /**
+   * 🔴 AS LIÇÕES CRIADAS DO ZERO.
+   *
+   * `EditorialLesson` e `mergeCreatedLessons` existiam no domínio desde o
+   * começo — e **nada os chamava**. Criar lição era uma função pura sem
+   * armazenamento e sem tela: a capacidade estava projetada e desligada, o que
+   * na prática é o mesmo que não existir, com a diferença de parecer que
+   * existe.
+   */
+  licoesCriadas(): Promise<EditorialLesson[]>;
+  salvarLicaoCriada(licao: EditorialLesson): Promise<EditorialLesson>;
+  removerLicaoCriada(id: string): Promise<void>;
+  /**
+   * 🔴 OS ARTIGOS, guardados à parte.
+   *
+   * Chave própria pela mesma razão das lições criadas: artigo é peça assinada
+   * com cabeçalho e citações, e lição é sequência de blocos. Guardá-los juntos
+   * obrigaria todo leitor a filtrar por forma, e um filtro esquecido misturaria
+   * as duas.
+   */
+  artigos(): Promise<EdicaoDeArtigo[]>;
+  salvarArtigo(edicao: EdicaoDeArtigo): Promise<EdicaoDeArtigo>;
+  removerArtigo(artigoId: string): Promise<void>;
+
+  /** Troca a camada inteira de uma vez — é o que a importação de pacote faz. */
+  substituirTudo(entrada: {
+    edicoes: EditorialEdit[];
+    licoesCriadas: EditorialLesson[];
+    artigos: EdicaoDeArtigo[];
+  }): Promise<void>;
 }
 
 export class PersistentEditorialRepository implements EditorialRepository {
   private storage: LocalStorageAdapter;
 
   private readonly CHAVE = 'amd_academy_editorial_v1';
+  /**
+   * Chave separada da das edições, de propósito.
+   *
+   * Edição corrige o que o Conservatório publicou; lição criada é conteúdo
+   * novo. Guardá-las juntas obrigaria todo leitor a filtrar por tipo, e um
+   * filtro esquecido misturaria as duas.
+   */
+  private readonly CHAVE_LICOES = 'amd_academy_licoes_criadas_v1';
+  private readonly CHAVE_ARTIGOS = 'amd_acervo_artigos_editoriais_v1';
 
   constructor(storage: LocalStorageAdapter = new LocalStorageAdapter()) {
     this.storage = storage;
@@ -88,6 +129,70 @@ export class PersistentEditorialRepository implements EditorialRepository {
       .slice()
       .sort((a, b) => b.editadaEm.localeCompare(a.editadaEm))
       .slice(0, limite);
+  }
+
+  public async licoesCriadas(): Promise<EditorialLesson[]> {
+    return this.storage.get<EditorialLesson[]>(this.CHAVE_LICOES) ?? [];
+  }
+
+  public async salvarLicaoCriada(licao: EditorialLesson): Promise<EditorialLesson> {
+    const atuais = await this.licoesCriadas();
+    const i = atuais.findIndex((l) => l.id === licao.id);
+
+    if (i >= 0) atuais[i] = licao;
+    else atuais.push(licao);
+
+    this.storage.set(this.CHAVE_LICOES, atuais);
+    return licao;
+  }
+
+  public async removerLicaoCriada(id: string): Promise<void> {
+    const atuais = await this.licoesCriadas();
+    this.storage.set(
+      this.CHAVE_LICOES,
+      atuais.filter((l) => l.id !== id)
+    );
+  }
+
+  public async artigos(): Promise<EdicaoDeArtigo[]> {
+    return this.storage.get<EdicaoDeArtigo[]>(this.CHAVE_ARTIGOS) ?? [];
+  }
+
+  public async salvarArtigo(edicao: EdicaoDeArtigo): Promise<EdicaoDeArtigo> {
+    const atuais = await this.artigos();
+    const i = atuais.findIndex((e) => e.id === edicao.id);
+
+    /**
+     * O `anterior` preservado é o do artigo PUBLICADO, e não o da edição
+     * imediatamente anterior — mesma regra das lições. Senão, depois de três
+     * correções, reverter devolveria a segunda versão em vez do original.
+     */
+    const anterior = i >= 0 ? atuais[i].anterior : edicao.anterior;
+    const gravada = { ...edicao, anterior };
+
+    if (i >= 0) atuais[i] = gravada;
+    else atuais.push(gravada);
+
+    this.storage.set(this.CHAVE_ARTIGOS, atuais);
+    return gravada;
+  }
+
+  public async removerArtigo(artigoId: string): Promise<void> {
+    const atuais = await this.artigos();
+    this.storage.set(
+      this.CHAVE_ARTIGOS,
+      atuais.filter((e) => e.artigoId !== artigoId)
+    );
+  }
+
+  public async substituirTudo(entrada: {
+    edicoes: EditorialEdit[];
+    licoesCriadas: EditorialLesson[];
+    artigos: EdicaoDeArtigo[];
+  }): Promise<void> {
+    this.storage.set(this.CHAVE, entrada.edicoes);
+    this.storage.set(this.CHAVE_LICOES, entrada.licoesCriadas);
+    this.storage.set(this.CHAVE_ARTIGOS, entrada.artigos);
   }
 }
 

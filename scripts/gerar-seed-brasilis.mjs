@@ -39,6 +39,25 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 
 const dados = JSON.parse(readFileSync('scripts/.musica-brasilis.json', 'utf-8'));
 
+/**
+ * AS BIOGRAFIAS, quando já foram colhidas.
+ *
+ * Vêm de `extrair-brasilis-fichas.mjs`, que lê a página de cada compositor —
+ * a listagem não traz biografia, só nome e datas.
+ *
+ * Ausência aqui não impede gerar: os compositores entram com o que se sabe, e
+ * a ficha fica sem o texto. O que não se faz é inventar um resumo a partir das
+ * datas, que é o tipo de preenchimento que transforma catálogo em ficção.
+ */
+let fichas = new Map();
+try {
+  const lidas = JSON.parse(readFileSync('scripts/.brasilis-fichas.json', 'utf-8'));
+  fichas = new Map(lidas.filter((f) => f.biografia).map((f) => [f.idNaFonte, f.biografia]));
+  console.log(`  biografias disponíveis: ${fichas.size}`);
+} catch {
+  console.log('  sem biografias colhidas ainda — rode scripts/extrair-brasilis-fichas.mjs');
+}
+
 const HOJE = new Date().getFullYear();
 
 const semAcento = (s) =>
@@ -140,6 +159,7 @@ for (const c of dados.compositores) {
     nascimento: c.nascimento,
     morte: c.morte,
     era: eraDe(c.nascimento, c.morte),
+    biografia: fichas.get(c.idNaFonte),
     ids: { musicaBrasilis: c.idNaFonte, musicaBrasilisUrl: c.url },
     /**
      * A CIDADANIA DECLARADA É A BRASILEIRA, e é isso que dá a região.
@@ -300,6 +320,7 @@ console.log('✓ src/data/seed-brasilis.ts        (compositores)');
 console.log('✓ src/data/acervo/brasilis.json    (obras, sob demanda)');
 console.log(`  ${compositores.size} compositores · ${obras.length} obras · ${dados.coletaneas.length} coletâneas`);
 console.log(`  com data de morte: ${comData}`);
+console.log(`  com biografia: ${[...compositores.values()].filter((c) => c.biografia).length}`);
 console.log(`  por situação: ${JSON.stringify(porSituacao)}`);
 console.log(`  por era: ${JSON.stringify(porEra)}`);
 console.log(`  partituras sem compositor nomeado, deixadas de fora: ${semAutoria.length}`);

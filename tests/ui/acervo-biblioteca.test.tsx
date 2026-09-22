@@ -83,7 +83,20 @@ describe('a vitrine de artigos mostra o que convence a abrir', () => {
       );
       /** Quem assina e quando — um artigo sem autoria não é artigo. */
       expect(texto, 'o box não traz assinatura e ano').toMatch(/\d{4}/);
-      expect(texto, 'o box não diz quantas obras percorre').toMatch(/obras? citadas?/);
+      /**
+       * 🔴 A CONTAGEM PASSOU A SER POR TIPO, e o caso cobrava o rótulo antigo.
+       *
+       * O card dizia "22 obras citadas" sobre um artigo que percorre vinte
+       * coletâneas, vinte pessoas e vinte e duas obras — contava um terço e
+       * chamava de total.
+       *
+       * Agora ele lista os tipos que existem. O que se cobra é que **haja
+       * contagem**, e que ela nomeie o que conta: "10 obras · 8 pessoas".
+       */
+      expect(texto, 'o box não diz quantas obras percorre').toMatch(/\d+ obras?\s/);
+      expect(texto, 'a contagem não nomeia o que conta').toMatch(
+        /\d+ (obras?|pessoas?|coletâneas?)/
+      );
       /** Resumo de verdade, e não só o título. */
       expect(texto.length).toBeGreaterThan(120);
     }

@@ -87,7 +87,26 @@ export type PublicDomainStatus =
 
 export interface PublicDomainAssessment {
   status: PublicDomainStatus;
-  basis: 'AUTHOR_DEATH_PLUS_TERM' | 'SOURCE_DECLARED_LICENSE' | 'MANUAL_REVIEW' | 'UNKNOWN';
+  /**
+   * SOBRE QUE MARCO O PRAZO FOI CONTADO.
+   *
+   * 🔴 Havia só `AUTHOR_DEATH_PLUS_TERM`, e isso escondia a pergunta que
+   * apareceu três vezes: morte ou publicação? A resposta é **as duas**,
+   * conforme o regime da obra — art. 41 para autor conhecido, art. 43 para
+   * anônima, art. 44 para audiovisual.
+   *
+   * Guardar o marco no registro faz a ficha poder **dizer qual foi**, em vez
+   * de afirmar um prazo sem mostrar de onde ele saiu. Ver `copyright-term.ts`,
+   * que é onde a conta acontece.
+   */
+  basis:
+    | 'AUTHOR_DEATH_PLUS_TERM'
+    | 'FIRST_PUBLICATION_PLUS_TERM'
+    | 'BEFORE_ANY_TERM'
+    | 'UNKNOWN_AUTHOR'
+    | 'SOURCE_DECLARED_LICENSE'
+    | 'MANUAL_REVIEW'
+    | 'UNKNOWN';
   authorDeathYear?: number;
   /** Jurisdição do cálculo. O produto é brasileiro, e o padrão é BR. */
   jurisdiction: 'BR' | 'US' | 'EU';
@@ -270,8 +289,26 @@ export function podeExibirObra(a: PublicDomainAssessment): boolean {
  * é rastrear `/images/` e `/imglnks/` — baixar, e não citar.
  */
 export function linkOficial(ids: ExternalIds): { rotulo: string; url: string } | undefined {
+  /**
+   * 🔴 SETE MIL OBRAS TINHAM ENDEREÇO E A TELA NÃO MOSTRAVA.
+   *
+   * O corpus brasileiro entrou com a página da edição de cada obra guardada em
+   * `musicaBrasilisUrl`. Esta função não conhecia a chave, devolvia
+   * `undefined`, e a ficha dizia "ainda não há edição catalogada" **sobre obra
+   * que tem edição catalogada**.
+   *
+   * Vem primeiro porque é o link mais direto que existe: aponta para a página
+   * da própria edição, e não para um verbete sobre a obra.
+   */
+  if (ids.musicaBrasilisUrl) {
+    return { rotulo: 'Música Brasilis', url: ids.musicaBrasilisUrl };
+  }
   if (ids.mutopia) {
     return { rotulo: 'Mutopia Project', url: `https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=${ids.mutopia}` };
+  }
+  /** O link pronto do índice vem antes do título: ele não precisa ser montado. */
+  if (ids.imslpUrl) {
+    return { rotulo: 'IMSLP / Petrucci', url: ids.imslpUrl };
   }
   if (ids.imslp) {
     return { rotulo: 'IMSLP', url: `https://imslp.org/wiki/${encodeURI(ids.imslp)}` };
@@ -313,6 +350,14 @@ export interface ExternalIds {
   /** O identificador na Música Brasilis, e a URL da ficha de lá. */
   musicaBrasilis?: string;
   musicaBrasilisUrl?: string;
+  /**
+   * O link direto da página da obra no IMSLP.
+   *
+   * Distinto de `imslp`, que é o TÍTULO da página e serve para montar a URL. O
+   * índice de casamento já devolve o link permanente pronto, e refazê-lo a
+   * partir do título erraria em todo título com parêntese ou vírgula.
+   */
+  imslpUrl?: string;
   viaf?: string;
   isni?: string;
 }
@@ -364,6 +409,22 @@ export interface ExternalScoreRef {
   fileLicense?: string;
   /** Quem editorou. Atribuição por peça é requisito, e não cortesia. */
   editors?: string[];
+  /**
+   * 🔴 APONTA PARA UM ARQUIVO, OU PARA A PÁGINA QUE OS REÚNE.
+   *
+   * A distinção faltava, e a ficha mentia por causa dela. Toda referência era
+   * tratada como arquivo: com transcritor, licença e formato. É o caso do
+   * Mutopia, onde cada link é um `.ly` específico, com um nome e uma licença.
+   *
+   * Não é o caso do IMSLP nem da Música Brasilis. Lá o link é a **página da
+   * obra**, que reúne várias edições, cada uma com seu editor e sua licença.
+   * Tratá-la como arquivo fazia a ficha declarar "transcrição sem autoria
+   * declarada" e "licença não declarada" sobre uma página onde autoria e
+   * licença estão declaradas — de cada edição, uma por uma.
+   *
+   * Ausente significa `ARQUIVO`, que era o único caso quando isto nasceu.
+   */
+  aponta?: 'ARQUIVO' | 'PAGINA';
 }
 
 export interface ExternalRecordingRef {
@@ -533,6 +594,28 @@ export function temEdicaoNativa(obra: CanonicalWork): boolean {
   return obra.scoreRefs.some((r) => r.render === 'NATIVA');
 }
 
+/**
+ * A OBRA TEM PARTITURA LOCALIZADA — em algum lugar, ainda que não aqui.
+ *
+ * 🔴 Esta distinção faltava, e a ficha mentia por causa disso.
+ *
+ * Havia dois estados: ou a plataforma renderiza, ou "ainda não há edição
+ * catalogada". Sete mil obras caíam no segundo tendo a página da edição
+ * guardada — a ficha dizia que não existe partitura sobre obra cuja partitura
+ * a plataforma sabe exatamente onde fica.
+ *
+ * São três estados, e não dois:
+ *
+ *   toca aqui          → há edição que a plataforma renderiza;
+ *   partitura achada   → sabemos onde está, e apontamos;
+ *   ainda procurando   → ninguém localizou edição nenhuma.
+ *
+ * O terceiro é trabalho por fazer, e só ele.
+ */
+export function temPartituraLocalizada(obra: CanonicalWork): boolean {
+  return obra.scoreRefs.length > 0;
+}
+
 /** Um registro de proveniência, com hora e origem. */
 export function proveniencia(
   field: string,
@@ -555,12 +638,21 @@ export function avaliarDisponibilidade(obra: CanonicalWork): DisponibilidadeNoCo
   const pd = obra.publicDomain;
 
   if (!podeExibirObra(pd)) {
+    /**
+     * Protegida não quer dizer invisível. O catálogo registra que a obra
+     * existe, diz de quem é, e aponta para onde ela está publicada — nada
+     * disso reproduz nada. O que o prazo impede é tocá-la aqui dentro.
+     */
+    const onde = temPartituraLocalizada(obra)
+      ? ' A partitura está catalogada na fonte, e o link abre onde ela está.'
+      : '';
+
     const motivo =
       pd.status === 'PROTECTED'
-        ? `Obra protegida por direito autoral. ${pd.note ?? ''}`.trim()
+        ? `Obra protegida por direito autoral. ${pd.note ?? ''}${onde}`.trim()
         : pd.status === 'LIKELY_PUBLIC_DOMAIN'
-          ? 'Provavelmente em domínio público, ainda sem confirmação. Não reproduzimos sobre provável.'
-          : 'Sem data de morte do autor registrada, não dá para afirmar que está em domínio público.';
+          ? `Provavelmente em domínio público, ainda sem confirmação. Não reproduzimos sobre provável.${onde}`
+          : `Sem data de morte do autor registrada, não dá para afirmar que está em domínio público.${onde}`;
 
     return { modo: 'SOMENTE_CATALOGO', motivo, linkOficial: link };
   }
@@ -573,8 +665,16 @@ export function avaliarDisponibilidade(obra: CanonicalWork): DisponibilidadeNoCo
   if (!temEdicaoNativa(obra)) {
     return {
       modo: 'SOMENTE_CATALOGO',
-      motivo:
-        'Obra em domínio público. Ainda não há edição redistribuível catalogada — quando houver, aparece aqui.',
+      /**
+       * A frase muda conforme SABEMOS ou NÃO SABEMOS onde está a partitura.
+       *
+       * Dizer "ainda não há edição catalogada" sobre obra com edição localizada
+       * é pior que não dizer nada: manda a pessoa desistir de procurar o que
+       * está a um clique.
+       */
+      motivo: temPartituraLocalizada(obra)
+        ? 'Obra em domínio público, com partitura localizada na fonte. A plataforma ainda não renderiza esta edição aqui dentro — o link abre onde ela está.'
+        : 'Obra em domínio público. Ainda não localizamos edição dela — quando localizarmos, aparece aqui.',
       linkOficial: link,
     };
   }

@@ -1,3 +1,5 @@
+import { CadeiraNaArvore, montarArvoreDeLicoes } from '../../domain/arvore-de-licoes';
+import { ChairId, coursesOfChair } from '../../domain/chair';
 import {
   Program,
   LearningPath,
@@ -74,6 +76,40 @@ export class AcademyService {
 
   public async getCourse(id: string): Promise<AcademyCourse | null> {
     return this.repo.findCourseById(id);
+  }
+
+  /**
+   * 🔴 A ÁRVORE INTEIRA, ORDENADA — Cadeira → Curso → Módulo → Lição.
+   *
+   * O Laboratório montava a própria organização a partir de árvores de
+   * competência soltas, sem curso e sem ordem. A estrutura acadêmica já existia
+   * inteira e ordenada; faltava um lugar que a entregasse pronta.
+   *
+   * Duas organizações sobre o mesmo conteúdo é pior que nenhuma: a pessoa
+   * estuda por uma e é avaliada pela outra.
+   */
+  public async arvoreDeLicoes(cadeirasDoAluno: ChairId[] = []): Promise<CadeiraNaArvore[]> {
+    const cursos = await this.getCourses();
+
+    const modulos = (await Promise.all(cursos.map((c) => this.getModules(c.id)))).flat();
+    const licoes = (await Promise.all(modulos.map((m) => this.getLessons(m.id)))).flat();
+
+    return montarArvoreDeLicoes({ cursos, modulos, licoes, cadeirasDoAluno });
+  }
+
+  /**
+   * Os módulos de uma cadeira inteira, em ordem, com o campo `order` CRU.
+   *
+   * A árvore de lições renumera as posições para exibição — 1, 2, 3 sem
+   * buraco. Quem precisa casar com um número de capítulo precisa do campo
+   * original, e por isso este caminho existe separado: um diagnóstico que
+   * aponta "capítulo 7" tem que encontrar o módulo cujo `order` é 7, e não o
+   * sétimo da lista depois de qualquer remoção.
+   */
+  public async modulosDaCadeira(chair: ChairId): Promise<AcademyModule[]> {
+    const cursos = coursesOfChair(chair);
+    const listas = await Promise.all(cursos.map((id) => this.repo.listModulesByCourse(id)));
+    return listas.flat().sort((a, b) => a.order - b.order);
   }
 
   public async getModules(courseId: string): Promise<AcademyModule[]> {

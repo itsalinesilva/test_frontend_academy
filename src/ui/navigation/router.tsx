@@ -92,6 +92,22 @@ export const CANONICAL_ROUTES = {
   ACERVO: '/acervo',
   ACERVO_OBRA: '/acervo/obra/:id',
   ACERVO_COMPOSITOR: '/acervo/compositor/:id',
+  /**
+   * 🔴 ESTA ROTA FALTAVA, E O ARTIGO NÃO ABRIA.
+   *
+   * O card navegava para `/acervo/artigo/<id>`, o outlet reconhecia o prefixo
+   * e montava a tela — e a tela não achava o artigo, porque `params.id` vinha
+   * **vazio**: sem um padrão nesta tabela, `parseParams` não tem contra o que
+   * casar, e o segmento do identificador se perde.
+   *
+   * O sintoma é o pior que existe: a tela abre, não quebra, e mostra "artigo
+   * não encontrado" sobre um artigo que está ali.
+   *
+   * E o meu teste passava, porque ele **substituía o roteador** e entregava o
+   * `id` na mão. Substituir a peça quebrada é a forma mais eficiente de não
+   * encontrar o defeito dela.
+   */
+  ACERVO_ARTIGO: '/acervo/artigo/:id',
 
   SCORE: '/score',
 
@@ -128,6 +144,8 @@ export const CANONICAL_ROUTES = {
   ADMIN_USERS: '/founder/users',
   ADMIN_ENGINES: '/founder/engines',
   ADMIN_CONTENT: '/founder/content',
+  ADMIN_LICOES: '/founder/licoes',
+  ADMIN_ARTIGOS: '/founder/artigos',
   ADMIN_MODERATION: '/founder/moderation',
   ADMIN_AUDIT: '/founder/audit',
   ADMIN_CREDENTIALS: '/founder/credentials',

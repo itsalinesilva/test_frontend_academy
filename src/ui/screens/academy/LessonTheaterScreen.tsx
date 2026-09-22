@@ -265,7 +265,18 @@ export const LessonTheaterScreen: React.FC = () => {
                       alvo={alvo}
                       bloco={b}
                       publicado={
-                        edicao && typeof edicao.anterior !== 'string' ? edicao.anterior : b
+                        /**
+                         * `anterior` passou a poder ser uma LISTA de blocos,
+                         * desde que a camada aprendeu a acrescentar e remover
+                         * bloco. Aqui o botão de reverter é de UM bloco: uma
+                         * lista entregue a ele restauraria a seção inteira
+                         * sobre um bloco só.
+                         */
+                        edicao &&
+                        typeof edicao.anterior !== 'string' &&
+                        !Array.isArray(edicao.anterior)
+                          ? edicao.anterior
+                          : b
                       }
                       editado={Boolean(edicao)}
                       editadaPor={nomeDoEditor ?? 'Edição do Conservatório'}

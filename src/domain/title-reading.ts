@@ -129,28 +129,84 @@ export function formaDoTitulo(titulo: string): string | undefined {
  * `Op.` é de outra natureza — número de publicação, dado pelo editor — e entra
  * porque na prática cumpre o mesmo papel de desambiguar homônimos.
  */
+/**
+ * 🔴 A LISTA COBRIA DEZESSEIS SIGLAS, E A MUSICOLOGIA USA DEZENAS.
+ *
+ * Cada catalogador de cada compositor criou a sua, e ficar só nas mais
+ * conhecidas tem um custo medido: o número de catálogo é a **chave forte** do
+ * cruzamento com bibliotecas de partitura — é ele que prova que duas entradas
+ * de bases diferentes falam da mesma peça —, e toda obra cuja sigla não estava
+ * aqui saía com o campo vazio e deixava de cruzar.
+ *
+ * Bartók é Sz e BB, Debussy é L., Poulenc é FP, Strauss é TrV, Janáček é JW,
+ * Boccherini é G., Scarlatti é Kk, Mendelssohn é MWV, Monteverdi é SV,
+ * Bruckner é WAB, Purcell é Z., Villa-Lobos é W.
+ *
+ * A ordem importa: as mais longas vêm antes das mais curtas, porque a
+ * alternância casa a primeira que serve — com `K` antes de `KV`, `KV 550`
+ * sairia lido como `K 550`, e os dois catálogos de Mozart se confundiriam.
+ */
 const SIGLAS = [
-  'BWV',
   'BuxWV',
+  'BWV',
   'HWV',
   'TWV',
-  'RV',
+  'MWV',
+  'WAB',
+  'WoO',
+  'Anh',
+  'TrV',
   'Hob',
+  'Kk',
   'KV',
+  'RV',
+  'Sz',
+  'BB',
+  'FP',
+  'JW',
+  'SV',
+  'VB',
+  'AV',
+  'Wq',
+  'CD',
+  'CW',
+  'Bg',
   'K',
   'D',
-  'WoO',
-  'Wq',
   'H',
   'S',
   'L',
-  'CW',
+  'B',
+  'G',
+  'M',
+  'P',
+  'T',
+  'Z',
+  'W',
+  'F',
+  'C',
   'Op',
   'op',
 ];
 
+/**
+ * 🔴 O NÚMERO NÃO É SÓ UM NÚMERO.
+ *
+ * A primeira versão lia `\d+[a-zA-Z]?`, e com isso `TWV 43:h3` virava
+ * `TWV 43` — que é comum a dezenas de quartetos de Telemann — e `Hob.XVI:52`
+ * não casava de jeito nenhum, porque começa com algarismo romano.
+ *
+ * Isso importa porque o número de catálogo é a **chave forte** do cruzamento
+ * com bibliotecas de partitura, e chave ambígua não casa nada, por regra.
+ * Quinhentas e uma obras de Telemann sobravam sem endereço por causa disto.
+ *
+ * As três formas que a musicologia usa: grupo em algarismo romano (`XVI:`),
+ * número, e continuações separadas por dois-pontos.
+ */
+const NUMERO = String.raw`(?:[IVXLC]+\s*:\s*)?\d+[a-zA-Z]?(?:\s*:\s*[0-9a-zA-Z]+)*`;
+
 const RE_CATALOGO = new RegExp(
-  `\\b(${SIGLAS.join('|')})\\.?\\s*(?:no\\.?\\s*)?(\\d+[a-zA-Z]?)\\b`
+  String.raw`\b(` + SIGLAS.join('|') + String.raw`)\.?\s*(?:no\.?\s*)?(` + NUMERO + ')'
 );
 
 /**

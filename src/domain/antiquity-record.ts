@@ -1,5 +1,6 @@
+import { avaliarPrazo } from './copyright-term';
 import { EntityId } from './types';
-import { LocalizedText, PublicDomainAssessment, avaliarDominioPublico } from './music-knowledge';
+import { LocalizedText, PublicDomainAssessment } from './music-knowledge';
 
 /**
  * O REGISTRO DA ANTIGUIDADE — e por que ele não é uma ficha de obra.
@@ -124,9 +125,26 @@ export interface RegistroDaAntiguidade {
  * reconstruiu fez trabalho, e isso é outra coisa.
  */
 export function dominioDaAntiguidade(): PublicDomainAssessment {
+  /**
+   * 🔴 ISTO ERA UMA DATA DE MORTE INVENTADA.
+   *
+   * A versão anterior passava `anoDeMorte: 500` para a conta geral — um ano
+   * escolhido para dar um resultado, e não um fato sobre ninguém. Funcionava,
+   * e mentia sobre o método: a ficha declarava domínio público "por morte do
+   * autor em 500" de um epitáfio anônimo do século II.
+   *
+   * O regime certo existe e tem nome: `ANTERIOR_A_QUALQUER_PRAZO`. Não é
+   * cálculo, é constatação — e dizer isso é mais honesto que fabricar a data
+   * que faria o cálculo fechar.
+   */
+  const prazo = avaliarPrazo({ regime: 'ANTERIOR_A_QUALQUER_PRAZO' });
+
   return {
-    ...avaliarDominioPublico({ anoDeMorte: 500 }),
-    note: 'Obra da Antiguidade, em domínio público. A edição moderna de um fragmento tem direito próprio.',
+    jurisdiction: 'BR',
+    assessedAt: new Date().toISOString(),
+    status: 'PUBLIC_DOMAIN',
+    basis: 'BEFORE_ANY_TERM',
+    note: `${prazo.nota} A edição moderna de um fragmento tem direito próprio.`,
   };
 }
 

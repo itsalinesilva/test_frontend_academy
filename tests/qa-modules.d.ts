@@ -129,6 +129,13 @@ declare module '*/qa/institution.mjs' {
   export const checkFiltroOferecidoEAplicado: QaCheck;
   export const checkEixoUniversalAlcancaOAcervo: QaCheck;
   export const checkFonteNaoCriaEntidade: QaCheck;
+  /**
+   * O prazo declara o regime — morte para autor conhecido (art. 41),
+   * publicação para obra anônima (art. 43).
+   */
+  export const checkPrazoDeProtecao: QaCheck;
+  /** Data de morte escrita à mão para fazer a conta fechar. */
+  export const checkDataDeMorteCravada: QaCheck;
   export const checkPapelEEixoProprio: QaCheck;
   export const checkAtlasEAcervoMesmaVerdade: QaCheck;
 }
@@ -149,4 +156,17 @@ declare module '*/qa/readiness.mjs' {
     peso: number;
   }[];
   export const checkReadiness: QaCheck;
+}
+
+/**
+ * A lista de fontes proibidas vive no verificador, e é ela que vale.
+ *
+ * O teste dos artigos mantinha uma cópia escrita à mão, e as duas divergiram:
+ * a cópia proibia nomear **qualquer** fonte, inclusive a de catálogo cuja
+ * curadoria o artigo precisa atribuir. Declarar o módulo aqui deixa uma lista
+ * só no projeto.
+ */
+declare module '*/verify-no-citations.mjs' {
+  export const FONTES_PROIBIDAS: string[];
+  export function verificarCitacoes(): { file: string; detail: string }[];
 }

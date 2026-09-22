@@ -34,7 +34,7 @@ import { AcademySearchResultsScreen } from './academy/AcademySearchResultsScreen
 import { AcademicProfileScreen } from './academy/AcademicProfileScreen';
 
 // Practice & Score Canonical Pillars
-import { PracticeHomeScreen } from './practice/PracticeHomeScreen';
+import { LaboratorioScreen } from './practice/LaboratorioScreen';
 import { PracticePathScreen } from './practice/PracticePathScreen';
 import { PracticeLeagueScreen } from './practice/PracticeLeagueScreen';
 import { PracticeEnrollmentScreen } from './practice/PracticeEnrollmentScreen';
@@ -105,6 +105,8 @@ import { AdminDashboardScreen } from './admin/AdminDashboardScreen';
 import { AdminUsersScreen } from './admin/AdminUsersScreen';
 import { AdminEnginesScreen } from './admin/AdminEnginesScreen';
 import { AdminContentScreen } from './admin/AdminContentScreen';
+import { AdminLicoesScreen } from './admin/AdminLicoesScreen';
+import { AdminArtigosScreen } from './admin/AdminArtigosScreen';
 import { AdminModerationScreen } from './admin/AdminModerationScreen';
 import { AdminAuditScreen } from './admin/AdminAuditScreen';
 
@@ -333,8 +335,20 @@ export const AppRouterOutlet: React.FC = () => {
 
   // 2. PRACTICE (PRACTICE HUB & GAMIFIED LOOP)
   if (currentPath === '/practice') {
-    return <PracticeHomeScreen />;
+    /**
+     * 🔴 A TELA ANTERIOR NÃO TINHA NAVEGAÇÃO NENHUMA.
+     *
+     * Era uma coluna com tudo despejado — dez modalidades, seis árvores,
+     * quatro atalhos —, sem marco de página e sem região. E desenhava medida
+     * pessoal para visitante, inclusive uma posição de liga **inventada**
+     * (`rankPosition || 3`).
+     *
+     * `LaboratorioScreen` põe as três abas fixas e o painel lateral. Ver
+     * `docs/harness/88_LABORATORIO.md`.
+     */
+    return <LaboratorioScreen />;
   }
+
   /**
    * O percurso: mapa, licao e encerramento no mesmo lugar.
    *
@@ -546,6 +560,12 @@ export const AppRouterOutlet: React.FC = () => {
   }
   if (currentPath === '/founder/content') {
     return <AdminContentScreen />;
+  }
+  if (currentPath === '/founder/licoes') {
+    return <AdminLicoesScreen />;
+  }
+  if (currentPath === '/founder/artigos') {
+    return <AdminArtigosScreen />;
   }
   if (currentPath === '/founder/moderation') {
     return <AdminModerationScreen />;
