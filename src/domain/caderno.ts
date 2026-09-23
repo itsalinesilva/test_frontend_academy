@@ -40,6 +40,12 @@ export interface PartituraDoCaderno {
   id: string;
   autorId: string;
   titulo: string;
+  /**
+   * A pasta do caderno (E-5). Vazia é "sem pasta" — pasta é organização, e não
+   * condição para guardar: exigir uma antes do primeiro rascunho seria
+   * burocracia no caminho de quem quer escrever.
+   */
+  pasta?: string;
   clave: 'treble' | 'bass';
   formula: Formula;
   andamento: number;
@@ -59,6 +65,24 @@ export function problemasDaPartitura(p: Pick<PartituraDoCaderno, 'titulo' | 'and
     if (n.nota !== null && !NOTA_VALIDA.test(n.nota)) problemas.push(`"${n.nota}" não é uma nota que a pauta escreva.`);
   }
   return problemas;
+}
+
+/** As pastas em uso, em ordem alfabética, sem repetição e sem a "sem pasta". */
+export function pastasDoCaderno(partituras: readonly Pick<PartituraDoCaderno, 'pasta'>[]): string[] {
+  const nomes = new Set(partituras.map((p) => (p.pasta ?? '').trim()).filter(Boolean));
+  return [...nomes].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+
+/** O caderno agrupado por pasta; "sem pasta" por último. */
+export function agruparPorPasta<T extends Pick<PartituraDoCaderno, 'pasta'>>(
+  partituras: readonly T[]
+): Array<{ pasta: string | null; itens: T[] }> {
+  const grupos = pastasDoCaderno(partituras).map((pasta) => ({
+    pasta: pasta as string | null,
+    itens: partituras.filter((p) => (p.pasta ?? '').trim() === pasta),
+  }));
+  const soltas = partituras.filter((p) => !(p.pasta ?? '').trim());
+  return soltas.length ? [...grupos, { pasta: null, itens: soltas }] : grupos;
 }
 
 export function temposPorCompasso(formula: Formula): number {

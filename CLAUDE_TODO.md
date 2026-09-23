@@ -808,7 +808,7 @@ Ordem de `79 §7`: da que destrava mais para a que destrava menos.
 | E-2 | **Metrônomo que mede** — grava a batida, devolve desvio em ms por tempo (era `P.5`) | ⬜ |
 | E-3 | **Afinador** — cents com sinal, referência ajustável, temperamento | ⬜ |
 | E-4 | **Caderno: escrever e tocar** — ver M-10. Uma voz; ligadura, ponto e quiáltera ainda não | ✅ |
-| E-5 | **Caderno: salvar e baixar em MusicXML e MIDI** ✅ (M-10). ⬜ **Pastas** ainda não: o caderno é uma lista única, da mais recente à mais antiga | 🔄 |
+| E-5 | **Caderno: pastas, salvar e baixar.** Salvar e baixar em MusicXML e MIDI vieram com o M-10; agora há **pastas**: campo livre no editor, com as pastas já usadas sugeridas; no hub o caderno aparece agrupado por pasta ("sem pasta" por último), com filtro. Pasta não é condição para guardar | ✅
 | E-6 | **Remover a fachada** de `ScoreEditorScreen` — botão morto e promessa de MusicXML/MIDI que não existe | ✅ |
 | E-8 | **Remover a fachada** de `DawProjectScreen` — slider de volume CONTROLADO com `onChange` vazio (o aluno arrastava e o React devolvia), botão "Adicionar Pista" morto, e "formatos de exportáção suportados: WAV 24-bit 48kHz, FLAC, MIDI 2.0 e MusicXML" — nenhum produzido em lugar nenhum do código | ✅ |
 | E-9 | As quatro pistas SATB de `DawProjectScreen`, o Play e o Rec ainda são estado local sem motor de áudio. A tela agora **diz** isso; continuam a ser fachada até `E-1`..`E-4` | ⬜ |

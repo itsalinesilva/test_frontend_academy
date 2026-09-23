@@ -14,6 +14,7 @@ import {
   PartituraDoCaderno,
   compassosQueTransbordam,
   nomeDeArquivo,
+  pastasDoCaderno,
   paraMIDI,
   paraMusicXML,
   problemasDaPartitura,
@@ -55,6 +56,8 @@ export const ScoreEditorScreen: React.FC = () => {
   const [id, setId] = useState(() => idPedido ?? novaId());
   const [criadaEm, setCriadaEm] = useState(() => new Date().toISOString());
   const [titulo, setTitulo] = useState('');
+  const [pasta, setPasta] = useState('');
+  const [pastasExistentes, setPastasExistentes] = useState<string[]>([]);
   const [clave, setClave] = useState<'treble' | 'bass'>('treble');
   const [formula, setFormula] = useState<Formula>('4/4');
   const [andamento, setAndamento] = useState(80);
@@ -80,6 +83,7 @@ export const ScoreEditorScreen: React.FC = () => {
       setId(p.id);
       setCriadaEm(p.criadaEm);
       setTitulo(p.titulo);
+      setPasta(p.pasta ?? '');
       setClave(p.clave);
       setFormula(p.formula);
       setAndamento(p.andamento);
@@ -92,10 +96,17 @@ export const ScoreEditorScreen: React.FC = () => {
 
   useEffect(() => () => relogios.current.forEach((r) => window.clearTimeout(r)), []);
 
+  /** As pastas que a pessoa já usa, sugeridas ao escrever o nome — e não uma lista fechada. */
+  useEffect(() => {
+    if (!userId) return;
+    cadernoRepository.listar(userId).then((ps) => setPastasExistentes(pastasDoCaderno(ps)));
+  }, [userId]);
+
   const partitura: PartituraDoCaderno = {
     id,
     autorId: userId ?? '',
     titulo,
+    pasta: pasta.trim() || undefined,
     clave,
     formula,
     andamento,
@@ -182,6 +193,21 @@ export const ScoreEditorScreen: React.FC = () => {
           <label className="flex min-w-[12rem] flex-1 flex-col gap-1">
             <span className="font-semibold text-stone-700">Título</span>
             <input value={titulo} onChange={(e) => setTitulo(e.target.value)} className={campo} />
+          </label>
+          <label className="flex min-w-[9rem] flex-col gap-1">
+            <span className="font-semibold text-stone-700">Pasta</span>
+            <input
+              value={pasta}
+              onChange={(e) => setPasta(e.target.value)}
+              list="pastas-do-caderno"
+              placeholder="sem pasta"
+              className={campo}
+            />
+            <datalist id="pastas-do-caderno">
+              {pastasExistentes.map((p) => (
+                <option key={p} value={p} />
+              ))}
+            </datalist>
           </label>
           <label className="flex flex-col gap-1">
             <span className="font-semibold text-stone-700">Clave</span>

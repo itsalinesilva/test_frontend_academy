@@ -90,6 +90,22 @@ describe('o domínio', () => {
     expect(ligadas).toEqual([60, 66, 70]);
   });
 
+  it('E-5: pastas em ordem, sem repetição, e "sem pasta" por último', async () => {
+    const { agruparPorPasta, pastasDoCaderno } = await import('../../src/domain/caderno');
+    const ps = [
+      peca({ id: 'a', pasta: 'Estudos' }),
+      peca({ id: 'b', pasta: undefined }),
+      peca({ id: 'c', pasta: ' Arranjos ' }),
+      peca({ id: 'd', pasta: 'Estudos' }),
+    ];
+    expect(pastasDoCaderno(ps)).toEqual(['Arranjos', 'Estudos']);
+    expect(agruparPorPasta(ps).map((g) => [g.pasta, g.itens.map((i) => i.id)])).toEqual([
+      ['Arranjos', ['c']],
+      ['Estudos', ['a', 'd']],
+      [null, ['b']],
+    ]);
+  });
+
   it('nome de arquivo sem acento nem espaço', () => {
     expect(nomeDeArquivo('Minha peça nº 1')).toBe('minha-peca-n-1');
   });
@@ -151,6 +167,32 @@ describe('🔴 na tela', () => {
     await user.click(item);
     expect(await screen.findByDisplayValue('Estudo em dó', {}, { timeout: 20000 })).toBeInTheDocument();
     expect(document.getElementById('caderno-pauta')!.querySelectorAll('[data-nota]')).toHaveLength(3);
+  });
+
+  it('E-5: guardar em pasta, ver agrupado no hub e filtrar pela pasta', async () => {
+    const user = userEvent.setup();
+    const guardar = async (titulo: string, pasta: string) => {
+      irPara('/studio/score');
+      const { unmount } = montar();
+      await user.type(await screen.findByLabelText('Título', {}, { timeout: 20000 }), titulo);
+      if (pasta) await user.type(screen.getByLabelText('Pasta'), pasta);
+      await user.click(screen.getByRole('button', { name: 'Escrever dó' }));
+      await user.click(screen.getByRole('button', { name: /Guardar no caderno/ }));
+      await screen.findByText('Guardada no seu caderno.');
+      unmount();
+    };
+    await guardar('Invenção', 'Estudos');
+    await guardar('Rascunho', '');
+
+    irPara('/studio');
+    montar();
+    await screen.findByRole('button', { name: /^Invenção/ }, { timeout: 20000 });
+    expect(screen.getByRole('heading', { name: /Estudos · 1/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Sem pasta · 1/ })).toBeInTheDocument();
+
+    await user.click(within(screen.getByRole('group', { name: 'Pastas' })).getByRole('button', { name: 'Estudos' }));
+    expect(screen.queryByRole('button', { name: /^Rascunho/ })).toBeNull();
+    expect(screen.getByRole('button', { name: /^Invenção/ })).toBeInTheDocument();
   });
 
   it('guardar sem título é recusado, e o motivo aparece', async () => {
