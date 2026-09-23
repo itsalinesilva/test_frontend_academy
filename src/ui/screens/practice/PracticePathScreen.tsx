@@ -14,14 +14,15 @@ import {
   skip,
   startLesson,
 } from '../../../domain/music-exercise';
-import { Level, generateLesson } from '../../../domain/exercise-generator';
+import { generateLesson } from '../../../domain/exercise-generator';
 import {
   Achievement,
   StreakGoal,
   completionSequence,
   shouldOfferStreakGoal,
 } from '../../../domain/lesson-completion';
-import { pathRepository } from '../../../repositories/practice-path.repository';
+import { ExerciseVerdict, pathRepository } from '../../../repositories/practice-path.repository';
+import { nivelDaProximaLicao } from '../../../domain/calibragem-do-percurso';
 
 /**
  * O percurso, de ponta a ponta.
@@ -60,14 +61,29 @@ export const PracticePathScreen: React.FC = () => {
   const [completed, setCompleted] = useState<Dimension[] | null>(null);
   const [streakGoal, setStreakGoal] = useState<StreakGoal | null>(null);
   const [etapa, setEtapa] = useState<Etapa>({ fase: 'MAPA' });
+  /** O que a pessoa achou dos exercícios — e é o que decide o nível da próxima lição. */
+  const [vereditos, setVereditos] = useState<ExerciseVerdict[]>([]);
 
   useEffect(() => {
-    if (!userId) return;
+    /**
+     * 🔴 SEM SESSÃO, O PERCURSO ABRE VAZIO — e não fica carregando para sempre.
+     *
+     * `/practice` é público, e o visitante chegava aqui para ver "Abrindo o
+     * percurso…" sem fim: o carregamento só terminava com um usuário. O
+     * `concluir` abaixo já sabia lidar com visitante; a abertura, não.
+     */
+    if (!userId) {
+      setCompleted((atual) => atual ?? []);
+      return;
+    }
     let vivo = true;
     pathRepository.forUser(userId).then((record) => {
       if (!vivo) return;
       setCompleted(record.completed);
       setStreakGoal(record.streakGoal);
+    });
+    pathRepository.verdictsForUser(userId).then((v) => {
+      if (vivo) setVereditos(v);
     });
     return () => {
       vivo = false;
@@ -88,7 +104,9 @@ export const PracticePathScreen: React.FC = () => {
         (a, c) => (a * 31 + c.charCodeAt(0)) >>> 0,
         7
       );
-      const exercicios = generateLesson(dimension, Level.RECOGNIZE, semente, EXERCICIOS_POR_LICAO);
+      /** L-7: o nível sai do que a pessoa disse sobre esta seção. */
+      const nivel = nivelDaProximaLicao(dimension, vereditos);
+      const exercicios = generateLesson(dimension, nivel, semente, EXERCICIOS_POR_LICAO);
 
       if (exercicios.length === 0) {
         /**
@@ -104,8 +122,29 @@ export const PracticePathScreen: React.FC = () => {
         lesson: startLesson(`percurso_${dimension}`, exercicios),
       });
     },
-    [userId]
+    [userId, vereditos]
   );
+
+  /**
+   * O "muito fácil / muito difícil" grava, e volta na próxima abertura.
+   *
+   * Só com sessão: o veredito é da pessoa, e sem ela não há de quem guardar.
+   * Sem destino, a tela nem mostra os botões — é a regra dela.
+   *
+   * "Reportar um problema" NÃO é ligado aqui: a tela promete "vamos revisar",
+   * e sem servidor o relato ficaria no navegador de quem reportou, onde
+   * ninguém da equipe o veria. Ver L-7a no CLAUDE_TODO.
+   */
+  const aoCalibrar = userId
+    ? (exerciseId: string, verdict: 'EASY' | 'HARD') => {
+        const v: ExerciseVerdict = { userId, exerciseId, verdict, em: new Date().toISOString() };
+        void pathRepository.recordVerdict(v);
+        setVereditos((atuais) => [
+          ...atuais.filter((a) => a.exerciseId !== exerciseId),
+          v,
+        ]);
+      }
+    : undefined;
 
   const aoResponder = (isCorrect: boolean) => {
     if (etapa.fase !== 'LICAO') return;
@@ -149,6 +188,7 @@ export const PracticePathScreen: React.FC = () => {
         onAnswer={aoResponder}
         onSkip={() => setEtapa({ ...etapa, lesson: skip(etapa.lesson) })}
         onExit={() => setEtapa({ fase: 'MAPA' })}
+        onRateDifficulty={aoCalibrar}
       />
     );
   }

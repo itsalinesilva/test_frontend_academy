@@ -85,7 +85,9 @@ lugar certo continuam precisando de navegador e de olho humano — `F.2`.
 | L-4 | **`checkEmptyLiteralAsData`** — apuração sobre vazio literal dentro de tela. Não há sintaxe errada: há uma ausência, e ausência não tem forma. Nove formas cobertas, `useState([])` isento | ✅ |
 | L-5 | **`AtlasFilter.genreId` filtrava um campo que NÃO EXISTIA** na obra. Quem filtrasse por gênero recebia a lista inteira, sem sinal nenhum de que o recorte foi ignorado. `generoId` acrescentado à obra e aplicado; `checkAtlasFilterIsApplied` recusa que volte | ✅ |
 | L-6 | Meu próprio teste da ponte nasceu **vazio**: filtrei por `'LICOES'` e o tipo real é `'LESSON_COMPLETED'`. A lista vinha vazia, o `for` não rodava, e o teste passava medindo nada — dentro do arquivo escrito para impedir exatamente isso. Trava de não-vacuidade acrescentada | ✅ |
-| L-7 | `recordVerdict` e `verdictsForUser` do percurso: gravam e leem veredito de exercício, e **ninguém chama nenhum dos dois**. O botão de "achei fácil / achei difícil" não existe na tela | ⬜ |
+| L-7 | **"Muito fácil / muito difícil" passa a ser ouvido.** O percurso grava o veredito e o LÊ: numa seção com mais fáceis que difíceis, a próxima lição sobe de Reconhecer para Nomear (`calibragem-do-percurso.ts`). A frase "o percurso se ajusta a isso" deixou de ser promessa vazia | ✅ `calibragem-do-percurso.test.tsx`, de ponta a ponta |
+| L-7a | ⛔ **"Reportar um problema" continua desligado, de propósito.** A tela promete "vamos revisar este exercício", e sem servidor o relato ficaria no navegador de quem reportou — ninguém da equipe o veria. Liga quando houver endpoint de relato | ⛔ servidor |
+| L-7b | 🔴 **O visitante ficava preso em "Abrindo o percurso…".** `/practice` é público, e `PracticePathScreen` só terminava de carregar com sessão. Sem sessão, o percurso agora abre vazio | ✅ |
 | L-8 | `atlasRepository.salvarObra` órfão — nada no produto grava obra no Atlas. É o que `B-5` vai usar | ⬜ |
 | L-9 | 9 métodos mortos em `academy.service` (`submitAssessment`, `submitActivity` e outros) são **duplicatas** das versões `*Attempt` que funcionam. Superfície não verificada, confunde quem lê | ⬜ |
 | L-10 | `earTrainingCorrect` fica zerado: a medição distingue ACOUSTICS de SIMBÓLICA, e nenhuma das duas é percepção auditiva. A missão correspondente não avança — que é a verdade até a sessão carregar o tipo do exercício | ⬜ |
@@ -700,7 +702,7 @@ As telas estão prontas; o **motor** não.
 | LAB-1b | Rótulo "Interval" em inglês na descrição da dimensão de intervalo | ✅ Intervalo |
 | LAB-2 | **2 dos 5 níveis não são renderizáveis** | ⬜ |
 | LAB-3 | Conteúdo semeado fino: **5 competências e 11 exercícios**. As 5 árvores escritas à mão saíram (LX-1) | ⬜ |
-| LAB-4 | `recordVerdict` e `verdictsForUser` órfãos — o botão de "achei fácil / difícil" não existe na tela | ⬜ |
+| LAB-4 | Veredito de dificuldade — ver L-7 | ✅ |
 | LAB-5 | `earTrainingCorrect` zerado: a medição não distingue percepção auditiva, e creditar seria adivinhar | ⬜ |
 | M-8 | **Domínio de notificação** — tipo, alvo, leitura, repositório por usuário | ⬜ |
 | M-9 | `WorkDetailScreen` e `MusicGraphScreen` ainda têm obra e grafo escritos na tela | ⬜ |
