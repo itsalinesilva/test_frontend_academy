@@ -15,7 +15,7 @@ const navigate = vi.fn();
 let caminho = '/';
 
 vi.mock('../../src/ui/navigation/router', () => ({
-  useRouter: () => ({ currentPath: caminho, navigate }),
+  useRouter: () => ({ query: new URLSearchParams(), currentPath: caminho, navigate }),
 }));
 
 let sessao: { userId: string | null; ehAdmin: boolean; carregando: boolean } = {

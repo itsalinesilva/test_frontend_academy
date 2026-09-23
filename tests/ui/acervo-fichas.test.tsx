@@ -23,7 +23,7 @@ const navigate = vi.fn();
 let paramId = 'bach-johann-sebastian';
 
 vi.mock('../../src/ui/navigation/router', () => ({
-  useRouter: () => ({
+  useRouter: () => ({ query: new URLSearchParams(),
     navigate,
     params: { id: paramId },
     currentPath: '/acervo',

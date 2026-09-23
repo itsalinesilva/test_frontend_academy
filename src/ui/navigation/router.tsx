@@ -17,7 +17,18 @@ export interface RouteAuthorizationResult {
 export type RouteParams = Record<string, string | undefined>;
 
 export interface RouterContextValue {
+  /** O caminho, SEM a consulta: `/search`, e não `/search?q=bach`. */
   currentPath: string;
+  /**
+   * A consulta do endereço (`?q=bach` → `query.get('q')`).
+   *
+   * 🔴 SEPARADA DO CAMINHO, e é isso que faz a rota casar. Antes, o caminho
+   * carregava a consulta junto, e `/search?q=bach` não era igual a
+   * `/search`: toda busca feita pelo cabeçalho caía na página de não
+   * encontrado, e o botão "Entrar" da guarda (`/auth/login?voltar=…`)
+   * também.
+   */
+  query: URLSearchParams;
   /**
    * Parâmetros da rota. `string | undefined` deliberadamente: o tipo
    * anterior (`Record<string, string>`) afirmava presença que a rota não
@@ -167,6 +178,18 @@ export const CANONICAL_ROUTES = {
   CREDENTIAL_BY_CODE: '/credential/:codigo',
 } as const;
 
+/**
+ * Separa caminho e consulta. `/a/b?x=1` → `{ caminho: '/a/b', consulta: 'x=1' }`.
+ *
+ * Exportada porque é a regra que o roteador inteiro segue: rota, parâmetros,
+ * autorização e trilha olham o CAMINHO; só a tela olha a consulta.
+ */
+export function separarEndereco(endereco: string): { caminho: string; consulta: string } {
+  const i = endereco.indexOf('?');
+  if (i < 0) return { caminho: endereco || '/', consulta: '' };
+  return { caminho: endereco.slice(0, i) || '/', consulta: endereco.slice(i + 1) };
+}
+
 function getInitialPath(): string {
   if (typeof window === 'undefined') return '/';
   if (window.location.hash && window.location.hash.startsWith('#/')) {
@@ -206,10 +229,8 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
     crumbs.push({ label: 'Academia', path: '/academia' });
     if (path === '/academia/catalog') {
       crumbs.push({ label: 'Catálogo de Cursos' });
-    } else if (path === '/academia/search') {
+    } else if (path === '/academia/search' || path === '/academia/search/results') {
       crumbs.push({ label: 'Busca Acadêmica' });
-    } else if (path === '/academia/search/results') {
-      crumbs.push({ label: 'Resultados da Busca' });
     } else if (path.startsWith('/academia/category/')) {
       crumbs.push({ label: `Cátedra: ${params.id || 'Especialização'}` });
     } else if (path.startsWith('/academia/program/')) {
@@ -408,7 +429,8 @@ const DYNAMIC_ROUTES = ALL_ROUTES.filter((r) => r.includes(':')).sort((a, b) => 
   return literals(b) - literals(a);
 });
 
-export function resolveRouteParams(path: string): RouteParams {
+export function resolveRouteParams(endereco: string): RouteParams {
+  const path = separarEndereco(endereco).caminho;
   // Rota estática tem precedência absoluta sobre padrão dinâmico.
   if (STATIC_ROUTES.has(path)) return {};
 
@@ -425,7 +447,10 @@ export interface RouterProviderProps {
 }
 
 export const RouterProvider: React.FC<RouterProviderProps> = ({ currentUser = null, children }) => {
-  const [currentPath, setCurrentPath] = useState<string>(getInitialPath);
+  /** O endereço inteiro, com a consulta. As telas recebem as duas partes separadas. */
+  const [endereco, setCurrentPath] = useState<string>(getInitialPath);
+  const { caminho: currentPath, consulta } = useMemo(() => separarEndereco(endereco), [endereco]);
+  const query = useMemo(() => new URLSearchParams(consulta), [consulta]);
   const [authorization, setAuthorization] = useState<RouteAuthorizationResult>({ authorized: true });
 
   const checkAuth = useCallback(
@@ -445,7 +470,7 @@ export const RouterProvider: React.FC<RouterProviderProps> = ({ currentUser = nu
       if (typeof window !== 'undefined') {
         window.location.hash = `#${sanitized}`;
       }
-      checkAuth(sanitized);
+      checkAuth(separarEndereco(sanitized).caminho);
     },
     [checkAuth]
   );
@@ -465,7 +490,7 @@ export const RouterProvider: React.FC<RouterProviderProps> = ({ currentUser = nu
       if (typeof window !== 'undefined') {
         window.history.replaceState(null, '', `#${sanitized}`);
       }
-      checkAuth(sanitized);
+      checkAuth(separarEndereco(sanitized).caminho);
     },
     [checkAuth]
   );
@@ -475,7 +500,7 @@ export const RouterProvider: React.FC<RouterProviderProps> = ({ currentUser = nu
     const handleHashChange = () => {
       const hashPath = window.location.hash ? window.location.hash.replace('#', '') : '/';
       setCurrentPath(hashPath);
-      checkAuth(hashPath);
+      checkAuth(separarEndereco(hashPath).caminho);
     };
 
     window.addEventListener('hashchange', handleHashChange);
@@ -496,6 +521,7 @@ export const RouterProvider: React.FC<RouterProviderProps> = ({ currentUser = nu
 
   const value: RouterContextValue = {
     currentPath,
+    query,
     params,
     breadcrumbs,
     navigate,
@@ -519,3 +545,20 @@ export const useRouteParams = (): RouteParams => {
   const router = useRouter();
   return router.params;
 };
+
+/**
+ * Para onde ir depois de entrar: o `?voltar=` que a guarda deixou no endereço.
+ *
+ * Só caminho INTERNO é aceito — começando por uma barra e não por duas. Um
+ * `voltar` que apontasse para outro site transformaria o botão de entrar num
+ * redirecionamento para qualquer lugar, com a cara da plataforma.
+ *
+ * O destino do pipeline de autenticação vence quando não é a entrada comum:
+ * quem ainda não concluiu o cadastro vai para o onboarding antes de voltar.
+ */
+export function destinoAposEntrar(destinoDoPipeline: string, voltar: string | null): string {
+  if (destinoDoPipeline !== '/') return destinoDoPipeline;
+  if (!voltar || !voltar.startsWith('/') || voltar.startsWith('//')) return destinoDoPipeline;
+  if (voltar.startsWith('/auth/')) return destinoDoPipeline;
+  return voltar;
+}

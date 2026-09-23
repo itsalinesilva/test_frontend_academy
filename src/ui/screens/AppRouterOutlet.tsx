@@ -30,7 +30,6 @@ import { CourseCurriculumScreen } from './academy/CourseCurriculumScreen';
 import { CourseProgressScreen } from './academy/CourseProgressScreen';
 import { InteractiveLessonScreen } from './academy/InteractiveLessonScreen';
 import { AcademyQuizScreen } from './academy/AcademyQuizScreen';
-import { AcademySearchResultsScreen } from './academy/AcademySearchResultsScreen';
 import { AcademicProfileScreen } from './academy/AcademicProfileScreen';
 
 // Practice & Score Canonical Pillars
@@ -269,10 +268,11 @@ export const AppRouterOutlet: React.FC = () => {
   if (currentPath === '/academia/catalog') {
     return <AcademyCatalogScreen />;
   }
-  if (currentPath === '/academia/search/results') {
-    return <AcademySearchResultsScreen />;
-  }
-  if (currentPath === '/academia/search') {
+  /**
+   * `/academia/search/results` era outra tela, duplicata desta (QA-4). O
+   * endereço continua abrindo — agora na busca unificada, que lê o `?q=`.
+   */
+  if (currentPath === '/academia/search' || currentPath === '/academia/search/results') {
     return <AcademySearchScreen />;
   }
   if (currentPath.startsWith('/academia/category/')) {

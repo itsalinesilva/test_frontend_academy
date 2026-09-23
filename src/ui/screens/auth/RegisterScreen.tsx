@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { useRouter } from '../../navigation/router';
+import { useRouter, destinoAposEntrar } from '../../navigation/router';
 import { authService } from '../../../services/application/auth.service';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
@@ -20,7 +20,9 @@ import { GraduationCap, ShieldCheck, Users, Loader2 } from 'lucide-react';
  * a ser coletado no Onboarding, depois que sabemos quem é a pessoa.
  */
 export const RegisterScreen: React.FC = () => {
-  const { navigate } = useRouter();
+  const { navigate, query } = useRouter();
+  /** A guarda manda `?voltar=` com a tela que pediu a entrada. */
+  const voltar = query.get('voltar');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,14 +33,14 @@ export const RegisterScreen: React.FC = () => {
       try {
         const session = await authService.authenticateWithGoogle({ idToken, nonce });
         const result = await authService.executePostAuthPipeline(session.user);
-        navigate(result.destination);
+        navigate(destinoAposEntrar(result.destination, voltar));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Não foi possível criar sua conta.');
       } finally {
         setIsAuthenticating(false);
       }
     },
-    [navigate]
+    [navigate, voltar]
   );
 
   return (
@@ -75,7 +77,7 @@ export const RegisterScreen: React.FC = () => {
           />
 
           <ContaLocalDeDesenvolvimento
-            onEntrou={(destino) => navigate(destino)}
+            onEntrou={(destino) => navigate(destinoAposEntrar(destino, voltar))}
             onErro={(m) => setError(m || null)}
           />
 

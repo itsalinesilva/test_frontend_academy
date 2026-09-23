@@ -25,7 +25,7 @@ const norm = (p) => relative('.', p).split('\\').join('/');
 const EXPECTED = {
   // ACADEMY
   AcademyHomeScreen: ['C', 'CATALOG'], AcademyCatalogScreen: ['B', 'CATALOG'],
-  AcademySearchScreen: ['B', 'CATALOG'], AcademySearchResultsScreen: ['B', 'CATALOG'],
+  AcademySearchScreen: ['B', 'CATALOG'],
   CategoryDetailScreen: ['B', 'CATALOG'], ProgramDetailScreen: ['C', 'CATALOG'],
   PathDetailScreen: ['C', 'CATALOG'], CourseDetailScreen: ['C', 'CATALOG'],
   CourseCurriculumScreen: ['C', 'CATALOG'], CourseProgressScreen: ['C', 'CATALOG'],

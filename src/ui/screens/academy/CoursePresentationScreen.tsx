@@ -59,8 +59,14 @@ type FiltroDeNota = 'todas' | '5' | '4' | '3' | '2' | '1';
  * dizer isso é mais útil que inventar 4,8 estrelas.
  */
 export const CoursePresentationScreen: React.FC = () => {
-  const { navigate } = useRouter();
+  const { navigate, query } = useRouter();
   const params = useRouteParams();
+  /**
+   * A busca da Academia acha uma DISCIPLINA e manda para o curso com
+   * `?modulo=<id>`. Abrir o curso na aba "sobre" faria a pessoa procurar de
+   * novo o que acabou de achar: abre nas disciplinas, com ela expandida.
+   */
+  const moduloProcurado = query.get('modulo');
   const courseId = params.courseId ?? params.id ?? '';
 
   const [curso, setCurso] = useState<AcademyCourse | null>(null);
@@ -72,8 +78,8 @@ export const CoursePresentationScreen: React.FC = () => {
   const [usuario, setUsuario] = useState<User | null>(null);
   const [filtroDeNota, setFiltroDeNota] = useState<FiltroDeNota>('todas');
   const [carregando, setCarregando] = useState(true);
-  const [secao, setSecao] = useState<Secao>('sobre');
-  const [expandida, setExpandida] = useState<string | null>(null);
+  const [secao, setSecao] = useState<Secao>(moduloProcurado ? 'disciplinas' : 'sobre');
+  const [expandida, setExpandida] = useState<string | null>(moduloProcurado);
   const [fixo, setFixo] = useState(false);
 
   const alvoDoHero = useRef<HTMLDivElement>(null);

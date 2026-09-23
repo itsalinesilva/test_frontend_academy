@@ -6,8 +6,19 @@ import { Search, ArrowRight, BookOpen, Compass, Layers } from 'lucide-react';
 import { academyService } from '../../../services/application/academy.service';
 
 export const SearchScreen: React.FC = () => {
-  const { navigate } = useRouter();
-  const [query, setQuery] = useState('');
+  const { navigate, query: consulta } = useRouter();
+  /**
+   * O termo vem do endereço: é assim que o campo do cabeçalho o entrega
+   * (`/search?q=…`). Começar vazio obrigaria a digitar de novo o que acabou
+   * de ser digitado.
+   */
+  const termoDoEndereco = consulta.get('q') ?? '';
+  const [query, setQuery] = useState(termoDoEndereco);
+
+  /** Uma nova busca pelo cabeçalho, estando já aqui, troca o termo. */
+  useEffect(() => {
+    setQuery(termoDoEndereco);
+  }, [termoDoEndereco]);
 
   const [resultados, setResultados] = useState<Resultado[] | null>(null);
 

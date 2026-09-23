@@ -32,7 +32,7 @@ import { WorldsAtlasScreen } from '../../src/ui/screens/worlds/WorldsAtlasScreen
 const navegou = vi.fn();
 
 vi.mock('../../src/ui/navigation/router', () => ({
-  useRouter: () => ({
+  useRouter: () => ({ query: new URLSearchParams(),
     navigate: navegou,
     params: {},
     currentPath: '/worlds',

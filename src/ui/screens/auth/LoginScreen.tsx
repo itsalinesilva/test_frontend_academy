@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { useRouter } from '../../navigation/router';
+import { useRouter, destinoAposEntrar } from '../../navigation/router';
 import { authService } from '../../../services/application/auth.service';
 import { Card } from '../../components/base/Card';
 import { GoogleSignInButton } from '../../components/auth/GoogleSignInButton';
@@ -20,7 +20,9 @@ import { GraduationCap, ShieldCheck, HardDrive, Loader2 } from 'lucide-react';
  *    (S-04), incluindo os e-mails administrativos em texto no código.
  */
 export const LoginScreen: React.FC = () => {
-  const { navigate } = useRouter();
+  const { navigate, query } = useRouter();
+  /** A guarda manda `?voltar=` com a tela que pediu a entrada. */
+  const voltar = query.get('voltar');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +35,7 @@ export const LoginScreen: React.FC = () => {
         const result = await authService.executePostAuthPipeline(
           (await authService.getActiveSession())!.user
         );
-        navigate(result.destination);
+        navigate(destinoAposEntrar(result.destination, voltar));
       } catch (err) {
         setError(
           err instanceof Error
@@ -44,7 +46,7 @@ export const LoginScreen: React.FC = () => {
         setIsAuthenticating(false);
       }
     },
-    [navigate]
+    [navigate, voltar]
   );
 
   return (
@@ -81,7 +83,7 @@ export const LoginScreen: React.FC = () => {
             />
 
             <ContaLocalDeDesenvolvimento
-              onEntrou={(destino) => navigate(destino)}
+              onEntrou={(destino) => navigate(destinoAposEntrar(destino, voltar))}
               onErro={(m) => setError(m || null)}
             />
 

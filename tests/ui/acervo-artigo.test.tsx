@@ -22,7 +22,7 @@ const navegou = vi.fn();
 const rota = { id: '' };
 
 vi.mock('../../src/ui/navigation/router', () => ({
-  useRouter: () => ({
+  useRouter: () => ({ query: new URLSearchParams(),
     navigate: navegou,
     params: rota,
     currentPath: `/acervo/artigo/${rota.id}`,

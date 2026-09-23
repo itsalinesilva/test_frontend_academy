@@ -30,7 +30,7 @@ vi.mock('../../src/ui/hooks/useCurrentUser', () => ({ useCurrentUser: () => sess
 
 const navigate = vi.fn();
 vi.mock('../../src/ui/navigation/router', () => ({
-  useRouter: () => ({
+  useRouter: () => ({ query: new URLSearchParams(),
     navigate,
     params: {},
     currentPath: '/practice',

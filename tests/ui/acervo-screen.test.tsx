@@ -26,7 +26,7 @@ import { AcervoScreen } from '../../src/ui/screens/acervo/AcervoScreen';
  */
 
 vi.mock('../../src/ui/navigation/router', () => ({
-  useRouter: () => ({
+  useRouter: () => ({ query: new URLSearchParams(),
     navigate: vi.fn(),
     params: {},
     currentPath: '/acervo',

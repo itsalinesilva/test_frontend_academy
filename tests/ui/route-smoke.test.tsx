@@ -33,7 +33,7 @@ vi.mock('../../src/ui/navigation/router', async () => {
   );
   return {
     ...real,
-    useRouter: () => ({
+    useRouter: () => ({ query: new URLSearchParams(),
       currentPath: rotaAtual.valor,
       navigate,
       params: { id: 'x', courseId: 'x', moduleId: 'x', lessonId: 'x' },

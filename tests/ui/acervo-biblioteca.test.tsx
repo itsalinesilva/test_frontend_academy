@@ -20,7 +20,7 @@ import { acervoService } from '../../src/services/application/acervo.service';
  */
 
 vi.mock('../../src/ui/navigation/router', () => ({
-  useRouter: () => ({
+  useRouter: () => ({ query: new URLSearchParams(),
     navigate: vi.fn(),
     params: {},
     currentPath: '/acervo',
