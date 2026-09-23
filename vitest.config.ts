@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import os from 'os';
 
 export default defineConfig({
   plugins: [react()],
@@ -36,6 +37,20 @@ export default defineConfig({
      * e o certo: o barato de antes era nao testar.
      */
     testTimeout: 60000,
+    /*
+     * METADE DOS NUCLEOS, e nao o padrao (todos menos um).
+     *
+     * Cada processo carrega e converte o catalogo de cinco megabytes. Com onze
+     * processos numa maquina de doze nucleos e 17 GB, eles disputavam memoria:
+     * em 2026-09-22 a suite completa levou de 113 a mais de 270 segundos, e
+     * duas rodadas falharam por tempo esgotado em arquivos que nao tinham
+     * mudado. Com seis, medido na mesma maquina: 110 segundos, verde.
+     *
+     * Paralelismo alem do que a memoria aguenta nao acelera — troca espera por
+     * falha intermitente, que ensina a ignorar vermelho.
+     */
+    maxWorkers: Math.max(2, Math.floor(os.cpus().length / 2)),
+    minWorkers: 1,
   },
   resolve: { alias: { '@': path.resolve(__dirname, './src') } },
 });

@@ -52,7 +52,7 @@ function semInterpolacao(t: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// NV-3 — toda navegação com consulta abre uma tela, e não o 404
+// RT-1 — toda navegação com consulta abre uma tela, e não o 404
 // ---------------------------------------------------------------------------
 
 /**
@@ -81,7 +81,7 @@ beforeEach(() => {
   irPara('/');
 });
 
-describe('🔴 NV-3 — navegação com consulta', () => {
+describe('🔴 RT-1 — navegação com consulta', () => {
   it('a varredura acha as navegações com consulta — e não está vazia', () => {
     /** Guarda da guarda: um regex quebrado acharia zero e passaria sempre. */
     expect(DESTINOS_COM_CONSULTA.length).toBeGreaterThanOrEqual(5);

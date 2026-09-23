@@ -10,7 +10,7 @@ import { compassosDaFaixa, compassosQueTransbordam, temposDoCompasso } from '../
 import { alturaNaPauta, NoteItem } from '../../src/ui/components/domain/Staff';
 
 /**
- * NV-5 + PZ-C — "Abrir na partitura" abre A OBRA, e a pauta a desenha.
+ * RT-3 + PZ-C — "Abrir na partitura" abre A OBRA, e a pauta a desenha.
  *
  * A tela mostrava sempre o mesmo exemplo, com todas as notas na mesma altura,
  * e o botão da ficha da obra chegava aqui sem a obra.

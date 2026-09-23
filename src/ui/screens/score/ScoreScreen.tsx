@@ -11,7 +11,7 @@ import { useTocarFaixa } from '../../hooks/useTocarFaixa';
 import { FileMusic, ArrowRight, BookOpen } from 'lucide-react';
 
 /**
- * A PARTITURA DO ESTÚDIO — agora ligada ao Acervo (NV-5, PZ-C).
+ * A PARTITURA DO ESTÚDIO — agora ligada ao Acervo (RT-3, PZ-C).
  *
  * O QUE HAVIA
  * -----------

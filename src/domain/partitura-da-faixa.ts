@@ -3,7 +3,7 @@
  *
  * A tela de partitura do Estúdio mostrava sempre o mesmo exemplo fixo, e o
  * botão "Abrir na partitura" da ficha da obra levava a ela sem levar a obra
- * (NV-5). Aqui a escrita de uma transcrição vira compassos. Qual faixa é de
+ * (RT-3). Aqui a escrita de uma transcrição vira compassos. Qual faixa é de
  * qual obra, quem responde é o serviço do Acervo — o domínio não lê dados.
  */
 

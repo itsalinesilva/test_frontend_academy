@@ -90,7 +90,7 @@ lugar certo continuam precisando de navegador e de olho humano — `F.2`.
 | L-9 | 9 métodos mortos em `academy.service` (`submitAssessment`, `submitActivity` e outros) são **duplicatas** das versões `*Attempt` que funcionam. Superfície não verificada, confunde quem lê | ⬜ |
 | L-10 | `earTrainingCorrect` fica zerado: a medição distingue ACOUSTICS de SIMBÓLICA, e nenhuma das duas é percepção auditiva. A missão correspondente não avança — que é a verdade até a sessão carregar o tipo do exercício | ⬜ |
 | L-11 | **Modo Casa no Atlas** — `filtrosDoModoCasa` existe no domínio e a tela do Atlas ainda não o usa para recortar por Casa | ⬜ |
-| S-5 | **Tela de admin** para editar questão e criar lição: o domínio existe, a interface não | ⬜ |
+| S-5 | **Tela de admin** para editar questão e criar lição — questão: editor de livretos ligado ao console (EE-17); lição: "Nova lição" em `/founder/licoes` (EE-22b) (curado em 2026-09-22) | ✅ |
 | S-6 | Template de questão e de lição, para duplicar e editar em vez de escrever do zero | ⬜ |
 
 ---
@@ -116,10 +116,10 @@ maior efeito: sem ele, todo o resto é código que ninguém roda.
 
 | # | Item | Estado |
 |:---|:---|:---:|
-| A-1 | **Rotas para as oito telas** — exercício, encerramento, percurso, liga, matrícula, missões, réguas, ofensiva | ⬜ |
-| A-2 | **Persistência do que elas produzem** — nós concluídos, meta de ofensiva, veredito de dificuldade. `practice-path.repository.ts` já existe e não é chamado por ninguém | ⬜ |
+| A-1 | **Rotas para as oito telas** — as oito estão montadas: exercício, encerramento e mapa em `/practice/path`; liga, missões e ofensiva em `/practice/league`; matrícula e réguas em `/practice/enrollment` (curado em 2026-09-22) | ✅ |
+| A-2 | **Persistência do que elas produzem** — nós concluídos e meta de ofensiva gravam por `practice-path.repository` (`completeNode`, `setStreakGoal`). O veredito de dificuldade segue órfão, e é o L-7 (curado em 2026-09-22) | ✅ parcial → L-7 |
 | A-3 | **Gerador de exercícios** a partir das 21 dimensões. Sem ele o percurso tem forma e não tem conteúdo | 🔄 `exercise-generator.ts` cobre 6 dimensões nos níveis 0, 1 e 3 · faltam 15 dimensões e os níveis 2 e 4 |
-| A-4 | Contêiner que costura percurso → lição → encerramento → mapa atualizado | ⬜ |
+| A-4 | Contêiner que costura percurso → lição → encerramento → mapa atualizado — é `PracticePathScreen` (curado em 2026-09-22) | ✅ |
 
 ## Fase A-bis — a estrutura institucional e social
 
@@ -199,7 +199,7 @@ estão abaixo.
 | M-13 | **Os cinco livros do Conservatório aparecem bloqueados**, com capítulos e questões **contados do livreto** e o motivo escrito: existem e estão em curadoria editorial. Aparecer bloqueado ≠ não aparecer | ✅ |
 | M-14 | 🔴 **Três defeitos que os meus próprios testes acharam na tela**: (a) o estado vazio do container escondia os FILTROS — quem apertasse um recorte sem resultado ficava preso; (b) `setCarregando(true)` a cada tecla desmontava o campo de busca e **só a primeira letra entrava**; (c) o repositório semeava só no construtor, então limpar os dados do site esvaziava o catálogo **para sempre** | ✅ |
 | M-15 | `checkComingSoonPromise` lia só `uiFiles()` — promessa escrita em SERVIÇO e renderizada pela tela passava intacta. Ampliado para todo o `src`, com exceção estreita para `motivo:`, que por contrato explica um estado declarado | ✅ 5 formas |
-| M-16 | Ficha de obra em tela de detalhe — `fichaDaObra` existe no serviço e nenhuma rota a abre | ⬜ |
+| M-16 | Ficha de obra em tela de detalhe — `/acervo/obra/:id` abre `ObraScreen` com `fichaDaObra` (curado em 2026-09-22) | ✅ |
 | M-17 | 🔴 **HAVIA DOIS MODELOS DE OBRA, E A TELA LIA O VAZIO.** O acervo canônico tinha 17 obras e `WorldsAtlasScreen` mostrava **zero**, porque lia `DEFAULT_WORKS: never[] = []`. Unificado: `DEFAULT_WORKS` passa a **derivar** do acervo canônico, e o mapa vira uma vista dele em vez de um segundo acervo | ✅ |
 | M-18 | **O `atlas.repository` nunca semeou obra nenhuma** — e não por descuido: semear de `never[] = []` é o mesmo que não semear. Com a lista derivada, passou a haver o que semear. Conferido na LEITURA, para que limpar os dados do site não esvazie o mapa até recarregar | ✅ |
 | M-19 | 🔴 **`HISTORICAL_MASTERS` NÃO EXISTE EM LUGAR NENHUM** do repositório, e a verificação de prontidão apontava para ela. "Constante ausente" contava como acervo vazio — o número estava certo por **acidente**, porque o acervo era vazio mesmo. Quando deixasse de ser, a medição continuaria errada e ninguém saberia. Reapontada para `seed-acervo.ts` | ✅ |
@@ -219,7 +219,7 @@ estão abaixo.
 | AC-1f | **`useTocarFaixa`** — a síntese saiu de dentro do `GlobalPlayer` e virou hook. Copiá-la para a ficha daria duas implementações do mesmo som, e elas divergiriam na primeira correção | ✅ |
 | AC-1g | **Retrato ausente mostra INICIAIS**, nunca foto de banco genérico — inventar a aparência de uma pessoa real é pior que não ter foto. Já houve aqui um avatar de docente tirado de banco | ✅ |
 | AC-1h | **0 de 14 compositores têm imagem.** Depende de ingestão do acervo de imagens livres, que depende de rede | ⬜ |
-| AC-1i | `/score?obra=` e `/practice?obra=` — as duas telas ainda **ignoram** o parâmetro | ⬜ |
+| AC-1i | `/score?obra=` abre a obra (RT-3). `/practice?obra=` ainda **ignora** a obra: o Laboratório não tem prática sobre peça do repertório — é trabalho de domínio, e não de rota | ⬜ só /practice |
 | AC-2a | 🔴 **A PROJEÇÃO DESCARTAVA CAMPO QUE A FONTE DECLARAVA.** `FaixaDoPlayer` sempre trouxe `tonalidade`, `compasso` e `bpm`, e a projeção para `CanonicalWork` jogava os três fora. Tonalidade é campo padrão em todo catálogo musical. Perder informação numa projeção **não quebra nada e não aparece** — o tipo aceita o campo ausente e ninguém sente falta do que nunca viu | ✅ com teste |
 | AC-2b | **Registro alinhado ao padrão dos catálogos de música** — número de catálogo, tonalidade, compasso, andamento, instrumentação, movimentos. `docs/harness/84_CATALOG_STANDARD.md` | ✅ 10 de 14 campos |
 | AC-2c | **Filtro de tonalidade**, com as opções saindo do próprio acervo | ✅ |
@@ -235,8 +235,8 @@ estão abaixo.
 | AC-4a | **Os recortes editoriais da fonte NÃO entram na catalogação.** `popular` e `recommended` são juízo de terceiro; nenhum filtro os usa e nenhuma ficha os exibe. Chamá-los de "descendência" ou "os principais" afirmaria uma relação que o dado não carrega | ✅ |
 | AC-4b | **Domínio de artigos** — `src/domain/article.ts`. É onde a curadoria vive, separada e assinada: auditoria, percurso, ensaio. Toda obra citada explica **por quê**; percurso nivelado não pula nível; artigo não cita fonte externa no texto | ✅ 9 casos |
 | AC-4c | **Dois artigos de fábrica**: *Concerto ocidental — uma auditoria de repositório* e *Repositório nivelado para violinistas* (introdução de mini-curso + lista de partituras de domínio público por nível, com o motivo de cada escolha) | ✅ |
-| AC-4d | **Engine de artigos na tela de admin** — o domínio existe, os dois artigos existem, e não há tela para criar nem editar | ⬜ |
-| AC-4e | **Tela de leitura do artigo** e a seção de artigos no Acervo | ⬜ |
+| AC-4d | **Engine de artigos na tela de admin** — `/founder/artigos` (EE-10 a EE-16) (curado em 2026-09-22) | ✅ |
+| AC-4e | **Tela de leitura do artigo** — `/acervo/artigo/:id` (`ArtigoScreen`), com teste que abre cada artigo pela rota de verdade (curado em 2026-09-22) | ✅ |
 | AC-5 | **ANTIGUIDADE COBERTA, com tipo de registro próprio.** Não é ficha de obra: `RegistroDaAntiguidade` declara **suporte** (pedra, papiro, cópia medieval, tratado), **estado** (completo, fragmentário, ilegível), extensão sobrevivente e procedência. 8 registros reais — Seikilos, Hinos délficos, Orestes, Mesomedes, Oxirrinco, tratados de harmônica, doutrina do ethos, aulos. Reconstrução é declarada **como hipótese**; demonstração aponta para faixa que existe | ✅ 11 casos |
 | AC-8 | **1.349 PARTITURAS EXTRAÍDAS E CATALOGADAS** — Piano 685 · Violão 360 · Voz 245 · Violino 40 · Violoncelo 11 · Flauta 8. Licença declarada por peça: 728 domínio público, 621 Creative Commons. **638 reconciliadas** com o acervo (47%) — sobrenome ambíguo NÃO casa, porque escolher um Bach entre três seria adivinhar | ✅ |
 | AC-8b | **AS 1.349 PARTITURAS VIRARAM OBRA DO CATÁLOGO.** Estavam só em `partituras.json`: não apareciam em busca de obra, não tinham ficha, não contavam nas facetas. Agora **26.288 obras** — 1.366 com partitura ligada | ✅ |
@@ -356,13 +356,16 @@ e por que 11.046 ainda não casaram — está em
 | DF-4 | Praticar duas vezes no mesmo dia **não conta dobrado**, e a virada de mês e de ano continuam sendo dias consecutivos — aritmética de data, e não subtração de milissegundos sobre o relógio local | ✅ |
 | NV-3 | 🔴 **O NIVELAMENTO ENTRAVA DIRETO EM TEORIA.** Ele foi montado sobre `exercise-generator`, que só cobre Teoria — "escolher a cadeira" seria escolha de mentira, com as três levando ao mesmo lugar. Agora é sobre os **livretos**: 378 questões escritas à mão, 126 capítulos, 5 trilhas, distratores que correspondem a enganos reais | ✅ 31 casos de domínio |
 | NV-4 | A tela abre num **seletor de cadeira**. História aparece com as **três trilhas separadas** — os cursos dela não são sequência um do outro, e fundi-los colocaria quem sabe música brasileira a responder sobre a ocidental, lendo o erro como lacuna | ✅ |
-| NV-5 | **`/score?obra=` abria um exemplo fixo.** A tela de partitura lia três "obras Urtext" escritas nela mesma, que só trocavam o título; "Auditar" tocava um motivo fixo; armadura e fórmula trocavam um rótulo. Agora a obra vem pelo endereço via `acervoService` (`fichaDaObra` + `faixaDaObra`), o repertório é o real (as transcrições próprias), o player toca as notas da peça e o andamento muda o som. Os controles que não mudavam nada saíram. **Estúdio 10/10 — prontidão 7/7** | ✅ `partitura-do-estudio.test.tsx` |
+| NV-5 | **Trocar de cadeira e encerrar, a qualquer momento**, com a saída no topo e não escondida no rodapé. Teste do qual só se sai respondendo até o fim é teste que se abandona fechando a aba | ✅ 18 casos de tela |
 | PZ-A | 🔴🔴 **A PAUTA DESENHAVA TODA NOTA NA LINHA DO MEIO.** `Staff` tinha `noteY = 54` fixo ("aproximado pela oitava"), sem acidente, sem linha suplementar e sem duração. É o componente dos blocos de pentagrama das lições e da figura dos exercícios: "que nota está escrita na pauta?" mostrava a MESMA cabeça de nota qualquer que fosse a resposta. Os testes contavam cabeças de nota, nunca a posição — por isso nada acusou. Reescrito: altura por grau e clave (sol, fá, dó), linhas suplementares, ♯ ♭ ♮, cabeça vazada/cheia, haste pelo lado certo, colchete, barras de compasso pela duração | ✅ `pauta-na-altura.test.tsx`: posição conferida contra a resposta do gerador |
 | PZ-B | **O acorde saía em fila — um arpejo.** Figura e bloco STAFF ganham `simultaneas`: empilhado, haste única, segunda para o outro lado da haste. O gerador marca os acordes; o editor de blocos tem a caixa "notas simultâneas", e o "ouvir" toca junto | ✅ |
 | GR-1 | 🔴 **GUARDAS DE REGRESSÃO — cada defeito de 2026-09-22 vira regra por CLASSE, e não por caso** (`tests/ui/guardas-de-regressao.test.tsx`): (a) todo `navigate` com consulta, achado por varredura, abre no roteador de verdade sem 404; (b) só repositório que funde a camada publicada toca chave editorial; (c) a pasta de `npm run livros` é a que a Biblioteca anuncia; (d) espera do Acervo sem prazo explícito falha; (e) todo campo do pacote tem nome no recado da exportação — campo novo sem nome falha | ✅ 16 casos |
 | GR-2 | **A guarda (d) achou mais 16 esperas sem prazo** nos testes do Acervo — a mesma classe da que quebrou a suíte completa hoje. Todas com prazo; a regra ficou sem lista de exceções | ✅ |
 | GR-3 | 🔴 **O pente fino tinha a suposição errada.** `checkNavigationTargets` tira a consulta antes de comparar — supunha que o roteador fazia o mesmo, e por isso ficou verde com toda busca no 404. E só lia aspas simples: `${...}` escapava. Agora lê template (cada interpolação vira segmento de exemplo), com variante e caso limpo novos na tabela, e o limite declarado aponta para a guarda que confere o roteador | ✅ |
 | GR-4 | **Processo: o ✅ do EE-5 era falso** — serviço ligado, tela ausente. Item de engine só fecha com o caminho da PESSOA testado (tela) e o do ALUNO (leitura) | regra |
+| GR-5 | 🔴 **Eu sobrescrevi um item do TODO.** Três itens novos foram numerados NV-3/4/5 sobre o nivelamento, e o NV-5 original foi trocado. Restaurado; a série virou RT. `tests/todo-ids.test.ts` recusa ID repetido novo (os 31 repetidos antigos ficam congelados) | ✅ |
+| GR-6 | **Curadoria dos ⬜ que já estavam resolvidos** — 14 itens fechados, cada um com a prova no texto (rota, tela ou item que resolveu): S-5, A-1, A-2 (parcial → L-7), A-4, M-16, AC-4d, AC-4e, BI-9, B-6i, G-1, G-2, G-3; AC-1i e LAB-3 reescritos com o que de fato falta | ✅ |
+| GR-7 | 🔴 **A suíte ficava mais lenta E instável com paralelismo demais.** 11 processos carregando o catálogo de 5 MB disputavam memória: 113 a 270+ s, duas rodadas vermelhas por tempo esgotado. `maxWorkers` = metade dos núcleos: 110–137 s, verde | ✅ |
 | PZ-C | **`ScoreContainer` desenhava toda nota na mesma altura.** Cada compasso agora é desenhado pela mesma regra do `Staff` (`alturaNaPauta`) — as duas pautas da plataforma não podem discordar —, com pausa, acidente, linha suplementar e duração. O repertório passou a guardar a ESCRITA (`escrita`), porque a frequência não guarda grafia: si♭ e lá♯ são o mesmo número. Limite declarado: nota que atravessa a barra fica inteira no compasso em que começa, e a tela diz quais | ✅ |
 | NV-6 | 🔴 **Sair no meio NÃO é errar.** Quem parou no capítulo 12 sem errar não tem ponto de entrada medido — tem um **piso**. O diagnóstico de quem interrompeu diz isso e não aponta módulo; dizer "você entra no 12" afirmaria o que o teste não apurou | ✅ |
 | NV-7 | O módulo casa por **curso e capítulo**, e não só pelo número: capítulo 3 existe em todos os cursos, e casar só pelo número entregaria o capítulo 3 de Teoria a quem nivelou Violino | ✅ |
@@ -414,9 +417,10 @@ e por que 11.046 ainda não casaram — está em
 | QA-2 | 🔴🔴 **E ELE ACHOU NOVE TELAS CONSTRUÍDAS E INVISÍVEIS.** Não davam erro, não quebravam nada: ninguém chegava nelas. Entre elas **o editor de livretos** (610 linhas, de onde saem as 378 questões do nivelamento), **a Biblioteca do Conservatório** (254 linhas) e **o simulador de violino** | ✅ 8 ligadas |
 | QA-3 | Ligadas: livretos e Biblioteca no console; classificação, defensiva, perfil de prática e matrícula nas sub-rotas do Laboratório; simulador de violino idem; recuperação de conta no rodapé do login — quem não consegue entrar não tinha como chegar à única tela que explica por quê | ✅ `pilares-sub-rotas` foi de 14 para 19 casos |
 | QA-4 | **`AcademySearchResultsScreen` era duplicata.** Conferido campo a campo: nenhum dos onze campos de busca levava a ela — cada um filtra na própria tela ou manda para a busca global. Era versão anterior da busca da Academia, só de cursos. **Fundidas**: a busca da Academia ganhou o que só a outra tinha (termo por `?q=`, filtro por cátedra, ordenação), e `/academia/search/results` continua abrindo, agora nela | ✅ |
-| NV-3 | 🔴🔴 **TODA BUSCA PELO CABEÇALHO CAÍA NO 404.** O campo navega para `/search?q=termo`, e o roteador comparava o endereço INTEIRO com as rotas: `/search?q=bach` ≠ `/search`. O teste do cabeçalho conferia só a navegação; ninguém conferia se a tela abria. O mesmo derrubava o **"Entrar" da guarda** (`/auth/login?voltar=…`), os dois botões da ficha da obra (`/score?obra=…`, `/practice?obra=…`) e contaminava o id do curso vindo da busca (`/academia/course/X?modulo=Y`). **Corrigido no roteador**: `currentPath` é só o caminho, e a consulta vem em `query` | ✅ `busca-com-termo.test.tsx`, roteador de verdade |
-| NV-4 | **Nenhum código lia consulta nenhuma.** Agora: a busca global e a da Academia abrem com o termo; entrar e criar conta **voltam para a tela que pediu a entrada** (só caminho interno — `//outro-site` e `https://…` são recusados); o curso aberto pela busca abre nas disciplinas, com a procurada expandida | ✅ |
-| NV-5 | ⬜ **`/score?obra=` e `/practice?obra=` abrem, mas ignoram a obra.** A tela de partitura não tem noção de obra — mostra um exemplo fixo. É o item 1 da fila de curadoria (Estúdio: integrado?) | ⬜ |
+| RT-0 | **Série RT = roteador.** Estes três itens foram registrados como NV-3, NV-4 e NV-5 por engano — o prefixo NV já era do nivelamento, e o NV-5 original chegou a ser sobrescrito. Restaurado; os commits `3444437` e `6931cc6` citam os números antigos | nota |
+| RT-1 | 🔴🔴 **TODA BUSCA PELO CABEÇALHO CAÍA NO 404.** O campo navega para `/search?q=termo`, e o roteador comparava o endereço INTEIRO com as rotas: `/search?q=bach` ≠ `/search`. O teste do cabeçalho conferia só a navegação; ninguém conferia se a tela abria. O mesmo derrubava o **"Entrar" da guarda** (`/auth/login?voltar=…`), os dois botões da ficha da obra (`/score?obra=…`, `/practice?obra=…`) e contaminava o id do curso vindo da busca (`/academia/course/X?modulo=Y`). **Corrigido no roteador**: `currentPath` é só o caminho, e a consulta vem em `query` | ✅ `busca-com-termo.test.tsx`, roteador de verdade |
+| RT-2 | **Nenhum código lia consulta nenhuma.** Agora: a busca global e a da Academia abrem com o termo; entrar e criar conta **voltam para a tela que pediu a entrada** (só caminho interno — `//outro-site` e `https://…` são recusados); o curso aberto pela busca abre nas disciplinas, com a procurada expandida | ✅ |
+| RT-3 | **`/score?obra=` abria um exemplo fixo.** A tela de partitura lia três "obras Urtext" escritas nela mesma, que só trocavam o título; "Auditar" tocava um motivo fixo; armadura e fórmula trocavam um rótulo. Agora a obra vem pelo endereço via `acervoService` (`fichaDaObra` + `faixaDaObra`), o repertório é o real (as transcrições próprias), o player toca as notas da peça e o andamento muda o som. Os controles que não mudavam nada saíram. **Estúdio 10/10 — prontidão 7/7** | ✅ `partitura-do-estudio.test.tsx` |
 | QA-5 | O verificador mede a **TELA**, e não a grafia da rota. A primeira versão acusava `/kids`, que divide o mesmo `if` com `/kids/manage` — a tela abre, só aquele apelido não é usado. Acusar ali seria pedir um link inútil, e é assim que um verificador perde a confiança de quem o lê | ✅ |
 | QA-6 | Limites declarados: fragmentos (`.includes`), prefixos dinâmicos (`/practice/attempt/`) e pontos de entrada externos ficam de fora — o caminho deles é montado em tempo de execução, e medir por literal acusaria todos | ✅ |
 | FL-1 | 🔴 **SEIS CASOS VERDES ISOLADOS E VERMELHOS NA SUÍTE COMPLETA.** `acervo-fichas` usava `waitFor` com o prazo padrão de um segundo para carregar 5 MB de catálogo. Numa máquina ociosa cabia; com a suíte em paralelo, não. Teste que depende de a máquina estar livre não mede o código — mede a máquina, e ensina a ignorar vermelho | ✅ 9 esperas com prazo explícito |
@@ -578,7 +582,7 @@ e por que 11.046 ainda não casaram — está em
 | BI-7a | Aba **Artigos** nova. Artigo é produção própria assinada, **e não obra de acervo** — há teste recusando que ele entre na contagem de obras. Cada um diz quantas obras do acervo percorre | ✅ |
 | BI-7b | O que está fechado aparece **com a contagem**: esconder o que existe e ainda não abriu daria a impressão de que a escola produziu menos do que produziu | ✅ |
 | BI-8 | **Falta o preview de visitante ser distinto do acesso completo** — hoje `/acervo` e as duas fichas são `publica` integralmente. Decidir se a ficha completa deve exigir nome, sabendo que o Acervo é a porta de entrada de quem chega por busca | ⬜ |
-| BI-9 | **Falta a tela de leitura do artigo.** A listagem existe e abrir um artigo ainda não leva a lugar nenhum | ⬜ |
+| BI-9 | **A tela de leitura do artigo existe** — ver AC-4e (curado em 2026-09-22) | ✅ |
 
 | NV-1 | 🔴🔴 **O ACERVO NÃO ESTAVA EM NENHUMA BARRA.** Rota pública desde o início, com 24.957 obras, 234 pessoas e ficha de obra e de compositor — **e sem porta na interface**, nem para quem já entrou. A causa: havia **três listas de navegação independentes** mantidas à mão (`AppShell`, `ExplorarMenu`, `CirculationBar`), cada uma com itens diferentes. Três listas divergem na primeira tela nova | ✅ corrigido |
 | NV-1a | `src/ui/navigation/pilares.ts` — **uma fonte só**. Cinco pilares: **Academia · Laboratório · Acervo · Estúdio · Perfil**. As três superfícies leem dela, e há teste recusando rota escrita à mão em qualquer uma | ✅ 12 casos |
@@ -693,7 +697,7 @@ As telas estão prontas; o **motor** não.
 |:---|:---|:---:|
 | LAB-1 | **15 das 21 dimensões sem gerador** — o Laboratório funciona sobre um sexto do vocabulário que a arquitetura define | ⬜ |
 | LAB-2 | **2 dos 5 níveis não são renderizáveis** | ⬜ |
-| LAB-3 | Conteúdo semeado fino: 5 árvores, 5 competências, 10 exercícios | ⬜ |
+| LAB-3 | Conteúdo semeado fino: **5 competências e 11 exercícios**. As 5 árvores escritas à mão saíram (LX-1) | ⬜ |
 | LAB-4 | `recordVerdict` e `verdictsForUser` órfãos — o botão de "achei fácil / difícil" não existe na tela | ⬜ |
 | LAB-5 | `earTrainingCorrect` zerado: a medição não distingue percepção auditiva, e creditar seria adivinhar | ⬜ |
 | M-8 | **Domínio de notificação** — tipo, alvo, leitura, repositório por usuário | ⬜ |
@@ -750,7 +754,7 @@ embora os slugs de era já sejam os mesmos.
 | B-6f | **`linkOficial()`** — aponta para a **página** do IMSLP, Mutopia, MusicBrainz, Commons ou Wikidata, na ordem de quem tem a edição. Linkar página é o que todo catálogo faz; o `robots.txt` proíbe **rastrear** `/images/`, que é baixar e não citar. Sem identificador, não inventa link | ✅ |
 | B-6g | **A §11.5 e a §11.7 da `21.1` diziam "nenhum link para fora".** Corrigido em §11.4-bis: a proibição vale para o **fluxo de estudo** — não interromper quem está numa lição —, e não para a ficha de catálogo, onde omitir onde a obra está seria esconder informação de quem veio procurá-la | ✅ |
 | B-6h | Dois verificadores novos: `checkAcervoCatalogaTudo` (a listagem não pode voltar a filtrar por licença) e `checkDisponibilidadeTemMotivo` (toda saída explica). Cobertos ponta a ponta | ✅ |
-| B-6i | **Ficha de obra na tela** — o domínio sabe dizer o modo, o motivo e o link, e nenhuma tela mostra isso ainda | ⬜ |
+| B-6i | **Ficha de obra na tela** — `ObraScreen` mostra o modo, o motivo e o link oficial da disponibilidade (curado em 2026-09-22) | ✅ |
 | B-7b | Adaptadores de **Open Opus, MusicBrainz, Commons, Internet Archive e Mutopia** — a porta está pronta e cada um é uma implementação dela | ⬜ |
 | B-7c | **Mutopia é a fonte de partitura**, e não o IMSLP: o `robots.txt` do IMSLP proíbe `/images/` e `/imglnks/`, que é exatamente onde os PDFs ficam. Obra livre não autoriza rastrear o servidor de ninguém. Mutopia dá LilyPond e MIDI — **símbolo**, que a plataforma renderiza nativamente | ⬜ |
 | B-7d | **`MusicKnowledgeService`** — nenhum adaptador escreve no domínio; todos devolvem candidatos e a reconciliação os põe lado a lado. Discordância de data de morte vira **conflito registrado** e derruba a confiança, em vez de ser resolvida em silêncio. Fonte fora do ar não derruba a ingestão | ✅ 27 casos |
@@ -819,9 +823,9 @@ Levantado em 18/09, respondendo à sua pergunta direta.
 
 | # | Item | Estado |
 |:---|:---|:---:|
-| G-1 | **Editar as 174 questões** — a camada editorial cobre bloco e título de seção, e deixa questão de fora | ⬜ |
-| G-2 | **Criar lição nova** a partir das estruturas existentes — não há função de criação em lugar nenhum | ⬜ |
-| G-3 | Editar os tipos de bloco que o `BlockEditor` não cobre — hoje só MARKDOWN, CALLOUT, CHECKPOINT e SLIDES | ⬜ |
+| G-1 | **Editar as questões** — o editor de livretos edita enunciado e alternativas das 378 questões, e o pacote as leva (EE-17, EE-18) (curado em 2026-09-22) | ✅ |
+| G-2 | **Criar lição nova** — EE-22b (curado em 2026-09-22) | ✅ |
+| G-3 | Editar os tipos de bloco — o editor de `/founder/licoes` cobre os 19 tipos, musicais inclusive (EE-2, BL-1) (curado em 2026-09-22) | ✅ |
 | G-4 | Editar simulados e provas | ⬜ |
 
 ## Fase H — qualidade do ferramental

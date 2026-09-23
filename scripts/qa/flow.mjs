@@ -70,7 +70,7 @@ export function checkNavigationTargets() {
    *
    * Tirar a consulta aqui é certo para a TABELA de rotas; que o ROTEADOR
    * também a tire é outra pergunta, e é conferida no roteador de verdade em
-   * `tests/ui/guardas-de-regressao.test.tsx` (NV-3: toda busca caía no 404
+   * `tests/ui/guardas-de-regressao.test.tsx` (RT-1: toda busca caía no 404
    * com este verificador verde).
    */
   const semInterpolacao = (t) => {
