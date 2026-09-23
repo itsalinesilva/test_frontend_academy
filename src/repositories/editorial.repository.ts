@@ -3,12 +3,53 @@ import { EditorialEdit, EditorialLesson } from '../domain/editorial-edit';
 import { EdicaoDeArtigo } from '../domain/editorial-artigo';
 import { SecaoEditadaDoLivro } from '../domain/book';
 import {
+  RemocaoEditorial,
+  TipoRemovivel,
+  aplicarRemocoes,
+  chaveDaRemocao,
   fundirArtigos,
   fundirEdicoes,
   fundirLicoesCriadas,
+  fundirRemocoes,
   fundirSecoesDeLivro,
 } from '../domain/pacote-editorial';
 import { camadaPublicada } from './camada-publicada';
+
+/**
+ * As remoções que valem agora: as publicadas e as deste navegador, a mais
+ * nova vence (EE-21f).
+ *
+ * Exportada porque TRÊS repositórios leem a camada — este, o da Academia
+ * (lições e edições no caminho do aluno) e o de livretos. Uma regra de
+ * remoção escrita em cada um seria três regras para manter em dia.
+ */
+export const CHAVE_DAS_REMOCOES = 'amd_editorial_removidos_v1';
+
+export function remocoesVigentes(storage: LocalStorageAdapter = new LocalStorageAdapter()): RemocaoEditorial[] {
+  return fundirRemocoes(
+    camadaPublicada().removidos,
+    storage.get<RemocaoEditorial[]>(CHAVE_DAS_REMOCOES) ?? []
+  ).resultado;
+}
+
+/** Registra, NESTE navegador, que um item publicado foi tirado. Vai no próximo pacote. */
+export function registrarRemocao(
+  storage: LocalStorageAdapter,
+  tipo: TipoRemovivel,
+  id: string,
+  removidoPor?: string
+): void {
+  const atuais = storage.get<RemocaoEditorial[]>(CHAVE_DAS_REMOCOES) ?? [];
+  const r: RemocaoEditorial = { tipo, id, removidoEm: new Date().toISOString(), removidoPor };
+  storage.set(CHAVE_DAS_REMOCOES, [...atuais.filter((x) => chaveDaRemocao(x) !== chaveDaRemocao(r)), r]);
+}
+
+/** Salvar de novo um item desfaz a remoção local dele — senão ela contaria como pendência à toa. */
+function esquecerRemocao(storage: LocalStorageAdapter, tipo: TipoRemovivel, id: string): void {
+  const atuais = storage.get<RemocaoEditorial[]>(CHAVE_DAS_REMOCOES) ?? [];
+  const resto = atuais.filter((x) => chaveDaRemocao(x) !== chaveDaRemocao({ tipo, id }));
+  if (resto.length !== atuais.length) storage.set(CHAVE_DAS_REMOCOES, resto);
+}
 
 /**
  * Camada editorial — as correções feitas por quem edita o Conservatório.
@@ -81,12 +122,16 @@ export interface EditorialRepository {
   salvarSecaoDeLivro(edicao: SecaoEditadaDoLivro): Promise<SecaoEditadaDoLivro>;
   reverterSecaoDeLivro(id: string): Promise<void>;
 
+  /** O que foi tirado do que estava publicado — publicado e local (EE-21f). */
+  removidos(): Promise<RemocaoEditorial[]>;
+
   /** Troca a camada inteira de uma vez — é o que a importação de pacote faz. */
   substituirTudo(entrada: {
     edicoes: EditorialEdit[];
     licoesCriadas: EditorialLesson[];
     artigos: EdicaoDeArtigo[];
     secoesDeLivro: SecaoEditadaDoLivro[];
+    removidos: RemocaoEditorial[];
   }): Promise<void>;
 }
 
@@ -115,7 +160,25 @@ export class PersistentEditorialRepository implements EditorialRepository {
 
   /** O que vale: o publicado, com o local por cima quando é mais novo. */
   private vigentes(): EditorialEdit[] {
-    return fundirEdicoes(camadaPublicada().edicoes, this.lista()).resultado;
+    return aplicarRemocoes(
+      fundirEdicoes(camadaPublicada().edicoes, this.lista()).resultado,
+      remocoesVigentes(this.storage),
+      'EDICAO',
+      (e) => e.id,
+      (e) => e.editadaEm
+    );
+  }
+
+  /** O item está na camada publicada? Então tirá-lo daqui não basta: é preciso registrar a remoção. */
+  private publicado(tipo: TipoRemovivel, id: string): boolean {
+    const p = camadaPublicada();
+    return {
+      EDICAO: () => p.edicoes.some((e) => e.id === id),
+      LICAO_CRIADA: () => p.licoesCriadas.some((l) => l.id === id),
+      ARTIGO: () => p.artigos.some((a) => a.artigoId === id),
+      SECAO_DE_LIVRO: () => p.secoesDeLivro.some((e) => e.id === id),
+      LIVRETO: () => p.livretos.some((l) => l.id === id),
+    }[tipo]();
   }
 
   public async todas(): Promise<EditorialEdit[]> {
@@ -150,15 +213,23 @@ export class PersistentEditorialRepository implements EditorialRepository {
     if (i >= 0) atuais[i] = gravada;
     else atuais.push(gravada);
     this.storage.set(this.CHAVE, atuais);
+    esquecerRemocao(this.storage, 'EDICAO', edicao.id);
     return gravada;
   }
 
-  /** Reverter apaga a edição: a lição volta a ser a publicada. */
+  /**
+   * Reverter apaga a edição: a lição volta ao conteúdo de fábrica.
+   *
+   * 🔴 Se a correção JÁ ESTAVA PUBLICADA, apagar a cópia local não bastava: a
+   * camada publicada a trazia de volta na leitura seguinte. Agora fica
+   * registrada a remoção, que viaja no próximo pacote (EE-21f).
+   */
   public async reverter(id: string): Promise<void> {
     this.storage.set(
       this.CHAVE,
       this.lista().filter((e) => e.id !== id)
     );
+    if (this.publicado('EDICAO', id)) registrarRemocao(this.storage, 'EDICAO', id);
   }
 
   public async historico(limite = 100): Promise<EditorialEdit[]> {
@@ -173,7 +244,13 @@ export class PersistentEditorialRepository implements EditorialRepository {
   }
 
   public async licoesCriadas(): Promise<EditorialLesson[]> {
-    return fundirLicoesCriadas(camadaPublicada().licoesCriadas, this.licoesLocais()).resultado;
+    return aplicarRemocoes(
+      fundirLicoesCriadas(camadaPublicada().licoesCriadas, this.licoesLocais()).resultado,
+      remocoesVigentes(this.storage),
+      'LICAO_CRIADA',
+      (l) => l.id,
+      (l) => l.criadaEm
+    );
   }
 
   public async salvarLicaoCriada(licao: EditorialLesson): Promise<EditorialLesson> {
@@ -184,6 +261,7 @@ export class PersistentEditorialRepository implements EditorialRepository {
     else atuais.push(licao);
 
     this.storage.set(this.CHAVE_LICOES, atuais);
+    esquecerRemocao(this.storage, 'LICAO_CRIADA', licao.id);
     return licao;
   }
 
@@ -193,6 +271,7 @@ export class PersistentEditorialRepository implements EditorialRepository {
       this.CHAVE_LICOES,
       atuais.filter((l) => l.id !== id)
     );
+    if (this.publicado('LICAO_CRIADA', id)) registrarRemocao(this.storage, 'LICAO_CRIADA', id);
   }
 
   private artigosLocais(): EdicaoDeArtigo[] {
@@ -200,7 +279,13 @@ export class PersistentEditorialRepository implements EditorialRepository {
   }
 
   public async artigos(): Promise<EdicaoDeArtigo[]> {
-    return fundirArtigos(camadaPublicada().artigos, this.artigosLocais()).resultado;
+    return aplicarRemocoes(
+      fundirArtigos(camadaPublicada().artigos, this.artigosLocais()).resultado,
+      remocoesVigentes(this.storage),
+      'ARTIGO',
+      (a) => a.artigoId,
+      (a) => a.editadaEm
+    );
   }
 
   public async salvarArtigo(edicao: EdicaoDeArtigo): Promise<EdicaoDeArtigo> {
@@ -220,6 +305,7 @@ export class PersistentEditorialRepository implements EditorialRepository {
     else atuais.push(gravada);
 
     this.storage.set(this.CHAVE_ARTIGOS, atuais);
+    esquecerRemocao(this.storage, 'ARTIGO', edicao.artigoId);
     return gravada;
   }
 
@@ -229,6 +315,7 @@ export class PersistentEditorialRepository implements EditorialRepository {
       this.CHAVE_ARTIGOS,
       atuais.filter((e) => e.artigoId !== artigoId)
     );
+    if (this.publicado('ARTIGO', artigoId)) registrarRemocao(this.storage, 'ARTIGO', artigoId);
   }
 
   private secoesLocais(): SecaoEditadaDoLivro[] {
@@ -236,7 +323,13 @@ export class PersistentEditorialRepository implements EditorialRepository {
   }
 
   public async secoesDeLivro(): Promise<SecaoEditadaDoLivro[]> {
-    return fundirSecoesDeLivro(camadaPublicada().secoesDeLivro, this.secoesLocais()).resultado;
+    return aplicarRemocoes(
+      fundirSecoesDeLivro(camadaPublicada().secoesDeLivro, this.secoesLocais()).resultado,
+      remocoesVigentes(this.storage),
+      'SECAO_DE_LIVRO',
+      (e) => e.id,
+      (e) => e.editadaEm
+    );
   }
 
   public async salvarSecaoDeLivro(edicao: SecaoEditadaDoLivro): Promise<SecaoEditadaDoLivro> {
@@ -247,6 +340,7 @@ export class PersistentEditorialRepository implements EditorialRepository {
     else atuais.push(edicao);
 
     this.storage.set(this.CHAVE_LIVROS, atuais);
+    esquecerRemocao(this.storage, 'SECAO_DE_LIVRO', edicao.id);
     return edicao;
   }
 
@@ -257,6 +351,11 @@ export class PersistentEditorialRepository implements EditorialRepository {
       this.CHAVE_LIVROS,
       atuais.filter((e) => e.id !== id)
     );
+    if (this.publicado('SECAO_DE_LIVRO', id)) registrarRemocao(this.storage, 'SECAO_DE_LIVRO', id);
+  }
+
+  public async removidos(): Promise<RemocaoEditorial[]> {
+    return remocoesVigentes(this.storage);
   }
 
   public async substituirTudo(entrada: {
@@ -264,11 +363,13 @@ export class PersistentEditorialRepository implements EditorialRepository {
     licoesCriadas: EditorialLesson[];
     artigos: EdicaoDeArtigo[];
     secoesDeLivro: SecaoEditadaDoLivro[];
+    removidos: RemocaoEditorial[];
   }): Promise<void> {
     this.storage.set(this.CHAVE, entrada.edicoes);
     this.storage.set(this.CHAVE_LICOES, entrada.licoesCriadas);
     this.storage.set(this.CHAVE_ARTIGOS, entrada.artigos);
     this.storage.set(this.CHAVE_LIVROS, entrada.secoesDeLivro);
+    this.storage.set(CHAVE_DAS_REMOCOES, entrada.removidos);
   }
 }
 

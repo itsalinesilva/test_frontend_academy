@@ -190,6 +190,7 @@ describe('o pacote leva as seções escritas', () => {
       artigos: [],
       livretos: [],
       secoesDeLivro: [edicao('prefacio', 'De 2020.', '2020-01-01T00:00:00.000Z')],
+      removidos: [],
     });
 
     const r = await servico.importarPacote(pacote);
@@ -218,6 +219,7 @@ describe('o pacote leva as seções escritas', () => {
       artigos: [],
       livretos: [],
       secoesDeLivro: [{ id: 'x', secaoId: 'prefacio', conteudo: 'x', editadaEm: '2026-01-01' }],
+      removidos: [],
     });
     expect((lerPacote(torta) as { motivo: string }).motivo).toMatch(/livroId/);
   });

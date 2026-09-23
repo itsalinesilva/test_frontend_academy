@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { EditorialService } from '../src/services/application/editorial.service';
 import { EditorialRepository } from '../src/repositories/editorial.repository';
 import { SecaoEditadaDoLivro } from '../src/domain/book';
+import { RemocaoEditorial } from '../src/domain/pacote-editorial';
 import {
   EditorialEdit,
   EditorialLesson,
@@ -96,13 +97,19 @@ class RepoDeMemoria implements EditorialRepository {
     licoesCriadas: EditorialLesson[];
     artigos: EdicaoDeArtigo[];
     secoesDeLivro: SecaoEditadaDoLivro[];
+    removidos: RemocaoEditorial[];
   }) {
     this.edicoes = entrada.edicoes;
     this.licoes = entrada.licoesCriadas;
     this.arts = entrada.artigos;
     this.secoes = entrada.secoesDeLivro;
+    this.rem = entrada.removidos;
   }
   public secoes: SecaoEditadaDoLivro[] = [];
+  public rem: RemocaoEditorial[] = [];
+  async removidos() {
+    return this.rem;
+  }
   async secoesDeLivro() {
     return this.secoes;
   }
@@ -565,13 +572,13 @@ describe('🔴 o PACOTE — como a edição sai do navegador', () => {
       edicoes: [{ id: 'x' }],
       licoesCriadas: [],
       artigos: [],
-      livretos: [], secoesDeLivro: [],
+      livretos: [], secoesDeLivro: [], removidos: [],
     });
     expect((lerPacote(edicaoTorta) as { motivo: string }).motivo).toMatch(/lessonId/);
   });
 
   it('🔴 pacote de outra versão é RECUSADO, e não adivinhado', () => {
-    const futuro = JSON.stringify({ versao: 99, edicoes: [], licoesCriadas: [], artigos: [], livretos: [], secoesDeLivro: [] });
+    const futuro = JSON.stringify({ versao: 99, edicoes: [], licoesCriadas: [], artigos: [], livretos: [], secoesDeLivro: [], removidos: [] });
     const r = lerPacote(futuro) as { ok: false; motivo: string };
 
     expect(r.ok).toBe(false);
@@ -616,7 +623,7 @@ describe('🔴 o PACOTE — como a edição sai do navegador', () => {
       edicoes: [antiga],
       licoesCriadas: [],
       artigos: [],
-      livretos: [], secoesDeLivro: [],
+      livretos: [], secoesDeLivro: [], removidos: [],
     });
 
     const r = await servico.importarPacote(pacote);

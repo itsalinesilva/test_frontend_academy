@@ -54,6 +54,7 @@ const VAZIA: PacoteEditorial = {
   artigos: [],
   livretos: [],
   secoesDeLivro: [],
+  removidos: [],
 };
 
 let estado: EstadoDaCamada = { tipo: 'ausente' };

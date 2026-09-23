@@ -51,8 +51,75 @@ import { SecaoEditadaDoLivro } from './book';
  * Subiu para 3 com os livretos, e para 4 com as seções escritas dos livros da
  * Biblioteca — pela mesma razão: um pacote que não traz a lista não pode ser
  * lido como "nenhuma seção escrita".
+ *
+ * Subiu para 5 com as REMOÇÕES (EE-21f): sem elas, desfazer o que já estava
+ * publicado era impossível — o item voltava na leitura seguinte.
  */
-export const VERSAO_DO_PACOTE = 4;
+export const VERSAO_DO_PACOTE = 5;
+
+/**
+ * 🔴 O QUE FOI TIRADO DO QUE ESTAVA PUBLICADO (EE-21f).
+ *
+ * O pacote só sabia ACRESCENTAR. Reverter uma correção já publicada, apagar
+ * um artigo escrito pela curadoria ou excluir um livreto funcionava no
+ * navegador de quem fez — e o item voltava na próxima leitura, porque a
+ * camada publicada ainda o trazia.
+ *
+ * A remoção esconde o item de mesmo tipo e id cujo carimbo é ANTERIOR a ela.
+ * Editar de novo depois gera carimbo mais novo, e o item volta: é a mesma
+ * regra "a mais nova vence" do resto do pacote, e por isso não há caso
+ * especial para "desfazer a remoção".
+ */
+export type TipoRemovivel = 'EDICAO' | 'LICAO_CRIADA' | 'ARTIGO' | 'SECAO_DE_LIVRO' | 'LIVRETO';
+
+export interface RemocaoEditorial {
+  tipo: TipoRemovivel;
+  /** O id do item: edição, lição criada, artigo (`artigoId`), seção ou livreto. */
+  id: string;
+  removidoEm: string;
+  removidoPor?: string;
+}
+
+export const chaveDaRemocao = (r: Pick<RemocaoEditorial, 'tipo' | 'id'>) => `${r.tipo}::${r.id}`;
+
+/** Tira os itens que uma remoção mais nova esconde. */
+export function aplicarRemocoes<T>(
+  itens: readonly T[],
+  removidos: readonly RemocaoEditorial[],
+  tipo: TipoRemovivel,
+  id: (x: T) => string,
+  carimbo: (x: T) => string
+): T[] {
+  const porChave = new Map(removidos.filter((r) => r.tipo === tipo).map((r) => [r.id, r.removidoEm]));
+  return itens.filter((x) => {
+    const quando = porChave.get(id(x));
+    return !quando || Date.parse(carimbo(x)) > Date.parse(quando);
+  });
+}
+
+/** As remoções de dois lados, a mais nova vence por tipo e id. */
+export function fundirRemocoes(
+  atuais: readonly RemocaoEditorial[],
+  doPacote: readonly RemocaoEditorial[]
+): { resultado: RemocaoEditorial[]; adicionadas: number; substituidas: number; mantidas: number } {
+  const porChave = new Map(atuais.map((r) => [chaveDaRemocao(r), r]));
+  let adicionadas = 0;
+  let substituidas = 0;
+  let mantidas = 0;
+  for (const nova of doPacote) {
+    const atual = porChave.get(chaveDaRemocao(nova));
+    if (!atual) {
+      porChave.set(chaveDaRemocao(nova), nova);
+      adicionadas++;
+    } else if (Date.parse(nova.removidoEm) > Date.parse(atual.removidoEm)) {
+      porChave.set(chaveDaRemocao(nova), nova);
+      substituidas++;
+    } else {
+      mantidas++;
+    }
+  }
+  return { resultado: [...porChave.values()], adicionadas, substituidas, mantidas };
+}
 
 export interface PacoteEditorial {
   versao: number;
@@ -85,6 +152,8 @@ export interface PacoteEditorial {
    * — e `npm run livros` imprimiria o texto de partida.
    */
   secoesDeLivro: SecaoEditadaDoLivro[];
+  /** O que foi tirado do que estava publicado. */
+  removidos: RemocaoEditorial[];
 }
 
 export interface ResumoDoPacote {
@@ -93,6 +162,7 @@ export interface ResumoDoPacote {
   artigos: number;
   livretos: number;
   secoesDeLivro: number;
+  removidos: number;
   /** Quantas questões viajam no pacote. É a medida que importa a quem revisa. */
   questoes: number;
   /** Quantas lições distintas o pacote toca. */
@@ -107,6 +177,7 @@ export function montarPacote(entrada: {
   artigos: EdicaoDeArtigo[];
   livretos: Livreto[];
   secoesDeLivro: SecaoEditadaDoLivro[];
+  removidos: RemocaoEditorial[];
   exportadoPor?: string;
   agora?: Date;
 }): PacoteEditorial {
@@ -119,6 +190,7 @@ export function montarPacote(entrada: {
     artigos: entrada.artigos,
     livretos: entrada.livretos,
     secoesDeLivro: entrada.secoesDeLivro,
+    removidos: entrada.removidos,
   };
 }
 
@@ -134,6 +206,7 @@ export function resumirPacote(p: PacoteEditorial): ResumoDoPacote {
     artigos: p.artigos.length,
     livretos: p.livretos.length,
     secoesDeLivro: p.secoesDeLivro.length,
+    removidos: p.removidos.length,
     questoes: p.livretos.reduce(
       (n, l) => n + l.capitulos.reduce((m, c) => m + c.questoes.length, 0),
       0
@@ -218,6 +291,20 @@ export function lerPacote(texto: string): LeituraDoPacote {
     return { ok: false, motivo: 'O pacote está sem a lista de seções dos livros.' };
   }
 
+  if (!Array.isArray(p.removidos)) {
+    return { ok: false, motivo: 'O pacote está sem a lista de remoções.' };
+  }
+
+  const TIPOS: TipoRemovivel[] = ['EDICAO', 'LICAO_CRIADA', 'ARTIGO', 'SECAO_DE_LIVRO', 'LIVRETO'];
+  for (const [i, r] of p.removidos.entries()) {
+    if (!r || typeof r !== 'object' || !TIPOS.includes((r as RemocaoEditorial).tipo)) {
+      return { ok: false, motivo: `A remoção ${i + 1} não diz de que tipo é o item removido.` };
+    }
+    if (typeof (r as RemocaoEditorial).id !== 'string' || typeof (r as RemocaoEditorial).removidoEm !== 'string') {
+      return { ok: false, motivo: `A remoção ${i + 1} está sem o id do item ou sem a data.` };
+    }
+  }
+
   /**
    * Conferência de forma, item a item.
    *
@@ -285,6 +372,7 @@ export function lerPacote(texto: string): LeituraDoPacote {
       artigos: p.artigos as EdicaoDeArtigo[],
       livretos: p.livretos as Livreto[],
       secoesDeLivro: p.secoesDeLivro as SecaoEditadaDoLivro[],
+      removidos: p.removidos as RemocaoEditorial[],
     },
   };
 }

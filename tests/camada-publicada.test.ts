@@ -24,13 +24,13 @@ import { EditorialLesson } from '../src/domain/editorial-edit';
 
 const vazio = () =>
   JSON.stringify({
-    versao: 4,
+    versao: 5,
     exportadoEm: '2026-09-22T00:00:00.000Z',
     edicoes: [],
     licoesCriadas: [],
     artigos: [],
     livretos: [],
-    secoesDeLivro: [],
+    secoesDeLivro: [], removidos: [],
   });
 
 /** Uma lição do seed com um bloco markdown, para corrigir. */

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { EditorialService } from '../src/services/application/editorial.service';
 import { EditorialRepository } from '../src/repositories/editorial.repository';
 import { SecaoEditadaDoLivro } from '../src/domain/book';
+import { RemocaoEditorial } from '../src/domain/pacote-editorial';
 import { EditorialEdit, EditorialLesson } from '../src/domain/editorial-edit';
 import {
   EdicaoDeArtigo,
@@ -83,13 +84,19 @@ class RepoDeMemoria implements EditorialRepository {
     licoesCriadas: EditorialLesson[];
     artigos: EdicaoDeArtigo[];
     secoesDeLivro: SecaoEditadaDoLivro[];
+    removidos: RemocaoEditorial[];
   }) {
     this.edicoes = e.edicoes;
     this.licoes = e.licoesCriadas;
     this.arts = e.artigos;
     this.secoes = e.secoesDeLivro;
+    this.rem = e.removidos;
   }
   public secoes: SecaoEditadaDoLivro[] = [];
+  public rem: RemocaoEditorial[] = [];
+  async removidos() {
+    return this.rem;
+  }
   async secoesDeLivro() {
     return this.secoes;
   }
@@ -470,7 +477,7 @@ describe('os artigos entram no PACOTE', () => {
       edicoes: [],
       licoesCriadas: [],
       artigos: [antiga],
-      livretos: [], secoesDeLivro: [],
+      livretos: [], secoesDeLivro: [], removidos: [],
     });
 
     const r = await servico.importarPacote(pacote);
@@ -487,7 +494,7 @@ describe('os artigos entram no PACOTE', () => {
       versao: VERSAO_DO_PACOTE,
       edicoes: [],
       licoesCriadas: [],
-      livretos: [], secoesDeLivro: [],
+      livretos: [], secoesDeLivro: [], removidos: [],
     });
     const r = await servico.importarPacote(semArtigos);
 
@@ -501,7 +508,7 @@ describe('os artigos entram no PACOTE', () => {
       edicoes: [],
       licoesCriadas: [],
       artigos: [{ conteudo: bom() }],
-      livretos: [], secoesDeLivro: [],
+      livretos: [], secoesDeLivro: [], removidos: [],
     });
 
     const r = await servico.importarPacote(torto);

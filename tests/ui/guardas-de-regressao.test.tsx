@@ -224,7 +224,7 @@ describe('EE-20 — o recado da exportação', () => {
      * falhar, em vez de viajar calado.
      */
     const campos = Object.keys(
-      montarPacote({ edicoes: [], licoesCriadas: [], artigos: [], livretos: [], secoesDeLivro: [] })
+      montarPacote({ edicoes: [], licoesCriadas: [], artigos: [], livretos: [], secoesDeLivro: [], removidos: [] })
     ).filter((k) => !['versao', 'exportadoEm', 'exportadoPor'].includes(k));
     const NOME: Record<string, RegExp> = {
       edicoes: /correç/,
@@ -232,8 +232,9 @@ describe('EE-20 — o recado da exportação', () => {
       artigos: /artigo/,
       livretos: /livreto/,
       secoesDeLivro: /seç(ão|ões) de livro/,
+      removidos: /remoç(ão|ões)/,
     };
-    expect(VERSAO_DO_PACOTE).toBeGreaterThanOrEqual(4);
+    expect(VERSAO_DO_PACOTE).toBeGreaterThanOrEqual(5);
     for (const c of campos) {
       expect(NOME[c], `campo "${c}" do pacote sem nome no recado`).toBeDefined();
       expect(recado.textContent).toMatch(NOME[c]);

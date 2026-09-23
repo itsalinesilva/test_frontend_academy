@@ -54,7 +54,8 @@ const EstadoDaPublicacao: React.FC = () => {
       Publicado para o aluno: pacote de {new Date(r.exportadoEm).toLocaleDateString('pt-BR')}
       {r.exportadoPor ? `, por ${r.exportadoPor}` : ''} — {contar(r.edicoes, 'correção', 'correções')},{' '}
       {contar(r.licoesCriadas, 'lição criada', 'lições criadas')}, {contar(r.artigos, 'artigo', 'artigos')},{' '}
-      {contar(r.livretos, 'livreto', 'livretos')} e {contar(r.secoesDeLivro, 'seção de livro', 'seções de livro')}.
+      {contar(r.livretos, 'livreto', 'livretos')}, {contar(r.secoesDeLivro, 'seção de livro', 'seções de livro')} e{' '}
+      {contar(r.removidos, 'remoção', 'remoções')}.
     </p>
   );
 };
@@ -161,7 +162,7 @@ export const AdminLicoesScreen: React.FC = () => {
 
     setRecado({
       tom: 'ok',
-      texto: `${contar(resumo.edicoes, 'correção', 'correções')}, ${contar(resumo.licoesCriadas, 'lição criada', 'lições criadas')}, ${contar(resumo.artigos, 'artigo', 'artigos')}, ${contar(resumo.livretos, 'livreto', 'livretos')} (${contar(resumo.questoes, 'questão', 'questões')}) e ${contar(resumo.secoesDeLivro, 'seção de livro', 'seções de livro')}, em ${nomeDoArquivo}. Salve-o como public/editorial/pacote.json e faça o commit: é o commit que publica.`,
+      texto: `${contar(resumo.edicoes, 'correção', 'correções')}, ${contar(resumo.licoesCriadas, 'lição criada', 'lições criadas')}, ${contar(resumo.artigos, 'artigo', 'artigos')}, ${contar(resumo.livretos, 'livreto', 'livretos')} (${contar(resumo.questoes, 'questão', 'questões')}) ${contar(resumo.secoesDeLivro, 'seção de livro', 'seções de livro')} e ${contar(resumo.removidos, 'remoção', 'remoções')}, em ${nomeDoArquivo}. Salve-o como public/editorial/pacote.json e faça o commit: é o commit que publica.`,
     });
   }
 
@@ -185,6 +186,7 @@ export const AdminLicoesScreen: React.FC = () => {
         ['Artigos', r.artigos!],
         ['Livretos', r.livretos!],
         ['Seções de livro', r.secoesDeLivro!],
+        ['Remoções', r.removidos!],
       ] as const)
         .map(
           ([nome, c]) =>

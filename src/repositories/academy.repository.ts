@@ -22,8 +22,9 @@ import {
   EditorialLesson,
   mergeCreatedLessons,
 } from '../domain/editorial-edit';
-import { fundirEdicoes, fundirLicoesCriadas } from '../domain/pacote-editorial';
+import { aplicarRemocoes, fundirEdicoes, fundirLicoesCriadas } from '../domain/pacote-editorial';
 import { camadaPublicada } from './camada-publicada';
+import { remocoesVigentes } from './editorial.repository';
 import {
   SEED_CATEGORIES,
   SEED_PROGRAMS,
@@ -252,10 +253,16 @@ export class PersistentAcademyRepository implements AcademyRepository {
      * Publicado + local, a mais nova vence (EE-21). Ler só o local deixava o
      * aluno sem nenhuma correção que já tinha sido commitada.
      */
-    return fundirEdicoes(
-      camadaPublicada().edicoes,
-      this.storage.get<EditorialEdit[]>('amd_academy_editorial_v1') ?? []
-    ).resultado;
+    return aplicarRemocoes(
+      fundirEdicoes(
+        camadaPublicada().edicoes,
+        this.storage.get<EditorialEdit[]>('amd_academy_editorial_v1') ?? []
+      ).resultado,
+      remocoesVigentes(this.storage),
+      'EDICAO',
+      (e) => e.id,
+      (e) => e.editadaEm
+    );
   }
 
   /**
@@ -266,10 +273,16 @@ export class PersistentAcademyRepository implements AcademyRepository {
    * Entram aqui, antes das edições — uma lição criada também se corrige.
    */
   private licoesCriadas(): EditorialLesson[] {
-    return fundirLicoesCriadas(
-      camadaPublicada().licoesCriadas,
-      this.storage.get<EditorialLesson[]>('amd_academy_licoes_criadas_v1') ?? []
-    ).resultado;
+    return aplicarRemocoes(
+      fundirLicoesCriadas(
+        camadaPublicada().licoesCriadas,
+        this.storage.get<EditorialLesson[]>('amd_academy_licoes_criadas_v1') ?? []
+      ).resultado,
+      remocoesVigentes(this.storage),
+      'LICAO_CRIADA',
+      (l) => l.id,
+      (l) => l.criadaEm
+    );
   }
 
   private licoesPublicadas(): AcademyLesson[] {

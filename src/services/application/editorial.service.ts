@@ -31,6 +31,7 @@ import {
   fundirEdicoes,
   fundirLivretos,
   fundirLicoesCriadas,
+  fundirRemocoes,
   fundirSecoesDeLivro,
   lerPacote,
   montarPacote,
@@ -317,6 +318,7 @@ export class EditorialService {
       artigos: await this.repo.artigos(),
       livretos: await this.livretos.listarLivretos(),
       secoesDeLivro: await this.repo.secoesDeLivro(),
+      removidos: await this.repo.removidos(),
       exportadoPor,
     });
 
@@ -347,6 +349,7 @@ export class EditorialService {
     artigos?: { adicionadas: number; substituidas: number; mantidas: number };
     livretos?: { adicionadas: number; substituidas: number; mantidas: number };
     secoesDeLivro?: { adicionadas: number; substituidas: number; mantidas: number };
+    removidos?: { adicionadas: number; substituidas: number; mantidas: number };
   }> {
     const leitura = lerPacote(texto);
     if (!leitura.ok) return { ok: false, motivo: leitura.motivo };
@@ -365,6 +368,7 @@ export class EditorialService {
       await this.repo.secoesDeLivro(),
       leitura.pacote.secoesDeLivro
     );
+    const removidos = fundirRemocoes(await this.repo.removidos(), leitura.pacote.removidos);
 
     /**
      * O livreto é gravado um a um: o repositório dele guarda por curso, e não
@@ -378,6 +382,7 @@ export class EditorialService {
       licoesCriadas: licoes.resultado,
       artigos: artigos.resultado,
       secoesDeLivro: secoesDeLivro.resultado,
+      removidos: removidos.resultado,
     });
 
     return {
@@ -406,6 +411,11 @@ export class EditorialService {
         adicionadas: secoesDeLivro.adicionadas,
         substituidas: secoesDeLivro.substituidas,
         mantidas: secoesDeLivro.mantidas,
+      },
+      removidos: {
+        adicionadas: removidos.adicionadas,
+        substituidas: removidos.substituidas,
+        mantidas: removidos.mantidas,
       },
     };
   }
@@ -436,7 +446,12 @@ export class EditorialService {
       fora(await this.repo.todas(), pub.edicoes, (e) => e.editadaEm) +
       fora(await this.repo.licoesCriadas(), pub.licoesCriadas, (l) => l.criadaEm) +
       fora(await this.repo.artigos(), pub.artigos, (a) => a.editadaEm) +
-      fora(await this.repo.secoesDeLivro(), pub.secoesDeLivro, (e) => e.editadaEm)
+      fora(await this.repo.secoesDeLivro(), pub.secoesDeLivro, (e) => e.editadaEm) +
+      fora(
+        (await this.repo.removidos()).map((r) => ({ ...r, id: `${r.tipo}::${r.id}` })),
+        pub.removidos.map((r) => ({ ...r, id: `${r.tipo}::${r.id}` })),
+        (r) => r.removidoEm
+      )
     );
   }
 
