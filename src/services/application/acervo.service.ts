@@ -6,7 +6,7 @@ import {
   temPartituraLocalizada,
   textoDe,
 } from '../../domain/music-knowledge';
-import { MusicalMovement, disponibilidadeDoCompositor } from '../../domain/atlas-map';
+import { MusicalMovement, disponibilidadeDoCompositor, obrasDoCompositor } from '../../domain/atlas-map';
 import {
   MusicKnowledgeRepository,
   musicKnowledgeRepository,
@@ -584,7 +584,7 @@ export class AcervoService {
   }
 
   private comoItem(c: CanonicalComposer, obras: CanonicalWork[]): ItemDoAcervo {
-    const dele = obras.filter((o) => o.composerIds.includes(c.id));
+    const dele = obrasDoCompositor(obras, c.id);
     return {
       id: c.id,
       secao: 'COMPOSITORES',

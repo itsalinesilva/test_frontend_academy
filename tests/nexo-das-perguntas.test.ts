@@ -35,7 +35,16 @@ import { MusicExercise } from '../src/domain/music-exercise';
  */
 
 /** Todos os exercícios que o gerador sabe produzir, em várias sementes. */
+/**
+ * Gerados UMA vez por arquivo: com as vinte e uma dimensões são ~25 mil
+ * exercícios, e cada um dos vinte casos regerava todos — o arquivo passou a
+ * levar 40 s e a estourar o prazo com a máquina ocupada (GR-8). O gerador é
+ * determinístico, então a mesma lista serve a todos os casos.
+ */
+let jaGerados: Array<{ d: Dimension; level: Level; seed: number; e: MusicExercise }> | null = null;
+
 function todos(): Array<{ d: Dimension; level: Level; seed: number; e: MusicExercise }> {
+  if (jaGerados) return jaGerados;
   const saida: Array<{ d: Dimension; level: Level; seed: number; e: MusicExercise }> = [];
 
   for (const d of GENERATED_DIMENSIONS) {
@@ -59,6 +68,7 @@ function todos(): Array<{ d: Dimension; level: Level; seed: number; e: MusicExer
     }
   }
 
+  jaGerados = saida;
   return saida;
 }
 

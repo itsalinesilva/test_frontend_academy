@@ -169,11 +169,46 @@ export function regioesDaEra(regioes: RegiaoDoMapa[], eraId: EntityId): RegiaoDo
  * Derivar em vez de declarar é o que impede a ficha do compositor de
  * prometer o que o compêndio dele não entrega.
  */
+/**
+ * 🔴 AS OBRAS DE CADA COMPOSITOR, INDEXADAS UMA VEZ (GR-8).
+ *
+ * Listar compositores filtrava as ~32 mil obras POR COMPOSITOR — e duas vezes
+ * por compositor, uma para contar e outra para a disponibilidade. Com ~800
+ * pessoas, dezenas de milhões de comparações a cada listagem: a aba de
+ * compositores do Acervo e o mapa do Atlas pagavam isso no navegador, e a
+ * suíte estourava o prazo com a máquina ocupada.
+ *
+ * O índice é guardado por LISTA de obras (`WeakMap`): a mesma lista não é
+ * indexada duas vezes, e uma lista nova — outro recorte, outra leitura — é
+ * indexada de novo, sem risco de servir o índice de outra.
+ */
+const INDICES = new WeakMap<readonly CanonicalWork[], Map<string, CanonicalWork[]>>();
+
+export function obrasPorCompositor(obras: readonly CanonicalWork[]): Map<string, CanonicalWork[]> {
+  let indice = INDICES.get(obras);
+  if (!indice) {
+    indice = new Map();
+    for (const o of obras) {
+      for (const c of o.composerIds) {
+        const lista = indice.get(c);
+        if (lista) lista.push(o);
+        else indice.set(c, [o]);
+      }
+    }
+    INDICES.set(obras, indice);
+  }
+  return indice;
+}
+
+export function obrasDoCompositor(obras: readonly CanonicalWork[], composerId: string): CanonicalWork[] {
+  return obrasPorCompositor(obras).get(composerId) ?? [];
+}
+
 export function disponibilidadeDoCompositor(
   compositor: CanonicalComposer,
   obras: CanonicalWork[]
 ): DisponibilidadeNoConservatorio {
-  const dele = obras.filter((o) => o.composerIds.includes(compositor.id));
+  const dele = obrasDoCompositor(obras, compositor.id);
   const tocavel = dele.find((o) => avaliarDisponibilidade(o).modo === 'EXPERIENCIA_COMPLETA');
 
   if (tocavel) {
@@ -328,7 +363,7 @@ export function marcadoresDaPosicao(
 const deCompositores: AtlasMarker[] = compositores
     .map((c) => ({
       pessoa: c,
-      quantas: acervo.obras.filter((o) => o.composerIds.includes(c.id)).length,
+      quantas: obrasDoCompositor(acervo.obras, c.id).length,
     }))
     /** Quem tem mais obra catalogada aparece primeiro. Empate: ordem alfabética. */
     .sort((a, b) => b.quantas - a.quantas || a.pessoa.sortName.localeCompare(b.pessoa.sortName, 'pt-BR'))
