@@ -21,9 +21,10 @@ import { Livreto, Questao } from './booklet';
  * mesmas. Nivelar alguém com pergunta assim não mede nada: mede se a pessoa
  * sabe ler o próprio enunciado.
  *
- * O segundo é que o gerador **só cobre Teoria**, e apenas seis das vinte e uma
- * dimensões. Com ele, "escolher a cadeira" seria uma escolha de mentira: as
- * três levariam ao mesmo lugar.
+ * O segundo é que o gerador **só cobre Teoria** — na época, seis das vinte e
+ * uma dimensões; desde o LAB-1, as vinte e uma, mas todas de Teoria. Com ele,
+ * "escolher a cadeira" seria uma escolha de mentira: as três levariam ao
+ * mesmo lugar.
  *
  * Os livretos têm **378 questões escritas à mão**, em 126 capítulos, com
  * distratores que correspondem a enganos reais — confundir altura com

@@ -48,8 +48,18 @@ export default defineConfig({
      *
      * Paralelismo alem do que a memoria aguenta nao acelera — troca espera por
      * falha intermitente, que ensina a ignorar vermelho.
+     *
+     * E O LIMITE E A MEMORIA, E NAO OS NUCLEOS. Com seis processos a suite
+     * voltou a estourar o prazo numa rodada em que a maquina tinha 5 GB
+     * livres: cada processo, com jsdom e o catalogo, passa de um gigabyte, e
+     * o sistema passa a paginar. Com quatro: 159 s, verde. O numero sai da
+     * memoria livre na hora de rodar — ~1,2 GB por processo —, entre 2 e
+     * metade dos nucleos.
      */
-    maxWorkers: Math.max(2, Math.floor(os.cpus().length / 2)),
+    maxWorkers: Math.min(
+      Math.max(2, Math.floor(os.cpus().length / 2)),
+      Math.max(2, Math.floor(os.freemem() / (1.2 * 1024 ** 3)))
+    ),
     minWorkers: 1,
   },
   resolve: { alias: { '@': path.resolve(__dirname, './src') } },

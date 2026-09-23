@@ -163,7 +163,8 @@ describe('🔴 pergunta de LEITURA mostra o que se lê', () => {
      * Uma nota que o renderizador não entende some da pauta — e aí a pergunta
      * fica sobre uma figura incompleta, sem nada acusar.
      */
-    const cientifica = /^[A-G](#|b)?-?\d$/;
+    /** `_` é pausa: ritmo sem pausa não mostra contratempo. */
+    const cientifica = /^([A-G](#|b)?-?\d|_)$/;
     const falhas: string[] = [];
 
     for (const { d, seed, e } of todos()) {

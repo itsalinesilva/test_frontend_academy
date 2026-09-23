@@ -114,8 +114,18 @@ export type ExerciseFigure =
   | {
       kind: 'STAFF';
       clef: 'treble' | 'bass' | 'alto';
-      /** Notas em notação científica — "C4", "F#5". */
+      /** Notas em notação científica — "C4", "F#5"; `_` é pausa. */
       notes: string[];
+      /**
+       * Duração de cada nota. Sem ela, todas são semínimas — o bastante para
+       * perguntas de ALTURA; ritmo e compasso precisam da figura de verdade.
+       */
+      duracoes?: Array<'whole' | 'half' | 'quarter' | 'eighth'>;
+      /**
+       * Grupos de notas simultâneas em sequência — `[3, 3]` são dois acordes.
+       * É o que cadência e condução de vozes precisam mostrar.
+       */
+      grupos?: number[];
       timeSignature?: string;
       /**
        * Notas simultâneas — o acorde. Escrito em fila, ele vira arpejo: a
@@ -123,6 +133,22 @@ export type ExerciseFigure =
        */
       simultaneas?: boolean;
       /** Legenda. Nunca contém a resposta: ela descreve o que ver, não o que é. */
+      caption?: string;
+    }
+  /**
+   * 🔴 UM SINAL ESCRITO NA PARTITURA — "pp", "Allegro", "legato", "D.C. al Fine".
+   *
+   * Dinâmica, andamento, expressão e abreviaturas não são notas: são
+   * indicações escritas acima ou abaixo da pauta. Perguntar por elas sem
+   * mostrá-las obrigaria o enunciado a dizê-las — e o enunciado diria a
+   * pergunta e não a partitura. A figura desenha o sinal como ele aparece
+   * impresso: dinâmica em itálico negrito, andamento em negrito, termo em
+   * itálico.
+   */
+  | {
+      kind: 'SINAL';
+      texto: string;
+      tipo: 'DINAMICA' | 'ANDAMENTO' | 'TERMO' | 'SIMBOLO';
       caption?: string;
     }
   /** Teclado com teclas em destaque, para o que se lê melhor na tecla. */

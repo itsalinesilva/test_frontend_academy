@@ -27,6 +27,30 @@ import { webAudioSynth } from '../../../infrastructure/audio/synth';
  * ouvir.
  */
 export const FiguraDoExercicio: React.FC<{ figura: ExerciseFigure }> = ({ figura }) => {
+  if (figura.kind === 'SINAL') {
+    /**
+     * O sinal como sai impresso: dinâmica em itálico negrito, andamento em
+     * negrito romano, termo em itálico, símbolo no tamanho de símbolo.
+     */
+    const estilo = {
+      DINAMICA: 'font-serif text-5xl font-bold italic',
+      ANDAMENTO: 'font-serif text-3xl font-bold',
+      TERMO: 'font-serif text-3xl italic',
+      SIMBOLO: 'font-serif text-5xl',
+    }[figura.tipo];
+    return (
+      <figure className="mt-6 space-y-2">
+        <div
+          className="flex min-h-[7rem] items-center justify-center rounded-xl border border-stone-200 bg-white p-4"
+          data-sinal={figura.texto}
+        >
+          <span className={`${estilo} text-stone-900`}>{figura.texto}</span>
+        </div>
+        {figura.caption && <figcaption className="text-xs text-stone-600">{figura.caption}</figcaption>}
+      </figure>
+    );
+  }
+
   if (figura.kind === 'STAFF') {
     return (
       <figure className="mt-6 space-y-2">
@@ -36,7 +60,7 @@ export const FiguraDoExercicio: React.FC<{ figura: ExerciseFigure }> = ({ figura
             clef={figura.clef}
             timeSignature={figura.timeSignature}
             notes={figura.notes
-              .map(paraNota)
+              .map((n, i) => paraNota(n, i, figura.duracoes?.[i]))
               .filter((n): n is NonNullable<typeof n> => n !== null)}
             /**
              * Um compasso só: a pauta aqui é uma pergunta, e não uma peça.
@@ -44,6 +68,7 @@ export const FiguraDoExercicio: React.FC<{ figura: ExerciseFigure }> = ({ figura
              */
             measureCount={1}
             acorde={figura.simultaneas}
+            grupos={figura.grupos}
           />
         </div>
         {figura.caption && (
@@ -81,7 +106,14 @@ export const FiguraDoExercicio: React.FC<{ figura: ExerciseFigure }> = ({ figura
  * mas a guarda fica: figura com nota faltando é pergunta sobre pauta
  * incompleta, e é melhor que ela suma inteira a que saia errada pela metade.
  */
-function paraNota(nota: string, i: number) {
+function paraNota(
+  nota: string,
+  i: number,
+  duracao: 'whole' | 'half' | 'quarter' | 'eighth' = 'quarter'
+) {
+  if (nota === '_') {
+    return { id: `fig-${i}-pausa`, step: 'C' as const, octave: 4, duration: duracao, pausa: true };
+  }
   const m = nota.trim().match(/^([A-Ga-g])([#b]?)(-?\d)$/);
   if (!m) return null;
 
@@ -90,13 +122,13 @@ function paraNota(nota: string, i: number) {
     step: m[1].toUpperCase() as 'C' | 'D' | 'E' | 'F' | 'G' | 'A' | 'B',
     octave: Number(m[3]),
     /**
-     * Semínima para tudo.
+     * Semínima quando a figura não diz a duração.
      *
-     * A figura aqui pergunta sobre ALTURA — que nota, que intervalo, que
-     * acorde. Variar a duração acrescentaria uma informação que a pergunta não
-     * usa, e que o aluno tentaria interpretar.
+     * Pergunta de ALTURA — que nota, que intervalo, que acorde — não varia a
+     * duração: seria informação que a pergunta não usa, e que o aluno tentaria
+     * interpretar. Ritmo e compasso mandam a duração de cada nota.
      */
-    duration: 'quarter' as const,
+    duration: duracao,
     accidental:
       m[2] === '#' ? ('sharp' as const) : m[2] === 'b' ? ('flat' as const) : undefined,
   };

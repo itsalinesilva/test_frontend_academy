@@ -42,14 +42,18 @@ describe('não produz o que a tela não sabe mostrar', () => {
     expect(generateExercise(Dimension.INTERVAL, Level.PERFORM, 1)).toBeNull();
   });
 
-  it('dimensão sem gerador devolve nulo, e não um exercício vazio', () => {
-    const semGerador = TODAS.find((d) => !hasGenerator(d))!;
-    expect(generateExercise(semGerador, Level.RECOGNIZE, 1)).toBeNull();
+  it('🔴 LAB-1: as vinte e uma dimensões têm gerador — eram seis', () => {
+    const sem = TODAS.filter((d) => !hasGenerator(d));
+    expect(sem, 'dimensão da gramática sem gerador').toEqual([]);
+    for (const d of TODAS) {
+      expect(generateExercise(d, Level.RECOGNIZE, 1), `${d} não gerou`).not.toBeNull();
+    }
   });
 
-  it('a lição de uma dimensão sem gerador vem vazia', () => {
-    const semGerador = TODAS.find((d) => !hasGenerator(d))!;
-    expect(generateLesson(semGerador, Level.RECOGNIZE, 1, 10)).toEqual([]);
+  it('nível que a dimensão não sustenta devolve nulo, e a lição vem vazia', () => {
+    /** Armadura não soa: "ouça e diga a armadura" seria pergunta sem resposta. */
+    expect(generateExercise(Dimension.KEY_SIGNATURE, Level.EAR, 1)).toBeNull();
+    expect(generateLesson(Dimension.KEY_SIGNATURE, Level.EAR, 1, 10)).toEqual([]);
   });
 
   it('todo nível tem nome legível, inclusive os que não abriram', () => {

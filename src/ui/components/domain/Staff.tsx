@@ -7,6 +7,8 @@ export interface NoteItem {
   octave: number;
   duration: 'whole' | 'half' | 'quarter' | 'eighth';
   accidental?: 'sharp' | 'flat' | 'natural';
+  /** Pausa: ocupa o tempo, sem altura. `step` e `octave` são ignorados. */
+  pausa?: boolean;
 }
 
 export interface StaffProps {
@@ -18,6 +20,12 @@ export interface StaffProps {
   measureCount?: number;
   /** Notas simultâneas: um acorde se escreve empilhado, e não em fila. */
   acorde?: boolean;
+  /**
+   * Grupos de notas simultâneas, EM SEQUÊNCIA: `[3, 3]` são dois acordes de
+   * três notas, um depois do outro — o que uma cadência ou a condução de
+   * duas vozes precisa. Tem precedência sobre `acorde`.
+   */
+  grupos?: number[];
   interactive?: boolean;
   onMeasureClick?: (measureIndex: number) => void;
   className?: string;
@@ -95,6 +103,13 @@ function temposPorCompasso(formula: string): number {
 const INICIO = 96;
 const PASSO = 44;
 
+/** Um instante da pauta: uma nota, uma pausa ou várias notas juntas. */
+interface Evento {
+  indices: number[];
+  x: number;
+  duracao: NoteItem['duration'];
+}
+
 export const Staff: React.FC<StaffProps> = ({
   id = 'musical-staff',
   clef = 'treble',
@@ -102,61 +117,73 @@ export const Staff: React.FC<StaffProps> = ({
   notes = [],
   measureCount = 4,
   acorde = false,
+  grupos,
   interactive = false,
   onMeasureClick,
   className,
 }) => {
   /**
-   * Onde cada nota fica na horizontal, e onde caem as barras de compasso.
+   * Os eventos, e onde cada um cai na horizontal.
    *
-   * As barras vêm da DURAÇÃO das notas, e não de uma divisão fixa: barra em
+   * As barras vêm da DURAÇÃO dos eventos, e não de uma divisão fixa: barra em
    * lugar arbitrário diria que a nota pertence a um compasso a que ela não
    * pertence.
    */
+  const tamanhos = grupos ?? (acorde ? [notes.length] : notes.map(() => 1));
   const porCompasso = temposPorCompasso(timeSignature);
-  const posicoes: number[] = [];
+  const eventos: Evento[] = [];
   const barras: number[] = [];
   let x = INICIO;
   let tempos = 0;
+  let cursor = 0;
 
-  if (acorde) {
-    notes.forEach(() => posicoes.push(INICIO + 20));
-    x = INICIO + 20 + PASSO;
-  } else {
-    for (const n of notes) {
-      posicoes.push(x);
-      x += PASSO * Math.max(1, TEMPOS[n.duration]);
-      tempos += TEMPOS[n.duration];
-      if (tempos >= porCompasso - 1e-9) {
-        barras.push(x - PASSO / 2);
-        tempos = 0;
-      }
+  for (const tamanho of tamanhos) {
+    const indices = Array.from({ length: tamanho }, (_, k) => cursor + k).filter((i) => i < notes.length);
+    cursor += tamanho;
+    if (indices.length === 0) continue;
+    const duracao = notes[indices[0]].duration;
+    /** Evento com várias notas ganha folga: acidentes e segundas ocupam largura. */
+    const folga = indices.length > 1 ? 14 : 0;
+    eventos.push({ indices, x: x + folga, duracao });
+    x += PASSO * Math.max(1, TEMPOS[duracao]) + folga * 2;
+    tempos += TEMPOS[duracao];
+    if (tempos >= porCompasso - 1e-9) {
+      barras.push(x - PASSO / 2);
+      tempos = 0;
     }
   }
 
   const vazia = notes.length === 0;
   const largura = vazia
     ? 600
-    : Math.max(acorde ? 200 : 240, (barras.length ? barras[barras.length - 1] : x) + (tempos > 0 || acorde ? PASSO : 8));
+    : Math.max(200, (barras.length ? barras[barras.length - 1] : x) + (tempos > 0 ? PASSO : 8));
 
   if (vazia) {
     for (let i = 1; i <= measureCount; i++) barras.push(70 + i * (520 / measureCount));
-  } else if (acorde || tempos > 0 || barras.length === 0) {
+  } else if (tempos > 0 || barras.length === 0) {
     barras.push(largura - 8);
   }
 
-  const alturas = notes.map((n) => alturaNaPauta(n, clef));
+  const alturas = notes.map((n) => (n.pausa ? LINHA_DO_MEIO : alturaNaPauta(n, clef)));
+  const comAltura = alturas.filter((_, i) => !notes[i].pausa);
 
   /**
-   * Num acorde, notas vizinhas (uma segunda) não podem ficar uma em cima da
-   * outra: a de cima vai para o outro lado da haste, como se escreve à mão.
+   * Dentro de um evento, notas vizinhas (uma segunda) não podem ficar uma em
+   * cima da outra: a de cima vai para o outro lado da haste, como se escreve.
    */
-  const deslocamento = alturas.map((y, i) =>
-    acorde && alturas.some((outra, j) => j < i && Math.abs(outra - y) === MEIO_ESPACO) ? 12 : 0
-  );
+  const deslocamento = notes.map(() => 0);
+  const xDa = notes.map(() => 0);
+  for (const ev of eventos) {
+    for (const i of ev.indices) {
+      xDa[i] = ev.x;
+      if (ev.indices.some((j) => j < i && Math.abs(alturas[j] - alturas[i]) === MEIO_ESPACO)) {
+        deslocamento[i] = 12;
+      }
+    }
+  }
 
-  const topo = Math.min(0, ...alturas.map((y) => y - 36));
-  const fundo = Math.max(110, ...alturas.map((y) => y + 36));
+  const topo = Math.min(0, ...comAltura.map((y) => y - 36));
+  const fundo = Math.max(110, ...comAltura.map((y) => y + 36));
 
   return (
     <div
@@ -212,15 +239,33 @@ export const Staff: React.FC<StaffProps> = ({
         ))}
 
         {notes.map((note, idx) => {
+          const ev = eventos.find((e) => e.indices.includes(idx));
+          if (!ev) return null;
+
+          if (note.pausa) {
+            /** Pausa: o símbolo no meio da pauta, ocupando o tempo dela. */
+            const simbolo = { whole: '𝄻', half: '𝄼', quarter: '𝄽', eighth: '𝄾' }[note.duration];
+            return (
+              <g key={note.id} data-nota="pausa" data-y={LINHA_DO_MEIO}>
+                <title>pausa</title>
+                <text x={xDa[idx] - 6} y={LINHA_DO_MEIO + 8} fontFamily="serif" fontSize="26" fill="#1c1917">
+                  {simbolo}
+                </text>
+              </g>
+            );
+          }
+
           const y = alturas[idx];
-          const nx = posicoes[idx] + deslocamento[idx];
+          const nx = xDa[idx] + deslocamento[idx];
           const vazada = note.duration === 'whole' || note.duration === 'half';
           const temHaste = note.duration !== 'whole';
+          const sozinha = ev.indices.length === 1;
           /** Da linha do meio para cima, a haste desce pela esquerda; abaixo, sobe pela direita. */
           const hasteParaBaixo = y <= LINHA_DO_MEIO;
           const hx = hasteParaBaixo ? nx - 5.5 : nx + 5.5;
           const hy2 = hasteParaBaixo ? y + 30 : y - 30;
           const nome = `${note.step}${note.accidental ? NOME_DO_ACIDENTE[note.accidental] : ''}${note.octave}`;
+          const posicaoNoEvento = ev.indices.indexOf(idx);
 
           return (
             <g key={note.id} data-nota={nome} data-y={y}>
@@ -238,7 +283,7 @@ export const Staff: React.FC<StaffProps> = ({
               ))}
               {note.accidental && (
                 <text
-                  x={nx - 20 - (acorde ? (idx % 2) * 9 : 0)}
+                  x={xDa[idx] - 20 - (sozinha ? 0 : (posicaoNoEvento % 2) * 9)}
                   y={y + 5}
                   fontFamily="serif"
                   fontSize="16"
@@ -257,10 +302,10 @@ export const Staff: React.FC<StaffProps> = ({
                 strokeWidth={vazada ? 1.6 : 0}
                 transform={`rotate(-20 ${nx} ${y})`}
               />
-              {temHaste && !acorde && (
+              {temHaste && sozinha && (
                 <line x1={hx} y1={y} x2={hx} y2={hy2} stroke="#1c1917" strokeWidth="1.5" />
               )}
-              {note.duration === 'eighth' && !acorde && (
+              {note.duration === 'eighth' && sozinha && (
                 <path
                   d={
                     hasteParaBaixo
@@ -276,17 +321,24 @@ export const Staff: React.FC<StaffProps> = ({
           );
         })}
 
-        {/* Num acorde, uma haste só, da nota mais grave à mais aguda. */}
-        {acorde && notes.length > 1 && notes[0].duration !== 'whole' && (
-          <line
-            x1={INICIO + 20 + 5.5}
-            y1={Math.max(...alturas)}
-            x2={INICIO + 20 + 5.5}
-            y2={Math.min(...alturas) - 30}
-            stroke="#1c1917"
-            strokeWidth="1.5"
-          />
-        )}
+        {/* Evento com várias notas: uma haste só, da mais grave à mais aguda. */}
+        {eventos
+          .filter((ev) => ev.indices.length > 1 && ev.duracao !== 'whole')
+          .map((ev, k) => {
+            const ys = ev.indices.filter((i) => !notes[i].pausa).map((i) => alturas[i]);
+            if (ys.length === 0) return null;
+            return (
+              <line
+                key={`haste-${k}`}
+                x1={ev.x + 5.5}
+                y1={Math.max(...ys)}
+                x2={ev.x + 5.5}
+                y2={Math.min(...ys) - 30}
+                stroke="#1c1917"
+                strokeWidth="1.5"
+              />
+            );
+          })}
       </svg>
     </div>
   );
