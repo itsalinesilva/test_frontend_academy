@@ -96,6 +96,7 @@ import { OnboardingScreen } from './onboarding/OnboardingScreen';
 import { SettingsScreen } from './settings/SettingsScreen';
 import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { SearchScreen } from './search/SearchScreen';
+import { PraticaDaObraScreen } from './practice/PraticaDaObraScreen';
 import { HelpScreen } from './help/HelpScreen';
 
 // Admin Governance (Protected)
@@ -112,7 +113,7 @@ import { AdminAuditScreen } from './admin/AdminAuditScreen';
 import { DesignSystemCatalog } from '../components/design-system-catalog/DesignSystemCatalog';
 
 export const AppRouterOutlet: React.FC = () => {
-  const { currentPath, navigate } = useRouter();
+  const { currentPath, navigate, query } = useRouter();
   const [authStatus, setAuthStatus] = useState<{
     isChecking: boolean;
     authorized: boolean;
@@ -333,6 +334,10 @@ export const AppRouterOutlet: React.FC = () => {
   }
 
   // 2. PRACTICE (PRACTICE HUB & GAMIFIED LOOP)
+  /** "Levar à prática", na ficha da obra: a prática é feita da própria peça (AC-1i). */
+  if (currentPath === '/practice' && query.get('obra')) {
+    return <PraticaDaObraScreen obraId={query.get('obra')!} />;
+  }
   if (currentPath === '/practice') {
     /**
      * 🔴 A TELA ANTERIOR NÃO TINHA NAVEGAÇÃO NENHUMA.
