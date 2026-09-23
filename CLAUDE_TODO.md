@@ -1,7 +1,7 @@
 # CLAUDE_TODO.md — Backlog de Engenharia
 
 **Origem:** diagnóstico do COMANDO 0 (`CLAUDE_AUDIT.md`)
-**Atualizado:** 2026-09-18
+**Atualizado:** 2026-09-23
 **Regra:** nenhum item é fechado por "a tela existe". Fecha-se com código + persistência + autorização + teste + documentação.
 
 **Estados:** ⬜ aberto · 🔄 em andamento · ✅ concluído · ⛔ bloqueado (depende de decisão sua ou de serviço externo)
@@ -846,5 +846,73 @@ Levantado em 18/09, respondendo à sua pergunta direta.
 Continua como está na seção **I** mais abaixo, sem mudança: domínio, GitHub,
 Cloudflare, OAuth de produção, subdomínio de admin, escopo `drive.file`,
 cliente Android, e-mail institucional. Depende de você em vários pontos.
+
+### Pendências de infraestrutura — Cloudflare (adiado por decisão, 2026-09-23)
+
+Não configurar agora: o projeto não terminou. O que ficará pendente quando for a hora:
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| I-CF-1 | Criar o namespace KV `RELATOS` e ligá-lo ao projeto Pages (instruções em `.env.example`). Sem ele, `POST /api/v1/relatos` responde "armazenamento não configurado", e a tela diz isso com honestidade (L-7a) | ⛔ |
+| I-CF-2 | Variáveis de produção da assinatura de sessão e da lista de administração no painel do Pages; conferir `/api/v1/admin/verify` com a sessão real | ⛔ |
+| I-CF-3 | Persistência durável (D1 ou KV) para o que hoje é só do navegador: contas, perfil, progresso, caderno, salas. Ver AUD-20. Sem isso, nada passa de um aparelho para outro | ⛔ |
+| I-CF-4 | Domínio e subdomínio de admin; cabeçalhos de segurança (`_headers`) validados no ar | ⛔ |
+
+## AUDITORIA DAS TRÊS PESSOAS — 2026-09-23
+
+Todas as rotas foram abertas como visitante, aluna e administração, pelo roteador de verdade e com a guarda de audiência:
+98 rotas × 3 pessoas (`tests/ui/auditoria-de-audiencias.test.tsx`). **Nenhuma rota quebra.** Nenhuma dá 404 a quem pode estar
+nela. `/founder/*` só abre para a administração. Nenhuma rota `exigeLogin` mostra conteúdo a visitante. As lacunas abaixo
+não aparecem como erro; aparecem quando se segue o fluxo.
+
+### Visitante
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| AUD-1 | 🔴 **O Estúdio contradiz a audiência.** `audiencia.ts` declara `/studio*` como `exigeLogin`, mas as telas foram escritas para visitante (convite, "funciona sem conta"). Esse conteúdo é inalcançável. Decidir: abrir o Estúdio ao visitante, com rascunho local, ou apagar o texto de visitante | ⬜ |
+| AUD-2 | `/design-system` é público em produção. Deve ficar atrás de `import.meta.env.DEV` ou de `exigeAdmin` | ⬜ |
+| AUD-3 | `/academia/academic-profile` é público e diz ao visitante "Membro Oficial • Identidade Auditada pela Cátedra". A rota precisa de uma versão de visitante ou de `exigeLogin` | ⬜ |
+| AUD-4 | `/academia/activity/:id` com um id inexistente fica **carregando para sempre**, nas três pessoas. Falta o estado "não encontrada" | ⬜ |
+| AUD-5 | A tela de Ajuda promete avaliação "pelo docente da sua cátedra", e esse fluxo não existe | ⬜ |
+
+### Aluna (usuária logada)
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| AUD-6 | 🔴 **Configurações não salvam.** "Salvar Preferências" (`handleSave`) só mostra "Configurações Salvas" e não persiste nada. Os interruptores de acessibilidade não têm efeito | ⬜ |
+| AUD-7 | 🔴 **Números inventados no perfil unificado** (`profile.service.getUnifiedProfile`): 32 horas de estudo, 15 sessões, sequência de 3 dias, recorde de 14, 8 conexões. Devem vir do histórico de prática ou sumir | ⬜ |
+| AUD-8 | A privacidade do perfil diz "atualizadas no servidor!", mas grava em localStorage. Corrigir o texto (ou a gravação, com I-CF-3) | ⬜ |
+| AUD-9 | **Salas: sem fluxo de turma.** Existe criar e ver, mas não existe entrar/matricular, publicar tarefa, publicar aviso ou entregar trabalho. Como as salas são locais, outra pessoa não consegue entrar nelas | ⬜ |
+| AUD-10 | Notificações: a própria tela diz que a plataforma não emite nenhuma. Falta decidir o que emite (tarefa, certificado, relato respondido) | ⬜ |
+| AUD-11 | `/worlds/work/:id` e `/worlds/graph` ainda são dados fixos (mesmo defeito de M-9) | ⬜ |
+
+### Administração
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| AUD-12 | **Usuários:** o painel promete atribuir papéis e homologar. Na prática lista só as contas deste navegador e não tem ação nenhuma | ⬜ |
+| AUD-13 | **Conteúdo:** o painel promete homologação, mas a tela é só leitura. A edição real está no editorial (EE-*); o cartão deve apontar para lá ou a homologação deve existir | ⬜ |
+| AUD-14 | **Moderação:** o cartão existe, e a própria tela diz que a moderação não existe. Tirar o cartão ou construir a fila (relatos L-7b são o começo natural) | ⬜ |
+| AUD-15 | **Auditoria:** a tela diz "imutável/criptográficos", mas lê a trilha local do navegador. O servidor tem `GET /api/v1/admin/audit-logs` e `adminService` sabe chamá-lo, mas nenhuma tela usa. Ligar a tela ao servidor e corrigir o texto | ⬜ |
+
+### Vazamento de dados e sessão
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| AUD-16 | ✅ Nenhum vazamento entre pessoas pelas rotas. A projeção do perfil respeita a visibilidade. Os endpoints de admin exigem sessão de admin. As ferramentas de desenvolvimento (incluindo "Estados UI") ficam atrás de `import.meta.env.DEV`. O e-mail do autor de um relato só aparece para a administração | ✅ |
+| AUD-17 | 🔴 **Sair não limpa os dados.** O logout apaga só a sessão; ficam no localStorage `users_collection` (com e-mails), perfis, prática, caderno e mesa (IndexedDB). Em aparelho compartilhado, a próxima pessoa lê tudo pelo DevTools. Oferecer "sair e apagar os dados deste aparelho" e não guardar e-mail alheio em claro | ⬜ |
+| AUD-18 | O editor de partitura e a Mesa checam `(userId && p.autorId !== userId)`: **sem sessão a checagem passa**, e qualquer id abriria. Hoje isso não tem efeito porque `/studio` é `exigeLogin`, mas vira falha no dia em que AUD-1 abrir o Estúdio. Trocar por "sem sessão ⇒ só rascunho local próprio" | ⬜ |
+
+### Acervo — o que a mineração no MusicBrainz rendeu
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| AUD-19 | A mineração **terminou**: 11.447 consultas (5.928 com resultado, 5.519 vazias) e aliases para 2.330 obras em `src/data/acervo/alias.json`. **Efeito:** o casamento com o IMSLP foi de 11.075 para 11.269 (+194). Hoje 16.820 de 31.952 obras (52,6%) têm endereço de partitura (IMSLP 11.269 · Música Brasilis 6.917 · Mutopia 181 com arquivo). Nenhum arquivo foi baixado (robots.txt). 🔴 **Lacuna:** os ids de obra do MusicBrainz (`mb`) nunca chegam a `externalIds.musicbrainz` do produto; `alias.json` só é lido pelo script offline `scripts/casar-imslp.ts`. Ligar os ids às obras e mostrar o link na ficha | ⬜ |
+
+### Estrutural
+
+| # | Item | Estado |
+|:---|:---|:---:|
+| AUD-20 | 🔴 **Não há persistência durável.** Contas, perfis, progresso, certificados, caderno, mesa e salas vivem no navegador. Trocar de aparelho ou limpar o navegador perde tudo, e salas/relatos entre pessoas não funcionam de verdade. Depende de I-CF-3 | ⛔ |
 
 ---
