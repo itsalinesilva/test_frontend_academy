@@ -907,7 +907,7 @@ não aparecem como erro; aparecem quando se segue o fluxo.
 
 | # | Item | Estado |
 |:---|:---|:---:|
-| AUD-19 | A mineração **terminou**: 11.447 consultas (5.928 com resultado, 5.519 vazias) e aliases para 2.330 obras em `src/data/acervo/alias.json`. **Efeito:** o casamento com o IMSLP foi de 11.075 para 11.269 (+194). Hoje 16.820 de 31.952 obras (52,6%) têm endereço de partitura (IMSLP 11.269 · Música Brasilis 6.917 · Mutopia 181 com arquivo). Nenhum arquivo foi baixado (robots.txt). 🔴 **Lacuna:** os ids de obra do MusicBrainz (`mb`) nunca chegam a `externalIds.musicbrainz` do produto; `alias.json` só é lido pelo script offline `scripts/casar-imslp.ts`. Ligar os ids às obras e mostrar o link na ficha | ⬜ |
+| AUD-19 | A mineração **terminou**: 11.447 consultas (5.928 com resultado, 5.519 vazias) e aliases para 2.330 obras em `src/data/acervo/alias.json`. **Efeito:** o casamento com o IMSLP foi de 11.075 para 11.269 (+194). Hoje 16.820 de 31.952 obras (52,6%) têm endereço de partitura (IMSLP 11.269 · Música Brasilis 6.917 · Mutopia 181 com arquivo). Nenhum arquivo foi baixado (robots.txt). 🔴 **Lacuna:** os ids de obra do MusicBrainz (`mb`) nunca chegam a `externalIds.musicbrainz` do produto; `alias.json` só é lido pelo script offline `scripts/casar-imslp.ts`. Ligar os ids às obras e mostrar o link na ficha **Feito:** `acervo-unificado.ts` lê `alias.json` e põe o id em `externalIds.musicbrainz` das 2.330 obras (todas as achadas casam com o catálogo; nenhuma obra nova nasce disso). A ficha mostra "Identificada no MusicBrainz" com o link. Guarda: `acervo-musicbrainz.test.ts`. **O que a mineração NÃO resolve:** partitura baixável — o IMSLP proíbe o download automático, e o MusicBrainz não guarda partituras. | ✅ |
 
 ### Estrutural
 

@@ -504,6 +504,32 @@ async function carregarIndiceImslp(): Promise<Map<string, string>> {
   }
 }
 
+/**
+ * A OBRA NO MUSICBRAINZ (AUD-19).
+ *
+ * `scripts/enriquecer-musicbrainz.ts` fez 11.447 consultas e achou a obra de
+ * 2.330 das nossas — com o id dela lá e os títulos alternativos. Os títulos
+ * serviram ao casamento com o IMSLP (+194 endereços); o id ficava no arquivo
+ * e nunca chegava à obra, e a ficha não sabia que a obra estava identificada.
+ * Agora entra em `externalIds.musicbrainz`.
+ *
+ * Lê o mesmo arquivo que o script grava: um segundo arquivo "só com os ids"
+ * seria mais uma coisa a regenerar e a esquecer de regenerar.
+ */
+let indiceMusicBrainz: Map<string, string> | null = null;
+
+async function carregarIndiceMusicBrainz(): Promise<Map<string, string>> {
+  if (indiceMusicBrainz) return indiceMusicBrainz;
+  try {
+    const modulo = await import('./acervo/alias.json');
+    const lido = (modulo.default ?? modulo) as Array<{ o: string; mb?: string }>;
+    indiceMusicBrainz = new Map(lido.filter((r) => r.mb).map((r) => [r.o, r.mb as string]));
+  } catch {
+    indiceMusicBrainz = new Map();
+  }
+  return indiceMusicBrainz;
+}
+
 /** Esquece o que foi carregado. Existe para o teste, e para reextração. */
 export function limparCacheDeObras(): void {
   obrasServidas = null;
@@ -708,6 +734,13 @@ export async function todasAsObras(hoje: Date = new Date()): Promise<CanonicalWo
       ],
       externalIds: { ...obra.externalIds, imslpUrl: url },
     });
+  }
+
+  /** Como o IMSLP: identidade de obra que já existe, e nunca obra nova. */
+  for (const [obraId, mb] of await carregarIndiceMusicBrainz()) {
+    const obra = porId.get(obraId);
+    if (!obra) continue;
+    porId.set(obraId, { ...obra, externalIds: { ...obra.externalIds, musicbrainz: mb } });
   }
 
   /**

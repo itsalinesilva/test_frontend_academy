@@ -212,6 +212,21 @@ export const ObraScreen: React.FC = () => {
                   </div>
                 ))}
             </dl>
+            {/* AUD-19 — o id veio da mineração no MusicBrainz e não chegava à ficha. */}
+            {ficha.obra.externalIds.musicbrainz && (
+              <p className="mt-3 text-xs text-stone-600">
+                Identificada no{' '}
+                <a
+                  href={`https://musicbrainz.org/work/${ficha.obra.externalIds.musicbrainz}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-anil-700 underline-offset-2 hover:underline"
+                >
+                  MusicBrainz
+                </a>
+                , com gravações e títulos alternativos.
+              </p>
+            )}
           </section>
 
           <section className="rounded-lg border border-stone-200 bg-stone-50 p-4">
