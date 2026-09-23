@@ -367,7 +367,8 @@ e por que 11.046 ainda não casaram — está em
 | GR-4 | **Processo: o ✅ do EE-5 era falso** — serviço ligado, tela ausente. Item de engine só fecha com o caminho da PESSOA testado (tela) e o do ALUNO (leitura) | regra |
 | GR-5 | 🔴 **Eu sobrescrevi um item do TODO.** Três itens novos foram numerados NV-3/4/5 sobre o nivelamento, e o NV-5 original foi trocado. Restaurado; a série virou RT. `tests/todo-ids.test.ts` recusa ID repetido novo (os 31 repetidos antigos ficam congelados) | ✅ |
 | GR-6 | **Curadoria dos ⬜ que já estavam resolvidos** — 14 itens fechados, cada um com a prova no texto (rota, tela ou item que resolveu): S-5, A-1, A-2 (parcial → L-7), A-4, M-16, AC-4d, AC-4e, BI-9, B-6i, G-1, G-2, G-3; AC-1i e LAB-3 reescritos com o que de fato falta | ✅ |
-| GR-7 | 🔴 **A suíte ficava mais lenta E instável com paralelismo demais.** O limite é a MEMÓRIA, não os núcleos: cada processo, com jsdom e o catálogo, passa de 1 GB, e com 11 (ou mesmo 6) a máquina paginava — 113 a 400 s, rodadas vermelhas por tempo esgotado. `maxWorkers` sai da memória livre (~1,2 GB por processo), entre 2 e metade dos núcleos: 159–197 s, verde | ✅ |
+| GR-7 | 🔴 **A suíte ficava mais lenta E instável com paralelismo demais.** O limite é a MEMÓRIA, não os núcleos: cada processo, com jsdom e o catálogo, passa de 1 GB, e com 11 (ou mesmo 6) a máquina paginava — 113 a 400 s, rodadas vermelhas por tempo esgotado. `maxWorkers` sai da memória livre (~1,2 GB por processo), entre 2 e metade dos núcleos | ✅ |
+| GR-8 | ⬜ **Ainda instável com a máquina ocupada.** Com 3,9 GB livres, três arquivos do catálogo estouraram 60 s numa rodada e passaram na seguinte (260 s, verde). Medido: isolados, os mesmos testes levam 1–8 s — sob carga, 10 a 30 vezes mais. A causa é cada arquivo de teste converter o catálogo de 5 MB do zero. Correção proposta: converter UMA vez num `globalSetup` e servir o resultado pronto aos arquivos | ⬜ |
 | PZ-C | **`ScoreContainer` desenhava toda nota na mesma altura.** Cada compasso agora é desenhado pela mesma regra do `Staff` (`alturaNaPauta`) — as duas pautas da plataforma não podem discordar —, com pausa, acidente, linha suplementar e duração. O repertório passou a guardar a ESCRITA (`escrita`), porque a frequência não guarda grafia: si♭ e lá♯ são o mesmo número. Limite declarado: nota que atravessa a barra fica inteira no compasso em que começa, e a tela diz quais | ✅ |
 | NV-6 | 🔴 **Sair no meio NÃO é errar.** Quem parou no capítulo 12 sem errar não tem ponto de entrada medido — tem um **piso**. O diagnóstico de quem interrompeu diz isso e não aponta módulo; dizer "você entra no 12" afirmaria o que o teste não apurou | ✅ |
 | NV-7 | O módulo casa por **curso e capítulo**, e não só pelo número: capítulo 3 existe em todos os cursos, e casar só pelo número entregaria o capítulo 3 de Teoria a quem nivelou Violino | ✅ |
@@ -706,7 +707,7 @@ As telas estão prontas; o **motor** não.
 | LAB-5 | `earTrainingCorrect` zerado: a medição não distingue percepção auditiva, e creditar seria adivinhar | ⬜ |
 | M-8 | **Domínio de notificação** — tipo, alvo, leitura, repositório por usuário | ⬜ |
 | M-9 | `WorkDetailScreen` e `MusicGraphScreen` ainda têm obra e grafo escritos na tela | ⬜ |
-| M-10 | `StudioHubScreen` e `ScoreEditorScreen` — fachadas, ver `79` | ⬜ |
+| M-10 | 🔴 **O Estúdio deixou de ser fachada.** O editor mostrava um "Estudo Contrapontístico a Quatro Vozes" que ninguém escreveu, com notas decorativas e armadura/fórmula que só trocavam rótulo; o hub mandava para `/studio/project/arranjo-satb-coral`, projeto que não existe, e prometia "MusicXML e MIDI" sem exportar nada. Agora há o **caderno de partituras** (`caderno.ts`, `caderno.repository.ts`): escrever nota a nota com figura, alteração, oitava e pausa; tocar com a duração de cada figura; guardar em nome da pessoa; reabrir por `?id=`; excluir no hub; baixar MusicXML 3.1 e MIDI | ✅ `caderno-de-partituras.test.tsx` — XML lido por parser, MIDI conferido byte a byte |
 | M-11 | Busca cobrir Atlas e Comunidade; as abas de categoria voltam aí | ⬜ |
 
 ## Fase B — o acervo está vazio — **REABERTA EM 19/09**
@@ -806,8 +807,8 @@ Ordem de `79 §7`: da que destrava mais para a que destrava menos.
 | E-1 | **Teste de microfone** — destrava 4 tipos de exercício e todos os simuladores | ⬜ |
 | E-2 | **Metrônomo que mede** — grava a batida, devolve desvio em ms por tempo (era `P.5`) | ⬜ |
 | E-3 | **Afinador** — cents com sinal, referência ajustável, temperamento | ⬜ |
-| E-4 | **Caderno: escrever e tocar** — base em biblioteca aberta madura, áudio pelo motor único | ⬜ |
-| E-5 | **Caderno: pastas, salvar, baixar** em MusicXML e MIDI | ⬜ |
+| E-4 | **Caderno: escrever e tocar** — ver M-10. Uma voz; ligadura, ponto e quiáltera ainda não | ✅ |
+| E-5 | **Caderno: salvar e baixar em MusicXML e MIDI** ✅ (M-10). ⬜ **Pastas** ainda não: o caderno é uma lista única, da mais recente à mais antiga | 🔄 |
 | E-6 | **Remover a fachada** de `ScoreEditorScreen` — botão morto e promessa de MusicXML/MIDI que não existe | ✅ |
 | E-8 | **Remover a fachada** de `DawProjectScreen` — slider de volume CONTROLADO com `onChange` vazio (o aluno arrastava e o React devolvia), botão "Adicionar Pista" morto, e "formatos de exportáção suportados: WAV 24-bit 48kHz, FLAC, MIDI 2.0 e MusicXML" — nenhum produzido em lugar nenhum do código | ✅ |
 | E-9 | As quatro pistas SATB de `DawProjectScreen`, o Play e o Rec ainda são estado local sem motor de áudio. A tela agora **diz** isso; continuam a ser fachada até `E-1`..`E-4` | ⬜ |

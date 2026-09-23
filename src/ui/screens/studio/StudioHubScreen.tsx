@@ -1,14 +1,25 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { VisitorInvitation } from '../../components/visitor/VisitorInvitation';
 import { Card } from '../../components/base/Card';
-import { Plus, Sliders, Mic, FileMusic } from 'lucide-react';
+import { Plus, Sliders, Mic, FileMusic, Trash2 } from 'lucide-react';
+import { cadernoRepository } from '../../../repositories/caderno.repository';
+import { PartituraDoCaderno } from '../../../domain/caderno';
 
 export const StudioHubScreen: React.FC = () => {
   const { navigate } = useRouter();
   const { userId, carregando: sessaoCarregando } = useCurrentUser();
+  const [caderno, setCaderno] = useState<PartituraDoCaderno[]>([]);
+
+  const recarregar = useCallback(async () => {
+    setCaderno(userId ? await cadernoRepository.listar(userId) : []);
+  }, [userId]);
+
+  useEffect(() => {
+    void recarregar();
+  }, [recarregar]);
 
   /**
    * NAO ha lista de projetos, e esta linha e a correcao.
@@ -25,6 +36,9 @@ export const StudioHubScreen: React.FC = () => {
    * Persistir projeto do Estudio e recurso de verdade, e esta aberto em
    * `D.3` do CLAUDE_TODO. Ate la, o Estudio mostra as ferramentas que tem e
    * diz que nao ha projeto — que e a informacao correta.
+   *
+   * O CADERNO DE PARTITURAS, esse, existe (M-10): o que a pessoa escreve no
+   * editor fica guardado em nome dela, e a lista abaixo e a lista de verdade.
    */
 
   return (
@@ -35,16 +49,11 @@ export const StudioHubScreen: React.FC = () => {
       badgeLabel="Motor de Criação"
       badgeVariant="brand"
       primaryAction={{
-        label: 'Novo Projeto de Áudio',
+        label: 'Nova partitura',
         icon: Plus,
-        onClick: () => navigate('/studio/project/novo-projeto'),
+        onClick: () => navigate('/studio/score'),
       }}
       secondaryActions={[
-        {
-          label: 'Editor de Partituras',
-          icon: FileMusic,
-          onClick: () => navigate('/studio/score'),
-        },
         {
           label: 'Laboratório de Voz & Afinação',
           icon: Mic,
@@ -99,14 +108,14 @@ export const StudioHubScreen: React.FC = () => {
             padding="md"
             interactive
             className="cursor-pointer flex items-center gap-3"
-            onClick={() => navigate('/studio/project/arranjo-satb-coral')}
+            onClick={() => navigate('/studio/project/novo')}
           >
             <div className="p-2.5 bg-stone-100 rounded-md text-stone-900">
               <Sliders className="w-5 h-5 text-anil-800" />
             </div>
             <div>
-              <p className="text-sm font-bold text-stone-900">DAW & Multitrack</p>
-              <p className="text-xs text-stone-500">Timeline, mixer e instrumentos virtuais</p>
+              <p className="text-sm font-bold text-stone-900">Mesa de áudio</p>
+              <p className="text-xs text-stone-500">Protótipo: ainda não grava nem guarda</p>
             </div>
           </Card>
 
@@ -122,7 +131,7 @@ export const StudioHubScreen: React.FC = () => {
             </div>
             <div>
               <p className="text-sm font-bold text-stone-900">Editor de Partituras</p>
-              <p className="text-xs text-stone-500">Notação em pauta e importação MusicXML</p>
+              <p className="text-xs text-stone-500">Escrever, tocar, guardar e baixar em MusicXML e MIDI</p>
             </div>
           </Card>
 
@@ -143,10 +152,51 @@ export const StudioHubScreen: React.FC = () => {
           </Card>
         </div>
 
+        {userId && (
+          <section aria-labelledby="titulo-caderno" className="space-y-2">
+            <h2 id="titulo-caderno" className="font-serif text-lg font-bold text-stone-900">
+              Seu caderno de partituras
+            </h2>
+            {caderno.length === 0 ? (
+              <p className="text-sm text-stone-600">
+                Ainda vazio. O que você escrever no editor e guardar aparece aqui.
+              </p>
+            ) : (
+              <ul className="divide-y divide-stone-200 rounded-lg border border-stone-200 bg-white">
+                {caderno.map((p) => (
+                  <li key={p.id} className="flex items-center gap-3 px-3 py-2">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/studio/score?id=${p.id}`)}
+                      className="min-w-0 flex-1 text-left"
+                    >
+                      <span className="block truncate text-sm font-medium text-stone-900">{p.titulo}</span>
+                      <span className="block font-mono text-[11px] text-stone-500">
+                        {p.notas.length} {p.notas.length === 1 ? 'figura' : 'figuras'} · {p.formula} · {p.andamento} BPM
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Excluir ${p.titulo}`}
+                      onClick={async () => {
+                        await cadernoRepository.excluir(p.id);
+                        await recarregar();
+                      }}
+                      className="rounded p-1.5 text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
+
         <p className="rounded-lg border border-stone-200 bg-stone-50 p-3 text-xs text-stone-700">
-          As três ferramentas acima abrem e funcionam. O que ainda não existe é
-          guardar o trabalho entre sessões: ao fechar a aba, o projeto se perde.
-          Por isso não há lista de projetos recentes.
+          O editor de partituras e o laboratório de voz funcionam por inteiro. A mesa
+          de áudio ainda é protótipo: não grava nem guarda projeto — por isso não há
+          lista de projetos de áudio.
         </p>
       </div>
     </ScreenContainer>
