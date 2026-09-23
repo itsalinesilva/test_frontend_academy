@@ -134,6 +134,33 @@ describe('🔴 EE-21 — toda leitura editorial funde o publicado', () => {
 });
 
 // ---------------------------------------------------------------------------
+// GR-8 — ninguém varre o catálogo inteiro por compositor
+// ---------------------------------------------------------------------------
+
+describe('GR-8 — as obras de um compositor vêm do índice', () => {
+  /**
+   * `obras.filter((o) => o.composerIds.includes(c.id))` dentro de um laço de
+   * compositores é ~800 × 32 mil comparações por listagem. Foi o que deixou a
+   * aba de compositores lenta e a suíte instável. Consulta pontual (a ficha de
+   * UM compositor) pode filtrar; laço usa `obrasDoCompositor`.
+   */
+  it('nenhum filtro de obras por compositor pelo id de uma variável de laço', () => {
+    const achados = FONTES.filter(({ codigo }) =>
+      /\.filter\(\s*\(\s*\w+\s*\)\s*=>\s*\w+\.composerIds\.includes\(\s*(c|p|pessoa|compositor)\.id\s*\)\s*\)/.test(codigo)
+    ).map(({ f }) => f);
+    expect(achados).toEqual([]);
+  });
+
+  it('o índice é o mesmo para a mesma lista, e novo para outra', async () => {
+    const { obrasPorCompositor } = await import('../../src/domain/atlas-map');
+    const obras = [{ id: 'o1', composerIds: ['a'] }, { id: 'o2', composerIds: ['a', 'b'] }] as never[];
+    expect(obrasPorCompositor(obras)).toBe(obrasPorCompositor(obras));
+    expect(obrasPorCompositor(obras).get('a')).toHaveLength(2);
+    expect(obrasPorCompositor([...obras])).not.toBe(obrasPorCompositor(obras));
+  });
+});
+
+// ---------------------------------------------------------------------------
 // EE-21e — o gerador de livros grava onde a Biblioteca diz
 // ---------------------------------------------------------------------------
 
