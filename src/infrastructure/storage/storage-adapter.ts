@@ -1,3 +1,20 @@
+/**
+ * Aviso de que um dado da plataforma mudou neste navegador.
+ *
+ * A conta vive no Google Drive da pessoa (ADR-001.A): o `localStorage` é a
+ * área de trabalho, e cada mudança precisa voltar para o Drive. Quem guarda
+ * aqui não sabe disso — só avisa; `conta-no-drive.service` escuta.
+ */
+export const DADOS_MUDARAM = 'amd:dados-mudaram';
+
+function avisarMudanca(chave: string): void {
+  try {
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(DADOS_MUDARAM, { detail: chave }));
+  } catch {
+    // ambiente sem eventos: nada a avisar
+  }
+}
+
 export interface StorageAdapter {
   getItem<T>(key: string): Promise<T | null>;
   setItem<T>(key: string, value: T): Promise<void>;
@@ -50,6 +67,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         window.localStorage.setItem(`${this.prefix}${key}`, JSON.stringify(value));
+        avisarMudanca(key);
       }
     } catch {
       // Storage quota or restriction fallback
@@ -73,6 +91,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         window.localStorage.setItem(`${this.prefix}${key}`, JSON.stringify(value));
+        avisarMudanca(key);
       }
     } catch {
       // Storage quota or restriction fallback
@@ -83,6 +102,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         window.localStorage.removeItem(`${this.prefix}${key}`);
+        avisarMudanca(key);
       }
     } catch {
       // Ignore errors on removal

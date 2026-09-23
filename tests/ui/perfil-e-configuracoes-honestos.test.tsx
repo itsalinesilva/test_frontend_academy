@@ -87,16 +87,16 @@ describe('AUD-6 — as preferências valem e ficam', () => {
         </RouterProvider>
       );
     montar();
-    await user.click(screen.getByRole('button', { name: /Acessibilidade/ }));
-    await user.click(screen.getByRole('checkbox', { name: /Alto Contraste/i }));
+    await user.click(await screen.findByRole('button', { name: /Acessibilidade/ }, { timeout: 10000 }));
+    await user.click(await screen.findByRole('checkbox', { name: /Alto Contraste/i }, { timeout: 10000 }));
     expect(document.documentElement.hasAttribute('data-alto-contraste')).toBe(true);
     expect(screen.getByRole('status')).toHaveTextContent(/guardada/);
 
     cleanup();
     montar();
-    await user.click(screen.getByRole('button', { name: /Acessibilidade/ }));
-    expect(screen.getByRole('checkbox', { name: /Alto Contraste/i })).toBeChecked();
-  });
+    await user.click(await screen.findByRole('button', { name: /Acessibilidade/ }, { timeout: 10000 }));
+    expect(await screen.findByRole('checkbox', { name: /Alto Contraste/i }, { timeout: 10000 })).toBeChecked();
+  }, 30000);
 
   it('não há mais botão que finge salvar, caixa solta, nem token na tela', async () => {
     const user = userEvent.setup();

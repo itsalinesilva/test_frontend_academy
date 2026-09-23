@@ -853,9 +853,9 @@ Não configurar agora: o projeto não terminou. O que ficará pendente quando fo
 
 | # | Item | Estado |
 |:---|:---|:---:|
-| I-CF-1 | Criar o namespace KV `RELATOS` e ligá-lo ao projeto Pages (instruções em `.env.example`). Sem ele, `POST /api/v1/relatos` responde "armazenamento não configurado", e a tela diz isso com honestidade (L-7a) | ⛔ |
+| I-CF-1 | Criar os namespaces KV `RELATOS` e `SALAS` e ligá-los ao projeto Pages (instruções em `.env.example`). Sem eles, relatos e salas respondem "não configurado" — e as telas dizem isso. No `npm run dev` os dois já funcionam, em memória | ⛔ |
 | I-CF-2 | Variáveis de produção da assinatura de sessão e da lista de administração no painel do Pages; conferir `/api/v1/admin/verify` com a sessão real | ⛔ |
-| I-CF-3 | Persistência durável (D1 ou KV) para o que hoje é só do navegador: contas, perfil, progresso, caderno, salas. Ver AUD-20. Sem isso, nada passa de um aparelho para outro | ⛔ |
+| I-CF-3 | ~~Persistência durável para os dados pessoais~~ — **retirado: estava errado.** Dado pessoal vive no Google Drive da própria pessoa (ADR-001.A, AUD-20); o Cloudflare guarda só o que é de várias pessoas (salas, relatos — ADR-003), que é I-CF-1 | ➡ |
 | I-CF-4 | Domínio e subdomínio de admin; cabeçalhos de segurança (`_headers`) validados no ar | ⛔ |
 
 ## AUDITORIA DAS TRÊS PESSOAS — 2026-09-23
@@ -913,6 +913,6 @@ não aparecem como erro; aparecem quando se segue o fluxo.
 
 | # | Item | Estado |
 |:---|:---|:---:|
-| AUD-20 | 🔴 **Não há persistência durável.** Contas, perfis, progresso, certificados, caderno, mesa e salas vivem no navegador. Trocar de aparelho ou limpar o navegador perde tudo, e salas/relatos entre pessoas não funcionam de verdade. Depende de I-CF-3 | ⛔ |
+| AUD-20 | **A conta vive no Google Drive da pessoa (ADR-001.A).** Estava decidido desde o início e não existia; eu tinha registrado errado como dependência do Cloudflare. **Feito:** `domain/copia-de-seguranca.ts` (o que entra: só os registros de quem é dono — num aparelho compartilhado, o trabalho de outra pessoa não vai para o meu Drive; sessão, contas do aparelho e preferências nunca entram; restaurar não apaga o que é de outra pessoa; cópia de outra conta é recusada) · `infrastructure/drive/drive-appdata.ts` (escopo `drive.appdata`, um arquivo na pasta oculta, token só em memória) · `conta-no-drive.service.ts` (ao entrar, a conta vem do Drive; cada mudança volta sozinha; uma operação por vez — sem isso a conta ficava partida em dois arquivos). No celular: "Só neste aparelho", com baixar e restaurar a conta como arquivo. Aviso no topo até a pessoa conectar; aba "Seus dados" nas Configurações. Guarda: `conta-no-drive.test.ts`. **Falta do seu lado:** ativar a Google Drive API e o escopo `drive.appdata` no mesmo cliente OAuth (passo a passo no `.env.example`) | ✅ |
 
 ---

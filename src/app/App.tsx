@@ -6,6 +6,8 @@ import { GuardaDeAudiencia } from '../ui/navigation/GuardaDeAudiencia';
 import { authService } from '../services/application/auth.service';
 import { User, UserRole } from '../domain/types';
 import { LoadingState } from '../ui/components/feedback/LoadingState';
+import { AvisoDaConta } from '../ui/components/conta/AvisoDaConta';
+import { contaNoDrive } from '../services/application/conta-no-drive.service';
 
 interface AppContentProps {
   currentUser: User | null;
@@ -87,6 +89,7 @@ const AppContent: React.FC<AppContentProps> = ({
         assignedRoles={assignedRoles}
         onSwitchRole={onSwitchRole}
       />
+      <AvisoDaConta logado={!!currentUser} />
       {/* A audiencia de cada rota e declarada em navigation/audiencia.ts. */}
       <GuardaDeAudiencia>
         <AppRouterOutlet />
@@ -114,6 +117,8 @@ export const App: React.FC = () => {
   const loadSession = useCallback(async () => {
     try {
       const session = await authService.getActiveSession();
+      /** A conta vive no Drive da pessoa (ADR-001.A): quem entrou traz a conta de lá. */
+      contaNoDrive.entrou(session?.user.id ?? null, session?.user.email);
       if (session) {
         setCurrentUser(session.user);
         setIsAdmin(session.isAdmin);
@@ -133,7 +138,10 @@ export const App: React.FC = () => {
   }, [loadSession]);
 
   const handleLogout = useCallback(async () => {
+    /** O que estiver pendente vai para o Drive antes de a sessão acabar. */
+    await contaNoDrive.gravarAgora().catch(() => undefined);
     await authService.logout();
+    contaNoDrive.entrou(null);
     setCurrentUser(null);
     setIsAdmin(false);
     setAssignedRoles([]);

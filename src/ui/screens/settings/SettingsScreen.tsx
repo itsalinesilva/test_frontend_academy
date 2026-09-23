@@ -13,11 +13,13 @@ import {
   GraduationCap,
   KeyRound,
   Baby,
+  HardDrive,
 } from 'lucide-react';
 import { authService } from '../../../services/application/auth.service';
 import { AuthSessionResponse } from '../../../contracts/auth-contracts';
 import { AppMode, UserRole } from '../../../domain/types';
 import { useRouter } from '../../navigation/router';
+import { PainelDosDados } from '../../components/conta/PainelDosDados';
 import { apagarDadosDoAparelho } from '../../../infrastructure/storage/apagar-dados-do-aparelho';
 import {
   Preferencias,
@@ -27,7 +29,7 @@ import {
 } from '../../../repositories/preferencias.repository';
 
 export const SettingsScreen: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'audio' | 'seguranca' | 'privacidade' | 'acessibilidade'>('audio');
+  const [activeTab, setActiveTab] = useState<'dados' | 'audio' | 'seguranca' | 'privacidade' | 'acessibilidade'>('dados');
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [session, setSession] = useState<AuthSessionResponse | null>(null);
   const { navigate } = useRouter();
@@ -102,6 +104,7 @@ export const SettingsScreen: React.FC = () => {
         {/* Navigation Sidebar */}
         <div className="space-y-1">
           {[
+            { id: 'dados', label: 'Seus dados', icon: HardDrive },
             { id: 'audio', label: 'Áudio & Dispositivos MIDI', icon: Volume2 },
             { id: 'seguranca', label: 'Conta & Autenticação', icon: Shield },
             { id: 'privacidade', label: 'Privacidade & Kids', icon: Eye },
@@ -129,6 +132,14 @@ export const SettingsScreen: React.FC = () => {
 
         {/* Settings Content Area */}
         <div className="md:col-span-3 space-y-6">
+          {/* Seus dados — a conta vive no Drive da pessoa, ou só no aparelho (ADR-001.A). */}
+          {activeTab === 'dados' && (
+            <Card variant="default" padding="lg" className="space-y-4">
+              <h3 className="font-serif font-bold text-base text-stone-900">Seus dados</h3>
+              <PainelDosDados />
+            </Card>
+          )}
+
           {/* Tab 1: Audio & MIDI */}
           {activeTab === 'audio' && (
             <Card variant="default" padding="lg" className="space-y-4">

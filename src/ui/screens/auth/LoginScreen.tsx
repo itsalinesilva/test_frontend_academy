@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useRouter, destinoAposEntrar } from '../../navigation/router';
+import { contaNoDrive } from '../../../services/application/conta-no-drive.service';
 import { authService } from '../../../services/application/auth.service';
 import { Card } from '../../components/base/Card';
 import { GoogleSignInButton } from '../../components/auth/GoogleSignInButton';
@@ -32,9 +33,10 @@ export const LoginScreen: React.FC = () => {
       setError(null);
       try {
         await authService.authenticateWithGoogle({ idToken, nonce });
-        const result = await authService.executePostAuthPipeline(
-          (await authService.getActiveSession())!.user
-        );
+        const sessao = (await authService.getActiveSession())!;
+        /** A conta vive no Drive (ADR-001.A): com consentimento anterior, ela volta em silêncio agora. */
+        contaNoDrive.entrou(sessao.user.id, sessao.user.email);
+        const result = await authService.executePostAuthPipeline(sessao.user);
         navigate(destinoAposEntrar(result.destination, voltar));
       } catch (err) {
         setError(
