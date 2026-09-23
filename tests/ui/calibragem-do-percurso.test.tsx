@@ -83,13 +83,29 @@ describe('🔴 na tela, de ponta a ponta', () => {
     expect(alternativas(), 'a lição não subiu para NOMEAR').toHaveLength(4);
   });
 
-  it('não oferece "reportar": sem servidor, o relato não chegaria a ninguém', async () => {
-    const user = userEvent.setup();
-    montar();
-    await user.click(await screen.findByRole('button', { name: 'Nota' }, { timeout: 20000 }));
-    await user.click(alternativas()[0]);
-    await user.click(screen.getByRole('button', { name: 'Conferir' }));
-    expect(screen.queryByRole('button', { name: /Reportar/ })).toBeNull();
+  it('L-7a: "reportar" envia ao servidor, com o enunciado — e só confirma se chegou', async () => {
+    const enviados: unknown[] = [];
+    const fetchOriginal = globalThis.fetch;
+    globalThis.fetch = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+      enviados.push(JSON.parse(String(init?.body)));
+      return new Response(JSON.stringify({ data: { id: 'r1' } }), {
+        status: 201,
+        headers: { 'content-type': 'application/json' },
+      });
+    }) as typeof fetch;
+    try {
+      const user = userEvent.setup();
+      montar();
+      await user.click(await screen.findByRole('button', { name: 'Nota' }, { timeout: 20000 }));
+      await user.click(alternativas()[0]);
+      await user.click(screen.getByRole('button', { name: 'Conferir' }));
+      await user.click(screen.getByRole('button', { name: /Reportar/ }));
+
+      expect(await screen.findByText(/vamos revisar/i)).toBeInTheDocument();
+      expect(enviados[0]).toMatchObject({ enunciado: expect.stringMatching(/pauta/) });
+    } finally {
+      globalThis.fetch = fetchOriginal;
+    }
   });
 
   it('sem sessão, não pergunta — não haveria de quem guardar', async () => {

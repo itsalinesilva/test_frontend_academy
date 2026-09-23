@@ -11,6 +11,7 @@ import { verifyGoogleIdToken, IdentityVerificationError } from './google-identit
 import { issueSession, verifySession, extractBearerToken, SessionClaims } from './session';
 import { parseAdminAllowlist, resolveAdminGrant, grantHasCapability, AdminGrant } from './admin-authority';
 import { ChainedAuditLog } from './audit-log';
+import { ArmazemDeRelatos, Relato, chaveDoRelato, problemasDoRelato } from './relatos';
 
 export interface ServerEnv {
   GOOGLE_OAUTH_CLIENT_ID?: string;
@@ -18,6 +19,8 @@ export interface ServerEnv {
   SESSION_SIGNING_SECRET?: string;
   AUDIT_SIGNING_SECRET?: string;
   ALLOWED_ORIGIN?: string;
+  /** KV da Cloudflare para os relatos de exercício (L-7a). Sem ele, a API diz que não há onde guardar. */
+  RELATOS?: ArmazemDeRelatos;
 }
 
 export interface RequestContext {
@@ -293,6 +296,68 @@ export async function handleApiRequest(
     const integrity = await audit.verifyChain();
 
     return json({ data: { logs, count: logs.length, integrity } }, 200, env);
+  }
+
+  // ------------------------------------------------------------- RELATOS ---
+  if (path === '/api/v1/relatos' && request.method === 'POST') {
+    const authed = await authenticate(request, env);
+    /** Com sessão: relato anônimo é convite a spam, e quem revisa precisa poder perguntar de volta. */
+    if (!authed) return fail('UNAUTHENTICATED', 'Entre para reportar um problema.', 401, env);
+    if (!env.RELATOS) {
+      return fail('RELATOS_NAO_CONFIGURADO', 'O servidor ainda não tem onde guardar relatos.', 503, env);
+    }
+
+    let corpo: unknown;
+    try {
+      corpo = await request.json();
+    } catch {
+      return fail('INVALID_BODY', 'Corpo da requisição não é JSON válido.', 400, env);
+    }
+    const problemas = problemasDoRelato(corpo);
+    if (problemas.length) return fail('RELATO_INVALIDO', problemas.join(' '), 400, env);
+
+    const c = corpo as Pick<Relato, 'exerciseId' | 'enunciado' | 'comentario'>;
+    const em = new Date().toISOString();
+    const relato: Relato = {
+      id: crypto.randomUUID(),
+      exerciseId: c.exerciseId.trim(),
+      enunciado: c.enunciado.trim().slice(0, 300),
+      comentario: c.comentario?.trim() || undefined,
+      /** A autoria vem da SESSÃO assinada, e nunca do corpo: o corpo diria o que quisesse. */
+      autorSubject: authed.session.sub,
+      autorEmail: authed.session.email,
+      em,
+    };
+    await env.RELATOS.put(chaveDoRelato(em, relato.id), JSON.stringify(relato));
+    return json({ data: { id: relato.id, recebidoEm: em } }, 201, env);
+  }
+
+  if (path === '/api/v1/admin/relatos' && request.method === 'GET') {
+    const authed = await authenticate(request, env);
+    if (!authed) return fail('UNAUTHENTICATED', 'Autentique-se para ler os relatos.', 401, env);
+    if (!authed.grant.isAdmin) {
+      await audit.record({
+        action: 'security.relatos.denied',
+        actorSubject: authed.session.sub,
+        actorEmail: authed.session.email,
+        severity: 'SECURITY',
+        details: `Leitura de relatos recusada para '${authed.session.email}'.`,
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+      });
+      return fail('FORBIDDEN', 'Só a administração lê os relatos.', 403, env);
+    }
+    if (!env.RELATOS) {
+      return fail('RELATOS_NAO_CONFIGURADO', 'O servidor ainda não tem onde guardar relatos.', 503, env);
+    }
+
+    const { keys } = await env.RELATOS.list({ prefix: 'relato:', limit: 200 });
+    const relatos = (
+      await Promise.all(keys.map(async (k) => JSON.parse((await env.RELATOS!.get(k.name)) ?? 'null') as Relato | null))
+    )
+      .filter((r): r is Relato => r !== null)
+      .sort((a, b) => b.em.localeCompare(a.em));
+    return json({ data: { relatos, count: relatos.length } }, 200, env);
   }
 
   return fail('NOT_FOUND', 'Endpoint da autoridade não encontrado.', 404, env);

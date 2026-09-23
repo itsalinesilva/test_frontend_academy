@@ -361,14 +361,25 @@ describe('calibragem do exercício', () => {
 
   it('reportar chega a quem vai revisar', async () => {
     const user = userEvent.setup();
-    const onReport = vi.fn();
+    const onReport = vi.fn().mockResolvedValue({ ok: true });
     montar({ onReport });
 
     await check(user);
     await user.click(screen.getByRole('button', { name: /reportar/i }));
 
     expect(onReport).toHaveBeenCalledWith('e1');
-    expect(screen.getByText(/vamos revisar/i)).toBeInTheDocument();
+    expect(await screen.findByText(/vamos revisar/i)).toBeInTheDocument();
+  });
+
+  it('🔴 relato que NÃO chegou diz que não chegou — e não "vamos revisar"', async () => {
+    const user = userEvent.setup();
+    montar({ onReport: vi.fn().mockResolvedValue({ ok: false, motivo: 'O servidor ainda não tem onde guardar relatos.' }) });
+
+    await check(user);
+    await user.click(screen.getByRole('button', { name: /reportar/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/não foi enviado.*onde guardar/);
+    expect(screen.queryByText(/vamos revisar/i)).toBeNull();
   });
 
   it('antes de conferir não se avalia o que ainda não se viu', async () => {

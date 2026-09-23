@@ -18,6 +18,7 @@ import { editorialService } from '../../../services/application/editorial.servic
 import { AcademyCourse, AcademyModule, AcademyLesson, LessonBlock } from '../../../domain/academy';
 import { isEditableBlock, problemasDoBloco } from '../../../domain/editorial-edit';
 import { resumirPacote } from '../../../domain/pacote-editorial';
+import { RelatoDoServidor, relatosService } from '../../../services/application/relatos.service';
 import { CamposDoBloco } from './CamposDoBloco';
 
 /**
@@ -57,6 +58,50 @@ const EstadoDaPublicacao: React.FC = () => {
       {contar(r.livretos, 'livreto', 'livretos')}, {contar(r.secoesDeLivro, 'seção de livro', 'seções de livro')} e{' '}
       {contar(r.removidos, 'remoção', 'remoções')}.
     </p>
+  );
+};
+
+/**
+ * Os relatos de "reportar um problema" que o servidor guardou (L-7a).
+ *
+ * Aparecem aqui, onde se corrige a lição: quem lê o relato está a um clique
+ * da correção. Sem armazenamento configurado, o painel diz isso — e não
+ * mostra uma lista vazia que pareceria "ninguém reportou nada".
+ */
+const RelatosRecebidos: React.FC = () => {
+  const [estado, setEstado] = useState<{ ok: true; relatos: RelatoDoServidor[] } | { ok: false; motivo: string } | null>(null);
+  useEffect(() => {
+    let vivo = true;
+    relatosService.listar().then((r) => vivo && setEstado(r));
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
+  if (!estado) return null;
+  return (
+    <section aria-labelledby="titulo-relatos" className="space-y-2 rounded-xl border border-stone-200 bg-white p-4">
+      <h2 id="titulo-relatos" className="font-serif text-base font-bold text-stone-900">
+        Relatos de exercícios
+      </h2>
+      {!estado.ok ? (
+        <p className="text-xs text-stone-600">Não foi possível ler os relatos: {estado.motivo}</p>
+      ) : estado.relatos.length === 0 ? (
+        <p className="text-xs text-stone-600">Nenhum relato recebido.</p>
+      ) : (
+        <ul className="divide-y divide-stone-100">
+          {estado.relatos.map((r) => (
+            <li key={r.id} className="py-2 text-xs">
+              <p className="font-medium text-stone-900">{r.enunciado}</p>
+              {r.comentario && <p className="text-stone-700">{r.comentario}</p>}
+              <p className="font-mono text-[10px] text-stone-500">
+                {r.exerciseId} · {r.autorEmail} · {new Date(r.em).toLocaleString('pt-BR')}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 };
 
@@ -279,6 +324,8 @@ export const AdminLicoesScreen: React.FC = () => {
           )}
 
           <EstadoDaPublicacao />
+
+          <RelatosRecebidos />
 
 
           {recado && (

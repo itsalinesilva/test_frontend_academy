@@ -24,8 +24,11 @@ interface ExerciseScreenProps {
    * nao perguntar — cria a impressao de que alguem esta ouvindo.
    */
   onRateDifficulty?: (exerciseId: string, verdict: 'EASY' | 'HARD') => void;
-  /** Idem: sem destino, sem botao. */
-  onReport?: (exerciseId: string) => void;
+  /**
+   * Idem: sem destino, sem botao. Devolve se o relato CHEGOU — a tela so diz
+   * "vamos revisar" quando chegou, e diz que nao foi quando nao chegou (L-7a).
+   */
+  onReport?: (exerciseId: string) => Promise<{ ok: true } | { ok: false; motivo: string }>;
 }
 
 /**
@@ -69,12 +72,14 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
   const [selectedIds, setEscolhidas] = useState<string[]>([]);
   const [checked, setConferido] = useState<null | { isCorrect: boolean }>(null);
   const [calibration, setCalibragem] = useState<Calibration>(null);
+  const [falhaDoRelato, setFalhaDoRelato] = useState<string | null>(null);
   const [confirmingExit, setConfirmandoSaida] = useState(false);
 
   useEffect(() => {
     setEscolhidas([]);
     setConferido(null);
     setCalibragem(null);
+    setFalhaDoRelato(null);
   }, [exercise?.id]);
 
   /**
@@ -285,6 +290,12 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
             </p>
             <p className="mt-1 text-sm leading-relaxed text-stone-700">{exercise.explanation}</p>
 
+            {falhaDoRelato && (
+              <p role="alert" className="mt-3 text-xs text-red-800">
+                O relato não foi enviado: {falhaDoRelato}
+              </p>
+            )}
+
             {(onRateDifficulty || onReport) && (
               <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-stone-900/10 pt-3">
                 {calibration ? (
@@ -316,9 +327,10 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
                     {onReport && (
                       <button
                         type="button"
-                        onClick={() => {
-                          onReport(exercise.id);
-                          setCalibragem('REPORTED');
+                        onClick={async () => {
+                          const r = await onReport(exercise.id);
+                          if (r.ok) setCalibragem('REPORTED');
+                          else setFalhaDoRelato(r.motivo);
                         }}
                         className="ml-auto flex items-center gap-1 text-xs text-stone-500 underline-offset-2 transition-colors hover:text-stone-800 hover:underline"
                       >

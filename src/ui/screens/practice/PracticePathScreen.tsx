@@ -23,6 +23,7 @@ import {
 } from '../../../domain/lesson-completion';
 import { ExerciseVerdict, pathRepository } from '../../../repositories/practice-path.repository';
 import { nivelDaProximaLicao } from '../../../domain/calibragem-do-percurso';
+import { relatosService } from '../../../services/application/relatos.service';
 
 /**
  * O percurso, de ponta a ponta.
@@ -131,9 +132,9 @@ export const PracticePathScreen: React.FC = () => {
    * Só com sessão: o veredito é da pessoa, e sem ela não há de quem guardar.
    * Sem destino, a tela nem mostra os botões — é a regra dela.
    *
-   * "Reportar um problema" NÃO é ligado aqui: a tela promete "vamos revisar",
-   * e sem servidor o relato ficaria no navegador de quem reportou, onde
-   * ninguém da equipe o veria. Ver L-7a no CLAUDE_TODO.
+   * "Reportar um problema" vai ao SERVIDOR (L-7a), e a tela só diz que foi
+   * quando o servidor guardou. Sem sessão não há relato: ele precisa de
+   * autoria, para quem revisa poder perguntar de volta.
    */
   const aoCalibrar = userId
     ? (exerciseId: string, verdict: 'EASY' | 'HARD') => {
@@ -189,6 +190,14 @@ export const PracticePathScreen: React.FC = () => {
         onSkip={() => setEtapa({ ...etapa, lesson: skip(etapa.lesson) })}
         onExit={() => setEtapa({ fase: 'MAPA' })}
         onRateDifficulty={aoCalibrar}
+        onReport={
+          userId
+            ? (exerciseId) => {
+                const e = etapa.lesson.queue.find((x) => x.id === exerciseId);
+                return relatosService.enviar({ exerciseId, enunciado: e?.prompt ?? exerciseId });
+              }
+            : undefined
+        }
       />
     );
   }
