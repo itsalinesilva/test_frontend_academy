@@ -37,7 +37,6 @@ import { LaboratorioScreen } from './practice/LaboratorioScreen';
 import { PracticePathScreen } from './practice/PracticePathScreen';
 import { PracticeLeagueScreen } from './practice/PracticeLeagueScreen';
 import { PracticeEnrollmentScreen } from './practice/PracticeEnrollmentScreen';
-import { SkillTreeScreen } from './practice/SkillTreeScreen';
 import { SkillDetailScreen } from './practice/SkillDetailScreen';
 import { MicroSkillScreen } from './practice/MicroSkillScreen';
 import { ExerciseDetailScreen } from './practice/ExerciseDetailScreen';
@@ -371,8 +370,14 @@ export const AppRouterOutlet: React.FC = () => {
   if (currentPath === '/practice/trainer' || currentPath === '/practice/ear') {
     return <PracticeScreen />;
   }
+  /**
+   * 🔴 A SEGUNDA ÁRVORE SAIU (LX-1). Ela era escrita à mão — 5 árvores, 32
+   * nós, pré-requisitos próprios — e não casava com capítulo nenhum do curso:
+   * a pessoa estudava por uma organização e era avaliada por outra. O endereço
+   * continua abrindo, agora na árvore acadêmica do Laboratório.
+   */
   if (currentPath === '/practice/skill-tree') {
-    return <SkillTreeScreen />;
+    return <LaboratorioScreen abaInicial="LICOES" />;
   }
   if (currentPath.startsWith('/practice/skill/')) {
     return <SkillDetailScreen />;

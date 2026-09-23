@@ -42,7 +42,7 @@ const EXPECTED = {
   MeuAprendizadoScreen: ['B', 'CATALOG'],
   AcademicHistoryScreen: ['B', 'OPERATIONAL'], AcademicProfileScreen: ['B', 'OPERATIONAL'],
   // PRACTICE
-  PracticeHomeScreen: ['C', 'CATALOG'], SkillTreeScreen: ['C', 'CATALOG'],
+  PracticeHomeScreen: ['C', 'CATALOG'],
   SkillDetailScreen: ['C', 'CATALOG'], MicroSkillScreen: ['C', 'CATALOG'],
   ExerciseDetailScreen: ['A', 'CATALOG'], ExerciseSessionScreen: ['D', 'INSTRUMENT'],
   ImmediateFeedbackScreen: ['D', 'INSTRUMENT'], AttemptDetailScreen: ['A', 'CATALOG'],
@@ -85,7 +85,7 @@ const REQUIRED = {
   CourseDetailScreen: ['Tabs', 'LockedState'], CourseCurriculumScreen: ['LockedState'],
   LessonReaderScreen: ['Staff', 'LockedState'], AcademicHistoryScreen: ['DataGrid'],
   PracticeHomeScreen: ['ProgressRing', 'XPIndicator', 'PracticeCard', 'Tabs'],
-  SkillTreeScreen: ['SkillNode', 'LockedState'], SkillDetailScreen: ['SkillNode', 'ProgressRing'],
+  SkillDetailScreen: ['SkillNode', 'ProgressRing'],
   MicroSkillScreen: ['ProgressRing'], ExerciseSessionScreen: ['Waveform', 'Tuner'],
   VoiceEarLabScreen: ['Tuner', 'Waveform'], PracticeHistoryScreen: ['DataGrid'],
   MasteryScreen: ['DataGrid'], StreakScreen: ['ProgressRing'], DailyGoalScreen: ['ProgressRing'],

@@ -97,7 +97,7 @@ export const SkillDetailScreen: React.FC = () => {
     return (
       <div className="p-8 max-w-5xl mx-auto text-center space-y-4">
         <h2 className="text-xl font-serif font-bold text-stone-900">Habilidade não encontrada</h2>
-        <Button variant="outline" onClick={() => router.navigate('/practice/skill-tree')}>
+        <Button variant="outline" onClick={() => router.navigate('/practice?aba=licoes')}>
           Voltar para Árvore
         </Button>
       </div>
@@ -134,7 +134,7 @@ export const SkillDetailScreen: React.FC = () => {
               </p>
             </div>
           )}
-          <Button variant="outline" size="sm" className="w-full" onClick={() => router.navigate('/practice/skill-tree')}>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => router.navigate('/practice?aba=licoes')}>
             Voltar à árvore
           </Button>
         </Card>
@@ -144,7 +144,7 @@ export const SkillDetailScreen: React.FC = () => {
       {/* Back Button */}
       <div>
         <button
-          onClick={() => router.navigate('/practice/skill-tree')}
+          onClick={() => router.navigate('/practice?aba=licoes')}
           className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-500 hover:text-stone-900 transition-colors"
         >
           <ChevronLeft className="w-4 h-4" /> Voltar para Árvore de Habilidades

@@ -272,7 +272,7 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
   // Practice
   if (path.startsWith('/practice')) {
     crumbs.push({ label: 'Prática & Treino', path: '/practice' });
-    if (path === '/practice/skill-tree') crumbs.push({ label: 'Árvore de Habilidades' });
+    if (path === '/practice/skill-tree') crumbs.push({ label: 'Lições' });
     else if (path.startsWith('/practice/skill/')) crumbs.push({ label: `Habilidade: ${params.id || 'Detalhes'}` });
     else if (path.startsWith('/practice/microskill/')) crumbs.push({ label: `Micro-Habilidade: ${params.id || 'Detalhes'}` });
     else if (path.startsWith('/practice/exercise/')) crumbs.push({ label: `Exercício: ${params.id || 'Ficha'}` });

@@ -19,7 +19,6 @@ import {
   DailyGoal,
   RankingLeaderboardEntry,
   PracticeProfile,
-  SkillTree,
   Skill,
   MicroSkill,
   Exercise,
@@ -71,13 +70,6 @@ export class PracticeService {
   // Catalog & Navigation Queries
   // ---------------------------------------------------------------------------
 
-  public async listSkillTrees(): Promise<SkillTree[]> {
-    return this.repo.listSkillTrees();
-  }
-
-  public async getSkillTree(id: string): Promise<SkillTree | null> {
-    return this.repo.findSkillTreeById(id);
-  }
 
   public async listSkills(treeId?: string): Promise<Skill[]> {
     return this.repo.listSkills(treeId);

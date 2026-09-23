@@ -141,7 +141,7 @@ export const InteractiveLessonScreen: React.FC = () => {
           <p className="text-xs leading-relaxed text-stone-600">
             Pratique o conceito com medicao real antes de seguir.
           </p>
-          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/practice/skill-tree')}>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/practice?aba=licoes')}>
             Abrir treinador
           </Button>
         </Card>

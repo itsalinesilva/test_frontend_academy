@@ -280,7 +280,7 @@ export const ImmediateFeedbackScreen: React.FC = () => {
               id="btn-feedback-skill-tree"
               variant="primary"
               size="md"
-              onClick={() => router.navigate('/practice/skill-tree')}
+              onClick={() => router.navigate('/practice?aba=licoes')}
               className="flex items-center gap-2 bg-anil-800 hover:bg-anil-700 text-white"
             >
               <span>Avançar na Skill Tree</span>

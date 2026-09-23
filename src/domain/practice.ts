@@ -82,30 +82,6 @@ export interface PracticeMeasurement {
   score: number; // Final weighted score (0..1000)
 }
 
-export interface SkillNode {
-  skillId: EntityId;
-  code: string;
-  name: string;
-  category: SkillCategory;
-  tier: number;
-  prerequisites: EntityId[];
-  unlockedByDefault: boolean;
-  masteryLevel?: number; // 0..5
-}
-
-export interface SkillTree {
-  id: EntityId;
-  slug: string;
-  title: string;
-  description: string;
-  instrumentId?: EntityId;
-  category: SkillCategory;
-  nodes: SkillNode[];
-  version: string;
-  createdAt: ISOTimestamp;
-  updatedAt: ISOTimestamp;
-}
-
 export interface MicroSkill {
   id: EntityId;
   skillId: EntityId;

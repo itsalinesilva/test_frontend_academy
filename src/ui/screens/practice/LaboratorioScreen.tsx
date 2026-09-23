@@ -69,11 +69,20 @@ type Aba = 'FEED' | 'LICOES' | 'PRATICAS';
  * constante.
  */
 
-export const LaboratorioScreen: React.FC = () => {
-  const { navigate } = useRouter();
+export const LaboratorioScreen: React.FC<{ abaInicial?: Aba }> = ({ abaInicial }) => {
+  const { navigate, query } = useRouter();
   const { userId } = useCurrentUser();
 
-  const [aba, setAba] = useState<Aba>('FEED');
+  /**
+   * `?aba=licoes` abre direto na árvore acadêmica. É para onde vão os botões
+   * que antes levavam à árvore escrita à mão (LX-1), e o que o endereço antigo
+   * `/practice/skill-tree` passou a abrir.
+   */
+  const abaDoEndereco = query.get('aba');
+  const [aba, setAba] = useState<Aba>(
+    abaInicial ??
+      (abaDoEndereco === 'licoes' ? 'LICOES' : abaDoEndereco === 'praticas' ? 'PRATICAS' : 'FEED')
+  );
   /**
    * 🔴 A ÁRVORE ACADÊMICA, e não competências soltas.
    *

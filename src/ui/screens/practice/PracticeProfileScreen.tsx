@@ -263,7 +263,7 @@ export const PracticeProfileScreen: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => router.navigate('/practice/skill-tree')}
+              onClick={() => router.navigate('/practice?aba=licoes')}
               className="w-full text-xs"
             >
               Explorar Novas Árvores de Habilidades

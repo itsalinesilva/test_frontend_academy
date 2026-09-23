@@ -436,11 +436,9 @@ O Laboratório deixou de usá-la nesta rodada. Ela continua viva em:
 casam com capítulo nenhum do curso de Teoria, nem com `pedagogicalOrder()`. Os
 pré-requisitos dela são outros. As "cinco categorias" dela não são as cadeiras.
 
-**Não foi removida nesta rodada**, e a razão é de tamanho: são 8 telas, 3
-métodos de serviço, 2 de repositório e uma rota. Arrancar isso é uma cirurgia
-própria, e o lugar dela é uma decisão sobre escopo — não algo para fazer de
-passagem no meio de outra entrega. Fica registrado aqui para não ser esquecido,
-e não confundido com trabalho feito.
+**✅ REMOVIDA em 2026-09-22 (LX-1).** Saíram `SEED_SKILL_TREES`, os tipos `SkillTree`/`SkillNode` do domínio, os três métodos de serviço e repositório e `SkillTreeScreen`. Os botões "ver árvore" levam a `/practice?aba=licoes`; o endereço antigo `/practice/skill-tree` abre o Laboratório já na aba Lições. A chave `amd_practice_trees_v1`, semeada em todo navegador que abriu o Laboratório, é apagada na primeira leitura. `tests/ui/arvore-unica.test.tsx` impede que a segunda árvore volte.
+
+Ficam, porque são outra coisa: a entidade `Skill` (as habilidades medidas nas sessões) e o componente visual `SkillNode`, que desenha micro-habilidades.
 
 ### 7.4 · O que FALTA, em ordem de peso
 
