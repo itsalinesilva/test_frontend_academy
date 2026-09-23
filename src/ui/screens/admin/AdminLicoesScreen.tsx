@@ -100,10 +100,22 @@ export const AdminLicoesScreen: React.FC = () => {
   const [licaoAberta, setLicaoAberta] = useState<string | null>(null);
   const [pendentes, setPendentes] = useState(0);
   const [recado, setRecado] = useState<{ tom: 'ok' | 'erro'; texto: string } | null>(null);
+  /** Módulo em que se está criando uma lição, ou nenhum. */
+  const [criandoEm, setCriandoEm] = useState<AcademyModule | null>(null);
+  /** Quais lições são da curadoria — as únicas que se pode excluir. */
+  const [criadas, setCriadas] = useState<Set<string>>(new Set());
 
   const recarregarPendentes = useCallback(async () => {
     setPendentes(await editorialService.pendentes());
+    setCriadas(new Set((await editorialService.licoesCriadas()).map((l) => l.id)));
   }, []);
+
+  /** Relê as lições dos módulos — com as criadas e a camada por cima. */
+  const recarregarLicoes = useCallback(async () => {
+    const lics = (await Promise.all(modulos.map((m) => academyService.getLessons(m.id)))).flat();
+    setLicoes(await editorialService.licoesComEdicoes(lics));
+    await recarregarPendentes();
+  }, [modulos, recarregarPendentes]);
 
   useEffect(() => {
     let vivo = true;
@@ -280,17 +292,31 @@ export const AdminLicoesScreen: React.FC = () => {
             </p>
           )}
 
-          {licao ? (
+          {criandoEm ? (
+            <CriadorDeLicao
+              modulo={criandoEm}
+              ordem={
+                Math.max(0, ...licoes.filter((l) => l.moduleId === criandoEm.id).map((l) => l.order)) + 1
+              }
+              criadaPor={nome ?? ''}
+              onFechar={() => setCriandoEm(null)}
+              onCriou={async (id) => {
+                setCriandoEm(null);
+                await recarregarLicoes();
+                /** Abre direto no editor: a lição nasce com um bloco, e o resto se monta lá. */
+                setLicaoAberta(id);
+              }}
+            />
+          ) : licao ? (
             <EditorDaLicao
               licao={licao}
               editadaPor={nome ?? ''}
+              criada={criadas.has(licao.id)}
               onFechar={() => setLicaoAberta(null)}
-              onGravou={async () => {
-                const lics = (
-                  await Promise.all(modulos.map((m) => academyService.getLessons(m.id)))
-                ).flat();
-                setLicoes(await editorialService.licoesComEdicoes(lics));
-                await recarregarPendentes();
+              onGravou={recarregarLicoes}
+              onExcluiu={async () => {
+                setLicaoAberta(null);
+                await recarregarLicoes();
               }}
             />
           ) : (
@@ -298,9 +324,11 @@ export const AdminLicoesScreen: React.FC = () => {
               cursos={cursos}
               modulos={modulos}
               licoes={licoes}
+              criadas={criadas}
               cursoAberto={cursoAberto}
               onAbrirCurso={(id) => setCursoAberto((a) => (a === id ? null : id))}
               onAbrirLicao={setLicaoAberta}
+              onNovaLicao={setCriandoEm}
             />
           )}
         </div>
@@ -314,10 +342,12 @@ const ListaDeCursos: React.FC<{
   cursos: AcademyCourse[];
   modulos: AcademyModule[];
   licoes: AcademyLesson[];
+  criadas: Set<string>;
   cursoAberto: string | null;
   onAbrirCurso: (id: string) => void;
   onAbrirLicao: (id: string) => void;
-}> = ({ cursos, modulos, licoes, cursoAberto, onAbrirCurso, onAbrirLicao }) => (
+  onNovaLicao: (modulo: AcademyModule) => void;
+}> = ({ cursos, modulos, licoes, criadas, cursoAberto, onAbrirCurso, onAbrirLicao, onNovaLicao }) => (
   <ul className="space-y-2">
     {cursos.map((c) => {
       const meus = modulos.filter((m) => m.courseId === c.id).sort((a, b) => a.order - b.order);
@@ -360,9 +390,24 @@ const ListaDeCursos: React.FC<{
                             className="w-full rounded px-2 py-1 text-left text-xs text-stone-700 hover:bg-anil-50 hover:text-anil-800"
                           >
                             {l.variants?.TRADITIONAL?.title ?? l.canonicalContentId}
+                            {criadas.has(l.id) && (
+                              <span className="ml-2 rounded bg-ouro-100 px-1 font-mono text-[9px] uppercase text-ouro-900">
+                                criada
+                              </span>
+                            )}
                           </button>
                         </li>
                       ))}
+                      <li>
+                        <button
+                          type="button"
+                          onClick={() => onNovaLicao(m)}
+                          className="flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium text-anil-800 hover:bg-ouro-50"
+                        >
+                          <Plus className="h-3 w-3" aria-hidden="true" />
+                          Nova lição em {m.title}
+                        </button>
+                      </li>
                     </ul>
                   </li>
                 );
@@ -385,13 +430,17 @@ const ListaDeCursos: React.FC<{
 const EditorDaLicao: React.FC<{
   licao: AcademyLesson;
   editadaPor: string;
+  /** Escrita pela curadoria — só essas se excluem por aqui. */
+  criada: boolean;
   onFechar: () => void;
   onGravou: () => Promise<void>;
-}> = ({ licao, editadaPor, onFechar, onGravou }) => {
+  onExcluiu: () => Promise<void>;
+}> = ({ licao, editadaPor, criada, onFechar, onGravou, onExcluiu }) => {
   const variante = licao.variants?.TRADITIONAL;
   const [secaoAberta, setSecaoAberta] = useState<string | null>(
     variante?.sections[0]?.id ?? null
   );
+  const [confirmando, setConfirmando] = useState(false);
 
   if (!variante) {
     return (
@@ -412,7 +461,37 @@ const EditorDaLicao: React.FC<{
         Voltar à lista
       </button>
 
-      <h2 className="font-serif text-xl font-bold text-stone-900">{variante.title}</h2>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <h2 className="font-serif text-xl font-bold text-stone-900">{variante.title}</h2>
+        {criada &&
+          (confirmando ? (
+            <span className="flex items-center gap-2 text-xs">
+              <span className="text-stone-700">Excluir esta lição e todos os blocos dela?</span>
+              <button
+                type="button"
+                onClick={async () => {
+                  await editorialService.removerLicaoCriada(licao.id);
+                  await onExcluiu();
+                }}
+                className="rounded bg-red-700 px-2 py-1 font-semibold text-white"
+              >
+                Excluir
+              </button>
+              <button type="button" onClick={() => setConfirmando(false)} className="text-stone-600">
+                Manter
+              </button>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmando(true)}
+              className="flex items-center gap-1 rounded px-2 py-1 text-xs text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+              Excluir lição criada
+            </button>
+          ))}
+      </div>
 
       {variante.sections.map((secao) => (
         <section key={secao.id} className="rounded-xl border border-stone-200 bg-white">
@@ -439,6 +518,125 @@ const EditorDaLicao: React.FC<{
           )}
         </section>
       ))}
+    </div>
+  );
+};
+
+/**
+ * 🔴 CRIAR LIÇÃO (EE-22b).
+ *
+ * O domínio sabia criar lição desde o começo, e nenhuma tela chamava. Pede o
+ * mínimo que a validação exige — título, duração e o texto de abertura — e
+ * abre a lição no editor de blocos, onde entram pentagrama, player, sessão de
+ * exercícios e o resto. Um formulário que pedisse tudo de uma vez seria o
+ * editor de blocos duplicado.
+ */
+const CriadorDeLicao: React.FC<{
+  modulo: AcademyModule;
+  ordem: number;
+  criadaPor: string;
+  onFechar: () => void;
+  onCriou: (id: string) => Promise<void>;
+}> = ({ modulo, ordem, criadaPor, onFechar, onCriou }) => {
+  const [titulo, setTitulo] = useState('');
+  const [minutos, setMinutos] = useState(15);
+  const [abertura, setAbertura] = useState('');
+  const [erro, setErro] = useState<string | null>(null);
+  const [gravando, setGravando] = useState(false);
+
+  async function criar() {
+    setGravando(true);
+    setErro(null);
+    const id = `les_criada_${Date.now().toString(36)}`;
+    try {
+      await editorialService.salvarLicaoCriada({
+        id,
+        moduleId: modulo.id,
+        courseId: modulo.courseId,
+        order: ordem,
+        title: titulo.trim(),
+        blocks: [{ kind: 'MARKDOWN', id: `${id}_b1`, markdown: abertura }],
+        durationMinutes: minutos,
+        criadaPor,
+        criadaEm: new Date().toISOString(),
+      });
+      await onCriou(id);
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível criar a lição.');
+    } finally {
+      setGravando(false);
+    }
+  }
+
+  return (
+    <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-4">
+      <button
+        type="button"
+        onClick={onFechar}
+        className="flex items-center gap-1 text-xs text-stone-500 hover:text-anil-800"
+      >
+        <ArrowLeft className="h-3 w-3" aria-hidden="true" />
+        Voltar à lista
+      </button>
+
+      <h2 className="font-serif text-xl font-bold text-stone-900">Nova lição em {modulo.title}</h2>
+      <p className="text-xs text-stone-600">
+        Entra como a {ordem}ª do módulo. Depois de criada, ela abre no editor de blocos.
+      </p>
+
+      <label className="block">
+        <span className="block text-[11px] font-semibold uppercase tracking-wide text-stone-500">Título</span>
+        <input
+          value={titulo}
+          onChange={(e) => setTitulo(e.target.value)}
+          className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+        />
+      </label>
+
+      <label className="block">
+        <span className="block text-[11px] font-semibold uppercase tracking-wide text-stone-500">
+          Duração (minutos)
+        </span>
+        <input
+          type="number"
+          min={1}
+          value={minutos}
+          onChange={(e) => setMinutos(Math.max(1, Number(e.target.value) || 1))}
+          className="mt-1 w-32 rounded-lg border border-stone-300 px-3 py-2 text-sm"
+        />
+      </label>
+
+      <label className="block">
+        <span className="block text-[11px] font-semibold uppercase tracking-wide text-stone-500">
+          Texto de abertura (.md)
+        </span>
+        <textarea
+          value={abertura}
+          onChange={(e) => setAbertura(e.target.value)}
+          rows={6}
+          className="mt-1 w-full rounded-lg border border-stone-300 p-2 font-mono text-xs"
+        />
+      </label>
+
+      {!criadaPor && (
+        <p className="text-[11px] text-stone-500">Entre com sua conta para criar: toda lição leva autoria.</p>
+      )}
+
+      {erro && (
+        <p role="alert" className="rounded-lg bg-red-50 p-3 text-xs text-red-950">
+          {erro}
+        </p>
+      )}
+
+      <button
+        type="button"
+        onClick={criar}
+        disabled={gravando || !criadaPor}
+        className="flex items-center gap-1.5 rounded-lg bg-anil-800 px-4 py-2 text-sm font-semibold text-white disabled:bg-stone-300"
+      >
+        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+        {gravando ? 'Criando…' : 'Criar lição'}
+      </button>
     </div>
   );
 };
