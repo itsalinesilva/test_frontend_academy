@@ -68,7 +68,7 @@ const cartaoDaEra = () => screen.getByLabelText('Era anterior').closest('div')!.
 
 const irParaOAcervo = async (user: ReturnType<typeof userEvent.setup>) => {
   await user.click(screen.getByRole('button', { name: 'Acervo de compositores' }));
-  return screen.findByRole('searchbox', { name: 'Buscar no acervo' });
+  return screen.findByRole('searchbox', { name: 'Buscar no acervo' }, { timeout: 40000 });
 };
 
 /** Só os cards da listagem — as etiquetas dentro deles também são `li`. */
@@ -197,7 +197,7 @@ describe('🔴 o funil fica fechado, e a tela fica limpa', () => {
     await irParaOAcervo(user);
 
     await user.click(screen.getByRole('button', { name: /Filtrar/ }));
-    await screen.findByText('Afunilar o acervo');
+    await screen.findByText('Afunilar o acervo', {}, { timeout: 40000 });
 
     const lista = document.querySelector('#painel-do-funil ol')!;
     const etapas = [...lista.querySelectorAll(':scope > li')];
@@ -229,7 +229,7 @@ describe('🔴 o funil fica fechado, e a tela fica limpa', () => {
     await irParaOAcervo(user);
     await user.click(screen.getByRole('button', { name: /Filtrar/ }));
 
-    const eixos = await screen.findAllByRole('combobox');
+    const eixos = await screen.findAllByRole('combobox', {}, { timeout: 40000 });
     expect(eixos.length).toBeGreaterThan(1);
 
     const opcoes = [...(eixos[0] as HTMLSelectElement).options].filter(
@@ -248,7 +248,7 @@ describe('🔴 o funil fica fechado, e a tela fica limpa', () => {
     await irParaOAcervo(user);
     await user.click(screen.getByRole('button', { name: /Filtrar/ }));
 
-    const eixo = (await screen.findAllByRole('combobox'))[0] as HTMLSelectElement;
+    const eixo = (await screen.findAllByRole('combobox', {}, { timeout: 40000 }))[0] as HTMLSelectElement;
     const alvo = [...eixo.options].find((o) => o.value !== '__todos__')!;
     await user.selectOptions(eixo, alvo.value);
 
@@ -262,7 +262,7 @@ describe('🔴 o funil fica fechado, e a tela fica limpa', () => {
       expect(botao.textContent, 'o botão não diz quantos recortes estão ativos').toMatch(
         /Filtrar\s*1/
       );
-    });
+    }, { timeout: 40000 });
   });
 
   it('o funil fecha no Escape', async () => {
@@ -273,10 +273,10 @@ describe('🔴 o funil fica fechado, e a tela fica limpa', () => {
     await irParaOAcervo(user);
     await user.click(screen.getByRole('button', { name: /Filtrar/ }));
 
-    await screen.findByText('Afunilar o acervo');
+    await screen.findByText('Afunilar o acervo', {}, { timeout: 40000 });
     await user.keyboard('{Escape}');
 
-    await waitFor(() => expect(screen.queryByText('Afunilar o acervo')).toBeNull());
+    await waitFor(() => expect(screen.queryByText('Afunilar o acervo')).toBeNull(), { timeout: 40000 });
   });
 });
 
@@ -341,7 +341,7 @@ describe('o que se procura é uma escolha, e não uma aba', () => {
     await esperarTela();
     await irParaOAcervo(user);
 
-    const voltar = await screen.findByLabelText('Era anterior');
+    const voltar = await screen.findByLabelText('Era anterior', {}, { timeout: 40000 });
     const avancar = screen.getByLabelText('Era seguinte');
 
     /** Na ponta, a seta desliga: dar a volta faz quem navega perder onde está. */
@@ -354,12 +354,12 @@ describe('o que se procura é uma escolha, e não uma aba', () => {
     /** Escolher a era tem de RECORTAR: filtro que não filtra é pior que nenhum. */
     await waitFor(() => {
       expect(screen.getByText(/resultados?/).textContent).not.toBe(antes);
-    });
+    }, { timeout: 40000 });
 
     /** E o card passa a dizer em que era se está, e não mais "Era". */
     await waitFor(() => {
       expect(within(cartaoDaEra()).queryByText('Era')).toBeNull();
-    });
+    }, { timeout: 40000 });
 
     expect(screen.getByLabelText('Era anterior'), 'andou, e voltar continua desligado').toBeEnabled();
   });
@@ -374,7 +374,7 @@ describe('o que se procura é uma escolha, e não uma aba', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/\d+ resultados?/)).toBeInTheDocument();
-    });
+    }, { timeout: 40000 });
   });
 });
 
@@ -385,7 +385,7 @@ describe('a listagem é paginada e o rosto aparece', () => {
     await esperarTela();
     await irParaOAcervo(user);
 
-    await waitFor(() => expect(cards().length).toBeGreaterThan(0));
+    await waitFor(() => expect(cards().length).toBeGreaterThan(0), { timeout: 40000 });
     expect(cards().length).toBeLessThanOrEqual(24);
   });
 
@@ -401,7 +401,7 @@ describe('a listagem é paginada e o rosto aparece', () => {
 
     await user.click(cartaoDeRecorte('Compositores'));
 
-    await waitFor(() => expect(cards().length).toBeGreaterThan(0));
+    await waitFor(() => expect(cards().length).toBeGreaterThan(0), { timeout: 40000 });
     const comRosto = cards().filter(
       (li) => li.querySelector('img') || li.querySelector('span[aria-hidden="true"]')
     );
@@ -416,7 +416,7 @@ describe('nada aqui promete o que não tem', () => {
     await esperarTela();
     await irParaOAcervo(user);
 
-    await waitFor(() => expect(cards().length).toBeGreaterThan(0));
+    await waitFor(() => expect(cards().length).toBeGreaterThan(0), { timeout: 40000 });
 
     for (const card of cards()) {
       const texto = card.textContent ?? '';

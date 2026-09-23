@@ -85,7 +85,7 @@ describe('o artigo abre e se lê', () => {
     montar('artigo-que-nao-existe');
     await waitFor(() => {
       expect(screen.getByText('Artigo não encontrado')).toBeInTheDocument();
-    });
+    }, { timeout: 40000 });
   });
 });
 

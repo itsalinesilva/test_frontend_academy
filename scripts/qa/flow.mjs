@@ -63,15 +63,49 @@ export function checkNavigationTargets() {
     });
   };
 
+  /**
+   * Template: cada `${...}` vira um segmento de exemplo. Antes só aspas
+   * simples eram lidas, e `navigate(\`/academiaa/course/${id}\`)` escapava — a
+   * maior parte das navegações com identificador é escrita assim.
+   *
+   * Tirar a consulta aqui é certo para a TABELA de rotas; que o ROTEADOR
+   * também a tire é outra pergunta, e é conferida no roteador de verdade em
+   * `tests/ui/guardas-de-regressao.test.tsx` (NV-3: toda busca caía no 404
+   * com este verificador verde).
+   */
+  const semInterpolacao = (t) => {
+    let saida = '';
+    let nivel = 0;
+    for (let i = 0; i < t.length; i++) {
+      if (nivel === 0 && t[i] === '$' && t[i + 1] === '{') {
+        nivel = 1;
+        i++;
+        saida += 'x';
+        continue;
+      }
+      if (nivel > 0) {
+        if (t[i] === '{') nivel++;
+        else if (t[i] === '}') nivel--;
+        continue;
+      }
+      saida += t[i];
+    }
+    return saida;
+  };
+
   const findings = [];
   for (const { file, code: content } of sources()) {
     if (file.includes('.test.')) continue;
-    for (const m of content.matchAll(/navigate\(\s*'(\/[^']*)'/g)) {
-      if (!serves(m[1])) {
+    const chamadas = [
+      ...[...content.matchAll(/navigate\(\s*'(\/[^']*)'/g)].map((m) => [m, m[1]]),
+      ...[...content.matchAll(/navigate\(\s*`(\/[^`]*)`/g)].map((m) => [m, semInterpolacao(m[1])]),
+    ];
+    for (const [m, destino] of chamadas) {
+      if (!serves(destino)) {
         findings.push({
           file,
           line: content.slice(0, m.index).split('\n').length,
-          detail: `navega para "${m[1]}" e nenhuma rota atende`,
+          detail: `navega para "${destino}" e nenhuma rota atende`,
         });
       }
     }

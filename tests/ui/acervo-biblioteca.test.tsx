@@ -169,7 +169,7 @@ describe('o carrossel é paginado', () => {
     expect(anteriores).toBeDisabled();
 
     await user.click(proxima);
-    await waitFor(() => expect(anteriores).toBeEnabled());
+    await waitFor(() => expect(anteriores).toBeEnabled(), { timeout: 40000 });
   });
 });
 

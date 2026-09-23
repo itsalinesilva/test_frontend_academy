@@ -698,6 +698,12 @@ const SINAIS: Sinal[] = [
         file: 'src/ui/screens/n/N3Screen.tsx',
         content: `const ir = () => navigate('/academiaa/history');`,
       },
+      {
+        /** Template era invisível: a maioria das navegações com id é escrita assim. */
+        como: 'erro de digitacao em rota montada por template',
+        file: 'src/ui/screens/n/N4Screen.tsx',
+        content: 'const ir = (id: string) => navigate(`/academiaa/course/${id}`);',
+      },
     ],
     limpos: [
       {
@@ -715,9 +721,15 @@ const SINAIS: Sinal[] = [
         file: 'src/ui/screens/o/O3Screen.tsx',
         content: `const ir = () => navigate('/academia/certificate/abc-123');`,
       },
+      {
+        como: 'template com identificador e consulta, servido',
+        file: 'src/ui/screens/o/O4Screen.tsx',
+        content: 'const ir = (c: string, m: string) => navigate(`/academia/course/${c}?modulo=${m}`);',
+      },
     ],
     limites: [
-      'rota montada por template ou concatenacao nao aparece como literal e escapa',
+      'rota montada por concatenacao, ou template que COMECA por interpolacao, escapa',
+      'tira a consulta antes de comparar: que o roteador tambem a tire e conferido em guardas-de-regressao',
       'so olha chamadas a navigate: href de ancora comum nao e verificado',
       'confere que ALGUEM atende o caminho, nao que a tela certa aparece nele',
     ],
