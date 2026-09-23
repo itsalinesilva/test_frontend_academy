@@ -76,7 +76,8 @@ export const ScoreEditorScreen: React.FC = () => {
     let vivo = true;
     cadernoRepository.buscar(idPedido).then((p) => {
       if (!vivo) return;
-      if (!p || (userId && p.autorId !== userId)) {
+      /** AUD-18: sem sessão, nenhuma partitura guardada abre — antes, `userId && …` deixava passar qualquer id. */
+      if (!p || !userId || p.autorId !== userId) {
         setRecado({ tom: 'erro', texto: 'Esta partitura não está no seu caderno.' });
         return;
       }

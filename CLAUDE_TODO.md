@@ -869,19 +869,19 @@ não aparecem como erro; aparecem quando se segue o fluxo.
 
 | # | Item | Estado |
 |:---|:---|:---:|
-| AUD-1 | 🔴 **O Estúdio contradiz a audiência.** `audiencia.ts` declara `/studio*` como `exigeLogin`, mas as telas foram escritas para visitante (convite, "funciona sem conta"). Esse conteúdo é inalcançável. Decidir: abrir o Estúdio ao visitante, com rascunho local, ou apagar o texto de visitante | ⬜ |
-| AUD-2 | `/design-system` é público em produção. Deve ficar atrás de `import.meta.env.DEV` ou de `exigeAdmin` | ⬜ |
-| AUD-3 | `/academia/academic-profile` é público e diz ao visitante "Membro Oficial • Identidade Auditada pela Cátedra". A rota precisa de uma versão de visitante ou de `exigeLogin` | ⬜ |
-| AUD-4 | `/academia/activity/:id` com um id inexistente fica **carregando para sempre**, nas três pessoas. Falta o estado "não encontrada" | ⬜ |
-| AUD-5 | A tela de Ajuda promete avaliação "pelo docente da sua cátedra", e esse fluxo não existe | ⬜ |
+| AUD-1 | 🔴 **O Estúdio contradiz a audiência.** `audiencia.ts` declara `/studio*` como `exigeLogin`, mas as telas foram escritas para visitante (convite, "funciona sem conta"). Esse conteúdo é inalcançável. Decidir: abrir o Estúdio ao visitante, com rascunho local, ou apagar o texto de visitante **Feito:** `/studio` é `publica`; as ferramentas funcionam sem conta, e guardar pede nome em cada tela. Para o visitante, o áudio da mesa fica em memória (sem órfão no IndexedDB). Guarda: `navegacao-pilares.test.tsx`. | ✅ |
+| AUD-2 | `/design-system` é público em produção. Deve ficar atrás de `import.meta.env.DEV` ou de `exigeAdmin` **Feito:** `exigeAdmin`. Guarda: `perfil-e-configuracoes-honestos.test.tsx`. | ✅ |
+| AUD-3 | `/academia/academic-profile` é público e diz ao visitante "Membro Oficial • Identidade Auditada pela Cátedra". A rota precisa de uma versão de visitante ou de `exigeLogin` **Feito:** `exigeLogin`; saíram "Membro Oficial", "Identidade Auditada", "Horas Auditadas" e o id interno. | ✅ |
+| AUD-4 | `/academia/activity/:id` com um id inexistente fica **carregando para sempre**, nas três pessoas. Falta o estado "não encontrada" **Feito:** estado "Atividade não encontrada"; responder sem sessão agora diz para entrar (antes o clique sumia). Guarda: a auditoria de audiências reprova qualquer rota em CARREGANDO. | ✅ |
+| AUD-5 | A tela de Ajuda promete avaliação "pelo docente da sua cátedra", e esse fluxo não existe **Feito:** a Ajuda diz que quem corrige é o exercício; a titularidade docente vai pelo suporte; o Espaço bate o ritmo (não havia Play/Pause global). | ✅ |
 
 ### Aluna (usuária logada)
 
 | # | Item | Estado |
 |:---|:---|:---:|
-| AUD-6 | 🔴 **Configurações não salvam.** "Salvar Preferências" (`handleSave`) só mostra "Configurações Salvas" e não persiste nada. Os interruptores de acessibilidade não têm efeito | ⬜ |
-| AUD-7 | 🔴 **Números inventados no perfil unificado** (`profile.service.getUnifiedProfile`): 32 horas de estudo, 15 sessões, sequência de 3 dias, recorde de 14, 8 conexões. Devem vir do histórico de prática ou sumir | ⬜ |
-| AUD-8 | A privacidade do perfil diz "atualizadas no servidor!", mas grava em localStorage. Corrigir o texto (ou a gravação, com I-CF-3) | ⬜ |
+| AUD-6 | 🔴 **Configurações não salvam.** "Salvar Preferências" (`handleSave`) só mostra "Configurações Salvas" e não persiste nada. Os interruptores de acessibilidade não têm efeito **Feito:** `preferencias.repository` guarda cada escolha e marca o `<html>`; `index.css` responde a contraste alto, movimento reduzido e leitura espaçada. O microfone escolhido vai para o `getUserMedia` da mesa, e a prioridade vira `latencyHint`. Saíram a taxa de amostragem e o buffer, que o navegador não deixa escolher, a latência fixa "5.8 ms", as duas caixas de privacidade que não guardavam e o token na tela. | ✅ |
+| AUD-7 | 🔴 **Números inventados no perfil unificado** (`profile.service.getUnifiedProfile`): 32 horas de estudo, 15 sessões, sequência de 3 dias, recorde de 14, 8 conexões. Devem vir do histórico de prática ou sumir **Feito:** `domain/perfil-medido.ts` mede horas, sessões, ofensiva, sessões recentes e competências (do MasteryRecord) a cada leitura do dono. As abas Prática, Competências e Insígnias leem o registro e dizem quando está vazio. | ✅ |
+| AUD-8 | A privacidade do perfil diz "atualizadas no servidor!", mas grava em localStorage. Corrigir o texto (ou a gravação, com I-CF-3) **Feito:** "Privacidade por seção guardada." / "configurado como privado." | ✅ |
 | AUD-9 | **Salas: sem fluxo de turma.** Existe criar e ver, mas não existe entrar/matricular, publicar tarefa, publicar aviso ou entregar trabalho. Como as salas são locais, outra pessoa não consegue entrar nelas | ⬜ |
 | AUD-10 | Notificações: a própria tela diz que a plataforma não emite nenhuma. Falta decidir o que emite (tarefa, certificado, relato respondido) | ⬜ |
 | AUD-11 | `/worlds/work/:id` e `/worlds/graph` ainda são dados fixos (mesmo defeito de M-9) | ⬜ |
@@ -890,18 +890,18 @@ não aparecem como erro; aparecem quando se segue o fluxo.
 
 | # | Item | Estado |
 |:---|:---|:---:|
-| AUD-12 | **Usuários:** o painel promete atribuir papéis e homologar. Na prática lista só as contas deste navegador e não tem ação nenhuma | ⬜ |
-| AUD-13 | **Conteúdo:** o painel promete homologação, mas a tela é só leitura. A edição real está no editorial (EE-*); o cartão deve apontar para lá ou a homologação deve existir | ⬜ |
-| AUD-14 | **Moderação:** o cartão existe, e a própria tela diz que a moderação não existe. Tirar o cartão ou construir a fila (relatos L-7b são o começo natural) | ⬜ |
-| AUD-15 | **Auditoria:** a tela diz "imutável/criptográficos", mas lê a trilha local do navegador. O servidor tem `GET /api/v1/admin/audit-logs` e `adminService` sabe chamá-lo, mas nenhuma tela usa. Ligar a tela ao servidor e corrigir o texto | ⬜ |
+| AUD-12 | **Usuários:** o painel promete atribuir papéis e homologar. Na prática lista só as contas deste navegador e não tem ação nenhuma **Em parte:** o cartão agora diz o que a tela faz (consulta; papel administrativo vem do servidor). Atribuir papel de professor segue sem fluxo — depende de I-CF-3. | ⬜ |
+| AUD-13 | **Conteúdo:** o painel promete homologação, mas a tela é só leitura. A edição real está no editorial (EE-*); o cartão deve apontar para lá ou a homologação deve existir **Feito:** o cartão chama-se "Catálogo publicado" e aponta para os editores. | ✅ |
+| AUD-14 | **Moderação:** o cartão existe, e a própria tela diz que a moderação não existe. Tirar o cartão ou construir a fila (relatos L-7b são o começo natural) **Feito:** o cartão diz "Não implementada" e aponta para os relatos em Lições e exercícios. A fila de denúncias continua por construir: ver M-*. | ✅ |
+| AUD-15 | **Auditoria:** a tela diz "imutável/criptográficos", mas lê a trilha local do navegador. O servidor tem `GET /api/v1/admin/audit-logs` e `adminService` sabe chamá-lo, mas nenhuma tela usa. Ligar a tela ao servidor e corrigir o texto **Feito:** a trilha lê `GET /api/v1/admin/audit-logs`, mostra se a cadeia HMAC está íntegra e diz que ela vive na memória do servidor até I-CF-3. Servidor fora do ar vira aviso. O estado vazio da tela escondia essa seção, e foi tirado. | ✅ |
 
 ### Vazamento de dados e sessão
 
 | # | Item | Estado |
 |:---|:---|:---:|
 | AUD-16 | ✅ Nenhum vazamento entre pessoas pelas rotas. A projeção do perfil respeita a visibilidade. Os endpoints de admin exigem sessão de admin. As ferramentas de desenvolvimento (incluindo "Estados UI") ficam atrás de `import.meta.env.DEV`. O e-mail do autor de um relato só aparece para a administração | ✅ |
-| AUD-17 | 🔴 **Sair não limpa os dados.** O logout apaga só a sessão; ficam no localStorage `users_collection` (com e-mails), perfis, prática, caderno e mesa (IndexedDB). Em aparelho compartilhado, a próxima pessoa lê tudo pelo DevTools. Oferecer "sair e apagar os dados deste aparelho" e não guardar e-mail alheio em claro | ⬜ |
-| AUD-18 | O editor de partitura e a Mesa checam `(userId && p.autorId !== userId)`: **sem sessão a checagem passa**, e qualquer id abriria. Hoje isso não tem efeito porque `/studio` é `exigeLogin`, mas vira falha no dia em que AUD-1 abrir o Estúdio. Trocar por "sem sessão ⇒ só rascunho local próprio" | ⬜ |
+| AUD-17 | 🔴 **Sair não limpa os dados.** O logout apaga só a sessão; ficam no localStorage `users_collection` (com e-mails), perfis, prática, caderno e mesa (IndexedDB). Em aparelho compartilhado, a próxima pessoa lê tudo pelo DevTools. Oferecer "sair e apagar os dados deste aparelho" e não guardar e-mail alheio em claro **Feito:** Configurações → "Sair e apagar os dados deste aparelho", com confirmação. Apaga `amd_*`, o rascunho do onboarding, `sessionStorage` e o IndexedDB da mesa; guarda só a acessibilidade. Guarda: `apagar-dados-do-aparelho.test.ts`, que também reprova chave ou banco novo fora da lista. | ✅ |
+| AUD-18 | O editor de partitura e a Mesa checam `(userId && p.autorId !== userId)`: **sem sessão a checagem passa**, e qualquer id abriria. Hoje isso não tem efeito porque `/studio` é `exigeLogin`, mas vira falha no dia em que AUD-1 abrir o Estúdio. Trocar por "sem sessão ⇒ só rascunho local próprio" **Feito:** `!userId || p.autorId !== userId` no editor e na mesa. Guarda: `mesa-de-audio.test.tsx`. | ✅ |
 
 ### Acervo — o que a mineração no MusicBrainz rendeu
 

@@ -104,8 +104,9 @@ export const REGRAS_DE_AUDIENCIA: RegraDeAudiencia[] = [
   },
   {
     rota: '/design-system',
-    audiencia: 'publica',
-    porque: 'Catálogo de componentes, ferramenta de quem constrói.',
+    audiencia: 'exigeAdmin',
+    porque:
+      'Catálogo de componentes, ferramenta de quem constrói. Público, abria em produção a vitrine interna a qualquer um (AUD-2).',
   },
   { rota: '/notfound', audiencia: 'publica', porque: '404 não escolhe público.' },
   {
@@ -141,6 +142,12 @@ export const REGRAS_DE_AUDIENCIA: RegraDeAudiencia[] = [
     rota: '/academia/history',
     audiencia: 'exigeLogin',
     porque: 'Histórico acadêmico é pessoal.',
+  },
+  {
+    rota: '/academia/academic-profile',
+    audiencia: 'exigeLogin',
+    porque:
+      'É o boletim de alguém. Herdava "pública" de /academia e dizia ao visitante "Membro Oficial • Identidade Auditada" (AUD-3).',
   },
   /**
    * Esta herdava "pública" de `/academia`, por prefixo mais longo.
@@ -189,7 +196,12 @@ export const REGRAS_DE_AUDIENCIA: RegraDeAudiencia[] = [
     porque: 'O treino é síntese local. A medição, que exige nome, fica atrás do convite.',
   },
   { rota: '/profile', audiencia: 'exigeLogin', porque: 'Perfil é de quem está logado.' },
-  { rota: '/studio', audiencia: 'exigeLogin', porque: 'Estúdio salva projeto em nome do autor.' },
+  {
+    rota: '/studio',
+    audiencia: 'publica',
+    porque:
+      'As ferramentas funcionam sem conta (afinar, escrever, gravar, exportar); só GUARDAR pede nome, e isso cada tela decide. Declarado exigeLogin, escondia o convite que as telas mostram ao visitante (AUD-1).',
+  },
   { rota: '/notifications', audiencia: 'exigeLogin', porque: 'Avisos são de alguém.' },
   { rota: '/settings', audiencia: 'exigeLogin', porque: 'Preferências são de alguém.' },
   { rota: '/rooms', audiencia: 'exigeLogin', porque: 'Salas exigem vínculo.' },

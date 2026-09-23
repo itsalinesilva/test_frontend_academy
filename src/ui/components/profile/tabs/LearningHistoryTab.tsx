@@ -8,7 +8,7 @@ interface LearningHistoryTabProps {
 
 export const LearningHistoryTab: React.FC<LearningHistoryTabProps> = ({ profile }) => {
   const academic = profile.academic || {
-    totalStudyHours: 420,
+    totalStudyHours: 0,
     enrolledCourses: [],
     learningPaths: [],
     certificates: [],

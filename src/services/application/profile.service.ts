@@ -26,6 +26,10 @@ import { AuditAction, AuditSeverity } from '../../domain/audit';
 import { authService } from './auth.service';
 import { NotFoundError, UnauthorizedError } from '../../domain/errors';
 import { computeEvidenceHash } from '../../domain/integrity';
+import { medirPerfil } from '../../domain/perfil-medido';
+// Os repositórios, e não os serviços: `practice.service` e `academy.service` já importam este arquivo.
+import { practiceRepository } from '../../repositories/practice.repository';
+import { academyRepository } from '../../repositories/academy.repository';
 
 export class ProfileService {
   private profileRepo: ProfileRepository;
@@ -159,16 +163,18 @@ export class ProfileService {
         // mostravam conjuntos diferentes conforme o caminho de criacao.
         sectionsConfig: this.unifiedRepo.getDefaultSectionsConfig(),
         academic: {
-          totalStudyHours: basicProfile?.academicProgressSummary?.totalStudyHours || 32,
+          // AUD-7: aqui nasciam 32 h, 15 sessões, 3 e 14 dias, 8 conexões.
+          // Os números vêm de `medirPerfil`, logo abaixo, a cada leitura.
+          totalStudyHours: 0,
           enrolledCourses: [],
           learningPaths: [],
           certificates: [],
           competencies: [],
         },
         practice: {
-          totalPracticeSessions: basicProfile?.practiceSummary?.totalSessions || 15,
-          currentStreakDays: basicProfile?.practiceSummary?.streakDays || 3,
-          longestStreakDays: 14,
+          totalPracticeSessions: 0,
+          currentStreakDays: 0,
+          longestStreakDays: 0,
           skills: [],
           repertoire: [],
           achievements: [],
@@ -182,7 +188,7 @@ export class ProfileService {
           microcredentials: [],
         },
         community: {
-          connectionsCount: 8,
+          connectionsCount: 0,
           posts: [],
           forumParticipations: [],
           eventsAttended: [],
@@ -200,6 +206,31 @@ export class ProfileService {
     if (session && session.user.id === userId && record.primaryRole !== session.user.primaryRole) {
       record.primaryRole = session.user.primaryRole;
       record.assignedRoles = session.user.assignedRoles;
+    }
+
+    // AUD-7: o dono vê os números medidos agora, e eles ficam gravados — é o
+    // registro gravado que a projeção pública mostra aos outros.
+    if (session && session.user.id === userId) {
+      const [resultados, ofensiva, progressos, dominios, habilidades] = await Promise.all([
+        practiceRepository.listResultsByUser(userId).catch(() => []),
+        practiceRepository.getStreak(userId).catch(() => null),
+        academyRepository.listUserProgress(userId).catch(() => []),
+        practiceRepository.listMasteriesByUser(userId).catch(() => []),
+        practiceRepository.listSkills().catch(() => []),
+      ]);
+      const nomes = new Map(habilidades.map((h) => [h.id, h.name]));
+      const m = medirPerfil({ resultados, ofensiva, progressos, dominios, nomes });
+      record.academic = { ...record.academic, totalStudyHours: m.totalStudyHours };
+      record.practice = {
+        ...record.practice,
+        totalPracticeSessions: m.totalPracticeSessions,
+        currentStreakDays: m.currentStreakDays,
+        longestStreakDays: m.longestStreakDays,
+        recentExercises: m.recentExercises,
+        skills: m.skills,
+      };
+      record.community = { ...record.community, connectionsCount: record.connectionsList?.length ?? 0 };
+      await this.unifiedRepo.save(record);
     }
 
     // Quem NAO e o dono recebe a projecao filtrada, nunca o registro cru.

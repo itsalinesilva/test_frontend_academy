@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
-import { mesaRepository } from '../../../repositories/mesa.repository';
+import { GravacoesEmMemoria, mesaRepository } from '../../../repositories/mesa.repository';
 import { Gravacao, Reproducao, motorDoNavegador } from '../../../infrastructure/audio/motor-da-mesa';
 import {
   LIMITE_DE_PISTAS,
@@ -38,6 +38,11 @@ type Decodificada = { amostras: Float32Array; taxa: number };
 export const DawProjectScreen: React.FC = () => {
   const { params, navigate } = useRouter();
   const { userId } = useCurrentUser();
+  /**
+   * AUD-1 — sem conta, a mesa funciona, mas o áudio fica em memória: no
+   * IndexedDB ele ficaria órfão, sem projeto nem dono, ocupando o aparelho.
+   */
+  const gravacoes = useMemo(() => (userId ? mesaRepository.gravacoes : new GravacoesEmMemoria()), [userId]);
   const pedido = params.id;
   const motor = motorDoNavegador;
 
@@ -75,7 +80,8 @@ export const DawProjectScreen: React.FC = () => {
     let vivo = true;
     mesaRepository.buscar(pedido).then((p) => {
       if (!vivo) return;
-      if (!p || (userId && p.autorId !== userId)) setAviso('Este projeto não está no seu estúdio.');
+      /** AUD-18: sem sessão, nenhum projeto guardado abre — antes, `userId && …` deixava passar qualquer id. */
+      if (!p || !userId || p.autorId !== userId) setAviso('Este projeto não está no seu estúdio.');
       else setProjeto(p);
     });
     return () => {
@@ -120,7 +126,7 @@ export const DawProjectScreen: React.FC = () => {
     if (!pista.gravacaoId) return null;
     const ja = decodificadas.current.get(pista.gravacaoId);
     if (ja) return ja;
-    const audio = await mesaRepository.gravacoes.ler(pista.gravacaoId);
+    const audio = await gravacoes.ler(pista.gravacaoId);
     if (!audio) return null;
     const d = await motor.decodificar(audio);
     decodificadas.current.set(pista.gravacaoId, d);
@@ -186,10 +192,10 @@ export const DawProjectScreen: React.FC = () => {
 
     const audio = await g.parar();
     const gravacaoId = `grav_${Date.now().toString(36)}`;
-    await mesaRepository.gravacoes.guardar(gravacaoId, audio);
+    await gravacoes.guardar(gravacaoId, audio);
     const d = await motor.decodificar(audio);
     decodificadas.current.set(gravacaoId, d);
-    if (pista.gravacaoId) await mesaRepository.gravacoes.apagar(pista.gravacaoId);
+    if (pista.gravacaoId) await gravacoes.apagar(pista.gravacaoId);
     await mudarPista(pista.id, {
       gravacaoId,
       duracaoSegundos: d.amostras.length / d.taxa,
@@ -198,7 +204,7 @@ export const DawProjectScreen: React.FC = () => {
   };
 
   const apagarGravacao = async (pista: PistaDaMesa) => {
-    if (pista.gravacaoId) await mesaRepository.gravacoes.apagar(pista.gravacaoId);
+    if (pista.gravacaoId) await gravacoes.apagar(pista.gravacaoId);
     await mudarPista(pista.id, { gravacaoId: undefined, duracaoSegundos: undefined, picos: undefined });
   };
 
@@ -350,7 +356,7 @@ export const DawProjectScreen: React.FC = () => {
                       type="button"
                       aria-label={`Remover ${pista.nome}`}
                       onClick={async () => {
-                        if (pista.gravacaoId) await mesaRepository.gravacoes.apagar(pista.gravacaoId);
+                        if (pista.gravacaoId) await gravacoes.apagar(pista.gravacaoId);
                         await atualizar({ ...projeto, pistas: projeto.pistas.filter((p) => p.id !== pista.id) });
                       }}
                       className="ml-auto rounded p-1 text-red-700 hover:bg-red-50"

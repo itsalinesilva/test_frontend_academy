@@ -169,6 +169,13 @@ describe('auditoria de audiências', () => {
     expect(perdidas).toEqual([]);
   });
 
+  it('🔴 nenhuma rota fica carregando para sempre (AUD-4: atividade inexistente ficava em "Buscando…")', () => {
+    const presas = MATRIZ.flatMap((l) =>
+      (['visitante', 'aluna', 'admin'] as Pessoa[]).filter((p) => l[p] === 'CARREGANDO').map((p) => `${l.rota} (${p})`)
+    );
+    expect(presas).toEqual([]);
+  });
+
   it('🔴 o console de administração só abre para a administração', () => {
     for (const l of MATRIZ.filter((x) => x.rota.startsWith('/founder'))) {
       expect(l.visitante, `${l.rota} abriu para visitante`).not.toMatch(/ABRE|CONVITE/);

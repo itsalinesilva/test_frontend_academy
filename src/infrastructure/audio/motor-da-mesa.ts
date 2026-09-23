@@ -5,6 +5,7 @@
  * navegador — microfone, `MediaRecorder`, `AudioContext` — e as regras não:
  * quem soa, a forma de onda e o WAV se testam sem som nenhum.
  */
+import { DICA_DE_LATENCIA, lerPreferencias } from '../../repositories/preferencias.repository';
 
 export interface Gravacao {
   /** Encerra a gravação e devolve o áudio. */
@@ -24,7 +25,8 @@ export interface MotorDaMesa {
 
 let contexto: AudioContext | null = null;
 function ctx(): AudioContext {
-  if (!contexto) contexto = new AudioContext();
+  /** A prioridade das Configurações vira a dica de latência do contexto (AUD-6). */
+  if (!contexto) contexto = new AudioContext({ latencyHint: DICA_DE_LATENCIA[lerPreferencias().prioridade] });
   return contexto;
 }
 
@@ -39,7 +41,15 @@ export const motorDoNavegador: MotorDaMesa = {
   },
 
   async gravar() {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    /** O microfone escolhido nas Configurações; se ele sumiu (desplugado), o do sistema. */
+    const { microfoneId } = lerPreferencias();
+    const stream = await navigator.mediaDevices
+      .getUserMedia({ audio: microfoneId ? { deviceId: { exact: microfoneId } } : true })
+      .catch((e: Error) =>
+        microfoneId && e.name === 'OverconstrainedError'
+          ? navigator.mediaDevices.getUserMedia({ audio: true })
+          : Promise.reject(e)
+      );
     const gravador = new MediaRecorder(stream);
     const pedacos: Blob[] = [];
     gravador.ondataavailable = (e) => e.data.size && pedacos.push(e.data);

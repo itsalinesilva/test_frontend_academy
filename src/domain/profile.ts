@@ -189,10 +189,12 @@ export interface AcademicLensData {
 export interface PracticeSkill {
   id: EntityId;
   name: string;
-  category: 'ritmo' | 'afinacao' | 'tecnica_arco' | 'polifonia' | 'leitura_primeira_vista';
-  currentLevel: number; // 1 - 10
+  /** Opcional: o domínio medido (MasteryRecord) não traz categoria, e inventar uma seria o defeito de AUD-7. */
+  category?: 'ritmo' | 'afinacao' | 'tecnica_arco' | 'polifonia' | 'leitura_primeira_vista';
+  currentLevel: number; // 1 - 5, a escala do MasteryRecord
   accuracyRate: number; // percentage
-  weeklyMinutes: number;
+  totalAttempts?: number;
+  weeklyMinutes?: number;
 }
 
 export interface RepertoireItem {

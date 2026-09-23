@@ -69,14 +69,20 @@ export const AdminDashboardScreen: React.FC = () => {
     };
   }, []);
 
+  /**
+   * AUD-12..15 — os cartões prometiam o que as telas não fazem: atribuir
+   * papéis e homologar contas, homologar ementas, uma fila de denúncias com
+   * "0 Denúncias", e uma trilha "imutável" de "logs criptográficos". Cada
+   * cartão agora descreve a tela que abre.
+   */
   const adminModules = [
     {
       id: 'users',
-      title: 'Gestão de Usuários & Papéis',
-      desc: 'Atribuição de papéis (Aluno, Músico, Professor, Admin), homologação e moderação de contas.',
+      title: 'Contas',
+      desc: 'As contas que entraram por este navegador, com papel e data. Papel administrativo é concedido pelo servidor, não por aqui.',
       icon: Users,
       link: '/founder/users',
-      badge: 'Controle de Acesso',
+      badge: 'Consulta',
     },
     {
       id: 'engines',
@@ -120,19 +126,19 @@ export const AdminDashboardScreen: React.FC = () => {
     },
     {
       id: 'content',
-      title: 'Curadoria & Governança Curricular',
-      desc: 'Homologação de planos de curso, ementas acadêmicas e validação de proveniência musicológica.',
+      title: 'Catálogo publicado',
+      desc: 'Os cursos e módulos como o aluno os vê, com a grade de cada um. Para editar, use Lições, Artigos e Livretos.',
       icon: FileCheck,
       link: '/founder/content',
-      badge: 'Currículo Oficial',
+      badge: 'Consulta',
     },
     {
       id: 'moderation',
-      title: 'Fila de Moderação Institucional',
-      desc: 'Auditoria de publicações sinalizadas pela comunidade, denúncias e conformidade ética.',
+      title: 'Moderação',
+      desc: 'Ainda não existe: não há como denunciar uma publicação. Os relatos de problema em exercícios chegam em Lições e exercícios.',
       icon: Flag,
       link: '/founder/moderation',
-      badge: '0 Denúncias',
+      badge: 'Não implementada',
     },
     {
       id: 'credentials',
@@ -144,11 +150,11 @@ export const AdminDashboardScreen: React.FC = () => {
     },
     {
       id: 'audit',
-      title: 'Trilha Imutável de Auditoria',
-      desc: 'Logs criptográficos de autenticação, concessão de privilégios e transações sensíveis.',
+      title: 'Trilha de auditoria',
+      desc: 'O registro do servidor, assinado elo a elo, e o deste navegador: entradas, saídas e acessos negados.',
       icon: History,
       link: '/founder/audit',
-      badge: 'Logs Imutáveis',
+      badge: 'Auditoria',
     },
   ];
 
@@ -156,7 +162,7 @@ export const AdminDashboardScreen: React.FC = () => {
     <ScreenContainer
       id="admin-dashboard"
       title="Governança Institucional & Administração"
-      subtitle="Console protegido de gestão da Conservatório Muscicapa. Todas as ações são auditadas e assinadas."
+      subtitle="Console de gestão do Conservatório Muscicapa. Só a administração entra aqui; o servidor confere a sessão."
       badgeLabel="Acesso Restrito • ADMIN"
       badgeVariant="brand"
     >

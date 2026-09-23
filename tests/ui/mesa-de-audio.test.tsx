@@ -191,6 +191,22 @@ describe('🔴 na tela', () => {
     expect(screen.getByRole('button', { name: /^Gravar$/ })).toBeDisabled();
   });
 
+  it('🔴 AUD-18 — sem sessão, o projeto de alguém não abre pelo id', async () => {
+    await new MesaRepository(new GravacoesEmMemoria()).salvar({
+      id: 'm_da_aline',
+      autorId: 'u1',
+      titulo: 'Segredo',
+      pistas: [],
+      criadoEm: '',
+      atualizadoEm: '',
+    });
+    sessao = { userId: null, nome: null };
+    irPara('/studio/project/m_da_aline');
+    montar();
+    expect(await screen.findByText(/não está no seu estúdio/, {}, { timeout: 20000 })).toBeInTheDocument();
+    expect(screen.queryByDisplayValue('Segredo')).toBeNull();
+  });
+
   it('não há mais relógio parado nem pistas "SATB" escritas no código', async () => {
     irPara('/studio/project/novo');
     montar();

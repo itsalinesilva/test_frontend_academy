@@ -5,6 +5,21 @@ import { Badge } from '../../components/base/Badge';
 import { auditRepository } from '../../../repositories/audit.repository';
 import { AuditEvent, AuditSeverity } from '../../../domain/audit';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { adminService } from '../../../services/application/admin.service';
+import { authService } from '../../../services/application/auth.service';
+import { AuditRecord } from '../../../contracts/admin-contracts';
+
+/**
+ * AUD-15 — o registro do SERVIDOR. Existia (`GET /api/v1/admin/audit-logs`,
+ * encadeado por HMAC) e nenhuma tela o lia: o painel prometia "logs
+ * criptográficos" e mostrava só o do navegador. Enquanto não houver
+ * armazenamento durável (I-CF-3), ele vive na memória da instância do
+ * servidor, e a tela diz isso.
+ */
+type DoServidor =
+  | { estado: 'carregando' }
+  | { estado: 'erro'; motivo: string }
+  | { estado: 'ok'; logs: AuditRecord[]; integra: boolean; quebraEm?: number };
 
 /**
  * Trilha de auditoria.
@@ -42,7 +57,20 @@ export const AdminAuditScreen: React.FC = () => {
       .catch(() => setEventos([]));
   }, []);
 
+  const [servidor, setServidor] = useState<DoServidor>({ estado: 'carregando' });
+  const carregarServidor = useCallback(() => {
+    setServidor({ estado: 'carregando' });
+    authService
+      .getActiveSession()
+      .then((s) => adminService.fetchAuditLogs(s?.accessToken ?? null, 200))
+      .then((r) =>
+        setServidor({ estado: 'ok', logs: r.logs, integra: r.integrity.valid, quebraEm: r.integrity.brokenAtSeq })
+      )
+      .catch((e: Error) => setServidor({ estado: 'erro', motivo: e.message }));
+  }, []);
+
   useEffect(carregar, [carregar]);
+  useEffect(carregarServidor, [carregarServidor]);
 
   return (
     <ScreenContainer
@@ -54,7 +82,10 @@ export const AdminAuditScreen: React.FC = () => {
       primaryAction={{
         label: 'Recarregar',
         icon: RefreshCw,
-        onClick: carregar,
+        onClick: () => {
+          carregar();
+          carregarServidor();
+        },
       }}
       secondaryActions={[
         {
@@ -63,19 +94,61 @@ export const AdminAuditScreen: React.FC = () => {
           onClick: () => navigate('/founder'),
         },
       ]}
-      emptyProps={{
-        title: 'Nenhum evento registrado',
-        description:
-          'A trilha grava autenticações, saídas e tentativas de acesso negadas. Ela está vazia porque nada disso ocorreu neste navegador ainda.',
-      }}
-      state={eventos === null ? 'loading' : eventos.length === 0 ? 'empty' : 'populated'}
+      /* Sem estado "vazio" da tela inteira: ele escondia o registro do servidor quando o do navegador estava vazio. */
+      state={eventos === null ? 'loading' : 'populated'}
     >
       <div className="space-y-4">
+        <section aria-labelledby="auditoria-servidor" className="space-y-2 rounded-lg border border-stone-200 bg-white p-4">
+          <h2 id="auditoria-servidor" className="font-serif text-base font-bold text-stone-900">
+            Registro do servidor
+          </h2>
+          <p className="text-xs text-stone-600">
+            Assinado elo a elo (HMAC-SHA256): alterar ou apagar um registro quebra a verificação dali em diante. Por
+            enquanto fica na memória do servidor e recomeça quando a instância reinicia — o armazenamento durável é a
+            pendência I-CF-3.
+          </p>
+          {servidor.estado === 'carregando' && <p className="text-xs text-stone-500">Consultando o servidor…</p>}
+          {servidor.estado === 'erro' && (
+            <p role="alert" className="text-xs text-amber-800">
+              O servidor não entregou o registro: {servidor.motivo}
+            </p>
+          )}
+          {servidor.estado === 'ok' && (
+            <>
+              <p className={`text-xs font-semibold ${servidor.integra ? 'text-emerald-800' : 'text-red-800'}`}>
+                {servidor.integra
+                  ? `Cadeia íntegra — ${servidor.logs.length} registro${servidor.logs.length === 1 ? '' : 's'}.`
+                  : `Cadeia QUEBRADA no registro ${servidor.quebraEm ?? '?'}: alguém alterou ou removeu um elo.`}
+              </p>
+              {servidor.logs.length > 0 && (
+                <ul className="divide-y divide-stone-100 font-mono text-xs">
+                  {servidor.logs.map((r) => (
+                    <li key={r.id} className="flex flex-wrap gap-x-3 py-1.5">
+                      <time dateTime={r.timestamp} className="text-stone-500">
+                        {new Date(r.timestamp).toLocaleString('pt-BR')}
+                      </time>
+                      <span className="font-semibold text-stone-900">{r.action}</span>
+                      <span className="text-stone-700">{r.actorEmail}</span>
+                      <span className="font-sans text-stone-600">{r.details}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </section>
+
+        <h2 className="font-serif text-base font-bold text-stone-900">Registro deste navegador</h2>
         <p className="text-xs text-stone-600">
           A trilha é gravada no armazenamento deste navegador. Ela registra o que aconteceu neste
           dispositivo, e não substitui o registro do servidor de identidade.
         </p>
 
+        {(eventos ?? []).length === 0 ? (
+          <p className="text-xs text-stone-500">
+            Nenhum evento neste navegador ainda: nenhuma entrada, saída ou negativa de acesso ocorreu aqui.
+          </p>
+        ) : (
         <div className="overflow-hidden rounded-lg border border-stone-200 bg-white">
           <table className="w-full text-left text-xs">
             <caption className="sr-only">Eventos de auditoria, do mais recente ao mais antigo</caption>
@@ -121,6 +194,7 @@ export const AdminAuditScreen: React.FC = () => {
             </tbody>
           </table>
         </div>
+        )}
       </div>
     </ScreenContainer>
   );

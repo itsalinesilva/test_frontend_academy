@@ -17,7 +17,6 @@ import {
   BookOpen,
   CheckCircle2,
   ExternalLink,
-  ShieldCheck,
   ArrowRight,
   Sparkles,
 } from 'lucide-react';
@@ -118,15 +117,10 @@ export const AcademicProfileScreen: React.FC = () => {
                   <h2 className="font-serif font-bold text-2xl text-stone-950">
                     {userProfile?.name || 'Acadêmico de Música'}
                   </h2>
-                  <Badge variant="brand" size="sm">Membro Oficial</Badge>
                 </div>
                 <p className="text-xs text-stone-600 font-sans">
-                  {userProfile?.email} • Registro Canônico: {userProfile?.id}
+                  {userProfile?.email}
                 </p>
-                <div className="flex items-center gap-2 pt-1 text-[11px] font-mono text-stone-500">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Identidade Auditada pela Cátedra de Música Clássica</span>
-                </div>
               </div>
             </div>
 
@@ -154,7 +148,7 @@ export const AcademicProfileScreen: React.FC = () => {
                 <span className="font-serif font-bold text-2xl text-emerald-800 block">
                   {totalStudyHours}h
                 </span>
-                <span className="text-[11px] font-mono text-stone-500 uppercase">Horas Auditadas</span>
+                <span className="text-[11px] font-mono text-stone-500 uppercase">Horas de curso</span>
               </div>
             </div>
           </div>

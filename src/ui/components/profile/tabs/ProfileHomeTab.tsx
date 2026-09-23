@@ -158,7 +158,7 @@ export const ProfileHomeTab: React.FC<ProfileHomeTabProps> = ({
               </p>
             </div>
             <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-600">
-              <span>{profile.rooms?.teacherProfile?.enrolledStudentsCount || 84} alunos orientados</span>
+              <span>{profile.rooms?.teacherProfile?.enrolledStudentsCount ?? 0} alunos orientados</span>
               <span className="text-sky-700 font-medium">Cátedra Docente</span>
             </div>
           </Card>
@@ -186,8 +186,8 @@ export const ProfileHomeTab: React.FC<ProfileHomeTabProps> = ({
               </p>
             </div>
             <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-600">
-              <span>{profile.community?.connectionsCount || 4} conexões</span>
-              <span>{profile.community?.posts?.length || 2} artigos</span>
+              <span>{profile.community?.connectionsCount ?? 0} conexões</span>
+              <span>{profile.community?.posts?.length ?? 0} artigos</span>
             </div>
           </Card>
 

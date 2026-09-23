@@ -161,7 +161,7 @@ export const ProfileOverviewScreen: React.FC = () => {
         if (publicData) {
           setProfile(publicData);
         } else {
-          setFeedback('Este perfil está totalmente configurado como Privado no servidor.');
+          setFeedback('Este perfil está configurado como privado.');
         }
       } else {
         // Para quem nao e o dono o proprio servico ja devolve a projecao
@@ -531,7 +531,7 @@ export const ProfileOverviewScreen: React.FC = () => {
           onSave={async (updated) => {
             await profileService.updateSectionsConfig(updated);
             await loadProfile(isPreviewPublic);
-            setFeedback('Configurações de privacidade por seção atualizadas no servidor!');
+            setFeedback('Privacidade por seção guardada.');
             setTimeout(() => setFeedback(null), 3000);
           }}
           onClose={() => setShowSectionsModal(false)}

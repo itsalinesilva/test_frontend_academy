@@ -133,9 +133,14 @@ describe('todo pilar é alcançável por quem chega', () => {
     expect(audienciaDaRota('/acervo')).toBe('publica');
   });
 
-  it('Perfil e Estúdio continuam exigindo nome', () => {
+  it('Perfil e Configurações continuam exigindo nome', () => {
     /** Não-vacuidade: se tudo fosse público, o caso acima passaria à toa. */
     expect(audienciaDaRota('/profile')).toBe('exigeLogin');
-    expect(audienciaDaRota('/studio')).toBe('exigeLogin');
+    expect(audienciaDaRota('/settings')).toBe('exigeLogin');
+  });
+
+  it('o Estúdio abre para visitante; guardar é que pede nome (AUD-1)', () => {
+    expect(audienciaDaRota('/studio')).toBe('publica');
+    expect(audienciaDaRota('/studio/score/novo')).toBe('publica');
   });
 });
