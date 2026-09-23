@@ -652,7 +652,7 @@ function buildChord(level: Level, draw: Draw): Built {
        */
       level === Level.EAR || !notasDaPauta
         ? undefined
-        : { kind: 'STAFF', clef: clave, notes: notasDaPauta },
+        : { kind: 'STAFF', clef: clave, notes: notasDaPauta, simultaneas: true },
   };
 }
 

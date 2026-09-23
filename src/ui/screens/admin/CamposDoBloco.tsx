@@ -273,6 +273,15 @@ export const CamposDoBloco: React.FC<{
             onChange={(notes) => onChange({ ...bloco, notes })}
           />
 
+          <label className="flex items-center gap-2 text-sm text-stone-700">
+            <input
+              type="checkbox"
+              checked={bloco.simultaneas ?? false}
+              onChange={(e) => onChange({ ...bloco, simultaneas: e.target.checked || undefined })}
+            />
+            Notas simultâneas (acorde, empilhado na pauta)
+          </label>
+
           <label className="block">
             <span className={rotulo}>Fórmula de compasso</span>
             <input

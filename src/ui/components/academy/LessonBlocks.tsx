@@ -634,10 +634,11 @@ export const LessonBlockRenderer: React.FC<{ block: LessonBlock }> = ({ block })
               clef={block.clef}
               timeSignature={block.timeSignature}
               notes={block.notes.map(toNoteItem).filter((n): n is NonNullable<typeof n> => n !== null)}
+              acorde={block.simultaneas}
             />
           </Card>
           <div className="flex flex-wrap items-center gap-2">
-            <ListenButton notes={block.notes} mode="SEQUENCE" label="Ouvir a pauta" />
+            <ListenButton notes={block.notes} mode={block.simultaneas ? 'CHORD' : 'SEQUENCE'} label="Ouvir a pauta" />
             {block.caption && <figcaption className="text-xs text-stone-600">{block.caption}</figcaption>}
           </div>
         </figure>

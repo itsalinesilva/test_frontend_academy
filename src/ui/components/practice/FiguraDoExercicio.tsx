@@ -43,6 +43,7 @@ export const FiguraDoExercicio: React.FC<{ figura: ExerciseFigure }> = ({ figura
              * Compassos vazios à direita fariam procurar o que não há.
              */
             measureCount={1}
+            acorde={figura.simultaneas}
           />
         </div>
         {figura.caption && (

@@ -117,6 +117,11 @@ export type ExerciseFigure =
       /** Notas em notação científica — "C4", "F#5". */
       notes: string[];
       timeSignature?: string;
+      /**
+       * Notas simultâneas — o acorde. Escrito em fila, ele vira arpejo: a
+       * pergunta "que acorde está escrito?" passaria a mostrar uma melodia.
+       */
+      simultaneas?: boolean;
       /** Legenda. Nunca contém a resposta: ela descreve o que ver, não o que é. */
       caption?: string;
     }

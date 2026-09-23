@@ -192,7 +192,7 @@ export type LessonBlock =
   /** Teclado tocável, com teclas em destaque. */
   | { kind: 'KEYBOARD'; id: string; title?: string; highlightNotes?: string[]; startOctave?: number; octaves?: number }
   /** Pauta canônica renderizada. */
-  | { kind: 'STAFF'; id: string; title?: string; clef: 'treble' | 'bass' | 'alto'; timeSignature?: string; notes: string[]; caption?: string }
+  | { kind: 'STAFF'; id: string; title?: string; clef: 'treble' | 'bass' | 'alto'; timeSignature?: string; notes: string[]; caption?: string; /** Notas simultâneas: o acorde empilhado. */ simultaneas?: boolean }
   /** Diagrama gerado programaticamente (SVG), sem dependência de imagem. */
   | { kind: 'DIAGRAM'; id: string; title: string; diagram: 'CIRCLE_OF_FIFTHS' | 'TONE_SEMITONE' | 'INTERVAL_RULER'; highlight?: string[]; caption?: string }
   /**
