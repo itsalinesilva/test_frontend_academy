@@ -297,8 +297,8 @@ describe('L-7a — relatos de exercício', () => {
     const env = { ...TEST_ENV, RELATOS: kvDeMemoria() };
     await handleApiRequest(post('/api/v1/relatos', relato, await userToken()), env);
 
-    expect((await handleApiRequest(get('/api/v1/admin/relatos', await userToken()), env)).status).toBe(403);
-    const res = await handleApiRequest(get('/api/v1/admin/relatos', await adminToken()), env);
+    expect((await handleApiRequest(get('/api/v1/founder/relatos', await userToken()), env)).status).toBe(403);
+    const res = await handleApiRequest(get('/api/v1/founder/relatos', await adminToken()), env);
     expect(res.status).toBe(200);
     const corpo = (await res.json()) as { data: { relatos: Array<{ enunciado: string }> } };
     expect(corpo.data.relatos.map((r) => r.enunciado)).toEqual([relato.enunciado]);

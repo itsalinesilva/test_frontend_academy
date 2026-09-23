@@ -31,7 +31,7 @@ export const relatosService = {
 
   async listar(): Promise<{ ok: true; relatos: RelatoDoServidor[] } | { ok: false; motivo: string }> {
     try {
-      const r = await apiClient.get<{ relatos: RelatoDoServidor[] }>('/admin/relatos');
+      const r = await apiClient.get<{ relatos: RelatoDoServidor[] }>('/founder/relatos');
       return { ok: true, relatos: r.relatos };
     } catch (e) {
       return { ok: false, motivo: e instanceof Error ? e.message : 'Falha ao ler os relatos.' };

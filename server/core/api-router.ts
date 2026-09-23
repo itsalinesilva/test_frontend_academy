@@ -332,7 +332,7 @@ export async function handleApiRequest(
     return json({ data: { id: relato.id, recebidoEm: em } }, 201, env);
   }
 
-  if (path === '/api/v1/admin/relatos' && request.method === 'GET') {
+  if (path === '/api/v1/founder/relatos' && request.method === 'GET') {
     const authed = await authenticate(request, env);
     if (!authed) return fail('UNAUTHENTICATED', 'Autentique-se para ler os relatos.', 401, env);
     if (!authed.grant.isAdmin) {
