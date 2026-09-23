@@ -586,7 +586,7 @@ export class AuthService {
    */
   public async checkRouteAccess(
     routePath: string,
-    sessionUser: User | null
+    _sessionUser: User | null
   ): Promise<{ authorized: boolean; reason?: string; requiredCapability?: string }> {
     if (routePath.startsWith('/founder')) {
       const session = await this.getActiveSession();
@@ -607,31 +607,12 @@ export class AuthService {
       return { authorized: true };
     }
 
-    if (routePath === '/rooms/create') {
-      if (!sessionUser) {
-        return {
-          authorized: false,
-          reason: 'Apenas professores ou cátedras habilitadas podem criar salas de aula.',
-          requiredCapability: 'room.management.create',
-        };
-      }
-      const dbUser = await this.userRepo.findById(sessionUser.id);
-      const isTeacher =
-        dbUser &&
-        (dbUser.primaryRole === UserRole.PROFESSOR ||
-          dbUser.assignedRoles.includes(UserRole.PROFESSOR) ||
-          dbUser.primaryRole === UserRole.ADMIN);
-
-      if (!isTeacher) {
-        return {
-          authorized: false,
-          reason:
-            'A cátedra de Professor é uma capability adquirida. Habilite sua cátedra pedagógica nas configurações.',
-          requiredCapability: 'room.management.create',
-        };
-      }
-    }
-
+    /**
+     * `/rooms/create` exigia papel de professor — e não existe como alguém se
+     * tornar professor (AUD-12): na prática, só a administração criava sala.
+     * No molde do Skool, quem tem conta abre a sua; a audiência `exigeLogin`
+     * cuida disso, e o servidor faz o dono ser quem assinou a sessão (AUD-9).
+     */
     return { authorized: true };
   }
 }

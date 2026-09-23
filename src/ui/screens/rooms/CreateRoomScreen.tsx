@@ -5,135 +5,120 @@ import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { ErrorState } from '../../components/feedback/ErrorState';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
-import { roomsRepository, criarSala } from '../../../repositories/rooms.repository';
-import { ModalidadeDeSala } from '../../../domain/teacher';
+import { Privacidade, motivo, salasService } from '../../../services/application/salas.service';
 import { ArrowLeft, PlusCircle } from 'lucide-react';
 
 /**
- * Criação de sala.
+ * Criar sala (AUD-9).
  *
- * O envio deste formulário chamava `setTimeout(400)`, escrevia "Registrando
- * sala…" e navegava de volta. Não gravava nada. O professor voltava ao
- * diretório e a sala que ele acabara de criar não estava lá — e não estava
- * porque nunca existiu.
+ * No molde do Skool, qualquer pessoa com conta abre a sua comunidade, e quem
+ * cria é o dono. Antes, só "professor" criava — e não havia como alguém se
+ * tornar professor (AUD-12): na prática, ninguém além da administração.
  *
- * Agora grava. O que o formulário coleta é o que a sala tem; o resto dos
- * campos nasce zerado, e não preenchido com número bonito.
+ * A sala nasce no servidor, e por isso outra pessoa a encontra.
  */
+const CATEGORIAS_SUGERIDAS = 'Avisos, Dúvidas, Partituras, Gravações';
+
 export const CreateRoomScreen: React.FC = () => {
   const { navigate } = useRouter();
-  const { userId, nome, carregando } = useCurrentUser();
-  const [title, setTitle] = useState('');
-  const [type, setType] = useState<ModalidadeDeSala>('CLASSE_REGULAR');
-  const [description, setDescription] = useState('');
-  const [capacity, setCapacity] = useState('20');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { userId, carregando } = useCurrentUser();
+  const [nome, setNome] = useState('');
+  const [descricao, setDescricao] = useState('');
+  const [privacidade, setPrivacidade] = useState<Privacidade>('publica');
+  const [categorias, setCategorias] = useState(CATEGORIAS_SUGERIDAS);
+  const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!nome.trim()) return;
     if (!userId) {
       setErro('Entre na sua conta para criar uma sala.');
       return;
     }
-
-    setIsSubmitting(true);
+    setEnviando(true);
     setErro(null);
     try {
-      const sala = criarSala({
-        nome: title,
-        modalidade: type,
-        capacidade: Number(capacity) || 20,
-        ementa: description,
-        teacherId: userId,
-        teacherName: nome ?? 'Docente do Conservatório',
+      const sala = await salasService.criar({
+        nome,
+        descricao,
+        privacidade,
+        categorias: categorias.split(',').map((c) => c.trim()).filter(Boolean),
       });
-      await roomsRepository.salvar(sala);
       navigate(`/rooms/${sala.slug}`);
-    } catch {
-      setErro('Não foi possível registrar a sala. Tente novamente.');
-      setIsSubmitting(false);
+    } catch (err) {
+      setErro(motivo(err));
+    } finally {
+      setEnviando(false);
     }
   };
 
   return (
     <ScreenContainer
       id="create-room"
-      title="Criar Nova Sala Acadêmica"
-      subtitle="Exclusivo para docentes e mestres titulares credenciados na Academia."
-      badgeLabel="Prerrogativa Docente"
+      title="Criar sala"
+      subtitle="Uma comunidade para a sua turma, grupo de estudo ou coro. Você é quem cuida dela."
+      badgeLabel="Nova sala"
       badgeVariant="brand"
-      primaryAction={{
-        label: 'Voltar às Salas',
-        icon: ArrowLeft,
-        onClick: () => navigate('/rooms'),
-      }}
+      primaryAction={{ label: 'Voltar às salas', icon: ArrowLeft, onClick: () => navigate('/rooms') }}
     >
       <div className="max-w-2xl mx-auto space-y-6">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={enviar}>
           <Card variant="default" padding="lg" className="space-y-4">
-            {erro && <ErrorState id="create-room-error" title="Falha ao criar a sala" message={erro} />}
+            {erro && <ErrorState id="create-room-error" title="Não deu para criar a sala" message={erro} />}
 
             <div className="space-y-1">
               <label htmlFor="sala-nome" className="text-xs font-semibold text-stone-700 block">
-                Nome da sala ou disciplina *
+                Nome da sala *
               </label>
               <input
                 id="sala-nome"
                 type="text"
                 required
-                placeholder="Ex.: Contraponto e fuga ao teclado"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                maxLength={80}
+                placeholder="Ex.: Contraponto às quintas"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
                 className="w-full text-sm p-2.5 rounded border border-stone-300 focus:outline-none focus:ring-1 focus:ring-anil-800"
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label htmlFor="sala-modalidade" className="text-xs font-semibold text-stone-700 block">
-                  Modalidade pedagógica
-                </label>
-                <select
-                  id="sala-modalidade"
-                  value={type}
-                  onChange={(e) => setType(e.target.value as ModalidadeDeSala)}
-                  className="w-full text-sm p-2.5 rounded border border-stone-300 bg-white"
-                >
-                  <option value="CLASSE_REGULAR">Classe regular semestral</option>
-                  <option value="MASTERCLASS">Masterclass</option>
-                  <option value="LABORATORIO">Laboratório de análise</option>
-                  <option value="TURMA_INFANTIL">Turma infantil supervisionada</option>
-                </select>
-              </div>
+            <fieldset className="space-y-2">
+              <legend className="text-xs font-semibold text-stone-700">Quem vê a sala</legend>
+              <label className="flex items-start gap-2 text-xs">
+                <input type="radio" name="privacidade" checked={privacidade === 'publica'} onChange={() => setPrivacidade('publica')} className="mt-0.5 accent-anil-800" />
+                <span><strong>Pública</strong> — qualquer pessoa lê a conversa; para participar, entra com um clique.</span>
+              </label>
+              <label className="flex items-start gap-2 text-xs">
+                <input type="radio" name="privacidade" checked={privacidade === 'privada'} onChange={() => setPrivacidade('privada')} className="mt-0.5 accent-anil-800" />
+                <span><strong>Privada</strong> — só membros leem; quem pede para entrar espera você aprovar.</span>
+              </label>
+            </fieldset>
 
-              <div className="space-y-1">
-                <label htmlFor="sala-capacidade" className="text-xs font-semibold text-stone-700 block">
-                  Capacidade máxima de alunos
-                </label>
-                <input
-                  id="sala-capacidade"
-                  type="number"
-                  min="2"
-                  max="100"
-                  value={capacity}
-                  onChange={(e) => setCapacity(e.target.value)}
-                  className="w-full text-sm p-2.5 rounded border border-stone-300"
-                />
-              </div>
+            <div className="space-y-1">
+              <label htmlFor="sala-categorias" className="text-xs font-semibold text-stone-700 block">
+                Categorias da conversa, separadas por vírgula
+              </label>
+              <input
+                id="sala-categorias"
+                type="text"
+                value={categorias}
+                onChange={(e) => setCategorias(e.target.value)}
+                className="w-full text-sm p-2.5 rounded border border-stone-300"
+              />
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="sala-ementa" className="text-xs font-semibold text-stone-700 block">
-                Ementa e metodologia da sala
+              <label htmlFor="sala-descricao" className="text-xs font-semibold text-stone-700 block">
+                Sobre a sala
               </label>
               <textarea
-                id="sala-ementa"
+                id="sala-descricao"
                 rows={4}
-                placeholder="Objetivos, repertório a ser trabalhado e frequência dos encontros."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                maxLength={2000}
+                placeholder="Para quem é, o que se estuda, com que frequência vocês se encontram."
+                value={descricao}
+                onChange={(e) => setDescricao(e.target.value)}
                 className="w-full text-sm p-2.5 rounded border border-stone-300 focus:outline-none focus:ring-1 focus:ring-anil-800"
               />
             </div>
@@ -142,14 +127,9 @@ export const CreateRoomScreen: React.FC = () => {
               <Button variant="ghost" size="sm" type="button" onClick={() => navigate('/rooms')}>
                 Cancelar
               </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                type="submit"
-                disabled={isSubmitting || carregando || !title.trim()}
-              >
+              <Button variant="primary" size="sm" type="submit" disabled={enviando || carregando || !nome.trim()}>
                 <PlusCircle className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
-                {isSubmitting ? 'Registrando a sala…' : 'Criar sala'}
+                {enviando ? 'Criando…' : 'Criar sala'}
               </Button>
             </div>
           </Card>

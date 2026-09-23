@@ -112,37 +112,45 @@ import { DesignSystemCatalog } from '../components/design-system-catalog/DesignS
 
 export const AppRouterOutlet: React.FC = () => {
   const { currentPath, navigate, query } = useRouter();
+  /**
+   * A decisão vale para UM endereço (`para`).
+   *
+   * Antes, o estado começava "liberado" e só depois virava "verificando": a
+   * tela aparecia, sumia num spinner e voltava REMONTADA — quem já tinha
+   * começado a digitar (o nome da sala, por exemplo) perdia o texto, e a
+   * criança via por um instante a tela que lhe seria negada. Agora, enquanto
+   * não houver decisão para o endereço atual, o que aparece é a verificação.
+   */
   const [authStatus, setAuthStatus] = useState<{
-    isChecking: boolean;
+    para: string | null;
     authorized: boolean;
     reason?: string;
     porSerCrianca?: boolean;
-  }>({ isChecking: false, authorized: true });
+  }>({ para: null, authorized: true });
+  const precisaAvaliar = currentPath.startsWith('/founder') || rotaBloqueadaParaKids(currentPath);
 
   // Protected route authorization evaluation
   useEffect(() => {
     let isMounted = true;
     async function evaluateSecurity() {
-      const isProtected = currentPath.startsWith('/founder') || currentPath === '/rooms/create';
+      const isProtected = currentPath.startsWith('/founder');
 
       // A restrição de conta infantil é avaliada em TODA rota, não só nas
       // protegidas por papel. Perfil de terceiro, comunidade e salas não são
       // "áreas administrativas" — são exatamente onde uma criança não deve
       // chegar, e a checagem tem de estar na navegação para que um link
       // colado de fora encontre o mesmo bloqueio (domain/kids-account.ts).
-      const precisaAvaliar = isProtected || rotaBloqueadaParaKids(currentPath);
-      if (!precisaAvaliar) {
-        if (isMounted) setAuthStatus({ isChecking: false, authorized: true });
+      if (!(isProtected || rotaBloqueadaParaKids(currentPath))) {
+        if (isMounted) setAuthStatus({ para: currentPath, authorized: true });
         return;
       }
 
-      setAuthStatus({ isChecking: true, authorized: true });
       const session = await authService.getActiveSession();
 
       if (session?.mode === AppMode.KIDS && rotaBloqueadaParaKids(currentPath)) {
         if (isMounted) {
           setAuthStatus({
-            isChecking: false,
+            para: currentPath,
             authorized: false,
             porSerCrianca: true,
             reason:
@@ -153,7 +161,7 @@ export const AppRouterOutlet: React.FC = () => {
       }
 
       if (!isProtected) {
-        if (isMounted) setAuthStatus({ isChecking: false, authorized: true });
+        if (isMounted) setAuthStatus({ para: currentPath, authorized: true });
         return;
       }
 
@@ -161,7 +169,7 @@ export const AppRouterOutlet: React.FC = () => {
 
       if (isMounted) {
         setAuthStatus({
-          isChecking: false,
+          para: currentPath,
           authorized: check.authorized,
           reason: check.reason,
         });
@@ -175,7 +183,8 @@ export const AppRouterOutlet: React.FC = () => {
   }, [currentPath]);
 
   // If checking protected route access
-  if (authStatus.isChecking) {
+  const verificando = precisaAvaliar && authStatus.para !== currentPath;
+  if (verificando) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-100 p-4">
         <div className="text-center space-y-2">
@@ -187,7 +196,7 @@ export const AppRouterOutlet: React.FC = () => {
   }
 
   // Access denied screen for protected routes
-  if (!authStatus.authorized) {
+  if (precisaAvaliar && !authStatus.authorized) {
     // Para a criança a mensagem não é de "acesso negado": ela não fez nada
     // errado, e tratar a restricao como falta ensina a contorná-la.
     if (authStatus.porSerCrianca) {

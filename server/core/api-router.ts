@@ -12,6 +12,7 @@ import { issueSession, verifySession, extractBearerToken, SessionClaims } from '
 import { parseAdminAllowlist, resolveAdminGrant, grantHasCapability, AdminGrant } from './admin-authority';
 import { ChainedAuditLog } from './audit-log';
 import { ArmazemDeRelatos, Relato, chaveDoRelato, problemasDoRelato } from './relatos';
+import { ArmazemKV, Pessoa, Resultado, ServicoDeSalas } from './salas';
 
 export interface ServerEnv {
   GOOGLE_OAUTH_CLIENT_ID?: string;
@@ -21,6 +22,8 @@ export interface ServerEnv {
   ALLOWED_ORIGIN?: string;
   /** KV da Cloudflare para os relatos de exercício (L-7a). Sem ele, a API diz que não há onde guardar. */
   RELATOS?: ArmazemDeRelatos;
+  /** KV da Cloudflare para as salas (AUD-9, ADR-003). Sem ele, a API diz que as salas não estão ligadas. */
+  SALAS?: ArmazemKV;
 }
 
 export interface RequestContext {
@@ -46,7 +49,7 @@ function corsHeaders(env: ServerEnv): Record<string, string> {
   const origin = env.ALLOWED_ORIGIN || 'http://localhost:3000';
   return {
     'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Max-Age': '600',
     Vary: 'Origin',
@@ -296,6 +299,67 @@ export async function handleApiRequest(
     const integrity = await audit.verifyChain();
 
     return json({ data: { logs, count: logs.length, integrity } }, 200, env);
+  }
+
+  // --------------------------------------------------------------- SALAS ---
+  if (path === '/api/v1/salas' || path.startsWith('/api/v1/salas/')) {
+    if (!env.SALAS) {
+      return fail('SALAS_NAO_CONFIGURADAS', 'As salas ainda não estão ligadas neste servidor.', 503, env);
+    }
+    const authed = await authenticate(request, env);
+    const quem: Pessoa | null = authed
+      ? { sub: authed.session.sub, nome: authed.session.name || authed.session.email.split('@')[0] }
+      : null;
+    const servico = new ServicoDeSalas(env.SALAS);
+    const partes = path.slice('/api/v1/salas'.length).split('/').filter(Boolean).map(decodeURIComponent);
+    const metodo = request.method;
+    let corpo: unknown = null;
+    if (metodo === 'POST' || metodo === 'PATCH') {
+      try {
+        corpo = await request.json();
+      } catch {
+        corpo = null;
+      }
+    }
+    const responder = (r: Resultado<unknown>) =>
+      r.ok ? json({ data: r.valor }, r.status ?? 200, env) : fail(r.codigo, r.mensagem, r.status, env);
+    /** Ler pode ser anônimo (sala pública); escrever, nunca. */
+    const exigir = (): Response | null =>
+      quem ? null : fail('UNAUTHENTICATED', 'Entre na sua conta para participar das salas.', 401, env);
+
+    const [sala, recurso, alvo, acao] = partes;
+    if (!sala) {
+      if (metodo === 'GET') return responder(await servico.diretorio(quem));
+      if (metodo === 'POST') return exigir() ?? responder(await servico.criar(quem!, corpo));
+    } else if (!recurso) {
+      if (metodo === 'GET') return responder(await servico.sobre(quem, sala));
+      if (metodo === 'PATCH') return exigir() ?? responder(await servico.editar(quem!, sala, corpo));
+    } else if (recurso === 'entrar' && metodo === 'POST') {
+      return exigir() ?? responder(await servico.entrar(quem!, sala));
+    } else if (recurso === 'sair' && metodo === 'POST') {
+      return exigir() ?? responder(await servico.sair(quem!, sala));
+    } else if (recurso === 'membros') {
+      if (!alvo && metodo === 'GET') return responder(await servico.membros(quem, sala));
+      if (alvo && metodo === 'POST' && ['aprovar', 'remover', 'moderador', 'membro'].includes(acao ?? '')) {
+        return exigir() ?? responder(await servico.decidirMembro(quem!, sala, alvo, acao as 'aprovar'));
+      }
+    } else if (recurso === 'posts') {
+      if (!alvo && metodo === 'GET') return responder(await servico.posts(quem, sala));
+      if (!alvo && metodo === 'POST') return exigir() ?? responder(await servico.publicar(quem!, sala, corpo));
+      if (alvo && !acao && metodo === 'DELETE') return exigir() ?? responder(await servico.apagarPost(quem!, sala, alvo));
+      if (alvo && acao === 'curtir' && metodo === 'POST') return exigir() ?? responder(await servico.curtir(quem!, sala, alvo));
+      if (alvo && acao === 'fixar' && metodo === 'POST') return exigir() ?? responder(await servico.fixar(quem!, sala, alvo));
+      if (alvo && acao === 'comentarios' && metodo === 'GET') return responder(await servico.comentarios(quem, sala, alvo));
+      if (alvo && acao === 'comentarios' && metodo === 'POST') {
+        return exigir() ?? responder(await servico.comentar(quem!, sala, alvo, corpo));
+      }
+    } else if (recurso === 'encontros') {
+      if (metodo === 'GET') return responder(await servico.encontros(quem, sala));
+      if (metodo === 'POST') return exigir() ?? responder(await servico.marcarEncontro(quem!, sala, corpo));
+    } else if (recurso === 'ranking' && metodo === 'GET') {
+      return responder(await servico.ranking(quem, sala));
+    }
+    return fail('NOT_FOUND', 'Rota de sala desconhecida.', 404, env);
   }
 
   // ------------------------------------------------------------- RELATOS ---

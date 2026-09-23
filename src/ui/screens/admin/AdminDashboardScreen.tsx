@@ -5,7 +5,7 @@ import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
 import { userRepository } from '../../../repositories/user.repository';
-import { roomsRepository } from '../../../repositories/rooms.repository';
+import { salasService } from '../../../services/application/salas.service';
 import { auditRepository } from '../../../repositories/audit.repository';
 import {
   Users,
@@ -49,7 +49,8 @@ export const AdminDashboardScreen: React.FC = () => {
     let vivo = true;
     Promise.all([
       userRepository.listAll(),
-      roomsRepository.listar(),
+      /** As salas vêm do servidor (AUD-9): sem ele, o número some — não vira zero. */
+      salasService.diretorio(),
       auditRepository.listRecent(1000),
     ])
       .then(([usuarios, salas, eventos]) => {

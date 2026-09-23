@@ -204,7 +204,13 @@ export const REGRAS_DE_AUDIENCIA: RegraDeAudiencia[] = [
   },
   { rota: '/notifications', audiencia: 'exigeLogin', porque: 'Avisos são de alguém.' },
   { rota: '/settings', audiencia: 'exigeLogin', porque: 'Preferências são de alguém.' },
-  { rota: '/rooms', audiencia: 'exigeLogin', porque: 'Salas exigem vínculo.' },
+  {
+    rota: '/rooms',
+    audiencia: 'publica',
+    porque:
+      'Como no Skool: o diretório e a conversa das salas PÚBLICAS são abertos; entrar, publicar e curtir pedem conta, e a sala privada só mostra o "Sobre" — quem decide é o servidor (AUD-9).',
+  },
+  { rota: '/rooms/create', audiencia: 'exigeLogin', porque: 'A sala nasce em nome de alguém.' },
   {
     rota: '/founder',
     audiencia: 'exigeAdmin',

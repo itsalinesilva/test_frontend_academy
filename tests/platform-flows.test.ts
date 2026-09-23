@@ -2,7 +2,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { PersistentAcademyRepository } from '../src/repositories/academy.repository';
 import { PersistentEditorialRepository } from '../src/repositories/editorial.repository';
-import { PersistentRoomsRepository, criarSala } from '../src/repositories/rooms.repository';
 import {
   PersistentCommunityEventsRepository,
 } from '../src/repositories/community-events.repository';
@@ -388,64 +387,8 @@ describe('percurso da comunidade — publicar, responder, inscrever-se', () => {
   });
 });
 
-// ===========================================================================
-describe('percurso do docente — criar sala e encontrá-la', () => {
-// ===========================================================================
-  it('a sala criada aparece no diretório e é alcançável pelo endereço', async () => {
-    /**
-     * REGRESSÃO — criar sala chamava `setTimeout(400)` e navegava de volta
-     * sem gravar. O professor voltava ao diretório e a sala não estava lá.
-     * E o detalhe da sala IGNORAVA o identificador da rota, mostrando sempre
-     * a mesma turma inventada.
-     */
-    const repo = new PersistentRoomsRepository(novo());
-    const sala = criarSala({
-      nome: 'Contraponto e fuga ao teclado',
-      modalidade: 'LABORATORIO',
-      capacidade: 12,
-      ementa: 'Correção semanal de exercícios a quatro vozes.',
-      teacherId: EDITORA,
-      teacherName: 'Docente',
-    });
-    await repo.salvar(sala);
-
-    const diretorio = await new PersistentRoomsRepository(novo()).listar();
-    expect(diretorio).toHaveLength(1);
-
-    const porSlug = await repo.porId(sala.slug);
-    expect(porSlug?.name).toBe('Contraponto e fuga ao teclado');
-
-    const inexistente = await repo.porId('sala-que-nao-existe');
-    expect(inexistente, 'endereço desconhecido deveria devolver nada').toBeNull();
-  });
-
-  it('a sala nasce com zero alunos e zero tarefas, não com número bonito', async () => {
-    const sala = criarSala({
-      nome: 'Turma nova',
-      modalidade: 'CLASSE_REGULAR',
-      capacidade: 20,
-      ementa: '',
-      teacherId: EDITORA,
-      teacherName: 'Docente',
-    });
-    expect(sala.studentCount).toBe(0);
-    expect(sala.activeAssignmentCount).toBe(0);
-    expect(sala.announcements).toEqual([]);
-  });
-
-  it('"minhas turmas" traz só as do docente que perguntou', async () => {
-    const repo = new PersistentRoomsRepository(novo());
-    await repo.salvar(
-      criarSala({ nome: 'A', modalidade: 'CLASSE_REGULAR', capacidade: 10, ementa: '', teacherId: EDITORA, teacherName: 'D' })
-    );
-    await repo.salvar(
-      criarSala({ nome: 'B', modalidade: 'CLASSE_REGULAR', capacidade: 10, ementa: '', teacherId: ANA, teacherName: 'A' })
-    );
-
-    expect(await repo.doProfessor(EDITORA)).toHaveLength(1);
-    expect((await repo.doProfessor(EDITORA))[0].name).toBe('A');
-  });
-});
+// O percurso de criar sala e encontrá-la mudou de lugar: as salas vivem no
+// servidor (AUD-9), e o percurso com várias pessoas está em salas-servidor.test.ts.
 
 // ===========================================================================
 describe('coerência de rota ao longo do percurso', () => {
