@@ -299,9 +299,7 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
   if (path.startsWith('/worlds')) {
     crumbs.push({ label: 'Atlas Musical', path: '/worlds' });
     if (path.startsWith('/worlds/work/')) {
-      crumbs.push({ label: `Obra: ${params.id || 'Detalhes'}` });
-    } else if (path === '/worlds/graph') {
-      crumbs.push({ label: 'Grafo de Conexões' });
+      crumbs.push({ label: 'Obra' });
     }
     return crumbs;
   }

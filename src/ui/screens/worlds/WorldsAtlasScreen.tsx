@@ -14,7 +14,6 @@ import {
 import { AtlasMarker } from '../../../domain/atlas-map';
 import { MusicalEra } from '../../../domain/gamification';
 import {
-  Network,
   ChevronLeft,
   ChevronRight,
   Globe2,
@@ -233,14 +232,12 @@ export const WorldsAtlasScreen: React.FC = () => {
         vista ? `${vista.indicadores.total.toLocaleString('pt-BR')} marcadores nesta vista` : 'Mapa'
       }
       badgeVariant="neutral"
+      /* AUD-11 — "Ver o grafo de influências" abria cinco nós escritos à mão; o catálogo não guarda influência. */
       primaryAction={{
-        label: 'Ver o grafo de influências',
-        icon: Network,
-        onClick: () => navigate('/worlds/graph'),
+        label: 'Abrir a biblioteca',
+        icon: Library,
+        onClick: () => navigate('/acervo'),
       }}
-      secondaryActions={[
-        { label: 'Abrir a biblioteca', onClick: () => navigate('/acervo') },
-      ]}
       state={vista === null ? 'loading' : 'populated'}
       loadingMessage="Abrindo o mapa…"
     >

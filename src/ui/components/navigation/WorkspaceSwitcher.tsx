@@ -76,7 +76,7 @@ export const WORKSPACES: WorkspaceConfig[] = [
     label: 'Workspace Atlas & Mundos',
     badge: 'Repertório Histórico',
     icon: Globe2,
-    description: 'Grafo de conexões estéticas, períodos históricos e partituras de referência.',
+    description: 'O mapa de quando, onde e com quem a música foi feita, ligado às obras do acervo.',
     defaultPath: '/worlds',
   },
 ];

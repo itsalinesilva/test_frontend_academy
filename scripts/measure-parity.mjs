@@ -63,8 +63,7 @@ const EXPECTED = {
   VoiceEarLabScreen: ['D', 'INSTRUMENT'], ScoreEditorScreen: ['D', 'INSTRUMENT'],
   ScoreScreen: ['B', 'CATALOG'],
   // WORLDS
-  WorldsAtlasScreen: ['B', 'CATALOG'], WorkDetailScreen: ['C', 'CATALOG'],
-  MusicGraphScreen: ['B', 'CATALOG'],
+  WorldsAtlasScreen: ['B', 'CATALOG'],
   // ADMIN
   AdminDashboardScreen: ['B', 'OPERATIONAL'], AdminUsersScreen: ['B', 'OPERATIONAL'],
   AdminEnginesScreen: ['B', 'OPERATIONAL'], AdminContentScreen: ['B', 'OPERATIONAL'],

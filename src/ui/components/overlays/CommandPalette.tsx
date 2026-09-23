@@ -120,7 +120,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     },
     {
       id: 'cmd-worlds',
-      title: 'Worlds: Atlas Histórico e Grafo Canônico',
+      title: 'Atlas: o mapa da música no tempo e no espaço',
       category: 'Pilar Principal',
       icon: <Compass className="w-4 h-4" />,
       action: () => { navigate('/worlds'); onClose(); },

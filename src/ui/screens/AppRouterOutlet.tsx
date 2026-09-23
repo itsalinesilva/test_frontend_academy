@@ -59,8 +59,6 @@ import { AcervoScreen } from './acervo/AcervoScreen';
 import { ObraScreen } from './acervo/ObraScreen';
 import { CompositorScreen } from './acervo/CompositorScreen';
 import { ArtigoScreen } from './acervo/ArtigoScreen';
-import { WorkDetailScreen } from './worlds/WorkDetailScreen';
-import { MusicGraphScreen } from './worlds/MusicGraphScreen';
 
 import { CommunityFeedScreen } from './community/CommunityFeedScreen';
 import { TopicDetailScreen } from './community/TopicDetailScreen';
@@ -447,11 +445,23 @@ export const AppRouterOutlet: React.FC = () => {
   if (currentPath === '/worlds') {
     return <WorldsAtlasScreen />;
   }
+  /**
+   * AUD-11 / M-9 — as duas telas daqui eram escritas à mão: TODO id de obra
+   * abria a mesma Sonata BWV 1001, com "Fonte Primária Auditada" e um curso
+   * que não existe; o grafo tinha cinco nós fixos e "8 Arestas" contadas por
+   * ninguém, e o zoom não fazia nada.
+   *
+   * A obra tem ficha de verdade no Acervo, com o mesmo id — este endereço
+   * passa a abri-la. Grafo de influências não há: o catálogo não guarda quem
+   * influenciou quem, e desenhar um sem dado é o defeito de volta. O endereço
+   * leva ao Atlas, que é o mapa real. Quando houver a relação no catálogo, o
+   * grafo volta — construído dela.
+   */
   if (currentPath.startsWith('/worlds/work/')) {
-    return <WorkDetailScreen />;
+    return <ObraScreen />;
   }
   if (currentPath === '/worlds/graph') {
-    return <MusicGraphScreen />;
+    return <WorldsAtlasScreen />;
   }
 
   // 3. COMMUNITY

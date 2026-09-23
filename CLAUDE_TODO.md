@@ -706,7 +706,7 @@ As telas estão prontas; o **motor** não.
 | LAB-4 | Veredito de dificuldade — ver L-7 | ✅ |
 | LAB-5 | `earTrainingCorrect` zerado: a medição não distingue percepção auditiva, e creditar seria adivinhar | ⬜ |
 | M-8 | **Domínio de notificação** — tipo, alvo, leitura, repositório por usuário | ⬜ |
-| M-9 | `WorkDetailScreen` e `MusicGraphScreen` ainda têm obra e grafo escritos na tela | ⬜ |
+| M-9 | `WorkDetailScreen` e `MusicGraphScreen` ainda têm obra e grafo escritos na tela **Feito (com AUD-11):** as duas telas foram apagadas. `/worlds/work/:id` abre a ficha real do acervo com o mesmo id; `/worlds/graph` abre o Atlas, porque o catálogo não guarda influência e um grafo sem esse dado seria a mesma fachada. O Atlas deixou de oferecer "Ver o grafo de influências". Guarda: `mundos-sem-fachada.test.tsx`. | ✅ |
 | M-10 | 🔴 **O Estúdio deixou de ser fachada.** O editor mostrava um "Estudo Contrapontístico a Quatro Vozes" que ninguém escreveu, com notas decorativas e armadura/fórmula que só trocavam rótulo; o hub mandava para `/studio/project/arranjo-satb-coral`, projeto que não existe, e prometia "MusicXML e MIDI" sem exportar nada. Agora há o **caderno de partituras** (`caderno.ts`, `caderno.repository.ts`): escrever nota a nota com figura, alteração, oitava e pausa; tocar com a duração de cada figura; guardar em nome da pessoa; reabrir por `?id=`; excluir no hub; baixar MusicXML 3.1 e MIDI | ✅ `caderno-de-partituras.test.tsx` — XML lido por parser, MIDI conferido byte a byte |
 | M-11 | Busca cobrir Atlas e Comunidade; as abas de categoria voltam aí | ⬜ |
 
@@ -884,7 +884,7 @@ não aparecem como erro; aparecem quando se segue o fluxo.
 | AUD-8 | A privacidade do perfil diz "atualizadas no servidor!", mas grava em localStorage. Corrigir o texto (ou a gravação, com I-CF-3) **Feito:** "Privacidade por seção guardada." / "configurado como privado." | ✅ |
 | AUD-9 | **Salas: sem fluxo de turma.** Existe criar e ver, mas não existe entrar/matricular, publicar tarefa, publicar aviso ou entregar trabalho. Como as salas são locais, outra pessoa não consegue entrar nelas | ⬜ |
 | AUD-10 | Notificações: a própria tela diz que a plataforma não emite nenhuma. Falta decidir o que emite (tarefa, certificado, relato respondido) | ⬜ |
-| AUD-11 | `/worlds/work/:id` e `/worlds/graph` ainda são dados fixos (mesmo defeito de M-9) | ⬜ |
+| AUD-11 | `/worlds/work/:id` e `/worlds/graph` ainda são dados fixos (mesmo defeito de M-9) **Feito (com AUD-11):** as duas telas foram apagadas. `/worlds/work/:id` abre a ficha real do acervo com o mesmo id; `/worlds/graph` abre o Atlas, porque o catálogo não guarda influência e um grafo sem esse dado seria a mesma fachada. O Atlas deixou de oferecer "Ver o grafo de influências". Guarda: `mundos-sem-fachada.test.tsx`. | ✅ |
 
 ### Administração
 
