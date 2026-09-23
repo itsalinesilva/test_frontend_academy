@@ -33,6 +33,13 @@ export interface FaixaDoPlayer {
   bpm: number;
   /** [frequência em Hz, duração em tempos]. Frequência 0 = pausa. */
   notas: [number, number][];
+  /**
+   * A mesma linha, ESCRITA: [nome da nota, duração em tempos]; `_` é pausa.
+   *
+   * A frequência não guarda a grafia — si♭ e lá♯ são o mesmo número. Uma
+   * partitura desenhada a partir do som escreveria lá♯ numa peça em fá maior.
+   */
+  escrita: [string, number][];
   /** Duração total, em segundos, no andamento declarado. */
   duracaoSegundos: number;
 }
@@ -101,6 +108,17 @@ export function hz(nome: string): number {
   return Math.round(440 * Math.pow(2, (midi - 69) / 12) * 100) / 100;
 }
 
+/** `'C4:1 E4:0.5 _:0.5'` → pares [nome, tempos], como a linha foi escrita. */
+function grafia(linha: string): [string, number][] {
+  return linha
+    .trim()
+    .split(/\s+/)
+    .map((tok) => {
+      const [nome, dur] = tok.split(':');
+      return [nome, dur ? Number(dur) : 1] as [string, number];
+    });
+}
+
 /** `'C4:1 E4:0.5 _:0.5'` → pares [Hz, tempos]. `_` é pausa. */
 function seq(linha: string): [number, number][] {
   return linha
@@ -123,6 +141,7 @@ function faixa(
   bpm: number,
   linha: string
 ): FaixaDoPlayer {
+  const escrita = grafia(linha);
   const notas = seq(linha);
   const tempos = notas.reduce((a, [, d]) => a + d, 0);
   return {
@@ -134,6 +153,7 @@ function faixa(
     compasso,
     bpm,
     notas,
+    escrita,
     duracaoSegundos: Math.round((tempos * 60) / bpm),
   };
 }

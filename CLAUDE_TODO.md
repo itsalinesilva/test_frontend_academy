@@ -34,17 +34,11 @@
 | Comunidade | 10/10 | — |
 | Perfil | 10/10 | — |
 | Console | 10/10 | — |
-| Estúdio | 9/10 | integrado |
+| Estúdio | 10/10 | — |
 
 ### Fila, na ordem em que deve ser resolvida
 
-> A ordem é por **peso da pergunta**, e não por área. Consertar fora dela
-> significa proteger o que ninguém alcança, e curar o conteúdo de uma tela
-> que ainda não abre.
-
-| # | Peso | Área | Pergunta | O que falta |
-| :--- | :---: | :--- | :--- | :--- |
-| 1 | 5 | Estúdio | Está integrado? | nenhuma chamada a serviço ou repositório |
+Nenhuma pendência de prontidão.
 
 ### O que estas sete perguntas NÃO respondem
 
@@ -362,14 +356,14 @@ e por que 11.046 ainda não casaram — está em
 | DF-4 | Praticar duas vezes no mesmo dia **não conta dobrado**, e a virada de mês e de ano continuam sendo dias consecutivos — aritmética de data, e não subtração de milissegundos sobre o relógio local | ✅ |
 | NV-3 | 🔴 **O NIVELAMENTO ENTRAVA DIRETO EM TEORIA.** Ele foi montado sobre `exercise-generator`, que só cobre Teoria — "escolher a cadeira" seria escolha de mentira, com as três levando ao mesmo lugar. Agora é sobre os **livretos**: 378 questões escritas à mão, 126 capítulos, 5 trilhas, distratores que correspondem a enganos reais | ✅ 31 casos de domínio |
 | NV-4 | A tela abre num **seletor de cadeira**. História aparece com as **três trilhas separadas** — os cursos dela não são sequência um do outro, e fundi-los colocaria quem sabe música brasileira a responder sobre a ocidental, lendo o erro como lacuna | ✅ |
-| NV-5 | **Trocar de cadeira e encerrar, a qualquer momento**, com a saída no topo e não escondida no rodapé. Teste do qual só se sai respondendo até o fim é teste que se abandona fechando a aba | ✅ 18 casos de tela |
+| NV-5 | **`/score?obra=` abria um exemplo fixo.** A tela de partitura lia três "obras Urtext" escritas nela mesma, que só trocavam o título; "Auditar" tocava um motivo fixo; armadura e fórmula trocavam um rótulo. Agora a obra vem pelo endereço via `acervoService` (`fichaDaObra` + `faixaDaObra`), o repertório é o real (as transcrições próprias), o player toca as notas da peça e o andamento muda o som. Os controles que não mudavam nada saíram. **Estúdio 10/10 — prontidão 7/7** | ✅ `partitura-do-estudio.test.tsx` |
 | PZ-A | 🔴🔴 **A PAUTA DESENHAVA TODA NOTA NA LINHA DO MEIO.** `Staff` tinha `noteY = 54` fixo ("aproximado pela oitava"), sem acidente, sem linha suplementar e sem duração. É o componente dos blocos de pentagrama das lições e da figura dos exercícios: "que nota está escrita na pauta?" mostrava a MESMA cabeça de nota qualquer que fosse a resposta. Os testes contavam cabeças de nota, nunca a posição — por isso nada acusou. Reescrito: altura por grau e clave (sol, fá, dó), linhas suplementares, ♯ ♭ ♮, cabeça vazada/cheia, haste pelo lado certo, colchete, barras de compasso pela duração | ✅ `pauta-na-altura.test.tsx`: posição conferida contra a resposta do gerador |
 | PZ-B | **O acorde saía em fila — um arpejo.** Figura e bloco STAFF ganham `simultaneas`: empilhado, haste única, segunda para o outro lado da haste. O gerador marca os acordes; o editor de blocos tem a caixa "notas simultâneas", e o "ouvir" toca junto | ✅ |
 | GR-1 | 🔴 **GUARDAS DE REGRESSÃO — cada defeito de 2026-09-22 vira regra por CLASSE, e não por caso** (`tests/ui/guardas-de-regressao.test.tsx`): (a) todo `navigate` com consulta, achado por varredura, abre no roteador de verdade sem 404; (b) só repositório que funde a camada publicada toca chave editorial; (c) a pasta de `npm run livros` é a que a Biblioteca anuncia; (d) espera do Acervo sem prazo explícito falha; (e) todo campo do pacote tem nome no recado da exportação — campo novo sem nome falha | ✅ 16 casos |
 | GR-2 | **A guarda (d) achou mais 16 esperas sem prazo** nos testes do Acervo — a mesma classe da que quebrou a suíte completa hoje. Todas com prazo; a regra ficou sem lista de exceções | ✅ |
 | GR-3 | 🔴 **O pente fino tinha a suposição errada.** `checkNavigationTargets` tira a consulta antes de comparar — supunha que o roteador fazia o mesmo, e por isso ficou verde com toda busca no 404. E só lia aspas simples: `${...}` escapava. Agora lê template (cada interpolação vira segmento de exemplo), com variante e caso limpo novos na tabela, e o limite declarado aponta para a guarda que confere o roteador | ✅ |
 | GR-4 | **Processo: o ✅ do EE-5 era falso** — serviço ligado, tela ausente. Item de engine só fecha com o caminho da PESSOA testado (tela) e o do ALUNO (leitura) | regra |
-| PZ-C | ⬜ 🔴 **`ScoreContainer` também desenha toda nota na mesma altura** (`items-center`, sem posição por nota) — é a pauta da tela de partitura do Estúdio. Resolve junto com NV-5 | ⬜ |
+| PZ-C | **`ScoreContainer` desenhava toda nota na mesma altura.** Cada compasso agora é desenhado pela mesma regra do `Staff` (`alturaNaPauta`) — as duas pautas da plataforma não podem discordar —, com pausa, acidente, linha suplementar e duração. O repertório passou a guardar a ESCRITA (`escrita`), porque a frequência não guarda grafia: si♭ e lá♯ são o mesmo número. Limite declarado: nota que atravessa a barra fica inteira no compasso em que começa, e a tela diz quais | ✅ |
 | NV-6 | 🔴 **Sair no meio NÃO é errar.** Quem parou no capítulo 12 sem errar não tem ponto de entrada medido — tem um **piso**. O diagnóstico de quem interrompeu diz isso e não aponta módulo; dizer "você entra no 12" afirmaria o que o teste não apurou | ✅ |
 | NV-7 | O módulo casa por **curso e capítulo**, e não só pelo número: capítulo 3 existe em todos os cursos, e casar só pelo número entregaria o capítulo 3 de Teoria a quem nivelou Violino | ✅ |
 | QG-1 | 🔴🔴 **AS PERGUNTAS GERADAS TRAZIAM A RESPOSTA NO ENUNCIADO.** Em produção, na tela do percurso: *"Que nota está uma si — qual destas é?"* → resposta **si**. Não mede música, mede leitura do enunciado. E a frase não é português | ✅ |

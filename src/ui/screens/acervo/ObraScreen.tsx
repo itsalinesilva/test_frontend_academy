@@ -9,7 +9,6 @@ import {
   DisponibilidadeNoConservatorio,
   textoDe,
 } from '../../../domain/music-knowledge';
-import { REPERTORIO_DO_PLAYER } from '../../../data/seed-player-repertoire';
 import { useTocarFaixa } from '../../hooks/useTocarFaixa';
 
 /**
@@ -99,10 +98,7 @@ export const ObraScreen: React.FC = () => {
    * que a ficha encontra o que tocar. Sem faixa, não há como tocar — e o botão
    * não aparece, em vez de aparecer e não fazer nada.
    */
-  const faixa = useMemo(() => {
-    const ref = ficha?.obra.scoreRefs.find((r) => r.render === 'NATIVA')?.sourceRef;
-    return REPERTORIO_DO_PLAYER.find((f) => f.id === ref) ?? null;
-  }, [ficha]);
+  const faixa = useMemo(() => (ficha ? acervoService.faixaDaObra(ficha.obra) : null), [ficha]);
 
   const { tocando, decorrido, alternar } = useTocarFaixa(faixa);
 

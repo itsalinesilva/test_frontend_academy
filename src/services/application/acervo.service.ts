@@ -34,6 +34,7 @@ import {
 } from '../../domain/catalog-facets';
 import { DEFAULT_ERAS, DEFAULT_REGIONS, DEFAULT_GENRES } from '../../data/seed-atlas';
 import { LIVRETOS_PADRAO } from '../../data/seed-booklets';
+import { FaixaDoPlayer, REPERTORIO_DO_PLAYER } from '../../data/seed-player-repertoire';
 
 /**
  * O ACERVO COMO CATÁLOGO.
@@ -1155,6 +1156,23 @@ export class AcervoService {
       compositor: await this.repo.compositorPorId(obra.composerIds[0]),
       disponibilidade: avaliarDisponibilidade(obra),
     };
+  }
+
+  /**
+   * A transcrição própria que dá som e escrita à obra, ou nenhuma.
+   *
+   * A obra guarda o id da faixa na referência NATIVA. A ficha da obra e a
+   * tela de partitura perguntam aqui — antes a ficha fazia a conta sozinha, e
+   * a partitura não fazia conta nenhuma.
+   */
+  public faixaDaObra(obra: Pick<CanonicalWork, 'scoreRefs'>): FaixaDoPlayer | null {
+    const ref = obra.scoreRefs.find((r) => r.render === 'NATIVA')?.sourceRef;
+    return REPERTORIO_DO_PLAYER.find((f) => f.id === ref) ?? null;
+  }
+
+  /** O repertório que a pauta desenha: toda faixa com escrita. */
+  public repertorioComPartitura(): FaixaDoPlayer[] {
+    return REPERTORIO_DO_PLAYER.filter((f) => f.escrita.some(([n]) => n !== '_'));
   }
 }
 

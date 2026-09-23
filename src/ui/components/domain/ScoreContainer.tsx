@@ -3,11 +3,15 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { ZoomIn, ZoomOut, Play, Pause, RotateCcw } from 'lucide-react';
 import { Button } from '../base/Button';
+import { alturaNaPauta, NoteItem } from './Staff';
 import { Badge } from '../base/Badge';
 
 export interface ScoreMeasure {
   measureNumber: number;
+  /** "C4", "Bb3"; `_` é pausa. */
   notes: string[];
+  /** Duração de cada nota, em semínimas. Sem ela, todas valem uma. */
+  tempos?: number[];
   chords?: string;
   isCurrent?: boolean;
 }
@@ -194,29 +198,13 @@ export const ScoreContainer: React.FC<ScoreContainerProps> = ({
                     )}
                   </div>
 
-                  {/* 5 Staff Lines */}
-                  <div className="relative h-12 w-full flex flex-col justify-between py-1" aria-hidden="true">
-                    <div className="h-px bg-stone-400 w-full" />
-                    <div className="h-px bg-stone-400 w-full" />
-                    <div className="h-px bg-stone-400 w-full" />
-                    <div className="h-px bg-stone-400 w-full" />
-                    <div className="h-px bg-stone-400 w-full" />
-
-                    {/* Visual note heads */}
-                    <div className="absolute inset-0 flex items-center justify-around">
-                      {measure.notes.map((note, noteIdx) => (
-                        <div
-                          key={noteIdx}
-                          id={`${measureId}-note-${noteIdx}`}
-                          className={clsx(
-                            'w-3 h-2.5 rounded-full rotate-[-20deg] flex items-center justify-center shadow-xs',
-                            isCurrent ? 'bg-anil-800' : 'bg-stone-900'
-                          )}
-                          title={note}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                  <PautaDoCompasso
+                    id={measureId}
+                    clef={clef}
+                    notas={measure.notes}
+                    tempos={measure.tempos}
+                    destaque={!!isCurrent}
+                  />
 
                   {/* Playhead indicator bar */}
                   {isCurrent && (
@@ -246,5 +234,106 @@ export const ScoreContainer: React.FC<ScoreContainerProps> = ({
         <span className="font-mono text-stone-400">Notação Vetorial Estrita</span>
       </div>
     </div>
+  );
+};
+
+/**
+ * 🔴 UM COMPASSO, COM CADA NOTA NA ALTURA DELA (PZ-C).
+ *
+ * A versão anterior centralizava todas as cabeças de nota na mesma linha —
+ * a partitura do Estúdio mostrava um desenho, e não a música. A altura segue
+ * a mesma regra do `Staff` (`alturaNaPauta`), para que as duas pautas da
+ * plataforma não possam discordar.
+ */
+const LINHAS_DO_COMPASSO = [30, 42, 54, 66, 78];
+const SIMBOLO: Record<string, string> = { '#': '♯', b: '♭' };
+
+function lerNota(nome: string): (Pick<NoteItem, 'step' | 'octave'> & { acidente: string }) | null {
+  const m = /^([A-G])([#b]?)(-?\d)$/.exec(nome.trim());
+  if (!m) return null;
+  return { step: m[1] as NoteItem['step'], octave: Number(m[3]), acidente: m[2] };
+}
+
+const PautaDoCompasso: React.FC<{
+  id: string;
+  clef: 'treble' | 'bass' | 'alto';
+  notas: string[];
+  tempos?: number[];
+  destaque: boolean;
+}> = ({ id, clef, notas, tempos, destaque }) => {
+  const duracoes = notas.map((_, i) => tempos?.[i] ?? 1);
+  const total = duracoes.reduce((a, b) => a + b, 0) || 1;
+  const cor = destaque ? '#1e3a8a' : '#1c1917';
+  let acumulado = 0;
+
+  const lidas = notas.map((n) => (n === '_' ? null : lerNota(n)));
+  const alturas = lidas.map((l) => (l ? alturaNaPauta(l, clef) : 54));
+  const topo = Math.min(0, ...alturas.map((y) => y - 34));
+  const fundo = Math.max(108, ...alturas.map((y) => y + 34));
+
+  return (
+    <svg
+      viewBox={`0 ${topo} 160 ${fundo - topo}`}
+      className="h-20 w-full"
+      preserveAspectRatio="none"
+      role="img"
+      aria-label={notas.map((n) => (n === '_' ? 'pausa' : n)).join(', ')}
+    >
+      {LINHAS_DO_COMPASSO.map((y) => (
+        <line key={y} x1="0" y1={y} x2="160" y2={y} stroke="#a8a29e" strokeWidth="1.2" />
+      ))}
+      {notas.map((nome, i) => {
+        const x = 12 + ((acumulado + duracoes[i] / 2) / total) * 136;
+        acumulado += duracoes[i];
+        const nota = lidas[i];
+        if (!nota) {
+          return (
+            <text key={i} x={x - 4} y={60} fontSize="18" fill={cor} data-nota="pausa">
+              𝄽
+            </text>
+          );
+        }
+        const y = alturas[i];
+        const vazada = duracoes[i] >= 2;
+        const haste = duracoes[i] < 4;
+        const paraBaixo = y <= 54;
+        const suplementares: number[] = [];
+        for (let ly = 90; ly <= y; ly += 12) suplementares.push(ly);
+        for (let ly = 18; ly >= y; ly -= 12) suplementares.push(ly);
+        return (
+          <g key={i} id={`${id}-note-${i}`} data-nota={nome} data-y={y}>
+            <title>{nome}</title>
+            {suplementares.map((ly) => (
+              <line key={ly} x1={x - 9} y1={ly} x2={x + 9} y2={ly} stroke="#57534e" strokeWidth="1.2" />
+            ))}
+            {nota.acidente && (
+              <text x={x - 17} y={y + 5} fontSize="14" fill={cor}>
+                {SIMBOLO[nota.acidente]}
+              </text>
+            )}
+            <ellipse
+              cx={x}
+              cy={y}
+              rx="5.5"
+              ry="4.2"
+              fill={vazada ? 'white' : cor}
+              stroke={cor}
+              strokeWidth={vazada ? 1.5 : 0}
+              transform={`rotate(-20 ${x} ${y})`}
+            />
+            {haste && (
+              <line
+                x1={paraBaixo ? x - 5 : x + 5}
+                y1={y}
+                x2={paraBaixo ? x - 5 : x + 5}
+                y2={paraBaixo ? y + 28 : y - 28}
+                stroke={cor}
+                strokeWidth="1.3"
+              />
+            )}
+          </g>
+        );
+      })}
+    </svg>
   );
 };
