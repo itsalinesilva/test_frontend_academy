@@ -701,7 +701,7 @@ As telas estão prontas; o **motor** não.
 | LAB-1a | **Dois defeitos que só a leitura da amostra pegou**: a célula de síncope tinha 2,5 tempos num 2/4 (agora há teste de compasso cheio), e "Largo quer dizer largo". E um terceiro, latente: `soletrarPorGrau` contava a oitava duas vezes em intervalo composto — os geradores antigos só usavam simples | ✅ |
 | LAB-1b | Rótulo "Interval" em inglês na descrição da dimensão de intervalo | ✅ Intervalo |
 | LAB-2 | **2 dos 5 níveis não são renderizáveis** | ⬜ |
-| LAB-3 | Conteúdo semeado fino: **5 competências e 11 exercícios**. As 5 árvores escritas à mão saíram (LX-1) | ⬜ |
+| LAB-3 | **Os exercícios medidos passam de 11 para mais de 60, DERIVADOS e não escritos à mão** (`exercicios-derivados.ts`): uma frase medida por peça do repertório (a mesma transcrição da ficha e da partitura), as escalas maiores das sete tônicas soletradas por grau, e o canto de cada nota natural. Achado no caminho: a cópia dos exercícios no navegador era semeada UMA vez e lida para sempre — quem já tinha aberto o Laboratório nunca veria exercício novo. A leitura vem do código, e a cópia antiga é apagada | ✅ `exercicios-derivados.test.ts`
 | LAB-4 | Veredito de dificuldade — ver L-7 | ✅ |
 | LAB-5 | `earTrainingCorrect` zerado: a medição não distingue percepção auditiva, e creditar seria adivinhar | ⬜ |
 | M-8 | **Domínio de notificação** — tipo, alvo, leitura, repositório por usuário | ⬜ |
