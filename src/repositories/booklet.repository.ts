@@ -1,6 +1,8 @@
 import { StorageAdapter, LocalStorageAdapter } from '../infrastructure/storage/storage-adapter';
 import { Livreto, Avaliacao } from '../domain/booklet';
 import { Anotacao } from '../domain/annotations';
+import { fundirLivretos } from '../domain/pacote-editorial';
+import { camadaPublicada } from './camada-publicada';
 
 export interface BookletRepository {
   listarLivretos(): Promise<Livreto[]>;
@@ -57,18 +59,26 @@ export class PersistentBookletRepository implements BookletRepository {
     return inicial;
   }
 
+  /**
+   * O que vale: o livreto publicado (pacote commitado), com o deste navegador
+   * por cima quando é mais novo (EE-21). Ler só o local deixava o aluno com a
+   * questão errada que já tinha sido corrigida e publicada.
+   */
+  private async vigentes(): Promise<Livreto[]> {
+    return fundirLivretos(camadaPublicada().livretos, Object.values(await this.mapaLivretos()))
+      .resultado;
+  }
+
   public async listarLivretos(): Promise<Livreto[]> {
-    const mapa = await this.mapaLivretos();
-    return Object.values(mapa).sort((a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR'));
+    return (await this.vigentes()).sort((a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR'));
   }
 
   public async buscarLivreto(id: string): Promise<Livreto | null> {
-    return (await this.mapaLivretos())[id] ?? null;
+    return (await this.vigentes()).find((l) => l.id === id) ?? null;
   }
 
   public async buscarLivretoDoCurso(cursoId: string): Promise<Livreto | null> {
-    const mapa = await this.mapaLivretos();
-    return Object.values(mapa).find((l) => l.cursoId === cursoId) ?? null;
+    return (await this.vigentes()).find((l) => l.cursoId === cursoId) ?? null;
   }
 
   public async salvarLivreto(livreto: Livreto): Promise<Livreto> {

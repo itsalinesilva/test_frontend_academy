@@ -2,6 +2,13 @@ import { LocalStorageAdapter } from '../infrastructure/storage/local-storage';
 import { EditorialEdit, EditorialLesson } from '../domain/editorial-edit';
 import { EdicaoDeArtigo } from '../domain/editorial-artigo';
 import { SecaoEditadaDoLivro } from '../domain/book';
+import {
+  fundirArtigos,
+  fundirEdicoes,
+  fundirLicoesCriadas,
+  fundirSecoesDeLivro,
+} from '../domain/pacote-editorial';
+import { camadaPublicada } from './camada-publicada';
 
 /**
  * Camada editorial — as correções feitas por quem edita o Conservatório.
@@ -20,6 +27,16 @@ import { SecaoEditadaDoLivro } from '../domain/book';
  * O teste que garante isso está em `tests/edicao-editorial.test.ts` e em
  * `scripts/qa/seguranca.mjs`, na verificação "publicar conteúdo não apaga
  * dado do aluno" — que passou a cobrir também esta chave.
+ *
+ * 🔴 LER É PUBLICADO + LOCAL; GRAVAR É SÓ LOCAL (EE-21)
+ * -----------------------------------------------------
+ * Toda leitura funde a camada publicada (o pacote commitado) com o que está
+ * neste navegador, e a mais nova vence. Toda gravação vai só para o local.
+ *
+ * É isso que faz o pacote exportado ser CUMULATIVO: ele sai com o que já
+ * estava publicado mais o que se editou desde então. Um pacote só com as
+ * novidades, commitado por cima do anterior, apagaria as correções que já
+ * tinham chegado ao aluno.
  */
 export interface EditorialRepository {
   todas(): Promise<EditorialEdit[]>;
@@ -96,12 +113,17 @@ export class PersistentEditorialRepository implements EditorialRepository {
     return this.storage.get<EditorialEdit[]>(this.CHAVE) ?? [];
   }
 
+  /** O que vale: o publicado, com o local por cima quando é mais novo. */
+  private vigentes(): EditorialEdit[] {
+    return fundirEdicoes(camadaPublicada().edicoes, this.lista()).resultado;
+  }
+
   public async todas(): Promise<EditorialEdit[]> {
-    return this.lista();
+    return this.vigentes();
   }
 
   public async daLicao(lessonId: string): Promise<EditorialEdit[]> {
-    return this.lista().filter((e) => e.lessonId === lessonId);
+    return this.vigentes().filter((e) => e.lessonId === lessonId);
   }
 
   /**
@@ -114,6 +136,7 @@ export class PersistentEditorialRepository implements EditorialRepository {
   public async salvar(edicao: EditorialEdit): Promise<EditorialEdit> {
     const atuais = this.lista();
     const i = atuais.findIndex((e) => e.id === edicao.id);
+    const publicada = camadaPublicada().edicoes.find((e) => e.id === edicao.id);
     /**
      * O `anterior` preservado é sempre o do conteúdo PUBLICADO, não o da
      * edição imediatamente anterior. Senão, depois de três correções,
@@ -121,7 +144,7 @@ export class PersistentEditorialRepository implements EditorialRepository {
      * de reverter deixaria de significar "voltar ao que o Conservatório
      * publicou".
      */
-    const anterior = i >= 0 ? atuais[i].anterior : edicao.anterior;
+    const anterior = i >= 0 ? atuais[i].anterior : publicada ? publicada.anterior : edicao.anterior;
     const gravada = { ...edicao, anterior };
 
     if (i >= 0) atuais[i] = gravada;
@@ -139,18 +162,22 @@ export class PersistentEditorialRepository implements EditorialRepository {
   }
 
   public async historico(limite = 100): Promise<EditorialEdit[]> {
-    return this.lista()
+    return this.vigentes()
       .slice()
       .sort((a, b) => b.editadaEm.localeCompare(a.editadaEm))
       .slice(0, limite);
   }
 
-  public async licoesCriadas(): Promise<EditorialLesson[]> {
+  private licoesLocais(): EditorialLesson[] {
     return this.storage.get<EditorialLesson[]>(this.CHAVE_LICOES) ?? [];
   }
 
+  public async licoesCriadas(): Promise<EditorialLesson[]> {
+    return fundirLicoesCriadas(camadaPublicada().licoesCriadas, this.licoesLocais()).resultado;
+  }
+
   public async salvarLicaoCriada(licao: EditorialLesson): Promise<EditorialLesson> {
-    const atuais = await this.licoesCriadas();
+    const atuais = this.licoesLocais();
     const i = atuais.findIndex((l) => l.id === licao.id);
 
     if (i >= 0) atuais[i] = licao;
@@ -161,28 +188,33 @@ export class PersistentEditorialRepository implements EditorialRepository {
   }
 
   public async removerLicaoCriada(id: string): Promise<void> {
-    const atuais = await this.licoesCriadas();
+    const atuais = this.licoesLocais();
     this.storage.set(
       this.CHAVE_LICOES,
       atuais.filter((l) => l.id !== id)
     );
   }
 
-  public async artigos(): Promise<EdicaoDeArtigo[]> {
+  private artigosLocais(): EdicaoDeArtigo[] {
     return this.storage.get<EdicaoDeArtigo[]>(this.CHAVE_ARTIGOS) ?? [];
   }
 
+  public async artigos(): Promise<EdicaoDeArtigo[]> {
+    return fundirArtigos(camadaPublicada().artigos, this.artigosLocais()).resultado;
+  }
+
   public async salvarArtigo(edicao: EdicaoDeArtigo): Promise<EdicaoDeArtigo> {
-    const atuais = await this.artigos();
+    const atuais = this.artigosLocais();
     const i = atuais.findIndex((e) => e.id === edicao.id);
+    const publicada = camadaPublicada().artigos.find((e) => e.id === edicao.id);
 
     /**
      * O `anterior` preservado é o do artigo PUBLICADO, e não o da edição
      * imediatamente anterior — mesma regra das lições. Senão, depois de três
      * correções, reverter devolveria a segunda versão em vez do original.
      */
-    const anterior = i >= 0 ? atuais[i].anterior : edicao.anterior;
-    const gravada = { ...edicao, anterior };
+    const anterior = i >= 0 ? atuais[i].anterior : publicada ? publicada.anterior : edicao.anterior;
+    const gravada = { ...edicao, anterior, criado: publicada ? publicada.criado : edicao.criado };
 
     if (i >= 0) atuais[i] = gravada;
     else atuais.push(gravada);
@@ -192,19 +224,23 @@ export class PersistentEditorialRepository implements EditorialRepository {
   }
 
   public async removerArtigo(artigoId: string): Promise<void> {
-    const atuais = await this.artigos();
+    const atuais = this.artigosLocais();
     this.storage.set(
       this.CHAVE_ARTIGOS,
       atuais.filter((e) => e.artigoId !== artigoId)
     );
   }
 
-  public async secoesDeLivro(): Promise<SecaoEditadaDoLivro[]> {
+  private secoesLocais(): SecaoEditadaDoLivro[] {
     return this.storage.get<SecaoEditadaDoLivro[]>(this.CHAVE_LIVROS) ?? [];
   }
 
+  public async secoesDeLivro(): Promise<SecaoEditadaDoLivro[]> {
+    return fundirSecoesDeLivro(camadaPublicada().secoesDeLivro, this.secoesLocais()).resultado;
+  }
+
   public async salvarSecaoDeLivro(edicao: SecaoEditadaDoLivro): Promise<SecaoEditadaDoLivro> {
-    const atuais = await this.secoesDeLivro();
+    const atuais = this.secoesLocais();
     const i = atuais.findIndex((e) => e.id === edicao.id);
 
     if (i >= 0) atuais[i] = edicao;
@@ -216,7 +252,7 @@ export class PersistentEditorialRepository implements EditorialRepository {
 
   /** Reverter apaga a edição: a seção volta ao texto de partida do livro. */
   public async reverterSecaoDeLivro(id: string): Promise<void> {
-    const atuais = await this.secoesDeLivro();
+    const atuais = this.secoesLocais();
     this.storage.set(
       this.CHAVE_LIVROS,
       atuais.filter((e) => e.id !== id)

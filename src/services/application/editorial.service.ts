@@ -39,6 +39,11 @@ import {
 } from '../../domain/pacote-editorial';
 import { EditorialRepository, editorialRepository } from '../../repositories/editorial.repository';
 import {
+  EstadoDaCamada,
+  camadaPublicada,
+  estadoDaCamada,
+} from '../../repositories/camada-publicada';
+import {
   BookletRepository,
   PersistentBookletRepository,
 } from '../../repositories/booklet.repository';
@@ -405,13 +410,39 @@ export class EditorialService {
     };
   }
 
-  /** Quantas mudanças existem à espera de virar commit. */
+  /**
+   * Quantas mudanças existem à espera de virar commit.
+   *
+   * 🔴 CONTA SÓ O QUE DIFERE DO PUBLICADO (EE-21). Depois que o pacote entra
+   * no repositório, as mesmas edições continuam neste navegador — e contá-las
+   * manteria o aviso "ainda não chegou ao aluno" aceso sobre o que já chegou.
+   * Aviso que nunca apaga é aviso que se aprende a ignorar.
+   *
+   * "Igual" é mesmo identificador e mesmo carimbo de data: é o carimbo que o
+   * pacote usa para decidir quem vence, e por isso é o que diz se são a mesma.
+   */
   public async pendentes(): Promise<number> {
-    const edicoes = await this.repo.todas();
-    const licoes = await this.repo.licoesCriadas();
-    const artigos = await this.repo.artigos();
-    const secoes = await this.repo.secoesDeLivro();
-    return edicoes.length + licoes.length + artigos.length + secoes.length;
+    const pub = camadaPublicada();
+    const fora = <T extends { id: string }>(
+      vigentes: readonly T[],
+      publicados: readonly T[],
+      carimbo: (x: T) => string
+    ) => {
+      const porId = new Map(publicados.map((p) => [p.id, carimbo(p)]));
+      return vigentes.filter((v) => porId.get(v.id) !== carimbo(v)).length;
+    };
+
+    return (
+      fora(await this.repo.todas(), pub.edicoes, (e) => e.editadaEm) +
+      fora(await this.repo.licoesCriadas(), pub.licoesCriadas, (l) => l.criadaEm) +
+      fora(await this.repo.artigos(), pub.artigos, (a) => a.editadaEm) +
+      fora(await this.repo.secoesDeLivro(), pub.secoesDeLivro, (e) => e.editadaEm)
+    );
+  }
+
+  /** O que está publicado agora — para a tela dizer se o pacote commitado vale. */
+  public estadoDaPublicacao(): EstadoDaCamada {
+    return estadoDaCamada();
   }
 
   // -------------------------------------------------------------------------

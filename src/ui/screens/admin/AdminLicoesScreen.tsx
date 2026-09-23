@@ -17,7 +17,52 @@ import { academyService } from '../../../services/application/academy.service';
 import { editorialService } from '../../../services/application/editorial.service';
 import { AcademyCourse, AcademyModule, AcademyLesson, LessonBlock } from '../../../domain/academy';
 import { isEditableBlock, problemasDoBloco } from '../../../domain/editorial-edit';
+import { resumirPacote } from '../../../domain/pacote-editorial';
 import { CamposDoBloco } from './CamposDoBloco';
+
+/**
+ * O que o aluno está lendo agora: o pacote commitado em
+ * `public/editorial/pacote.json`.
+ *
+ * 🔴 O RECUSADO APARECE EM VERMELHO. Pacote commitado que não se lê significa
+ * que nenhuma correção publicada está valendo — e isso não pode ficar num
+ * console que ninguém abre.
+ */
+const EstadoDaPublicacao: React.FC = () => {
+  const estado = editorialService.estadoDaPublicacao();
+
+  if (estado.tipo === 'recusada') {
+    return (
+      <p role="alert" className="rounded-lg border border-red-300 bg-red-50 p-3 text-xs leading-relaxed text-red-900">
+        <strong>O pacote publicado foi recusado, e nenhuma correção publicada está valendo.</strong>{' '}
+        {estado.motivo}
+      </p>
+    );
+  }
+
+  if (estado.tipo === 'ausente') {
+    return (
+      <p className="text-[11px] leading-relaxed text-stone-500">
+        Nenhum pacote publicado: o aluno lê o conteúdo de fábrica.
+      </p>
+    );
+  }
+
+  const r = resumirPacote(estado.pacote);
+  return (
+    <p className="text-[11px] leading-relaxed text-stone-500">
+      Publicado para o aluno: pacote de {new Date(r.exportadoEm).toLocaleDateString('pt-BR')}
+      {r.exportadoPor ? `, por ${r.exportadoPor}` : ''} — {contar(r.edicoes, 'correção', 'correções')},{' '}
+      {contar(r.licoesCriadas, 'lição criada', 'lições criadas')}, {contar(r.artigos, 'artigo', 'artigos')},{' '}
+      {contar(r.livretos, 'livreto', 'livretos')} e {contar(r.secoesDeLivro, 'seção de livro', 'seções de livro')}.
+    </p>
+  );
+};
+
+/** "1 correção", "3 correções" — o recado conta tudo o que viaja no pacote. */
+function contar(n: number, um: string, varios: string): string {
+  return `${n} ${n === 1 ? um : varios}`;
+}
 
 /**
  * A ENGINE EDITORIAL DE LIÇÕES — curso, módulo, lição, bloco.
@@ -42,11 +87,6 @@ import { CamposDoBloco } from './CamposDoBloco';
  * Por isso o aviso de pendências é permanente enquanto houver mudança não
  * exportada, e não um rodapé discreto.
  */
-/** "1 correção", "3 correções" — o recado conta tudo o que viaja no pacote. */
-function contar(n: number, um: string, varios: string): string {
-  return `${n} ${n === 1 ? um : varios}`;
-}
-
 export const AdminLicoesScreen: React.FC = () => {
   const { navigate } = useRouter();
   const { nome } = useCurrentUser();
@@ -109,7 +149,7 @@ export const AdminLicoesScreen: React.FC = () => {
 
     setRecado({
       tom: 'ok',
-      texto: `${contar(resumo.edicoes, 'correção', 'correções')}, ${contar(resumo.licoesCriadas, 'lição criada', 'lições criadas')}, ${contar(resumo.artigos, 'artigo', 'artigos')}, ${contar(resumo.livretos, 'livreto', 'livretos')} (${contar(resumo.questoes, 'questão', 'questões')}) e ${contar(resumo.secoesDeLivro, 'seção de livro', 'seções de livro')}, em ${nomeDoArquivo}. Falta o commit para chegar ao aluno.`,
+      texto: `${contar(resumo.edicoes, 'correção', 'correções')}, ${contar(resumo.licoesCriadas, 'lição criada', 'lições criadas')}, ${contar(resumo.artigos, 'artigo', 'artigos')}, ${contar(resumo.livretos, 'livreto', 'livretos')} (${contar(resumo.questoes, 'questão', 'questões')}) e ${contar(resumo.secoesDeLivro, 'seção de livro', 'seções de livro')}, em ${nomeDoArquivo}. Salve-o como public/editorial/pacote.json e faça o commit: é o commit que publica.`,
     });
   }
 
@@ -218,10 +258,14 @@ export const AdminLicoesScreen: React.FC = () => {
                 {pendentes} {pendentes === 1 ? 'mudança' : 'mudanças'} gravadas neste navegador.
               </strong>{' '}
               Elas já valem para você, e <strong>ainda não chegaram ao aluno</strong>: exporte o
-              pacote e leve-o ao repositório por commit. Limpar os dados do navegador apaga o que
-              não foi exportado.
+              pacote, salve-o como <code>public/editorial/pacote.json</code> (substituindo o
+              anterior — o pacote já leva o que estava publicado) e faça o commit. Limpar os dados
+              do navegador apaga o que não foi exportado.
             </p>
           )}
+
+          <EstadoDaPublicacao />
+
 
           {recado && (
             <p
