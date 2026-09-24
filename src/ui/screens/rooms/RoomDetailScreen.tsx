@@ -9,10 +9,13 @@ import { AcademyCourse } from '../../../domain/academy';
 import {
   Comentario,
   Encontro,
+  Entrega,
+  FormatoDeEntrega,
   Membro,
   NoRanking,
   Post,
   SobreASala,
+  Tarefa,
   motivo,
   salasService,
 } from '../../../services/application/salas.service';
@@ -30,9 +33,10 @@ import { BotaoDenunciar } from '../../components/comunidade/BotaoDenunciar';
  * Quem decide o que cada pessoa pode é o servidor; a tela só não oferece o
  * botão a quem ele vai recusar.
  */
-type Aba = 'comunidade' | 'aula' | 'agenda' | 'membros' | 'ranking' | 'sobre';
+type Aba = 'comunidade' | 'tarefas' | 'aula' | 'agenda' | 'membros' | 'ranking' | 'sobre';
 const ABAS: { id: Aba; rotulo: string }[] = [
   { id: 'comunidade', rotulo: 'Comunidade' },
+  { id: 'tarefas', rotulo: 'Tarefas' },
   { id: 'aula', rotulo: 'Sala de aula' },
   { id: 'agenda', rotulo: 'Agenda' },
   { id: 'membros', rotulo: 'Membros' },
@@ -153,6 +157,7 @@ export const RoomDetailScreen: React.FC = () => {
           ) : (
             <>
               {aba === 'comunidade' && <Comunidade slug={slug} sobre={sobre} ativo={ativo} cuida={cuida} meuSub={eu?.sub} onEntrar={() => void entrar()} />}
+              {aba === 'tarefas' && <Tarefas slug={slug} ativo={ativo} cuida={cuida} />}
               {aba === 'aula' && <SalaDeAula slug={slug} sobre={sobre} dono={eu?.papel === 'dono'} aoMudar={carregar} />}
               {aba === 'agenda' && <Agenda slug={slug} cuida={cuida} />}
               {aba === 'membros' && <Membros slug={slug} ativo={ativo} eu={eu} />}
@@ -349,6 +354,176 @@ const Comentarios: React.FC<{ slug: string; postId: string; ativo: boolean; aoCo
           </Button>
         </form>
       )}
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------- tarefas ---
+
+const FORMATO: Record<FormatoDeEntrega, string> = {
+  texto: 'Resposta em texto',
+  link: 'Link (gravação no Drive, vídeo…)',
+  partitura: 'Partitura (MusicXML do caderno)',
+};
+
+/** P-7 — quem cuida propõe e avalia; cada aluno entrega e vê só a própria entrega. */
+const Tarefas: React.FC<{ slug: string; ativo: boolean; cuida: boolean }> = ({ slug, ativo, cuida }) => {
+  const [lista, setLista] = useState<Tarefa[] | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+  const [nova, setNova] = useState({ titulo: '', enunciado: '', formato: 'texto' as FormatoDeEntrega, prazo: '' });
+  const [aberta, setAberta] = useState<string | null>(null);
+  const ler = useCallback(() => {
+    salasService.tarefas(slug).then(setLista).catch((e) => setErro(motivo(e)));
+  }, [slug]);
+  useEffect(() => {
+    if (ativo) ler();
+  }, [ativo, ler]);
+
+  if (!ativo) return <p className="text-sm text-stone-600">As tarefas são de quem está na sala.</p>;
+
+  return (
+    <div className="space-y-4">
+      {cuida && (
+        <form
+          aria-label="Propor tarefa"
+          onSubmit={(e) => {
+            e.preventDefault();
+            salasService
+              .proporTarefa(slug, { ...nova, prazo: nova.prazo ? new Date(nova.prazo).toISOString() : undefined })
+              .then(() => {
+                setNova({ titulo: '', enunciado: '', formato: 'texto', prazo: '' });
+                ler();
+              })
+              .catch((err) => setErro(motivo(err)));
+          }}
+        >
+          <Card variant="default" padding="md" className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <label className="text-xs sm:col-span-2">Título da tarefa<input className={campo} value={nova.titulo} onChange={(e) => setNova({ ...nova, titulo: e.target.value })} /></label>
+            <label className="text-xs sm:col-span-2">Enunciado<textarea rows={3} className={campo} value={nova.enunciado} onChange={(e) => setNova({ ...nova, enunciado: e.target.value })} /></label>
+            <label className="text-xs">Formato da entrega
+              <select className={campo} value={nova.formato} onChange={(e) => setNova({ ...nova, formato: e.target.value as FormatoDeEntrega })}>
+                {Object.entries(FORMATO).map(([v, r]) => <option key={v} value={v}>{r}</option>)}
+              </select>
+            </label>
+            <label className="text-xs">Prazo (opcional)<input type="datetime-local" className={campo} value={nova.prazo} onChange={(e) => setNova({ ...nova, prazo: e.target.value })} /></label>
+            <div className="sm:col-span-2"><Button type="submit" size="sm" disabled={!nova.titulo.trim() || !nova.enunciado.trim()}>Propor tarefa</Button></div>
+          </Card>
+        </form>
+      )}
+      {erro && <p role="alert" className="text-xs text-red-800">{erro}</p>}
+      {lista?.length === 0 && <p className="text-sm text-stone-600">Nenhuma tarefa proposta ainda.</p>}
+      {(lista ?? []).map((t) => (
+        <Card key={t.id} variant="default" padding="md" className="space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-stone-500">
+            <span>{FORMATO[t.formato]}{t.prazo ? ` · prazo ${dataHora(t.prazo)}` : ''}</span>
+            {cuida && t.entregas !== null && <span>{t.entregas} {t.entregas === 1 ? 'entrega' : 'entregas'}</span>}
+          </div>
+          <h3 className="font-serif text-base font-bold text-stone-900">{t.titulo}</h3>
+          <p className="whitespace-pre-line text-sm text-stone-700">{t.enunciado}</p>
+          {cuida ? (
+            <>
+              <button type="button" onClick={() => setAberta(aberta === t.id ? null : t.id)} className="text-xs text-anil-700 underline">
+                {aberta === t.id ? 'Fechar entregas' : 'Ver entregas'}
+              </button>
+              {aberta === t.id && <EntregasDaTurma slug={slug} tarefa={t} />}
+            </>
+          ) : (
+            <MinhaEntrega slug={slug} tarefa={t} aoEntregar={ler} />
+          )}
+        </Card>
+      ))}
+    </div>
+  );
+};
+
+const MinhaEntrega: React.FC<{ slug: string; tarefa: Tarefa; aoEntregar: () => void }> = ({ slug, tarefa, aoEntregar }) => {
+  const e = tarefa.minhaEntrega;
+  const [conteudo, setConteudo] = useState(e?.conteudo ?? '');
+  const [erro, setErro] = useState<string | null>(null);
+  if (e?.avaliacao) {
+    return (
+      <div className="rounded border border-emerald-200 bg-emerald-50 p-2 text-xs text-stone-800">
+        <p className="font-semibold">Avaliada por {e.avaliacao.por}{e.avaliacao.nota !== null ? ` — nota ${e.avaliacao.nota}` : ''}</p>
+        <p className="whitespace-pre-line">{e.avaliacao.comentario}</p>
+      </div>
+    );
+  }
+  return (
+    <form
+      className="space-y-2"
+      onSubmit={(ev) => {
+        ev.preventDefault();
+        salasService.entregar(slug, tarefa.id, conteudo).then(aoEntregar).catch((err) => setErro(motivo(err)));
+      }}
+    >
+      <label htmlFor={`entrega-${tarefa.id}`} className="text-xs font-semibold text-stone-700">
+        {e ? `Sua entrega (${e.atrasada ? 'depois do prazo' : 'no prazo'}) — dá para refazer até a avaliação` : 'Sua entrega'}
+      </label>
+      {tarefa.formato === 'link' ? (
+        <input id={`entrega-${tarefa.id}`} type="url" placeholder="https://" className={campo} value={conteudo} onChange={(x) => setConteudo(x.target.value)} />
+      ) : (
+        <textarea
+          id={`entrega-${tarefa.id}`}
+          rows={tarefa.formato === 'partitura' ? 4 : 3}
+          placeholder={tarefa.formato === 'partitura' ? 'Cole aqui o MusicXML exportado do seu caderno no Estúdio' : ''}
+          className={campo}
+          value={conteudo}
+          onChange={(x) => setConteudo(x.target.value)}
+        />
+      )}
+      {erro && <p role="alert" className="text-xs text-red-800">{erro}</p>}
+      <Button type="submit" size="sm" disabled={!conteudo.trim()}>{e ? 'Refazer entrega' : 'Entregar'}</Button>
+    </form>
+  );
+};
+
+const EntregasDaTurma: React.FC<{ slug: string; tarefa: Tarefa }> = ({ slug, tarefa }) => {
+  const [lista, setLista] = useState<Entrega[] | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+  const [notas, setNotas] = useState<Record<string, { nota: string; comentario: string }>>({});
+  const ler = useCallback(() => {
+    salasService.entregas(slug, tarefa.id).then(setLista).catch((e) => setErro(motivo(e)));
+  }, [slug, tarefa.id]);
+  useEffect(ler, [ler]);
+  if (lista?.length === 0) return <p className="text-xs text-stone-600">Ninguém entregou ainda.</p>;
+  return (
+    <div className="space-y-3 border-t border-stone-100 pt-2">
+      {erro && <p role="alert" className="text-xs text-red-800">{erro}</p>}
+      {(lista ?? []).map((e) => {
+        const n = notas[e.aluno.sub] ?? { nota: '', comentario: '' };
+        return (
+          <div key={e.aluno.sub} className="space-y-1 text-xs">
+            <p className="font-semibold text-stone-900">
+              {e.aluno.nome} <span className="font-normal text-stone-500">· {dataHora(e.em)}{e.atrasada ? ' · depois do prazo' : ''}</span>
+            </p>
+            {tarefa.formato === 'link' ? (
+              <a href={e.conteudo} target="_blank" rel="noopener noreferrer" className="text-anil-700 underline">{e.conteudo}</a>
+            ) : tarefa.formato === 'partitura' ? (
+              <p className="text-stone-600">Partitura em MusicXML ({Math.round(e.conteudo.length / 1024)} KB) — abra no caderno do Estúdio para ler.</p>
+            ) : (
+              <p className="whitespace-pre-line text-stone-700">{e.conteudo}</p>
+            )}
+            {e.avaliacao ? (
+              <p className="text-emerald-800">Avaliada{e.avaliacao.nota !== null ? ` — nota ${e.avaliacao.nota}` : ''}: {e.avaliacao.comentario}</p>
+            ) : (
+              <form
+                className="flex flex-wrap items-end gap-2"
+                onSubmit={(ev) => {
+                  ev.preventDefault();
+                  salasService
+                    .avaliar(slug, tarefa.id, e.aluno.sub, { nota: n.nota === '' ? null : Number(n.nota), comentario: n.comentario })
+                    .then(ler)
+                    .catch((err) => setErro(motivo(err)));
+                }}
+              >
+                <label>Nota (0–10, opcional)<input type="number" min={0} max={10} step={0.1} className="ml-1 w-16 rounded border border-stone-300 p-1" value={n.nota} onChange={(x) => setNotas({ ...notas, [e.aluno.sub]: { ...n, nota: x.target.value } })} /></label>
+                <label className="flex-1">Comentário<input className={campo} value={n.comentario} onChange={(x) => setNotas({ ...notas, [e.aluno.sub]: { ...n, comentario: x.target.value } })} /></label>
+                <Button type="submit" size="sm" disabled={!n.comentario.trim()}>Avaliar</Button>
+              </form>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };

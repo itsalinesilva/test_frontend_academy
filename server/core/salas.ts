@@ -90,10 +90,34 @@ export interface Encontro {
   criadoEm?: string;
 }
 
+/**
+ * TAREFAS COM ENTREGA (P-7) — o que o Skool não tem e o pacote pede (P11):
+ * quem cuida da sala propõe, cada aluno entrega, quem cuida avalia.
+ */
+export type FormatoDeEntrega = 'texto' | 'link' | 'partitura';
+export interface Tarefa {
+  id: string;
+  titulo: string;
+  enunciado: string;
+  formato: FormatoDeEntrega;
+  prazo?: string;
+  autor: Pessoa;
+  criadaEm: string;
+}
+export interface Entrega {
+  tarefaId: string;
+  aluno: Pessoa;
+  /** Texto da resposta; ou o link (gravação no Drive, vídeo); ou o MusicXML da partitura. */
+  conteudo: string;
+  em: string;
+  atrasada: boolean;
+  avaliacao?: { nota: number | null; comentario: string; por: string; em: string };
+}
+
 /** O que vale como aviso das salas para uma pessoa. */
 export interface Novidade {
   id: string;
-  tipo: 'SALA_POST' | 'SALA_COMENTARIO' | 'SALA_CURTIDA' | 'SALA_ENCONTRO' | 'SALA_APROVADO';
+  tipo: 'SALA_POST' | 'SALA_COMENTARIO' | 'SALA_CURTIDA' | 'SALA_ENCONTRO' | 'SALA_APROVADO' | 'SALA_TAREFA' | 'SALA_AVALIACAO';
   titulo: string;
   texto: string;
   link: string;
@@ -161,6 +185,10 @@ const K = {
   curtidas: (sala: string) => `sala:${sala}:curtida:`,
   encontro: (sala: string, inicio: string, id: string) => `sala:${sala}:encontro:${inicio}:${id}`,
   encontros: (sala: string) => `sala:${sala}:encontro:`,
+  tarefa: (sala: string, id: string) => `sala:${sala}:tarefa:${id}`,
+  tarefas: (sala: string) => `sala:${sala}:tarefa:`,
+  entrega: (sala: string, tarefa: string, sub: string) => `sala:${sala}:entrega:${tarefa}:${sub}`,
+  entregas: (sala: string, tarefa: string) => `sala:${sala}:entrega:${tarefa}:`,
 };
 
 export async function todasAsChaves(kv: ArmazemKV, prefix: string): Promise<string[]> {
@@ -512,6 +540,97 @@ export class ServicoDeSalas {
     return { ok: true, valor: e, status: 201 };
   }
 
+  // ----------------------------------------------------------- tarefas ---
+
+  async tarefas(quem: Pessoa | null, idOuSlug: string): Promise<Resultado<Array<Tarefa & { minhaEntrega: Entrega | null; entregas: number | null }>>> {
+    const sala = await this.sala(idOuSlug);
+    if (!sala) return falha(404, 'SALA_NAO_EXISTE', 'Esta sala não existe.');
+    const eu = await this.ehAtivo(sala.id, quem);
+    if (!eu) return falha(403, 'SO_MEMBROS', 'As tarefas são de quem está na sala.');
+    const ts = (await Promise.all((await todasAsChaves(this.kv, K.tarefas(sala.id))).map((k) => lerJson<Tarefa>(this.kv, k))))
+      .filter((t): t is Tarefa => t !== null)
+      .sort((a, b) => (a.prazo ?? '9').localeCompare(b.prazo ?? '9') || b.criadaEm.localeCompare(a.criadaEm));
+    return {
+      ok: true,
+      valor: await Promise.all(
+        ts.map(async (t) => ({
+          ...t,
+          minhaEntrega: await lerJson<Entrega>(this.kv, K.entrega(sala.id, t.id, eu.sub)),
+          /** Quantas entregas há: só quem cuida vê — ao aluno não interessa o ritmo dos outros. */
+          entregas: eu.papel === 'membro' ? null : (await todasAsChaves(this.kv, K.entregas(sala.id, t.id))).length,
+        }))
+      ),
+    };
+  }
+
+  async proporTarefa(quem: Pessoa, idOuSlug: string, corpo: unknown): Promise<Resultado<Tarefa>> {
+    const sala = await this.sala(idOuSlug);
+    if (!sala) return falha(404, 'SALA_NAO_EXISTE', 'Esta sala não existe.');
+    const eu = await this.ehAtivo(sala.id, quem);
+    if (!eu || eu.papel === 'membro') return falha(403, 'SO_QUEM_CUIDA', 'Só quem cuida da sala propõe tarefas.');
+    const c = (corpo ?? {}) as Record<string, unknown>;
+    const titulo = texto(c.titulo, LIMITES.titulo);
+    const enunciado = texto(c.enunciado, LIMITES.corpo);
+    if (!titulo) return falha(400, 'TITULO_INVALIDO', 'A tarefa precisa de título.');
+    if (!enunciado) return falha(400, 'ENUNCIADO_INVALIDO', 'A tarefa precisa de enunciado.');
+    const formato: FormatoDeEntrega = c.formato === 'link' || c.formato === 'partitura' ? c.formato : 'texto';
+    const prazo = typeof c.prazo === 'string' && !Number.isNaN(Date.parse(c.prazo)) ? new Date(c.prazo).toISOString() : undefined;
+    const t: Tarefa = { id: this.novoId(), titulo, enunciado, formato, prazo, autor: quem, criadaEm: this.agora().toISOString() };
+    await this.kv.put(K.tarefa(sala.id, t.id), JSON.stringify(t));
+    return { ok: true, valor: t, status: 201 };
+  }
+
+  /** Entregar — e refazer, enquanto não houver avaliação. Depois de avaliada, a entrega é registro. */
+  async entregar(quem: Pessoa, idOuSlug: string, tarefaId: string, corpo: unknown): Promise<Resultado<Entrega>> {
+    const sala = await this.sala(idOuSlug);
+    if (!sala) return falha(404, 'SALA_NAO_EXISTE', 'Esta sala não existe.');
+    if (!(await this.ehAtivo(sala.id, quem))) return falha(403, 'SO_MEMBROS', 'Entre na sala para entregar.');
+    const t = await lerJson<Tarefa>(this.kv, K.tarefa(sala.id, tarefaId));
+    if (!t) return falha(404, 'TAREFA_NAO_EXISTE', 'Esta tarefa não existe.');
+    const antes = await lerJson<Entrega>(this.kv, K.entrega(sala.id, tarefaId, quem.sub));
+    if (antes?.avaliacao) return falha(409, 'JA_AVALIADA', 'Esta entrega já foi avaliada.');
+    const bruto = (corpo as Record<string, unknown> | null)?.conteudo;
+    const limite = t.formato === 'partitura' ? 200_000 : t.formato === 'link' ? 500 : LIMITES.corpo;
+    const conteudo = texto(bruto, limite);
+    if (!conteudo) return falha(400, 'ENTREGA_VAZIA', 'A entrega está vazia ou grande demais.');
+    if (t.formato === 'link' && !/^https?:\/\//.test(conteudo)) return falha(400, 'LINK_INVALIDO', 'O link precisa começar com http:// ou https://.');
+    if (t.formato === 'partitura' && !/<score-(partwise|timewise)/.test(conteudo)) {
+      return falha(400, 'PARTITURA_INVALIDA', 'Mande a partitura em MusicXML — o caderno do Estúdio exporta nesse formato.');
+    }
+    const em = this.agora().toISOString();
+    const e: Entrega = { tarefaId, aluno: quem, conteudo, em, atrasada: !!t.prazo && em > t.prazo };
+    await this.kv.put(K.entrega(sala.id, tarefaId, quem.sub), JSON.stringify(e));
+    return { ok: true, valor: e, status: 201 };
+  }
+
+  async entregas(quem: Pessoa, idOuSlug: string, tarefaId: string): Promise<Resultado<Entrega[]>> {
+    const sala = await this.sala(idOuSlug);
+    if (!sala) return falha(404, 'SALA_NAO_EXISTE', 'Esta sala não existe.');
+    const eu = await this.ehAtivo(sala.id, quem);
+    if (!eu || eu.papel === 'membro') return falha(403, 'SO_QUEM_CUIDA', 'As entregas da turma são de quem cuida da sala.');
+    const es = (await Promise.all((await todasAsChaves(this.kv, K.entregas(sala.id, tarefaId))).map((k) => lerJson<Entrega>(this.kv, k))))
+      .filter((e): e is Entrega => e !== null)
+      .sort((a, b) => a.em.localeCompare(b.em));
+    return { ok: true, valor: es };
+  }
+
+  async avaliar(quem: Pessoa, idOuSlug: string, tarefaId: string, alunoSub: string, corpo: unknown): Promise<Resultado<Entrega>> {
+    const sala = await this.sala(idOuSlug);
+    if (!sala) return falha(404, 'SALA_NAO_EXISTE', 'Esta sala não existe.');
+    const eu = await this.ehAtivo(sala.id, quem);
+    if (!eu || eu.papel === 'membro') return falha(403, 'SO_QUEM_CUIDA', 'Só quem cuida da sala avalia.');
+    const e = await lerJson<Entrega>(this.kv, K.entrega(sala.id, tarefaId, alunoSub));
+    if (!e) return falha(404, 'ENTREGA_NAO_EXISTE', 'Esta pessoa ainda não entregou.');
+    const c = (corpo ?? {}) as Record<string, unknown>;
+    const comentario = texto(c.comentario, LIMITES.comentario);
+    if (!comentario) return falha(400, 'SEM_COMENTARIO', 'A avaliação precisa de um comentário — nota sozinha não ensina.');
+    const n = c.nota === null || c.nota === undefined || c.nota === '' ? null : Number(c.nota);
+    if (n !== null && !(Number.isFinite(n) && n >= 0 && n <= 10)) return falha(400, 'NOTA_INVALIDA', 'A nota vai de 0 a 10, ou fica em branco.');
+    const nova: Entrega = { ...e, avaliacao: { nota: n === null ? null : Math.round(n * 10) / 10, comentario, por: quem.nome, em: this.agora().toISOString() } };
+    await this.kv.put(K.entrega(sala.id, tarefaId, alunoSub), JSON.stringify(nova));
+    return { ok: true, valor: nova };
+  }
+
   // ----------------------------------------------------------- ranking ---
 
   /** Pontos = curtidas recebidas (menos as de quem saiu, que continuam valendo: a contribuição aconteceu). */
@@ -574,7 +693,17 @@ export class ServicoDeSalas {
           }
         }
       }
-      for (const k of await todasAsChaves(this.kv, K.encontros(salaId))) {
+      for (const k of await todasAsChaves(this.kv, K.tarefas(salaId))) {
+      const t = await lerJson<Tarefa>(this.kv, k);
+      if (t && t.autor.sub !== quem.sub && t.criadaEm > desde) {
+        saida.push({ id: `tar_${t.id}`, tipo: 'SALA_TAREFA', titulo: `Tarefa nova em ${sala.nome}`, texto: t.titulo, link: onde, em: t.criadaEm });
+      }
+      const minha = t ? await lerJson<Entrega>(this.kv, K.entrega(salaId, t.id, quem.sub)) : null;
+      if (t && minha?.avaliacao && minha.avaliacao.em > desde) {
+        saida.push({ id: `ava_${t.id}`, tipo: 'SALA_AVALIACAO', titulo: `${minha.avaliacao.por} avaliou sua entrega`, texto: t.titulo, link: onde, em: minha.avaliacao.em });
+      }
+    }
+    for (const k of await todasAsChaves(this.kv, K.encontros(salaId))) {
         const e = await lerJson<Encontro>(this.kv, k);
         if (e?.criadoEm && e.criadoEm > desde) {
           saida.push({ id: `enc_${e.id}`, tipo: 'SALA_ENCONTRO', titulo: `Encontro marcado em ${sala.nome}`, texto: `${e.titulo} — ${new Date(e.inicio).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`, link: onde, em: e.criadoEm });

@@ -10,7 +10,7 @@ import { LocalStorageAdapter } from '../infrastructure/storage/local-storage';
  * cópia leva só os de quem é dono). Os avisos das SALAS vêm do servidor, que
  * é onde as salas vivem (`/api/v1/salas-novidades`).
  */
-export type TipoDeAviso = 'CERTIFICADO' | 'NIVEL' | 'SALA_POST' | 'SALA_COMENTARIO' | 'SALA_CURTIDA' | 'SALA_ENCONTRO' | 'SALA_APROVADO';
+export type TipoDeAviso = 'CERTIFICADO' | 'NIVEL' | 'SALA_POST' | 'SALA_COMENTARIO' | 'SALA_CURTIDA' | 'SALA_ENCONTRO' | 'SALA_APROVADO' | 'SALA_TAREFA' | 'SALA_AVALIACAO';
 
 export interface Aviso {
   id: string;

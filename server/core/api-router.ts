@@ -606,6 +606,16 @@ export async function handleApiRequest(
     } else if (recurso === 'encontros') {
       if (metodo === 'GET') return responder(await servico.encontros(quem, sala));
       if (metodo === 'POST') return exigir() ?? responder(await servico.marcarEncontro(quem!, sala, corpo));
+    } else if (recurso === 'tarefas') {
+      /** /salas/:sala/tarefas[/:tarefa/entregar | /:tarefa/entregas[/:aluno/avaliar]] */
+      const [tarefaId, sub2, alunoSub, acao2] = [alvo, acao, partes[4], partes[5]];
+      if (!tarefaId && metodo === 'GET') return exigir() ?? responder(await servico.tarefas(quem, sala));
+      if (!tarefaId && metodo === 'POST') return exigir() ?? responder(await servico.proporTarefa(quem!, sala, corpo));
+      if (tarefaId && sub2 === 'entregar' && metodo === 'POST') return exigir() ?? responder(await servico.entregar(quem!, sala, tarefaId, corpo));
+      if (tarefaId && sub2 === 'entregas' && !alunoSub && metodo === 'GET') return exigir() ?? responder(await servico.entregas(quem!, sala, tarefaId));
+      if (tarefaId && sub2 === 'entregas' && alunoSub && acao2 === 'avaliar' && metodo === 'POST') {
+        return exigir() ?? responder(await servico.avaliar(quem!, sala, tarefaId, alunoSub, corpo));
+      }
     } else if (recurso === 'ranking' && metodo === 'GET') {
       return responder(await servico.ranking(quem, sala));
     }

@@ -1,5 +1,12 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+/**
+ * Esta tela monta o catálogo inteiro (31 mil obras, ~5 MB). Sozinho o arquivo
+ * roda em ~20 s; com a suíte inteira disputando CPU ele passou três vezes de
+ * 60 s e falhou por tempo, sem defeito nenhum. O limite acompanha o peso real.
+ */
+vi.setConfig({ testTimeout: 180_000 });
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AcervoScreen } from '../../src/ui/screens/acervo/AcervoScreen';

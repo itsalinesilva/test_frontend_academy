@@ -63,6 +63,27 @@ export interface Encontro {
   link?: string;
   descricao?: string;
 }
+export type FormatoDeEntrega = 'texto' | 'link' | 'partitura';
+export interface Entrega {
+  tarefaId: string;
+  aluno: PessoaDaSala;
+  conteudo: string;
+  em: string;
+  atrasada: boolean;
+  avaliacao?: { nota: number | null; comentario: string; por: string; em: string };
+}
+export interface Tarefa {
+  id: string;
+  titulo: string;
+  enunciado: string;
+  formato: FormatoDeEntrega;
+  prazo?: string;
+  autor: PessoaDaSala;
+  criadaEm: string;
+  minhaEntrega: Entrega | null;
+  /** Só quem cuida da sala recebe o número. */
+  entregas: number | null;
+}
 export interface NoRanking extends PessoaDaSala {
   pontos: number;
   nivel: number;
@@ -102,6 +123,14 @@ export const salasService = {
   marcar: (sala: string, d: { titulo: string; inicio: string; duracaoMin: number; link?: string; descricao?: string }) =>
     apiClient.post<Encontro>(`${base(sala)}/encontros`, d),
   ranking: (sala: string) => apiClient.get<NoRanking[]>(`${base(sala)}/ranking`),
+  tarefas: (sala: string) => apiClient.get<Tarefa[]>(`${base(sala)}/tarefas`),
+  proporTarefa: (sala: string, d: { titulo: string; enunciado: string; formato: FormatoDeEntrega; prazo?: string }) =>
+    apiClient.post<Tarefa>(`${base(sala)}/tarefas`, d),
+  entregar: (sala: string, tarefa: string, conteudo: string) =>
+    apiClient.post<Entrega>(`${base(sala)}/tarefas/${e(tarefa)}/entregar`, { conteudo }),
+  entregas: (sala: string, tarefa: string) => apiClient.get<Entrega[]>(`${base(sala)}/tarefas/${e(tarefa)}/entregas`),
+  avaliar: (sala: string, tarefa: string, aluno: string, d: { nota: number | null; comentario: string }) =>
+    apiClient.post<Entrega>(`${base(sala)}/tarefas/${e(tarefa)}/entregas/${e(aluno)}/avaliar`, d),
 };
 
 /** A mensagem que a tela mostra. O servidor já escreve em português para a pessoa. */

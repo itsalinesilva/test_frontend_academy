@@ -4,7 +4,7 @@ import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { Central, lerCentral, marcarTodasComoLidas } from '../../../services/application/notificacoes.service';
-import { Award, CheckCheck, Heart, MessageSquare, TrendingUp, Users, CalendarDays, FileText } from 'lucide-react';
+import { Award, CheckCheck, Heart, MessageSquare, TrendingUp, Users, CalendarDays, FileText, ClipboardList } from 'lucide-react';
 
 /**
  * A central de notificações (AUD-10).
@@ -23,6 +23,8 @@ const ICONE = {
   SALA_CURTIDA: Heart,
   SALA_ENCONTRO: CalendarDays,
   SALA_APROVADO: Users,
+  SALA_TAREFA: ClipboardList,
+  SALA_AVALIACAO: CheckCheck,
 } as const;
 
 export const NotificationsScreen: React.FC = () => {
@@ -72,7 +74,8 @@ export const NotificationsScreen: React.FC = () => {
             </p>
           )}
           {central.avisos.map((a) => {
-            const Icone = ICONE[a.tipo];
+            /** Tipo que o servidor passou a emitir antes do app conhecer: ícone genérico, e não tela quebrada. */
+            const Icone = ICONE[a.tipo] ?? FileText;
             return (
               <Card
                 key={a.id}
