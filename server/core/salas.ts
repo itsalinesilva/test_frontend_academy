@@ -53,6 +53,8 @@ export interface Membro extends Pessoa {
   papel: Papel;
   status: 'ativo' | 'pendente';
   entrouEm: string;
+  /** Quando o pedido foi aprovado — vira aviso para quem pediu. */
+  aprovadoEm?: string;
 }
 
 export interface Post {
@@ -81,6 +83,35 @@ export interface Encontro {
   duracaoMin: number;
   link?: string;
   descricao?: string;
+  /** Quando foi marcado — é o que o aviso usa; `inicio` é quando acontece. */
+  criadoEm?: string;
+}
+
+/** O que vale como aviso das salas para uma pessoa. */
+export interface Novidade {
+  id: string;
+  tipo: 'SALA_POST' | 'SALA_COMENTARIO' | 'SALA_CURTIDA' | 'SALA_ENCONTRO' | 'SALA_APROVADO';
+  titulo: string;
+  texto: string;
+  link: string;
+  em: string;
+}
+
+/** A curtida guarda quem curtiu, de quem é o post e quando — o ranking e os avisos leem daqui. */
+interface Curtida {
+  autor: string;
+  de: string;
+  nomeDe: string;
+  em: string;
+}
+function lerCurtida(valor: string | null): Curtida | null {
+  if (!valor) return null;
+  try {
+    return JSON.parse(valor) as Curtida;
+  } catch {
+    /** Formato antigo: o valor era só o autor do post. */
+    return { autor: valor, de: '', nomeDe: '', em: '' };
+  }
 }
 
 /**
@@ -129,7 +160,7 @@ const K = {
   encontros: (sala: string) => `sala:${sala}:encontro:`,
 };
 
-async function todasAsChaves(kv: ArmazemKV, prefix: string): Promise<string[]> {
+export async function todasAsChaves(kv: ArmazemKV, prefix: string): Promise<string[]> {
   const nomes: string[] = [];
   let cursor: string | undefined;
   do {
@@ -140,7 +171,7 @@ async function todasAsChaves(kv: ArmazemKV, prefix: string): Promise<string[]> {
   return nomes;
 }
 
-async function lerJson<T>(kv: ArmazemKV, chave: string): Promise<T | null> {
+export async function lerJson<T>(kv: ArmazemKV, chave: string): Promise<T | null> {
   const t = await kv.get(chave);
   return t ? (JSON.parse(t) as T) : null;
 }
@@ -312,7 +343,9 @@ export class ServicoDeSalas {
       return { ok: true, valor: null };
     }
     const novo: Membro =
-      acao === 'aprovar' ? { ...alvo, status: 'ativo' } : { ...alvo, papel: acao === 'moderador' ? 'moderador' : 'membro' };
+      acao === 'aprovar'
+        ? { ...alvo, status: 'ativo', aprovadoEm: this.agora().toISOString() }
+        : { ...alvo, papel: acao === 'moderador' ? 'moderador' : 'membro' };
     await this.kv.put(K.membro(sala.id, alvoSub), JSON.stringify(novo));
     return { ok: true, valor: novo };
   }
@@ -403,8 +436,9 @@ export class ServicoDeSalas {
       await this.kv.delete(chave);
       return { ok: true, valor: { curti: false } };
     }
-    /** O valor guarda o autor do post: o ranking conta sem reler post nenhum. */
-    await this.kv.put(chave, post.autor.sub);
+    /** O valor guarda o autor do post (o ranking conta sem reler post nenhum) e quando (o aviso). */
+    const curtida: Curtida = { autor: post.autor.sub, de: quem.sub, nomeDe: quem.nome, em: this.agora().toISOString() };
+    await this.kv.put(chave, JSON.stringify(curtida));
     return { ok: true, valor: { curti: true } };
   }
 
@@ -459,6 +493,7 @@ export class ServicoDeSalas {
       duracaoMin,
       link,
       descricao: typeof c.descricao === 'string' ? c.descricao.trim().slice(0, 1000) || undefined : undefined,
+      criadoEm: this.agora().toISOString(),
     };
     await this.kv.put(K.encontro(sala.id, inicio, e.id), JSON.stringify(e));
     return { ok: true, valor: e, status: 201 };
@@ -473,7 +508,7 @@ export class ServicoDeSalas {
     if (!(await this.podeLer(sala, quem))) return falha(403, 'SALA_PRIVADA', 'O ranking desta sala é só de quem está nela.');
     const pontos = new Map<string, number>();
     for (const k of await todasAsChaves(this.kv, K.curtidas(sala.id))) {
-      const autor = await this.kv.get(k);
+      const autor = lerCurtida(await this.kv.get(k))?.autor;
       if (autor) pontos.set(autor, (pontos.get(autor) ?? 0) + 1);
     }
     const membros = (await Promise.all((await todasAsChaves(this.kv, K.membros(sala.id))).map((k) => lerJson<Membro>(this.kv, k))))
@@ -484,6 +519,56 @@ export class ServicoDeSalas {
         .map((m) => ({ sub: m.sub, nome: m.nome, pontos: pontos.get(m.sub) ?? 0, nivel: nivelDosPontos(pontos.get(m.sub) ?? 0) }))
         .sort((a, b) => b.pontos - a.pontos || a.nome.localeCompare(b.nome)),
     };
+  }
+
+  // ---------------------------------------------------------- avisos ---
+
+  /**
+   * AVISOS DAS SALAS (AUD-10): o que aconteceu, desde `desde`, nas salas em que
+   * a pessoa está — e que não foi ela quem fez.
+   */
+  async novidades(quem: Pessoa, desde: string): Promise<Resultado<Novidade[]>> {
+    const saida: Novidade[] = [];
+    const salaIds = (await todasAsChaves(this.kv, K.minhas(quem.sub))).map((k) => k.split(':').pop()!);
+    for (const salaId of salaIds) {
+      const sala = await lerJson<Sala>(this.kv, K.sala(salaId));
+      const eu = await lerJson<Membro>(this.kv, K.membro(salaId, quem.sub));
+      if (!sala || !eu) continue;
+      const onde = `/rooms/${sala.slug}`;
+      if (eu.aprovadoEm && eu.aprovadoEm > desde) {
+        saida.push({ id: `apr_${salaId}`, tipo: 'SALA_APROVADO', titulo: `Você entrou em ${sala.nome}`, texto: 'Seu pedido foi aprovado.', link: onde, em: eu.aprovadoEm });
+      }
+      if (eu.status !== 'ativo') continue;
+
+      const posts = (await Promise.all((await todasAsChaves(this.kv, K.posts(salaId))).map((k) => lerJson<Post>(this.kv, k)))).filter((p): p is Post => !!p);
+      const meus = new Map(posts.filter((p) => p.autor.sub === quem.sub).map((p) => [p.id, p]));
+      for (const p of posts) {
+        if (p.autor.sub !== quem.sub && p.em > desde) {
+          saida.push({ id: `post_${p.id}`, tipo: 'SALA_POST', titulo: `${p.autor.nome} publicou em ${sala.nome}`, texto: p.titulo, link: onde, em: p.em });
+        }
+      }
+      for (const [postId, p] of meus) {
+        for (const k of await todasAsChaves(this.kv, K.comentarios(salaId, postId))) {
+          const c = await lerJson<Comentario>(this.kv, k);
+          if (c && c.autor.sub !== quem.sub && c.em > desde) {
+            saida.push({ id: `com_${c.id}`, tipo: 'SALA_COMENTARIO', titulo: `${c.autor.nome} comentou seu post`, texto: `"${p.titulo}" — ${c.corpo.slice(0, 80)}`, link: onde, em: c.em });
+          }
+        }
+        for (const k of await todasAsChaves(this.kv, K.curtida(salaId, postId, ''))) {
+          const c = lerCurtida(await this.kv.get(k));
+          if (c?.em && c.em > desde && c.de !== quem.sub) {
+            saida.push({ id: `cur_${postId}_${c.de}`, tipo: 'SALA_CURTIDA', titulo: `${c.nomeDe || 'Alguém'} curtiu seu post`, texto: p.titulo, link: onde, em: c.em });
+          }
+        }
+      }
+      for (const k of await todasAsChaves(this.kv, K.encontros(salaId))) {
+        const e = await lerJson<Encontro>(this.kv, k);
+        if (e?.criadoEm && e.criadoEm > desde) {
+          saida.push({ id: `enc_${e.id}`, tipo: 'SALA_ENCONTRO', titulo: `Encontro marcado em ${sala.nome}`, texto: `${e.titulo} — ${new Date(e.inicio).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`, link: onde, em: e.criadoEm });
+        }
+      }
+    }
+    return { ok: true, valor: saida.sort((a, b) => b.em.localeCompare(a.em)).slice(0, 100) };
   }
 }
 

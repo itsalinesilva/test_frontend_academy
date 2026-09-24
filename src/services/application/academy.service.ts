@@ -25,6 +25,7 @@ import { analyticsService } from '../../infrastructure/telemetry/analytics-servi
 import { AnalyticsEventType } from '../../domain/analytics';
 import { canonicalJson, sha256Hex } from '../../domain/integrity';
 import { NotFoundError } from '../../domain/errors';
+import { notificacoesRepository } from '../../repositories/notificacoes.repository';
 
 export class AcademyService {
   private repo: AcademyRepository;
@@ -696,6 +697,16 @@ export class AcademyService {
     }
 
     const savedCert = await this.repo.saveCertificate(cert);
+
+    /** AUD-10 — o certificado é o aviso que mais importa; o id do aviso é o do certificado, e não duplica. */
+    notificacoesRepository.emitir({
+      id: `aviso_cert_${savedCert.id}`,
+      userId,
+      tipo: 'CERTIFICADO',
+      titulo: 'Certificado emitido',
+      texto: `Você concluiu ${course.title}. O certificado já pode ser conferido por qualquer pessoa.`,
+      link: `/academia/certificate/${savedCert.id}`,
+    });
 
     // Register into History
     await this.repo.logHistoryEntry({

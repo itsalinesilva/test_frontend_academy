@@ -218,11 +218,15 @@ export interface PracticeResult {
   measurement?: PracticeMeasurement;
   /** Medicao real. `null` em qualquer dimensao significa "nao medida". */
   medicao: MedicaoReal;
-  pitchAccuracy: number;
-  rhythmAccuracy: number;
-  tempoStability: number;
-  intonationScore: number;
-  consistencyScore: number;
+  /**
+   * `null` = não medida. Antes, a ausência de medição virava 80, 80, 85 —
+   * afinação "medida" numa sessão de teoria, onde nada soou (AUD-21).
+   */
+  pitchAccuracy: number | null;
+  rhythmAccuracy: number | null;
+  tempoStability: number | null;
+  intonationScore: number | null;
+  consistencyScore: number | null;
   durationSeconds: number;
   notesAttempted: number;
   notesCorrect: number;

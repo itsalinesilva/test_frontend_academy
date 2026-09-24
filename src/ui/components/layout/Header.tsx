@@ -6,6 +6,7 @@ import { useRouter } from '../../navigation/router';
 import { ExplorarMenu } from './ExplorarMenu';
 import { HeaderSearch } from './HeaderSearch';
 import { ProfileMenu } from '../overlays/ProfileMenu';
+import { useNaoLidas } from '../../hooks/useNaoLidas';
 
 export interface HeaderProps {
   currentUser: User | null;
@@ -43,6 +44,8 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const { currentPath, navigate } = useRouter();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  /** AUD-10 — o aviso não ganha um sexto botão na barra: vira um selo no avatar e um item no menu. */
+  const naoLidas = useNaoLidas(currentUser?.id, currentPath);
 
   const emAprendizado = currentPath.startsWith('/academia/meu-aprendizado');
 
@@ -114,7 +117,7 @@ export const Header: React.FC<HeaderProps> = ({
                 id="header-profile-btn"
                 onClick={() => setIsProfileMenuOpen((v) => !v)}
                 aria-expanded={isProfileMenuOpen}
-                aria-label={`Conta de ${currentUser.name}`}
+                aria-label={`Conta de ${currentUser.name}${naoLidas ? `, ${naoLidas} ${naoLidas === 1 ? 'notificação não lida' : 'notificações não lidas'}` : ''}`}
                 className="ml-0.5 flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-anil-800 text-xs font-semibold text-white transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-anil-700 focus-visible:ring-offset-1"
               >
                 {currentUser.avatarUrl ? (
@@ -123,6 +126,9 @@ export const Header: React.FC<HeaderProps> = ({
                   currentUser.name?.charAt(0).toUpperCase() || 'U'
                 )}
               </button>
+              {naoLidas > 0 && (
+                <span aria-hidden="true" className="pointer-events-none absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-600" />
+              )}
 
               <ProfileMenu
                 isOpen={isProfileMenuOpen}
@@ -130,6 +136,7 @@ export const Header: React.FC<HeaderProps> = ({
                 currentUser={currentUser}
                 onLogout={onLogoutClick}
                 onSwitchRole={onSwitchRole}
+                naoLidas={naoLidas}
               />
             </div>
           ) : (

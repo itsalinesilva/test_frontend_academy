@@ -68,10 +68,11 @@ function resolveEnv(): ServerEnv {
      */
     SALAS: KV_DE_DESENVOLVIMENTO.salas,
     RELATOS: KV_DE_DESENVOLVIMENTO.relatos,
+    COMUNIDADE: KV_DE_DESENVOLVIMENTO.comunidade,
   };
 }
 
-const KV_DE_DESENVOLVIMENTO = { salas: new KVEmMemoria(), relatos: new KVEmMemoria() };
+const KV_DE_DESENVOLVIMENTO = { salas: new KVEmMemoria(), relatos: new KVEmMemoria(), comunidade: new KVEmMemoria() };
 
 export function createApiMiddleware() {
   return async (req: IncomingMessage, res: ServerResponse, next: () => void): Promise<void> => {

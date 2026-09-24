@@ -31,6 +31,7 @@ import { profileService, ProfileService } from './profile.service';
 import { analyticsService } from '../../infrastructure/telemetry/analytics-service';
 import { AnalyticsEventType } from '../../domain/analytics';
 import { levelOf, COMPLETIONS_TO_JOIN_LEAGUE } from '../../domain/progress-economy';
+import { notificacoesRepository } from '../../repositories/notificacoes.repository';
 
 export interface EvaluateAttemptInput {
   exerciseId: string;
@@ -335,25 +336,30 @@ export class PracticeService {
     // Aggregate measurements
     const attemptsCount = Math.max(1, attempts.length);
     const correctCount = attempts.filter((a) => a.isCorrect).length;
-    const avgAccuracy = Math.round(
-      attempts.reduce((sum, a) => sum + (a.accuracyScore || 70), 0) / attemptsCount
-    );
-    const avgScore = Math.round(
-      attempts.reduce((sum, a) => sum + (a.measurement?.score || 750), 0) / attemptsCount
-    );
-    const avgPitchAcc = Math.round(
-      attempts.reduce((sum, a) => sum + (a.measurement?.pitch.centsAccuracy || 80), 0) / attemptsCount
-    );
-    const avgRhythmAcc = Math.round(
-      attempts.reduce((sum, a) => sum + (a.measurement?.rhythm.stabilityScore || 80), 0) / attemptsCount
-    );
-    const avgIntonation = Math.round(
-      attempts.reduce((sum, a) => sum + (a.measurement?.intonation || 85), 0) / attemptsCount
-    );
-    const avgConsistency = Math.round(
-      attempts.reduce((sum, a) => sum + (a.measurement?.consistency || 80), 0) / attemptsCount
-    );
-    const totalXp = attempts.reduce((sum, a) => sum + a.xpEarned, 0) || 50;
+    /**
+     * AUD-21 — AS MÉDIAS SÃO DO QUE ACONTECEU.
+     *
+     * Aqui cada ausência tinha um número de reserva: acerto 0 virava 70%
+     * (`a.accuracyScore || 70` — zero é falso em JS), nota ausente virava 750,
+     * afinação 80, entonação 85, e uma sessão sem XP ganhava 50. Errar tudo
+     * rendia 70% de acurácia, subia o domínio e aparecia no perfil.
+     *
+     * Agora: acurácia é a de cada tentativa (ou o próprio acerto, 100/0);
+     * dimensão sem medição é `null`; XP é a soma, e zero é zero.
+     */
+    const media = (valores: Array<number | null | undefined>): number | null => {
+      const medidos = valores.filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
+      return medidos.length ? Math.round(medidos.reduce((s, v) => s + v, 0) / medidos.length) : null;
+    };
+    const avgAccuracy =
+      media(attempts.map((a) => (typeof a.accuracyScore === 'number' ? a.accuracyScore : a.isCorrect ? 100 : 0))) ?? 0;
+    /** A nota de 0 a 1000: a medida, quando houve; senão, a própria acurácia na mesma escala. */
+    const avgScore = media(attempts.map((a) => a.measurement?.score)) ?? avgAccuracy * 10;
+    const avgPitchAcc = media(attempts.map((a) => a.measurement?.pitch?.centsAccuracy));
+    const avgRhythmAcc = media(attempts.map((a) => a.measurement?.rhythm?.stabilityScore));
+    const avgIntonation = media(attempts.map((a) => a.measurement?.intonation));
+    const avgConsistency = media(attempts.map((a) => a.measurement?.consistency));
+    const totalXp = attempts.reduce((sum, a) => sum + (a.xpEarned || 0), 0);
 
     // 1. Mastery Calculation
     let mastery = await this.repo.getMastery(userId, skillId);
@@ -408,6 +414,19 @@ export class PracticeService {
       }
     }
     await this.repo.saveMastery(mastery);
+
+    /** AUD-10 — subir de nível numa habilidade vira aviso. O primeiro contato (nível 1) não: não é conquista, é começo. */
+    if (leveledUp && previousLevel > 0) {
+      const habilidade = await this.repo.findSkillById(skillId).catch(() => null);
+      notificacoesRepository.emitir({
+        id: `aviso_nivel_${userId}_${skillId}_${newLevel}`,
+        userId,
+        tipo: 'NIVEL',
+        titulo: `Nível ${newLevel} em ${habilidade?.name ?? 'uma habilidade'}`,
+        texto: 'Seu domínio subiu com os exercícios desta sessão.',
+        link: '/practice',
+      });
+    }
 
     // 2. Streak & Daily Goal updates
     const streak = await this.repo.getStreak(userId);
@@ -690,9 +709,10 @@ export class PracticeService {
     const totalMinutes = results.reduce((sum, r) => sum + Math.round(r.durationSeconds / 60), 0);
     const totalSessions = results.length;
     const totalAttempts = results.reduce((sum, r) => sum + r.notesAttempted, 0);
+    /** Precisão = acertos sobre tentativas. Era a média de `pitchAccuracy`, que valia 80 quando nada soava (AUD-21). */
     const avgAcc =
-      results.length > 0
-        ? Math.round(results.reduce((sum, r) => sum + r.pitchAccuracy, 0) / results.length)
+      totalAttempts > 0
+        ? Math.round((results.reduce((sum, r) => sum + r.notesCorrect, 0) / totalAttempts) * 100)
         : null;
 
     const count = {

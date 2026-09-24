@@ -21,7 +21,7 @@
 > Item sobe de lá para cá ao virar trabalho imediato, e desce ao depender de
 > decisão ou de outra fase.
 
-### As sete perguntas — apuradas em 2026-09-23
+### As sete perguntas — apuradas em 2026-09-24
 
 > **Esta seção é escrita por máquina.** Não edite à mão: o próximo `qa:todo`
 > sobrescreve. O que foi resolvido sai sozinho; o que apareceu entra sozinho.
@@ -858,6 +858,43 @@ Não configurar agora: o projeto não terminou. O que ficará pendente quando fo
 | I-CF-3 | ~~Persistência durável para os dados pessoais~~ — **retirado: estava errado.** Dado pessoal vive no Google Drive da própria pessoa (ADR-001.A, AUD-20); o Cloudflare guarda só o que é de várias pessoas (salas, relatos — ADR-003), que é I-CF-1 | ➡ |
 | I-CF-4 | Domínio e subdomínio de admin; cabeçalhos de segurança (`_headers`) validados no ar | ⛔ |
 
+## Fase P — o pacote de prompts (`docs/harness/PROMPTS.md`) cruzado com o código — 2026-09-24
+
+Leitura completa de P00–P18 e dos COMANDOS 0–19, confrontada com o que existe. Regra do pacote: a referência (Coursera,
+Duolingo, LinkedIn, Skool, DAW, notação) é **clone de estrutura**; identidade, conteúdo e dados são próprios. E o
+AGENTS.md: nada de mock em produção, identidade e autorização no servidor, "Definition of Done" com persistência, API,
+permissão, estados, testes.
+
+**A lacuna de maior peso é uma só, e atravessa P06, P10, P11, P17 e P18:** o que é de VÁRIAS pessoas ainda grava no
+navegador de quem usa. Fórum, eventos, conexões, cartão público de perfil e diretório de pessoas estão em
+`localStorage` — um tópico publicado nunca chega a outra pessoa. As Salas já saíram disso (AUD-9); o resto segue o
+mesmo caminho (ADR-003: KV no servidor, uma chave por item). O dado PESSOAL continua no Drive de cada um (AUD-20).
+
+| # | Prompt | Item | Estado |
+|:---|:---|:---|:---:|
+| P-1 | P10 · ADR-003 | **Fórum compartilhado.** Tópicos e respostas no KV, com autoria da sessão; categorias; curtir; fórum vinculado a sala. Hoje: `forum.repository` em `localStorage` | ⬜ |
+| P-2 | P10 | **Eventos compartilhados.** Evento criado por uma pessoa aparece para todas; inscrição contada no servidor. Hoje: `community-events.repository` local | ⬜ |
+| P-3 | P06 · P10 · ADR-003 | **Cartão público de perfil + diretório + busca de pessoas no servidor** (índice automático ao entrar, nunca manual — ADR-003). Conexões (seguir/conectar) no KV. Sem DM, por regra do pacote | ⬜ |
+| P-4 | P10 · P17 | **Denúncia e fila de moderação.** Botão "denunciar" em post de fórum e de sala; fila no console; ações ocultar/manter/advertir com trilha de auditoria. Fecha AUD-14 | ⬜ |
+| P-5 | P17 | **Usuários no console, com ação real no servidor:** lista (do índice de pessoas), suspender/restaurar (o servidor recusa sessão suspensa), papéis/capacidades. Fecha AUD-12 | ⬜ |
+| P-6 | P17 | Console: relatos, salas, fórum, saúde do sistema (KV ligado? Drive ligado? latência da API), feature flags, integrações. "Admin nunca deve ser apenas uma tela bonita" | ⬜ |
+| P-7 | P11 | Salas — o que o Skool não tem e o pacote pede: **tarefas com entrega** (áudio/partitura/texto; mídia via Drive, ADR-004), avaliação e comentário do professor, progresso de cada aluno nos cursos da sala | ⬜ |
+| P-8 | P13 | Editor de partitura — faltam: dinâmica, articulação, ligadura de expressão, letra, cifra, várias vozes/instrumentos, partes, transpor, copiar/colar, desfazer/refazer, histórico de versões, PDF/SVG. Já existe: notas, pausas, acidentes, ligadura de valor, quiálteras, MusicXML, MIDI, pastas | ⬜ |
+| P-9 | P12 | Estúdio (DAW) — faltam: trilhas MIDI/instrumento com piano roll, pan, medidores, marcadores, tempo/compasso, loop, quantização, efeitos, automação, desfazer/refazer, versões, importar áudio. Já existe: gravar, tocar junto, mudo/solo/volume, forma de onda, mixar e exportar WAV | ⬜ |
+| P-10 | P12 · ADR-004 | **Mídia no Drive** (`drive.file`): publicar gravação/partitura no portfólio com consentimento "qualquer pessoa com o link", despublicar, player próprio com picos pré-calculados | ⬜ |
+| P-11 | P14 | Instrument Lab: violino existe; faltam interfaces de piano/teclado, violão/baixo, sopros, percussão; afinador como tela própria com presets por instrumento; presets de método (Suzuki, Sitt, Maia Bang) | ⬜ |
+| P-12 | P16 | Kids: existem criar conta e painel do responsável, e o bloqueio de rotas. Faltam as telas adaptadas (Kids Home, Academy, Practice, Worlds, Achievements, Profile) com linguagem e navegação simplificadas | ⬜ |
+| P-13 | P15 | Evidence Home e Evidence Detail com proveniência e verificação; evidência automática de sala/evento/contribuição na comunidade | ⬜ |
+| P-14 | P09 | Worlds: passaporte e carimbos a partir do que a pessoa fez (obra ouvida, praticada, quiz); tour/milestone. Mapa e Atlas existem | ⬜ |
+| P-15 | P18 | Limite de taxa nas rotas de escrita do servidor (salas, relatos, fórum) — hoje nenhum | ⬜ |
+| P-16 | P18 | Analytics real: o `analyticsService` registra só no navegador; definir o que vai ao servidor (sem dado pessoal) | ⬜ |
+| P-17 | COMANDO 06/07/11/14/15/16/18 | Documentos pedidos e inexistentes: `06_CROSS_SYSTEM_INTEGRATION`, `07_KNOWLEDGE_FRAMEWORK`, `07_CONTENT_PROVENANCE`, `11_MUSIC_ENGINE_MATRIX`, `14_SECURITY_AUDIT`, `15_BACKEND_ARCHITECTURE`, `15_API_CONTRACTS`, `16_TEST_ARCHITECTURE`, `18_FINAL_*`. Escrever a partir do código, no fim de cada frente — não antes | ⬜ |
+| P-18 | P05 | Login por e-mail: o pacote pede Google **e** e-mail; a ADR-001.A decidiu só Google (sem senha). Registrar a decisão como vigente — **decisão sua** se quiser reabrir | ⛔ |
+| P-19 | P02 · P17 | Comercial (planos, assinatura, compra): só existe `entitlements` local. **Decisão sua**: modelo de cobrança e meio de pagamento | ⛔ |
+
+**Ordem:** P-1 → P-2 → P-3 → P-4 → P-5 → P-15 (o compartilhado inteiro, com moderação e limite, antes de abrir
+ao público) → P-7 → P-10 → P-8 → P-9 → P-11 → P-12 → P-13 → P-14 → P-6 → P-16 → P-17.
+
 ## AUDITORIA DAS TRÊS PESSOAS — 2026-09-23
 
 Todas as rotas foram abertas como visitante, aluna e administração, pelo roteador de verdade e com a guarda de audiência:
@@ -883,7 +920,7 @@ não aparecem como erro; aparecem quando se segue o fluxo.
 | AUD-7 | 🔴 **Números inventados no perfil unificado** (`profile.service.getUnifiedProfile`): 32 horas de estudo, 15 sessões, sequência de 3 dias, recorde de 14, 8 conexões. Devem vir do histórico de prática ou sumir **Feito:** `domain/perfil-medido.ts` mede horas, sessões, ofensiva, sessões recentes e competências (do MasteryRecord) a cada leitura do dono. As abas Prática, Competências e Insígnias leem o registro e dizem quando está vazio. | ✅ |
 | AUD-8 | A privacidade do perfil diz "atualizadas no servidor!", mas grava em localStorage. Corrigir o texto (ou a gravação, com I-CF-3) **Feito:** "Privacidade por seção guardada." / "configurado como privado." | ✅ |
 | AUD-9 | **Salas: sem fluxo de turma.** Existe criar e ver, mas não existe entrar/matricular, publicar tarefa, publicar aviso ou entregar trabalho. Como as salas são locais, outra pessoa não consegue entrar nelas **Feito, no molde do Skool:** Comunidade (posts por categoria, curtir, comentar, fixar, apagar), Sala de aula (os cursos da Academia que o dono escolhe), Agenda (encontros com data e link — só http/https), Membros (entrar; sala privada pede aprovação; moderação aprova, só o dono nomeia moderação, ninguém remove o dono), Ranking (1 curtida recebida = 1 ponto, níveis 1–9 com os limiares do Skool; curtir o próprio post não vale) e Sobre. Vive no KV do servidor (`server/core/salas.ts`, ADR-003), uma chave por item — duas curtidas nunca se sobrescrevem; autoria sempre da sessão assinada. Diretório e salas públicas abrem para visitante; criar pede só conta (a exigência de "professor" impedia todo mundo, ver AUD-12). No `npm run dev` funciona em memória; em produção precisa do KV `SALAS` (I-CF-1). Achado no caminho: o outlet mostrava a tela, trocava por um spinner e a REMONTAVA nas rotas verificadas — o texto digitado se perdia; agora a verificação vale por endereço desde o primeiro quadro. Guardas: `salas-servidor.test.ts` (14) e `salas-na-tela.test.tsx` (duas pessoas, tela e servidor reais). Tarefas com entrega e correção ficaram de fora: o Skool não as tem, e dependem de mídia no Drive (ADR-004) | ✅ |
-| AUD-10 | Notificações: a própria tela diz que a plataforma não emite nenhuma. Falta decidir o que emite (tarefa, certificado, relato respondido) | ⬜ |
+| AUD-10 | Notificações: a própria tela diz que a plataforma não emite nenhuma. Falta decidir o que emite (tarefa, certificado, relato respondido) **Feito:** avisos PESSOAIS nascem na origem — certificado emitido (`academy.service`) e habilidade que sobe de nível (`practice.service`) — e ficam na conta (vão para o Drive; cada um tem dono). Avisos das SALAS vêm de `GET /api/v1/salas-novidades`: post novo, comentário no meu post, curtida, encontro marcado, pedido aprovado — nunca o que eu mesma fiz. Central com "marcar todas como lidas" (um marco por pessoa, não uma lista infinita); selo no avatar e item "Notificações" no menu da conta (a barra continua com cinco elementos). Guarda: `notificacoes.test.tsx` | ✅ |
 | AUD-11 | `/worlds/work/:id` e `/worlds/graph` ainda são dados fixos (mesmo defeito de M-9) **Feito (com AUD-11):** as duas telas foram apagadas. `/worlds/work/:id` abre a ficha real do acervo com o mesmo id; `/worlds/graph` abre o Atlas, porque o catálogo não guarda influência e um grafo sem esse dado seria a mesma fachada. O Atlas deixou de oferecer "Ver o grafo de influências". Guarda: `mundos-sem-fachada.test.tsx`. | ✅ |
 
 ### Administração
@@ -914,5 +951,6 @@ não aparecem como erro; aparecem quando se segue o fluxo.
 | # | Item | Estado |
 |:---|:---|:---:|
 | AUD-20 | **A conta vive no Google Drive da pessoa (ADR-001.A).** Estava decidido desde o início e não existia; eu tinha registrado errado como dependência do Cloudflare. **Feito:** `domain/copia-de-seguranca.ts` (o que entra: só os registros de quem é dono — num aparelho compartilhado, o trabalho de outra pessoa não vai para o meu Drive; sessão, contas do aparelho e preferências nunca entram; restaurar não apaga o que é de outra pessoa; cópia de outra conta é recusada) · `infrastructure/drive/drive-appdata.ts` (escopo `drive.appdata`, um arquivo na pasta oculta, token só em memória) · `conta-no-drive.service.ts` (ao entrar, a conta vem do Drive; cada mudança volta sozinha; uma operação por vez — sem isso a conta ficava partida em dois arquivos). No celular: "Só neste aparelho", com baixar e restaurar a conta como arquivo. Aviso no topo até a pessoa conectar; aba "Seus dados" nas Configurações. Guarda: `conta-no-drive.test.ts`. **Falta do seu lado:** ativar a Google Drive API e o escopo `drive.appdata` no mesmo cliente OAuth (passo a passo no `.env.example`) | ✅ |
+| AUD-21 | 🔴 **Errar tudo rendia 70%.** `a.accuracyScore || 70` — zero é falso em JS —, e ainda nota 750, afinação 80, entonação 85 e 50 de XP de reserva em cada sessão. O domínio subia, e o perfil (AUD-7) mostraria. **Feito:** médias só do que foi medido; dimensão sem medição é `null`; XP é a soma real (o XP de esforço de tentativa errada e medida, 25%, é regra e ficou). A "acurácia" do histórico de prática lia a afinação; agora mostra acertos de tentativas. Guarda: `pratica-sem-reserva.test.ts` | ✅ |
 
 ---

@@ -306,7 +306,8 @@ export const PracticeProfileScreen: React.FC = () => {
                     {result.summaryScore}/1000
                   </span>
                   <span className="text-[10px] font-mono text-stone-400 block">
-                    Acurácia: {result.pitchAccuracy}%
+                    {/* Era "Acurácia: {pitchAccuracy}%" — afinação, e com 80 de reserva quando nada soou (AUD-21). */}
+                    Acertos: {result.notesCorrect} de {result.notesAttempted}
                   </span>
                 </div>
                 <ArrowRight className="w-4 h-4 text-stone-400" />

@@ -12,6 +12,7 @@ import {
   Flame,
   Shield,
   GraduationCap,
+  Bell,
 } from 'lucide-react';
 
 export interface ProfileMenuProps {
@@ -21,6 +22,8 @@ export interface ProfileMenuProps {
   currentUser: User | null;
   onLogout: () => void;
   onSwitchRole?: (role: UserRole) => void;
+  /** Avisos ainda não vistos (AUD-10). */
+  naoLidas?: number;
 }
 
 export const ProfileMenu: React.FC<ProfileMenuProps> = ({
@@ -30,6 +33,7 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
   currentUser,
   onLogout,
   onSwitchRole,
+  naoLidas = 0,
 }) => {
   const { navigate } = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -53,7 +57,6 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
     navigate(path);
   };
 
-  const isProfessor = currentUser?.primaryRole === UserRole.PROFESSOR || currentUser?.primaryRole === UserRole.ADMIN;
   const isAdmin = currentUser?.primaryRole === UserRole.ADMIN;
 
   return (
@@ -142,17 +145,29 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({
           <span className="font-medium">Portfólio de Evidências & Certificados</span>
         </button>
 
-        {isProfessor && (
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => handleNavigate('/rooms')}
-            className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors"
-          >
-            <BookOpen className="w-4 h-4 text-anil-800" />
-            <span className="font-medium text-red-900">Salas de Aula & Cátedras</span>
-          </button>
-        )}
+        {/* AUD-9 — as salas são de todo mundo agora (molde do Skool), e não só de quem tem papel de professor. */}
+        <button
+          type="button"
+          role="menuitem"
+          onClick={() => handleNavigate('/rooms')}
+          className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors"
+        >
+          <BookOpen className="w-4 h-4 text-stone-400" />
+          <span>Salas</span>
+        </button>
+
+        <button
+          type="button"
+          role="menuitem"
+          onClick={() => handleNavigate('/notifications')}
+          className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors"
+        >
+          <Bell className="w-4 h-4 text-stone-400" />
+          <span>Notificações</span>
+          {naoLidas > 0 && (
+            <span className="ml-auto rounded-full bg-anil-800 px-1.5 text-[10px] font-semibold text-white">{naoLidas}</span>
+          )}
+        </button>
 
         {isAdmin && (
           <button

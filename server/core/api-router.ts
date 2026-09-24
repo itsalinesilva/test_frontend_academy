@@ -13,6 +13,7 @@ import { parseAdminAllowlist, resolveAdminGrant, grantHasCapability, AdminGrant 
 import { ChainedAuditLog } from './audit-log';
 import { ArmazemDeRelatos, Relato, chaveDoRelato, problemasDoRelato } from './relatos';
 import { ArmazemKV, Pessoa, Resultado, ServicoDeSalas } from './salas';
+import { ServicoDaComunidade } from './comunidade';
 
 export interface ServerEnv {
   GOOGLE_OAUTH_CLIENT_ID?: string;
@@ -24,6 +25,8 @@ export interface ServerEnv {
   RELATOS?: ArmazemDeRelatos;
   /** KV da Cloudflare para as salas (AUD-9, ADR-003). Sem ele, a API diz que as salas não estão ligadas. */
   SALAS?: ArmazemKV;
+  /** KV da Cloudflare para fórum, eventos e pessoas (P-1..P-3, ADR-003). */
+  COMUNIDADE?: ArmazemKV;
 }
 
 export interface RequestContext {
@@ -302,6 +305,101 @@ export async function handleApiRequest(
   }
 
   // --------------------------------------------------------------- SALAS ---
+  // ---------------------------------------------------------- COMUNIDADE ---
+  if (
+    path.startsWith('/api/v1/forum/') ||
+    path === '/api/v1/eventos' ||
+    path.startsWith('/api/v1/eventos/') ||
+    path.startsWith('/api/v1/founder/forum/')
+  ) {
+    if (!env.COMUNIDADE) {
+      return fail('COMUNIDADE_NAO_CONFIGURADA', 'A comunidade ainda não está ligada neste servidor.', 503, env);
+    }
+    const authed = await authenticate(request, env);
+    const quem: Pessoa | null = authed
+      ? { sub: authed.session.sub, nome: authed.session.name || authed.session.email.split('@')[0] }
+      : null;
+    const c = new ServicoDaComunidade(env.COMUNIDADE);
+    const metodo = request.method;
+    let corpo: unknown = null;
+    if (metodo === 'POST') {
+      try {
+        corpo = await request.json();
+      } catch {
+        corpo = null;
+      }
+    }
+    const responder = (r: Resultado<unknown>) =>
+      r.ok ? json({ data: r.valor }, r.status ?? 200, env) : fail(r.codigo, r.mensagem, r.status, env);
+    const exigir = (): Response | null =>
+      quem ? null : fail('UNAUTHENTICATED', 'Entre na sua conta para participar da comunidade.', 401, env);
+    const p = path.split('/').filter(Boolean).slice(2).map(decodeURIComponent);
+
+    /** Moderação: só a administração que o SERVIDOR reconhece — nunca um papel dito pelo cliente. */
+    if (p[0] === 'founder') {
+      if (!authed) return fail('UNAUTHENTICATED', 'Autentique-se.', 401, env);
+      if (!authed.grant.isAdmin) return fail('FORBIDDEN', 'Só a administração modera.', 403, env);
+      const [, , recurso, id, acao, alvo] = p;
+      if (recurso === 'topicos' && id && metodo === 'POST' && ['ocultar', 'mostrar', 'fixar', 'trancar', 'destrancar'].includes(acao ?? '')) {
+        await audit.record({
+          action: `moderation.forum.${acao}`,
+          actorSubject: authed.session.sub,
+          actorEmail: authed.session.email,
+          severity: 'WARNING',
+          details: `Tópico ${id}: ${acao}.`,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+        return responder(await c.moderarTopico(id, acao as 'ocultar'));
+      }
+      if (recurso === 'topicos' && id && acao && alvo && metodo === 'POST' && ['ocultar', 'mostrar'].includes(alvo)) {
+        await audit.record({
+          action: `moderation.forum.resposta.${alvo}`,
+          actorSubject: authed.session.sub,
+          actorEmail: authed.session.email,
+          severity: 'WARNING',
+          details: `Resposta ${acao} do tópico ${id}: ${alvo}.`,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+        return responder(await c.moderarResposta(id, acao, alvo === 'ocultar'));
+      }
+      return fail('NOT_FOUND', 'Rota de moderação desconhecida.', 404, env);
+    }
+
+    if (p[0] === 'forum' && p[1] === 'topicos') {
+      const [, , id, sub] = p;
+      if (!id && metodo === 'GET') return responder(await c.topicos(quem, url.searchParams.get('categoria') ?? undefined));
+      if (!id && metodo === 'POST') return exigir() ?? responder(await c.abrir(quem!, corpo));
+      if (id && !sub && metodo === 'GET') return responder(await c.topico(quem, id));
+      if (id && sub === 'respostas' && metodo === 'POST') return exigir() ?? responder(await c.responder(quem!, id, corpo));
+    }
+    if (p[0] === 'eventos') {
+      const [, id, acao] = p;
+      if (!id && metodo === 'GET') return responder(await c.eventos(quem));
+      if (!id && metodo === 'POST') return exigir() ?? responder(await c.criarEvento(quem!, corpo));
+      if (id && acao === 'inscrever' && metodo === 'POST') return exigir() ?? responder(await c.inscrever(quem!, id));
+      if (id && acao === 'cancelar' && metodo === 'POST') {
+        return exigir() ?? responder(await c.cancelarEvento(quem!, id, authed!.grant.isAdmin));
+      }
+    }
+    return fail('NOT_FOUND', 'Rota da comunidade desconhecida.', 404, env);
+  }
+
+  if (path === '/api/v1/salas-novidades' && request.method === 'GET') {
+    if (!env.SALAS) return fail('SALAS_NAO_CONFIGURADAS', 'As salas ainda não estão ligadas neste servidor.', 503, env);
+    const authed = await authenticate(request, env);
+    if (!authed) return fail('UNAUTHENTICATED', 'Entre na sua conta para ver os avisos.', 401, env);
+    const pedido = url.searchParams.get('desde') ?? '';
+    /** Sem marco, os últimos trinta dias: o bastante para quem volta de férias, sem varrer a história. */
+    const desde = Number.isNaN(Date.parse(pedido)) ? new Date(Date.now() - 30 * 864e5).toISOString() : new Date(pedido).toISOString();
+    const r = await new ServicoDeSalas(env.SALAS).novidades(
+      { sub: authed.session.sub, nome: authed.session.name || authed.session.email.split('@')[0] },
+      desde
+    );
+    return r.ok ? json({ data: r.valor }, 200, env) : fail(r.codigo, r.mensagem, r.status, env);
+  }
+
   if (path === '/api/v1/salas' || path.startsWith('/api/v1/salas/')) {
     if (!env.SALAS) {
       return fail('SALAS_NAO_CONFIGURADAS', 'As salas ainda não estão ligadas neste servidor.', 503, env);
