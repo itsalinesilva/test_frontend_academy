@@ -15,6 +15,8 @@ import { ArmazemDeRelatos, Relato, chaveDoRelato, problemasDoRelato } from './re
 import { ArmazemKV, Pessoa, Resultado, ServicoDeSalas } from './salas';
 import { ServicoDaComunidade } from './comunidade';
 import { ServicoDePessoas } from './pessoas';
+import { ServicoDeDenuncias } from './denuncias';
+import { contaSuspensa, dentroDoLimite, lerConta, listarContas, registrarAcesso, suspender } from './contas';
 
 export interface ServerEnv {
   GOOGLE_OAUTH_CLIENT_ID?: string;
@@ -95,6 +97,8 @@ async function authenticate(
   if (!token) return null;
   try {
     const session = await verifySession(token, env.SESSION_SIGNING_SECRET || '');
+    /** P-5 — suspender vale em TODA rota: a sessão assinada continua válida, mas a conta não. */
+    if (await contaSuspensa(env.COMUNIDADE, session.sub)) return null;
     const grant = resolveAdminGrant(session, parseAdminAllowlist(env.ADMIN_ALLOWLIST));
     return { session, grant };
   } catch {
@@ -147,6 +151,23 @@ export async function handleApiRequest(
         env.GOOGLE_OAUTH_CLIENT_ID as string,
         body.nonce
       );
+
+      if (await contaSuspensa(env.COMUNIDADE, identity.googleSubject)) {
+        await audit.record({
+          action: 'auth.session.suspended',
+          actorSubject: identity.googleSubject,
+          actorEmail: identity.email,
+          severity: 'SECURITY',
+          details: `Entrada recusada: a conta '${identity.email}' está suspensa.`,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+        return fail('CONTA_SUSPENSA', 'Esta conta está suspensa. Escreva para o suporte.', 403, env);
+      }
+      /** P-5 — o registro da conta nasce do login: automático, nunca cadastro manual (ADR-003). */
+      if (env.COMUNIDADE) {
+        await registrarAcesso(env.COMUNIDADE, { sub: identity.googleSubject, email: identity.email, nome: identity.name || '' });
+      }
 
       const grant = resolveAdminGrant(identity, parseAdminAllowlist(env.ADMIN_ALLOWLIST));
       const { token, claims } = await issueSession(
@@ -306,6 +327,103 @@ export async function handleApiRequest(
   }
 
   // --------------------------------------------------------------- SALAS ---
+  // -------------------------------------------------------------- LIMITE ---
+  /**
+   * P-15 — escrita tem limite: 30 por minuto por pessoa em cada área. Sem
+   * isso, um laço mal escrito (ou de propósito) enchia o fórum e as salas.
+   */
+  if (['POST', 'PATCH', 'DELETE'].includes(request.method) && env.COMUNIDADE) {
+    const area = path.split('/')[3] ?? '';
+    if (['salas', 'forum', 'eventos', 'pessoas', 'relatos', 'denuncias'].includes(area)) {
+      const quem = await authenticate(request, env);
+      if (quem && !(await dentroDoLimite(env.COMUNIDADE, `${quem.session.sub}:${area}`, 30, 60))) {
+        return fail('LIMITE_EXCEDIDO', 'Muitas ações em pouco tempo. Espere um minuto e tente de novo.', 429, env);
+      }
+    }
+  }
+
+  // ----------------------------------------------------------- DENÚNCIAS ---
+  if (path === '/api/v1/denuncias' || path.startsWith('/api/v1/founder/denuncias')) {
+    if (!env.COMUNIDADE) return fail('COMUNIDADE_NAO_CONFIGURADA', 'A comunidade ainda não está ligada neste servidor.', 503, env);
+    const authed = await authenticate(request, env);
+    if (!authed) return fail('UNAUTHENTICATED', 'Entre na sua conta para denunciar.', 401, env);
+    const d = new ServicoDeDenuncias(env.COMUNIDADE, env.SALAS);
+    let corpo: unknown = null;
+    if (request.method === 'POST') {
+      try {
+        corpo = await request.json();
+      } catch {
+        corpo = null;
+      }
+    }
+    const responder = (r: Resultado<unknown>) =>
+      r.ok ? json({ data: r.valor }, r.status ?? 200, env) : fail(r.codigo, r.mensagem, r.status, env);
+    if (path === '/api/v1/denuncias' && request.method === 'POST') {
+      return responder(
+        await d.denunciar({ sub: authed.session.sub, nome: authed.session.name || authed.session.email.split('@')[0] }, corpo)
+      );
+    }
+    if (!authed.grant.isAdmin) return fail('FORBIDDEN', 'Só a administração lê a fila de denúncias.', 403, env);
+    const [, , , , id, acao] = path.split('/').filter(Boolean).map(decodeURIComponent);
+    if (!id && request.method === 'GET') return responder(await d.fila(url.searchParams.get('status') ?? 'aberta'));
+    if (id && (acao === 'ocultar' || acao === 'descartar') && request.method === 'POST') {
+      const r = await d.decidir(authed.session.email, id, acao);
+      if (r.ok) {
+        await audit.record({
+          action: `moderation.report.${acao}`,
+          actorSubject: authed.session.sub,
+          actorEmail: authed.session.email,
+          severity: 'WARNING',
+          details: `Denúncia sobre ${r.valor.alvo.tipo} ${r.valor.alvo.id}: ${acao} (${r.valor.decididas} denúncia(s)).`,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+      }
+      return responder(r);
+    }
+    return fail('NOT_FOUND', 'Rota de denúncias desconhecida.', 404, env);
+  }
+
+  // --------------------------------------------------------------- CONTAS ---
+  if (path === '/api/v1/founder/contas' || path.startsWith('/api/v1/founder/contas/')) {
+    const authed = await authenticate(request, env);
+    if (!authed) return fail('UNAUTHENTICATED', 'Autentique-se.', 401, env);
+    if (!authed.grant.isAdmin) return fail('FORBIDDEN', 'Só a administração vê as contas.', 403, env);
+    if (!env.COMUNIDADE) return fail('COMUNIDADE_NAO_CONFIGURADA', 'O registro de contas ainda não está ligado.', 503, env);
+    const [, , , , alvo, acao] = path.split('/').filter(Boolean).map(decodeURIComponent);
+    if (!alvo && request.method === 'GET') {
+      const r = await listarContas(env.COMUNIDADE, url.searchParams.get('q') ?? '');
+      return r.ok ? json({ data: r.valor }, 200, env) : fail(r.codigo, r.mensagem, r.status, env);
+    }
+    if (alvo && (acao === 'suspender' || acao === 'restaurar') && request.method === 'POST') {
+      if (alvo === authed.session.sub) return fail('A_SI_MESMA', 'A administração não suspende a própria conta.', 409, env);
+      let corpo: { motivo?: unknown } = {};
+      try {
+        corpo = (await request.json()) as { motivo?: unknown };
+      } catch {
+        corpo = {};
+      }
+      /** Conta que está na allowlist de admin não é suspensa por outra admin: a allowlist é decisão de ambiente. */
+      const alvoConta = await lerConta(env.COMUNIDADE, alvo);
+      if (acao === 'suspender' && alvoConta && parseAdminAllowlist(env.ADMIN_ALLOWLIST).includes(alvoConta.email.toLowerCase())) {
+        return fail('ADMIN_INTOCAVEL', 'Esta conta é da administração; tire-a da allowlist antes.', 409, env);
+      }
+      const r = await suspender(env.COMUNIDADE, alvo, authed.session.email, corpo.motivo, acao === 'suspender');
+      if (!r.ok) return fail(r.codigo, r.mensagem, r.status, env);
+      await audit.record({
+        action: acao === 'suspender' ? 'admin.account.suspended' : 'admin.account.restored',
+        actorSubject: authed.session.sub,
+        actorEmail: authed.session.email,
+        severity: 'SECURITY',
+        details: `Conta ${r.valor.email} ${acao === 'suspender' ? `suspensa: ${r.valor.suspensa?.motivo}` : 'restaurada'}.`,
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+      });
+      return json({ data: r.valor }, 200, env);
+    }
+    return fail('NOT_FOUND', 'Rota de contas desconhecida.', 404, env);
+  }
+
   // ------------------------------------------------------------- PESSOAS ---
   if (path === '/api/v1/pessoas' || path.startsWith('/api/v1/pessoas/')) {
     if (!env.COMUNIDADE) {

@@ -7,6 +7,7 @@ import { Badge } from '../../components/base/Badge';
 import { Avatar } from '../../components/data-display/Avatar';
 import { ErrorState } from '../../components/feedback/ErrorState';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { BotaoDenunciar } from '../../components/comunidade/BotaoDenunciar';
 import {
   Resposta,
   Topico,
@@ -150,6 +151,8 @@ export const TopicDetailScreen: React.FC = () => {
                 {abertura.corpo}
               </p>
             )}
+            {/* P-4 — quem tem conta denuncia; a própria autora não precisa denunciar o que escreveu. */}
+            {userId && !ehAdmin && <BotaoDenunciar alvo={{ tipo: 'forum-topico', id: topico.id, resumo: topico.titulo }} />}
 
             <p className="border-t border-stone-100 pt-3 text-xs text-stone-500">
               {respostas.length === 0
@@ -194,6 +197,11 @@ export const TopicDetailScreen: React.FC = () => {
                   <p className="whitespace-pre-line pl-8 text-xs leading-relaxed text-stone-700">
                     {r.corpo}
                   </p>
+                  {userId && !ehAdmin && (
+                    <div className="pl-8">
+                      <BotaoDenunciar alvo={{ tipo: 'forum-resposta', id: r.id, topicoId: topico.id, resumo: r.corpo.slice(0, 120) }} />
+                    </div>
+                  )}
                 </Card>
               ))}
             </div>

@@ -17,6 +17,7 @@ import {
   salasService,
 } from '../../../services/application/salas.service';
 import { ArrowLeft, Heart, MessageSquare, Pin, Trash2 } from 'lucide-react';
+import { BotaoDenunciar } from '../../components/comunidade/BotaoDenunciar';
 
 /**
  * A sala (AUD-9), no molde do Skool: Comunidade · Sala de aula · Agenda ·
@@ -298,6 +299,9 @@ const Comunidade: React.FC<{
               </button>
             )}
           </div>
+            {ativo && p.autor.sub !== meuSub && (
+              <BotaoDenunciar alvo={{ tipo: 'sala-post', id: p.id, salaId: sobre.sala.id, resumo: p.titulo }} />
+            )}
           {aberto === p.id && <Comentarios slug={slug} postId={p.id} ativo={ativo} aoComentar={ler} />}
         </Card>
       ))}

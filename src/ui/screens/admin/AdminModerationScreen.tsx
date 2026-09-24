@@ -1,92 +1,130 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
-import { ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Badge } from '../../components/base/Badge';
+import { apiClient } from '../../../infrastructure/api/api-client';
+import { ArrowLeft } from 'lucide-react';
 
 /**
- * A fila de moderação.
+ * A fila de moderação (P-4 · AUD-14).
  *
- * O QUE ESTA TELA DIZIA, E POR QUE ERA GRAVE
- * ------------------------------------------
- * "Comunidade em Plena Conformidade". "Não constam denúncias pendentes ou
- * violações de conduta registradas no sistema nas últimas 48 horas."
- *
- * Nada disso tinha sido verificado. Não havia — e não há — mecanismo de
- * denúncia: nenhum botão de reportar, nenhuma fila, nenhuma consulta. A tela
- * afirmava um estado apurado que ninguém apurou, e o fazia justamente onde a
- * fundadora olharia para decidir se precisa agir.
- *
- * É a mesma família do ranking com Bach em primeiro: não é tela incompleta, é
- * afirmação falsa. E aqui a consequência é pior, porque "está tudo em ordem" é
- * o tipo de informação sobre a qual se decide **não** fazer nada.
- *
- * O QUE ELA DIZ AGORA
- * -------------------
- * Que a moderação ainda não existe, e o que falta para existir. Ausência
- * declarada é informação; ausência disfarçada de conformidade é mentira.
+ * Esta tela já afirmou "Comunidade em Plena Conformidade" sem ninguém ter
+ * conferido nada, e depois, com honestidade, que a moderação não existia —
+ * não havia como denunciar. Agora há: tópico, resposta do fórum e post de
+ * sala têm "Denunciar", e a fila chega aqui agrupada por alvo (dez denúncias
+ * do mesmo post são um item, com a contagem). Ocultar esconde o conteúdo para
+ * todo mundo menos quem o escreveu; descartar fecha sem mexer. As duas
+ * decisões ficam na denúncia e na trilha de auditoria.
  */
+interface Item {
+  id: string;
+  alvo: { tipo: 'forum-topico' | 'forum-resposta' | 'sala-post'; id: string; topicoId?: string; salaId?: string; resumo: string };
+  motivo: string;
+  autor: { nome: string };
+  em: string;
+  vezes: number;
+  status: string;
+  decisao?: { por: string; em: string };
+}
+
+const TIPO = { 'forum-topico': 'Tópico do fórum', 'forum-resposta': 'Resposta do fórum', 'sala-post': 'Post de sala' } as const;
+
 export const AdminModerationScreen: React.FC = () => {
   const { navigate } = useRouter();
+  const [aba, setAba] = useState<'aberta' | 'ocultada' | 'descartada'>('aberta');
+  const [itens, setItens] = useState<Item[] | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+
+  const carregar = useCallback(() => {
+    setItens(null);
+    apiClient
+      .get<Item[]>(`/founder/denuncias?status=${aba}`)
+      .then((x) => {
+        setItens(x);
+        setErro(null);
+      })
+      .catch((e) => {
+        setErro(e instanceof Error ? e.message : 'A fila não chegou.');
+        setItens([]);
+      });
+  }, [aba]);
+  useEffect(carregar, [carregar]);
+
+  const decidir = (id: string, acao: 'ocultar' | 'descartar') =>
+    void apiClient
+      .post(`/founder/denuncias/${encodeURIComponent(id)}/${acao}`, {})
+      .then(carregar)
+      .catch((e) => setErro(e instanceof Error ? e.message : 'Não foi possível.'));
+
+  const abrir = (i: Item) =>
+    navigate(i.alvo.tipo === 'sala-post' ? '/rooms' : `/community/topic/${i.alvo.topicoId ?? i.alvo.id}`);
 
   return (
     <ScreenContainer
       id="admin-moderation"
       title="Moderação"
-      subtitle="Supervisão de interações da comunidade e proteção ao público infantil."
-      badgeLabel="Não implementada"
+      subtitle="As denúncias da comunidade — fórum e salas —, agrupadas pelo que foi denunciado."
+      badgeLabel={itens && aba === 'aberta' ? `${itens.length} em aberto` : 'Moderação'}
       badgeVariant="neutral"
-      primaryAction={{
-        label: 'Voltar ao console',
-        icon: ArrowLeft,
-        onClick: () => navigate('/founder'),
-      }}
+      primaryAction={{ label: 'Voltar ao console', icon: ArrowLeft, onClick: () => navigate('/founder') }}
+      state={itens === null ? 'loading' : 'populated'}
     >
-      <Card variant="default" padding="lg" className="space-y-4">
-        <div className="flex items-start gap-3">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden="true" />
-          <div className="space-y-2">
-            <h3 className="font-serif text-lg font-bold text-stone-900">
-              A moderação ainda não existe
-            </h3>
-            <p className="text-sm leading-relaxed text-stone-600">
-              Esta tela não tem fila porque não há de onde uma fila vir: a plataforma ainda não
-              oferece nenhuma forma de denunciar uma publicação, e portanto nenhuma denúncia foi
-              registrada.
-            </p>
-            <p className="text-sm leading-relaxed text-stone-600">
-              Enquanto isso for verdade, esta tela não vai dizer que a comunidade está em
-              conformidade — <strong>ninguém conferiu</strong>, e afirmar o contrário seria o
-              tipo de informação sobre a qual se decide não agir.
-            </p>
-          </div>
+      <div className="space-y-4">
+        <div role="tablist" aria-label="Situação das denúncias" className="flex gap-1 border-b border-stone-200">
+          {(['aberta', 'ocultada', 'descartada'] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              role="tab"
+              aria-selected={aba === s}
+              onClick={() => setAba(s)}
+              className={`-mb-px border-b-2 px-3 py-2 text-sm ${aba === s ? 'border-anil-800 font-semibold' : 'border-transparent text-stone-600'}`}
+            >
+              {{ aberta: 'Em aberto', ocultada: 'Ocultadas', descartada: 'Descartadas' }[s]}
+            </button>
+          ))}
         </div>
 
-        <div className="border-t border-stone-200 pt-4">
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-wider text-stone-500">
-            O que falta para esta tela funcionar
+        {erro && <p role="alert" className="text-xs text-red-800">{erro}</p>}
+        {itens && itens.length === 0 && !erro && (
+          <p className="text-sm text-stone-600">
+            {aba === 'aberta' ? 'Nenhuma denúncia esperando decisão.' : 'Nada aqui ainda.'}
           </p>
-          <ol className="mt-2 space-y-1.5 text-sm text-stone-600">
-            <li>1. Botão de denunciar na publicação e na resposta do fórum</li>
-            <li>2. Registro da denúncia, com autor, motivo e alvo</li>
-            <li>3. Fila aqui, com as ações de manter, ocultar e advertir</li>
-            <li>4. Trilha de auditoria de cada decisão de moderação</li>
-          </ol>
-          <p className="mt-3 text-xs text-stone-500">
-            Registrado em <code className="font-mono">CLAUDE_TODO.md</code>, fase M.
-          </p>
-        </div>
+        )}
 
-        <div className="border-t border-stone-200 pt-4">
-          <button
-            type="button"
-            onClick={() => navigate('/community')}
-            className="text-sm font-medium text-anil-700 underline-offset-2 hover:underline"
-          >
-            Ver a Comunidade
-          </button>
-        </div>
-      </Card>
+        {(itens ?? []).map((i) => (
+          <Card key={i.id} variant="default" padding="md" className="space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="flex items-center gap-2 text-xs">
+                <Badge variant="neutral" size="sm">{TIPO[i.alvo.tipo]}</Badge>
+                <strong className="text-stone-900">{i.motivo}</strong>
+              </span>
+              <span className="font-mono text-[11px] text-stone-500">
+                {i.vezes} {i.vezes === 1 ? 'denúncia' : 'denúncias'} · primeira em {new Date(i.em).toLocaleString('pt-BR')}
+              </span>
+            </div>
+            <p className="text-sm text-stone-800">"{i.alvo.resumo}"</p>
+            <div className="flex flex-wrap gap-3 text-xs">
+              <button type="button" onClick={() => abrir(i)} className="text-anil-700 underline">
+                Ver no lugar
+              </button>
+              {aba === 'aberta' ? (
+                <>
+                  <button type="button" onClick={() => decidir(i.id, 'ocultar')} className="font-semibold text-red-700">
+                    Ocultar
+                  </button>
+                  <button type="button" onClick={() => decidir(i.id, 'descartar')} className="text-stone-700">
+                    Descartar
+                  </button>
+                </>
+              ) : (
+                i.decisao && <span className="text-stone-500">Decidido por {i.decisao.por} em {new Date(i.decisao.em).toLocaleString('pt-BR')}</span>
+              )}
+            </div>
+          </Card>
+        ))}
+      </div>
     </ScreenContainer>
   );
 };

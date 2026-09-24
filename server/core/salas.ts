@@ -18,7 +18,8 @@
  */
 
 export interface ArmazemKV {
-  put(chave: string, valor: string): Promise<void>;
+  /** `expirationTtl` (segundos) é da Cloudflare; o KV em memória o ignora. */
+  put(chave: string, valor: string, opcoes?: { expirationTtl?: number }): Promise<void>;
   get(chave: string): Promise<string | null>;
   delete(chave: string): Promise<void>;
   list(opcoes: { prefix: string; limit?: number; cursor?: string }): Promise<{
@@ -66,6 +67,8 @@ export interface Post {
   corpo: string;
   fixado: boolean;
   em: string;
+  /** Oculto pela moderação da plataforma (P-4): some para todos, menos para quem escreveu. */
+  oculto?: boolean;
 }
 
 export interface Comentario {
@@ -360,7 +363,8 @@ export class ServicoDeSalas {
     if (!sala) return falha(404, 'SALA_NAO_EXISTE', 'Esta sala não existe.');
     if (!(await this.podeLer(sala, quem))) return falha(403, 'SALA_PRIVADA', 'O que se conversa nesta sala é só de quem está nela.');
     const posts = (await Promise.all((await todasAsChaves(this.kv, K.posts(sala.id))).map((k) => lerJson<Post>(this.kv, k))))
-      .filter((p): p is Post => p !== null);
+      .filter((p): p is Post => p !== null)
+      .filter((p) => !p.oculto || p.autor.sub === quem?.sub);
     const curtidas = await todasAsChaves(this.kv, K.curtidas(sala.id));
     const comentarios = await todasAsChaves(this.kv, `sala:${sala.id}:com:`);
     return {
@@ -409,6 +413,15 @@ export class ServicoDeSalas {
       await this.kv.delete(k);
     }
     return { ok: true, valor: null };
+  }
+
+  /** Moderação da PLATAFORMA (fila de denúncias): quem chama já passou pela checagem de admin. */
+  async moderarPost(salaId: string, postId: string, oculto: boolean): Promise<Resultado<Post>> {
+    const post = await lerJson<Post>(this.kv, K.post(salaId, postId));
+    if (!post) return falha(404, 'POST_NAO_EXISTE', 'Este post não existe.');
+    const novo = { ...post, oculto };
+    await this.kv.put(K.post(salaId, postId), JSON.stringify(novo));
+    return { ok: true, valor: novo };
   }
 
   async fixar(quem: Pessoa, idOuSlug: string, postId: string): Promise<Resultado<Post>> {

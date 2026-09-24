@@ -4,7 +4,7 @@ import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
-import { userRepository } from '../../../repositories/user.repository';
+import { apiClient } from '../../../infrastructure/api/api-client';
 import { salasService } from '../../../services/application/salas.service';
 import { auditRepository } from '../../../repositories/audit.repository';
 import {
@@ -48,7 +48,8 @@ export const AdminDashboardScreen: React.FC = () => {
   useEffect(() => {
     let vivo = true;
     Promise.all([
-      userRepository.listAll(),
+      /** P-5 — as contas do servidor, e não as deste navegador. */
+      apiClient.get<unknown[]>('/founder/contas'),
       /** As salas vêm do servidor (AUD-9): sem ele, o número some — não vira zero. */
       salasService.diretorio(),
       auditRepository.listRecent(1000),
@@ -80,10 +81,10 @@ export const AdminDashboardScreen: React.FC = () => {
     {
       id: 'users',
       title: 'Contas',
-      desc: 'As contas que entraram por este navegador, com papel e data. Papel administrativo é concedido pelo servidor, não por aqui.',
+      desc: 'Quem entrou na plataforma, registrado pelo servidor a cada login. Suspender e restaurar, com motivo na auditoria.',
       icon: Users,
       link: '/founder/users',
-      badge: 'Consulta',
+      badge: 'Gestão',
     },
     {
       id: 'engines',
@@ -136,10 +137,10 @@ export const AdminDashboardScreen: React.FC = () => {
     {
       id: 'moderation',
       title: 'Moderação',
-      desc: 'Ainda não existe: não há como denunciar uma publicação. Os relatos de problema em exercícios chegam em Lições e exercícios.',
+      desc: 'As denúncias do fórum e das salas, agrupadas pelo que foi denunciado: ocultar ou descartar, com auditoria.',
       icon: Flag,
       link: '/founder/moderation',
-      badge: 'Não implementada',
+      badge: 'Denúncias',
     },
     {
       id: 'credentials',
