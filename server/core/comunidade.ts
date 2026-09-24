@@ -164,13 +164,13 @@ export class ServicoDaComunidade {
 
   // ----------------------------------------------------------- eventos ---
 
-  async eventos(quem: Pessoa | null): Promise<Resultado<Array<Evento & { inscritos: number; inscrito: boolean }>>> {
+  async eventos(quem: Pessoa | null): Promise<Resultado<Array<Evento & { inscritos: number; inscrito: boolean; meu: boolean }>>> {
     const es = (await Promise.all((await todasAsChaves(this.kv, K.eventos)).map((k) => lerJson<Evento>(this.kv, k))))
       .filter((e): e is Evento => e !== null);
     const com = await Promise.all(
       es.map(async (e) => {
         const inscricoes = await todasAsChaves(this.kv, K.inscricoes(e.id));
-        return { ...e, inscritos: inscricoes.length, inscrito: !!quem && inscricoes.includes(K.inscricao(e.id, quem.sub)) };
+        return { ...e, inscritos: inscricoes.length, inscrito: !!quem && inscricoes.includes(K.inscricao(e.id, quem.sub)), meu: !!quem && e.anfitriao.sub === quem.sub };
       })
     );
     return { ok: true, valor: com.sort((a, b) => a.inicio.localeCompare(b.inicio)) };
@@ -204,21 +204,28 @@ export class ServicoDaComunidade {
     return { ok: true, valor: e, status: 201 };
   }
 
-  /** Inscrever alterna. Lotado recusa; cancelado recusa; o anfitrião não precisa se inscrever. */
+  /**
+   * Inscrever NÃO alterna: clicar duas vezes enquanto a resposta demora
+   * acontece de verdade, e a segunda vez não pode desfazer a primeira nem
+   * contar duas vagas. Sair é outra ação.
+   */
   async inscrever(quem: Pessoa, eventoId: string): Promise<Resultado<{ inscrito: boolean }>> {
     const e = await lerJson<Evento>(this.kv, K.evento(eventoId));
     if (!e) return falha(404, 'EVENTO_NAO_EXISTE', 'Este evento não existe.');
     if (e.cancelado) return falha(409, 'EVENTO_CANCELADO', 'Este evento foi cancelado.');
     const chave = K.inscricao(eventoId, quem.sub);
-    if (await this.kv.get(chave)) {
-      await this.kv.delete(chave);
-      return { ok: true, valor: { inscrito: false } };
-    }
+    if (await this.kv.get(chave)) return { ok: true, valor: { inscrito: true } };
     if (e.vagas && (await todasAsChaves(this.kv, K.inscricoes(eventoId))).length >= e.vagas) {
       return falha(409, 'EVENTO_LOTADO', 'As vagas deste evento acabaram.');
     }
     await this.kv.put(chave, JSON.stringify({ ...quem, em: this.agora().toISOString() }));
     return { ok: true, valor: { inscrito: true } };
+  }
+
+  async desinscrever(quem: Pessoa, eventoId: string): Promise<Resultado<{ inscrito: boolean }>> {
+    if (!(await lerJson<Evento>(this.kv, K.evento(eventoId)))) return falha(404, 'EVENTO_NAO_EXISTE', 'Este evento não existe.');
+    await this.kv.delete(K.inscricao(eventoId, quem.sub));
+    return { ok: true, valor: { inscrito: false } };
   }
 
   async cancelarEvento(quem: Pessoa, eventoId: string, ehAdmin: boolean): Promise<Resultado<Evento>> {

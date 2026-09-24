@@ -853,7 +853,7 @@ Não configurar agora: o projeto não terminou. O que ficará pendente quando fo
 
 | # | Item | Estado |
 |:---|:---|:---:|
-| I-CF-1 | Criar os namespaces KV `RELATOS` e `SALAS` e ligá-los ao projeto Pages (instruções em `.env.example`). Sem eles, relatos e salas respondem "não configurado" — e as telas dizem isso. No `npm run dev` os dois já funcionam, em memória | ⛔ |
+| I-CF-1 | Criar os namespaces KV `RELATOS`, `SALAS` e `COMUNIDADE` e ligá-los ao projeto Pages (instruções em `.env.example`). Sem eles, relatos e salas respondem "não configurado" — e as telas dizem isso. No `npm run dev` os dois já funcionam, em memória | ⛔ |
 | I-CF-2 | Variáveis de produção da assinatura de sessão e da lista de administração no painel do Pages; conferir `/api/v1/admin/verify` com a sessão real | ⛔ |
 | I-CF-3 | ~~Persistência durável para os dados pessoais~~ — **retirado: estava errado.** Dado pessoal vive no Google Drive da própria pessoa (ADR-001.A, AUD-20); o Cloudflare guarda só o que é de várias pessoas (salas, relatos — ADR-003), que é I-CF-1 | ➡ |
 | I-CF-4 | Domínio e subdomínio de admin; cabeçalhos de segurança (`_headers`) validados no ar | ⛔ |
@@ -872,8 +872,8 @@ mesmo caminho (ADR-003: KV no servidor, uma chave por item). O dado PESSOAL cont
 
 | # | Prompt | Item | Estado |
 |:---|:---|:---|:---:|
-| P-1 | P10 · ADR-003 | **Fórum compartilhado.** Tópicos e respostas no KV, com autoria da sessão; categorias; curtir; fórum vinculado a sala. Hoje: `forum.repository` em `localStorage` | ⬜ |
-| P-2 | P10 | **Eventos compartilhados.** Evento criado por uma pessoa aparece para todas; inscrição contada no servidor. Hoje: `community-events.repository` local | ⬜ |
+| P-1 | P10 · ADR-003 | **Fórum compartilhado.** Tópicos e respostas no KV, com autoria da sessão; categorias; curtir; fórum vinculado a sala. Hoje: `forum.repository` em `localStorage` **Feito:** `server/core/comunidade.ts` + `/api/v1/forum/*`; contagem de respostas contada (não guardada); moderação `/api/v1/founder/forum/*` (ocultar, fixar, fechar tópico; ocultar resposta) só para admin do servidor, com trilha de auditoria; o autor ainda vê o que foi ocultado. O convite ao visitante prometia "Clubes do seu Grêmio", que não existem — agora aponta para as Salas. Guardas: `comunidade-servidor.test.ts`, `comunidade-na-tela.test.tsx` (duas pessoas) | ✅ |
+| P-2 | P10 | **Eventos compartilhados.** Evento criado por uma pessoa aparece para todas; inscrição contada no servidor. Hoje: `community-events.repository` local **Feito:** marcar evento (antes não havia como), inscrição no servidor com vagas; inscrever NÃO alterna (clique duplo não desfaz) — sair é `desinscrever`; só anfitrião ou admin cancela; link só http(s) | ✅ |
 | P-3 | P06 · P10 · ADR-003 | **Cartão público de perfil + diretório + busca de pessoas no servidor** (índice automático ao entrar, nunca manual — ADR-003). Conexões (seguir/conectar) no KV. Sem DM, por regra do pacote | ⬜ |
 | P-4 | P10 · P17 | **Denúncia e fila de moderação.** Botão "denunciar" em post de fórum e de sala; fila no console; ações ocultar/manter/advertir com trilha de auditoria. Fecha AUD-14 | ⬜ |
 | P-5 | P17 | **Usuários no console, com ação real no servidor:** lista (do índice de pessoas), suspender/restaurar (o servidor recusa sessão suspensa), papéis/capacidades. Fecha AUD-12 | ⬜ |
@@ -891,6 +891,7 @@ mesmo caminho (ADR-003: KV no servidor, uma chave por item). O dado PESSOAL cont
 | P-17 | COMANDO 06/07/11/14/15/16/18 | Documentos pedidos e inexistentes: `06_CROSS_SYSTEM_INTEGRATION`, `07_KNOWLEDGE_FRAMEWORK`, `07_CONTENT_PROVENANCE`, `11_MUSIC_ENGINE_MATRIX`, `14_SECURITY_AUDIT`, `15_BACKEND_ARCHITECTURE`, `15_API_CONTRACTS`, `16_TEST_ARCHITECTURE`, `18_FINAL_*`. Escrever a partir do código, no fim de cada frente — não antes | ⬜ |
 | P-18 | P05 | Login por e-mail: o pacote pede Google **e** e-mail; a ADR-001.A decidiu só Google (sem senha). Registrar a decisão como vigente — **decisão sua** se quiser reabrir | ⛔ |
 | P-19 | P02 · P17 | Comercial (planos, assinatura, compra): só existe `entitlements` local. **Decisão sua**: modelo de cobrança e meio de pagamento | ⛔ |
+| P-20 | P08 · 76 | **XP de comunidade nunca foi creditado.** `TOPIC_OPENED`, `REPLY_POSTED`, `REPLY_ACCEPTED`, `REVIEW_WRITTEN` existem como constantes e a tabela de economia as dava como ativas; ninguém recebia. Decidir como o XP de uma ação no servidor entra na conta (que vive no Drive) e implementar; resposta aceita como solução ainda não existe no fórum | ⬜ |
 
 **Ordem:** P-1 → P-2 → P-3 → P-4 → P-5 → P-15 (o compartilhado inteiro, com moderação e limite, antes de abrir
 ao público) → P-7 → P-10 → P-8 → P-9 → P-11 → P-12 → P-13 → P-14 → P-6 → P-16 → P-17.

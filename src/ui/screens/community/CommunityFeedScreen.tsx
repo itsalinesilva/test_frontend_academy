@@ -8,8 +8,13 @@ import { Badge } from '../../components/base/Badge';
 import { Avatar } from '../../components/data-display/Avatar';
 import { ErrorState } from '../../components/feedback/ErrorState';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
-import { forumRepository, criarTopico } from '../../../repositories/forum.repository';
-import { ForumTopic, ForumCategory } from '../../../domain/community';
+import { ForumCategory } from '../../../domain/community';
+import {
+  CategoriaDoForum,
+  TopicoNaLista,
+  comunidadeService,
+  motivoDaComunidade,
+} from '../../../services/application/comunidade.service';
 import { MessageSquare, Calendar, Filter, Plus, ArrowRight } from 'lucide-react';
 
 /**
@@ -23,6 +28,9 @@ import { MessageSquare, Calendar, Filter, Plus, ArrowRight } from 'lucide-react'
  * Agora o tópico é gravado com a autoria de quem escreveu, e a contagem de
  * respostas vem das respostas. Fórum sem ninguém é fórum vazio, e é isso que
  * a tela mostra até a primeira pessoa escrever.
+ *
+ * P-1: e é gravado NO SERVIDOR. Antes ficava no navegador de quem escreveu —
+ * a "comunidade" era de uma pessoa só.
  */
 const CATEGORIAS: { valor: ForumCategory | 'todos'; label: string }[] = [
   { valor: 'todos', label: 'Todos os debates' },
@@ -51,9 +59,10 @@ const desdeQuando = (iso: string): string => {
 
 export const CommunityFeedScreen: React.FC = () => {
   const { navigate } = useRouter();
-  const { userId, nome } = useCurrentUser();
+  const { userId } = useCurrentUser();
   const [filtro, setFiltro] = useState<ForumCategory | 'todos'>('todos');
-  const [topicos, setTopicos] = useState<ForumTopic[] | null>(null);
+  const [topicos, setTopicos] = useState<TopicoNaLista[] | null>(null);
+  const [erroDaLista, setErroDaLista] = useState<string | null>(null);
 
   const [escrevendo, setEscrevendo] = useState(false);
   const [titulo, setTitulo] = useState('');
@@ -63,10 +72,16 @@ export const CommunityFeedScreen: React.FC = () => {
   const [enviando, setEnviando] = useState(false);
 
   const carregar = useCallback(() => {
-    forumRepository
-      .listarTopicos(filtro === 'todos' ? undefined : filtro)
-      .then(setTopicos)
-      .catch(() => setTopicos([]));
+    comunidadeService
+      .topicos(filtro === 'todos' ? undefined : (filtro as CategoriaDoForum))
+      .then((t) => {
+        setTopicos(t);
+        setErroDaLista(null);
+      })
+      .catch((e) => {
+        setErroDaLista(motivoDaComunidade(e));
+        setTopicos([]);
+      });
   }, [filtro]);
 
   useEffect(carregar, [carregar]);
@@ -80,21 +95,13 @@ export const CommunityFeedScreen: React.FC = () => {
     setEnviando(true);
     setErro(null);
     try {
-      const { topico, abertura } = criarTopico({
-        titulo,
-        corpo,
-        categoria,
-        authorId: userId,
-        authorName: nome ?? 'Estudante do Conservatório',
-      });
-      await forumRepository.salvarTopico(topico);
-      await forumRepository.salvarResposta(abertura);
+      await comunidadeService.abrir({ titulo, corpo, categoria: categoria as CategoriaDoForum });
       setTitulo('');
       setCorpo('');
       setEscrevendo(false);
       carregar();
-    } catch {
-      setErro('Não foi possível publicar. Tente novamente.');
+    } catch (e) {
+      setErro(motivoDaComunidade(e));
     } finally {
       setEnviando(false);
     }
@@ -134,16 +141,16 @@ export const CommunityFeedScreen: React.FC = () => {
       emptyProps={
         userId
           ? {
-              title: 'Nenhum tópico ainda',
+              title: erroDaLista ? 'Não deu para abrir o fórum' : 'Nenhum tópico ainda',
               description:
-                'A comunidade começa com a primeira pergunta. Escreva uma dúvida de lição ou uma análise de obra.',
+                erroDaLista ?? 'A comunidade começa com a primeira pergunta. Escreva uma dúvida de lição ou uma análise de obra.',
               actionLabel: 'Escrever publicação',
               onAction: () => setEscrevendo(true),
             }
           : {
-              title: 'Nenhum tópico ainda',
+              title: erroDaLista ? 'Não deu para abrir o fórum' : 'Nenhum tópico ainda',
               description:
-                'A Comunidade é o corpo social do Conservatório. Entre para abrir o primeiro tópico.',
+                erroDaLista ?? 'A Comunidade é o corpo social do Conservatório. Entre para abrir o primeiro tópico.',
               actionLabel: 'Entrar',
               onAction: () => navigate('/auth/login'),
             }
@@ -166,9 +173,9 @@ export const CommunityFeedScreen: React.FC = () => {
                   description: 'Com a conta Google, sem senha.',
                 },
                 {
-                  title: 'Participe dos Clubes do seu Grêmio',
-                  description:
-                    'Clubes são criados pelos próprios usuários, dentro da área que estudam.',
+                  /* Prometia "Clubes do seu Grêmio", que não existem. O que existe são as Salas. */
+                  title: 'Entre numa sala — ou crie a sua',
+                  description: 'Salas são comunidades de estudo abertas pelos próprios usuários.',
                 },
               ]}
               primaryLabel="Entrar na Comunidade"
@@ -271,38 +278,41 @@ export const CommunityFeedScreen: React.FC = () => {
           {(topicos ?? []).map((topico) => (
             <Card
               key={topico.id}
-              id={`topic-card-${topico.slug}`}
+              id={`topic-card-${topico.id}`}
               variant="default"
               padding="lg"
               interactive
-              onClick={() => navigate(`/community/topic/${topico.slug}`)}
+              onClick={() => navigate(`/community/topic/${topico.id}`)}
               className="cursor-pointer space-y-3"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Avatar name={topico.authorName} size="sm" />
-                  <span className="text-xs font-semibold text-stone-900">{topico.authorName}</span>
+                  <Avatar name={topico.autor.nome} size="sm" />
+                  <span className="text-xs font-semibold text-stone-900">{topico.autor.nome}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  {topico.tags[0] && (
-                    <Badge variant="neutral" size="sm">
-                      {ROTULO_DA_CATEGORIA[topico.tags[0]] ?? topico.tags[0]}
+                  {topico.fixado && (
+                    <Badge variant="brand" size="sm">
+                      Fixado
                     </Badge>
                   )}
+                  <Badge variant="neutral" size="sm">
+                    {ROTULO_DA_CATEGORIA[topico.categoria] ?? topico.categoria}
+                  </Badge>
                   <span className="font-mono text-xs text-stone-400">
-                    {desdeQuando(topico.createdAt)}
+                    {desdeQuando(topico.ultimaAtividade)}
                   </span>
                 </div>
               </div>
 
-              <h3 className="font-serif text-base font-bold text-stone-900">{topico.title}</h3>
+              <h3 className="font-serif text-base font-bold text-stone-900">{topico.titulo}</h3>
 
               <div className="flex items-center justify-between border-t border-stone-100 pt-2 text-xs text-stone-500">
                 <span className="flex items-center gap-1">
                   <MessageSquare className="h-3.5 w-3.5 text-stone-400" aria-hidden="true" />
-                  {topico.replyCount === 0
+                  {topico.respostas === 0
                     ? 'Sem respostas'
-                    : `${topico.replyCount} resposta${topico.replyCount > 1 ? 's' : ''}`}
+                    : `${topico.respostas} resposta${topico.respostas > 1 ? 's' : ''}`}
                 </span>
 
                 <span className="inline-flex items-center gap-1 font-medium text-anil-800 hover:underline">

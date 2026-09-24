@@ -2,17 +2,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { PersistentAcademyRepository } from '../src/repositories/academy.repository';
 import { PersistentEditorialRepository } from '../src/repositories/editorial.repository';
-import {
-  PersistentCommunityEventsRepository,
-} from '../src/repositories/community-events.repository';
-import { PersistentForumRepository, criarTopico } from '../src/repositories/forum.repository';
 import { PersistentReviewsRepository } from '../src/repositories/reviews.repository';
 import { PersistentAuditRepository } from '../src/repositories/audit.repository';
 import { LocalStorageAdapter } from '../src/infrastructure/storage/local-storage';
 import { MemoryStorageAdapter } from '../src/infrastructure/storage/storage-adapter';
 import { audienciaDaRota } from '../src/ui/navigation/audiencia';
-import { ForumCategory, CommunityEvent, EventType } from '../src/domain/community';
-import { VisibilityScope } from '../src/domain/identity';
 import {
   UserAcademyProgress,
   AcademicCertificateRecord,
@@ -88,23 +82,6 @@ const certificado = (userId: string, nome: string): AcademicCertificateRecord =>
   instructorTitle: 'Curadoria Pedagógica',
   competencies: ['intervalos'],
   institution: 'Conservatório Muscicapa',
-});
-
-const evento = (id: string, vagas?: number): CommunityEvent => ({
-  id,
-  hostId: EDITORA,
-  hostName: 'Conservatório Muscicapa',
-  title: 'Masterclass de leitura à primeira vista',
-  description: 'Encontro ao vivo.',
-  type: EventType.MASTERCLASS,
-  scheduledStartTime: '2026-11-10T22:00:00.000Z',
-  scheduledEndTime: '2026-11-10T23:30:00.000Z',
-  maxAttendees: vagas,
-  attendeeCount: 0,
-  isPublic: true,
-  visibility: VisibilityScope.PUBLIC,
-  status: 'SCHEDULED',
-  createdAt: agora(),
 });
 
 const eventoDeAuditoria = (actorId: string, action: AuditAction): AuditEvent => ({
@@ -313,79 +290,8 @@ describe('aluno e administração — o que cada lado alcança', () => {
   });
 });
 
-// ===========================================================================
-describe('percurso da comunidade — publicar, responder, inscrever-se', () => {
-// ===========================================================================
-  it('abrir um tópico e responder atualiza a contagem, que é contada', async () => {
-    const forum = new PersistentForumRepository(novo());
-    const { topico, abertura } = criarTopico({
-      titulo: 'Quintas paralelas na transição IV–V',
-      corpo: 'No exercício da lição 3, ao mover o soprano para a sensível…',
-      categoria: ForumCategory.HARMONY,
-      authorId: ANA,
-      authorName: 'Ana',
-    });
-
-    await forum.salvarTopico(topico);
-    await forum.salvarResposta(abertura);
-
-    await forum.salvarResposta({
-      ...abertura,
-      id: `${abertura.id}_r2`,
-      authorId: BRUNO,
-      authorName: 'Bruno',
-      contentMarkdown: 'Tente dobrar a terça no acorde de dominante.',
-      createdAt: new Date(Date.now() + 1000).toISOString(),
-    });
-
-    const lido = (await forum.listarTopicos())[0];
-    expect(lido.replyCount, 'a contagem não acompanhou as respostas').toBe(2);
-
-    const mensagens = await forum.respostasDoTopico(topico.id);
-    expect(mensagens).toHaveLength(2);
-    expect(mensagens[0].authorId).toBe(ANA); // a abertura vem primeiro
-  });
-
-  it('inscrever-se num evento é idempotente e a vaga não infla', async () => {
-    /**
-     * Clicar duas vezes acontece de verdade quando a resposta demora. Se a
-     * segunda inscrição contasse, a lotação da sala seria fantasia.
-     */
-    const repo = new PersistentCommunityEventsRepository(novo());
-    await repo.salvar(evento('evt_1'));
-
-    await repo.inscrever('evt_1', ANA);
-    await repo.inscrever('evt_1', ANA);
-
-    expect(await repo.totalDeInscritos('evt_1')).toBe(1);
-    expect(await repo.estaInscrito('evt_1', ANA)).toBe(true);
-    expect(await repo.estaInscrito('evt_1', BRUNO)).toBe(false);
-  });
-
-  it('cancelar a inscrição de Ana não cancela a de Bruno', async () => {
-    const repo = new PersistentCommunityEventsRepository(novo());
-    await repo.salvar(evento('evt_1'));
-    await repo.inscrever('evt_1', ANA);
-    await repo.inscrever('evt_1', BRUNO);
-
-    await repo.cancelarInscricao('evt_1', ANA);
-
-    expect(await repo.totalDeInscritos('evt_1')).toBe(1);
-    expect(await repo.estaInscrito('evt_1', BRUNO)).toBe(true);
-  });
-
-  it('as inscrições de um aluno não incluem as de outro', async () => {
-    const repo = new PersistentCommunityEventsRepository(novo());
-    await repo.salvar(evento('evt_1'));
-    await repo.salvar(evento('evt_2'));
-    await repo.inscrever('evt_1', ANA);
-    await repo.inscrever('evt_2', BRUNO);
-
-    const deAna = await repo.inscricoesDoUsuario(ANA);
-    expect(deAna).toHaveLength(1);
-    expect(deAna[0].eventoId).toBe('evt_1');
-  });
-});
+// O percurso da comunidade (publicar, responder, inscrever-se) mudou de lugar:
+// fórum e eventos vivem no servidor (P-1, P-2) — ver comunidade-servidor.test.ts.
 
 // O percurso de criar sala e encontrá-la mudou de lugar: as salas vivem no
 // servidor (AUD-9), e o percurso com várias pessoas está em salas-servidor.test.ts.

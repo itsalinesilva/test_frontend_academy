@@ -14,6 +14,7 @@ import { ChainedAuditLog } from './audit-log';
 import { ArmazemDeRelatos, Relato, chaveDoRelato, problemasDoRelato } from './relatos';
 import { ArmazemKV, Pessoa, Resultado, ServicoDeSalas } from './salas';
 import { ServicoDaComunidade } from './comunidade';
+import { ServicoDePessoas } from './pessoas';
 
 export interface ServerEnv {
   GOOGLE_OAUTH_CLIENT_ID?: string;
@@ -305,6 +306,38 @@ export async function handleApiRequest(
   }
 
   // --------------------------------------------------------------- SALAS ---
+  // ------------------------------------------------------------- PESSOAS ---
+  if (path === '/api/v1/pessoas' || path.startsWith('/api/v1/pessoas/')) {
+    if (!env.COMUNIDADE) {
+      return fail('COMUNIDADE_NAO_CONFIGURADA', 'A comunidade ainda não está ligada neste servidor.', 503, env);
+    }
+    const authed = await authenticate(request, env);
+    const quem: Pessoa | null = authed
+      ? { sub: authed.session.sub, nome: authed.session.name || authed.session.email.split('@')[0] }
+      : null;
+    const pessoas = new ServicoDePessoas(env.COMUNIDADE);
+    const responder = (r: Resultado<unknown>) =>
+      r.ok ? json({ data: r.valor }, r.status ?? 200, env) : fail(r.codigo, r.mensagem, r.status, env);
+    const [, , , alvo, acao] = path.split('/').filter(Boolean).map(decodeURIComponent);
+    if (!alvo && request.method === 'GET') return responder(await pessoas.buscar(url.searchParams.get('q') ?? ''));
+    if (alvo === 'eu' && request.method === 'POST') {
+      if (!quem) return fail('UNAUTHENTICATED', 'Entre na sua conta.', 401, env);
+      let corpo: unknown = null;
+      try {
+        corpo = await request.json();
+      } catch {
+        corpo = null;
+      }
+      return responder(await pessoas.publicar(quem, corpo));
+    }
+    if (alvo && !acao && request.method === 'GET') return responder(await pessoas.cartao(quem, alvo));
+    if (alvo && (acao === 'seguir' || acao === 'deixar') && request.method === 'POST') {
+      if (!quem) return fail('UNAUTHENTICATED', 'Entre na sua conta para seguir.', 401, env);
+      return responder(await pessoas.seguir(quem, alvo, acao === 'seguir'));
+    }
+    return fail('NOT_FOUND', 'Rota de pessoas desconhecida.', 404, env);
+  }
+
   // ---------------------------------------------------------- COMUNIDADE ---
   if (
     path.startsWith('/api/v1/forum/') ||
@@ -379,6 +412,7 @@ export async function handleApiRequest(
       if (!id && metodo === 'GET') return responder(await c.eventos(quem));
       if (!id && metodo === 'POST') return exigir() ?? responder(await c.criarEvento(quem!, corpo));
       if (id && acao === 'inscrever' && metodo === 'POST') return exigir() ?? responder(await c.inscrever(quem!, id));
+      if (id && acao === 'desinscrever' && metodo === 'POST') return exigir() ?? responder(await c.desinscrever(quem!, id));
       if (id && acao === 'cancelar' && metodo === 'POST') {
         return exigir() ?? responder(await c.cancelarEvento(quem!, id, authed!.grant.isAdmin));
       }

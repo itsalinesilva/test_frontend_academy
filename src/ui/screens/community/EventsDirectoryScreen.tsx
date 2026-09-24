@@ -5,166 +5,205 @@ import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
-import { communityEventsRepository } from '../../../repositories/community-events.repository';
-import { CommunityEvent } from '../../../domain/community';
-import { Calendar, Clock, Users, ArrowLeft, Check } from 'lucide-react';
+import {
+  Evento,
+  TipoDeEvento,
+  comunidadeService,
+  motivoDaComunidade,
+} from '../../../services/application/comunidade.service';
+import { ArrowLeft, CalendarPlus, Users } from 'lucide-react';
 
 /**
- * Eventos da Academia.
+ * Eventos (P-2).
  *
- * Esta tela listava duas masterclasses escritas no código, com professora
- * inventada e contagem de inscritos inventada. O botão "Garantir
- * participação" chamava `alert('Inscrição confirmada no evento…')` — não
- * gravava nada e **dizia ao aluno que tinha gravado**.
+ * Esta tela listou duas masterclasses inventadas, com um `alert` dizendo
+ * "inscrição confirmada" sem gravar nada; depois passou a ler um repositório
+ * no navegador — e ninguém tinha como criar evento, então a lista estava
+ * sempre vazia, e quem se inscrevesse só contava no próprio navegador.
  *
- * Agora a lista vem do repositório, a inscrição é gravada em nome de quem
- * está logado, e a contagem é contada. Enquanto o Conservatório não marcar
- * evento, a tela diz que não há evento marcado.
+ * Agora o evento vive no servidor: quem tem conta marca um evento, todo mundo
+ * o vê, e a inscrição é contada lá, com limite de vagas.
  */
-interface EventoNaTela {
-  evento: CommunityEvent;
-  inscritos: number;
-  euEstouInscrito: boolean;
-}
+const TIPOS: Record<TipoDeEvento, string> = {
+  MASTERCLASS: 'Masterclass',
+  RECITAL: 'Recital',
+  ENCONTRO: 'Encontro',
+  OFICINA: 'Oficina',
+};
 
-const formatarDia = (iso: string) =>
-  new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+const quando = (inicio: string, fim: string) => {
+  const d = new Date(inicio);
+  return `${d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}, ${d.toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })}–${new Date(fim).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+};
 
-const formatarHora = (iso: string) =>
-  new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+const campo = 'w-full rounded border border-stone-300 bg-white p-2 text-sm';
 
 export const EventsDirectoryScreen: React.FC = () => {
   const { navigate } = useRouter();
-  const { userId } = useCurrentUser();
-  const [itens, setItens] = useState<EventoNaTela[] | null>(null);
+  const { userId, ehAdmin } = useCurrentUser();
+  const [eventos, setEventos] = useState<Evento[] | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
   const [emCurso, setEmCurso] = useState<string | null>(null);
+  const [marcando, setMarcando] = useState(false);
+  const [novo, setNovo] = useState({ titulo: '', descricao: '', tipo: 'ENCONTRO' as TipoDeEvento, inicio: '', fim: '', link: '', vagas: '' });
 
-  const carregar = useCallback(async () => {
-    const eventos = await communityEventsRepository.listar();
-    const compostos = await Promise.all(
-      eventos.map(async (evento) => ({
-        evento,
-        inscritos: await communityEventsRepository.totalDeInscritos(evento.id),
-        euEstouInscrito: userId
-          ? await communityEventsRepository.estaInscrito(evento.id, userId)
-          : false,
-      }))
-    );
-    setItens(compostos);
-  }, [userId]);
+  const carregar = useCallback(() => {
+    comunidadeService
+      .eventos()
+      .then((e) => {
+        setEventos(e);
+        setErro(null);
+      })
+      .catch((e) => {
+        setErro(motivoDaComunidade(e));
+        setEventos([]);
+      });
+  }, []);
+  useEffect(carregar, [carregar, userId]);
 
-  useEffect(() => {
-    carregar().catch(() => setItens([]));
-  }, [carregar]);
-
-  const alternarInscricao = async (item: EventoNaTela) => {
+  const agir = async (id: string, f: () => Promise<unknown>) => {
     if (!userId) {
-      navigate('/auth/login?voltar=/community/events');
+      navigate('/auth/login?voltar=%2Fcommunity%2Fevents');
       return;
     }
-    setEmCurso(item.evento.id);
+    setEmCurso(id);
     try {
-      if (item.euEstouInscrito) {
-        await communityEventsRepository.cancelarInscricao(item.evento.id, userId);
-      } else {
-        await communityEventsRepository.inscrever(item.evento.id, userId);
-      }
-      await carregar();
+      await f();
+      carregar();
+    } catch (e) {
+      setErro(motivoDaComunidade(e));
     } finally {
       setEmCurso(null);
     }
   };
 
+  const marcar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await agir('novo', () =>
+      comunidadeService.criarEvento({
+        titulo: novo.titulo,
+        descricao: novo.descricao,
+        tipo: novo.tipo,
+        inicio: new Date(novo.inicio).toISOString(),
+        fim: new Date(novo.fim).toISOString(),
+        link: novo.link || undefined,
+        vagas: novo.vagas ? Number(novo.vagas) : undefined,
+      })
+    );
+    setMarcando(false);
+    setNovo({ titulo: '', descricao: '', tipo: 'ENCONTRO', inicio: '', fim: '', link: '', vagas: '' });
+  };
+
+  const agora = new Date().toISOString();
+  const proximos = (eventos ?? []).filter((e) => e.fim >= agora && !e.cancelado);
+
   return (
     <ScreenContainer
       id="community-events"
-      title="Eventos e recitais da Academia"
-      subtitle="Masterclasses ao vivo, bancas de avaliação e recitais comentados."
-      badgeLabel="Programação"
-      badgeVariant="brand"
-      primaryAction={{
-        label: 'Voltar ao fórum',
-        icon: ArrowLeft,
-        onClick: () => navigate('/community'),
-      }}
+      title="Eventos"
+      subtitle="Masterclasses, recitais, oficinas e encontros marcados pela comunidade."
+      badgeLabel="Comunidade"
+      badgeVariant="neutral"
+      primaryAction={
+        userId
+          ? { label: marcando ? 'Fechar' : 'Marcar evento', icon: CalendarPlus, onClick: () => setMarcando((v) => !v) }
+          : { label: 'Entrar para marcar evento', icon: CalendarPlus, onClick: () => navigate('/auth/login?voltar=%2Fcommunity%2Fevents') }
+      }
+      secondaryActions={[{ label: 'Voltar ao fórum', icon: ArrowLeft, onClick: () => navigate('/community') }]}
+      state={eventos === null ? 'loading' : proximos.length === 0 && !marcando ? 'empty' : 'populated'}
       emptyProps={{
-        title: 'Nenhum evento programado',
-        description:
-          'Não há masterclasses nem recitais marcados no momento. Quando houver, eles aparecem aqui com data, horário e inscrição.',
-        actionLabel: 'Ver o fórum',
-        onAction: () => navigate('/community'),
+        title: erro ? 'Não deu para abrir os eventos' : 'Nenhum evento marcado',
+        description: erro ?? 'Marque o primeiro: uma masterclass, um recital, um encontro de estudo.',
+        actionLabel: userId ? 'Marcar evento' : 'Entrar',
+        onAction: () => (userId ? setMarcando(true) : navigate('/auth/login?voltar=%2Fcommunity%2Fevents')),
       }}
-      state={itens === null ? 'loading' : itens.length === 0 ? 'empty' : 'populated'}
     >
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {(itens ?? []).map((item) => {
-          const { evento, inscritos, euEstouInscrito } = item;
-          const lotado =
-            evento.maxAttendees !== undefined && inscritos >= evento.maxAttendees && !euEstouInscrito;
+      <div className="mx-auto max-w-3xl space-y-4">
+        {erro && eventos && eventos.length > 0 && <p role="alert" className="text-xs text-red-800">{erro}</p>}
 
-          return (
-            <Card
-              key={evento.id}
-              variant="default"
-              padding="lg"
-              className="flex flex-col justify-between space-y-4"
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Badge variant="neutral" size="sm">
-                    {evento.type}
-                  </Badge>
-                  <span className="flex items-center gap-1 font-mono text-xs text-stone-500">
-                    <Users className="h-3.5 w-3.5 text-stone-400" aria-hidden="true" />
-                    {inscritos}
-                    {evento.maxAttendees !== undefined && ` de ${evento.maxAttendees}`} inscritos
-                  </span>
-                </div>
-
-                <h3 className="font-serif text-lg font-bold leading-snug text-stone-900">
-                  {evento.title}
-                </h3>
-
-                <p className="text-xs font-medium text-stone-700">Orientação: {evento.hostName}</p>
-
-                {evento.description && (
-                  <p className="text-xs leading-relaxed text-stone-600">{evento.description}</p>
-                )}
-
-                <div className="space-y-1 border-t border-stone-100 pt-2 font-mono text-xs text-stone-600">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-3.5 w-3.5 text-stone-400" aria-hidden="true" />
-                    <time dateTime={evento.scheduledStartTime}>
-                      {formatarDia(evento.scheduledStartTime)}
-                    </time>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-3.5 w-3.5 text-stone-400" aria-hidden="true" />
-                    <span>
-                      {formatarHora(evento.scheduledStartTime)} às{' '}
-                      {formatarHora(evento.scheduledEndTime)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between border-t border-stone-100 pt-3">
-                <span className="font-mono text-xs text-stone-500">
-                  {euEstouInscrito
-                    ? 'Você está inscrito'
-                    : lotado
-                      ? 'Sem vagas'
-                      : 'Inscrição aberta'}
-                </span>
-                <Button
-                  variant={euEstouInscrito ? 'outline' : 'primary'}
-                  size="sm"
-                  disabled={lotado || emCurso === evento.id}
-                  onClick={() => alternarInscricao(item)}
-                >
-                  {euEstouInscrito && <Check className="mr-1 h-3.5 w-3.5" aria-hidden="true" />}
-                  {euEstouInscrito ? 'Cancelar inscrição' : 'Inscrever-me'}
+        {marcando && (
+          <form onSubmit={marcar} aria-label="Marcar evento">
+            <Card variant="default" padding="lg" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label className="text-xs sm:col-span-2">
+                Título
+                <input className={campo} value={novo.titulo} maxLength={160} onChange={(e) => setNovo({ ...novo, titulo: e.target.value })} />
+              </label>
+              <label className="text-xs">
+                Tipo
+                <select className={campo} value={novo.tipo} onChange={(e) => setNovo({ ...novo, tipo: e.target.value as TipoDeEvento })}>
+                  {Object.entries(TIPOS).map(([v, r]) => (
+                    <option key={v} value={v}>{r}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-xs">
+                Vagas (opcional)
+                <input type="number" min={1} className={campo} value={novo.vagas} onChange={(e) => setNovo({ ...novo, vagas: e.target.value })} />
+              </label>
+              <label className="text-xs">
+                Começa
+                <input type="datetime-local" className={campo} value={novo.inicio} onChange={(e) => setNovo({ ...novo, inicio: e.target.value })} />
+              </label>
+              <label className="text-xs">
+                Termina
+                <input type="datetime-local" className={campo} value={novo.fim} onChange={(e) => setNovo({ ...novo, fim: e.target.value })} />
+              </label>
+              <label className="text-xs sm:col-span-2">
+                Link da transmissão ou chamada (opcional)
+                <input type="url" className={campo} placeholder="https://" value={novo.link} onChange={(e) => setNovo({ ...novo, link: e.target.value })} />
+              </label>
+              <label className="text-xs sm:col-span-2">
+                Descrição
+                <textarea rows={3} className={campo} maxLength={3000} value={novo.descricao} onChange={(e) => setNovo({ ...novo, descricao: e.target.value })} />
+              </label>
+              <div className="sm:col-span-2">
+                <Button type="submit" size="sm" disabled={!novo.titulo.trim() || !novo.inicio || !novo.fim || emCurso === 'novo'}>
+                  {emCurso === 'novo' ? 'Marcando…' : 'Marcar evento'}
                 </Button>
+              </div>
+            </Card>
+          </form>
+        )}
+
+        {proximos.map((e) => {
+          const lotado = !!e.vagas && e.inscritos >= e.vagas && !e.inscrito;
+          return (
+            <Card key={e.id} variant="default" padding="lg" className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <Badge variant="neutral" size="sm">{TIPOS[e.tipo]}</Badge>
+                <span className="flex items-center gap-1 font-mono text-xs text-stone-500">
+                  <Users className="h-3 w-3" aria-hidden="true" />
+                  {e.inscritos}
+                  {e.vagas ? ` de ${e.vagas}` : ''} {e.inscritos === 1 ? 'inscrito' : 'inscritos'}
+                </span>
+              </div>
+              <h3 className="font-serif text-lg font-bold text-stone-900">{e.titulo}</h3>
+              <p className="text-xs text-stone-600">
+                {quando(e.inicio, e.fim)} · com {e.anfitriao.nome}
+              </p>
+              {e.descricao && <p className="whitespace-pre-line text-sm text-stone-700">{e.descricao}</p>}
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                <Button
+                  size="sm"
+                  variant={e.inscrito ? 'outline' : 'primary'}
+                  disabled={emCurso === e.id || lotado}
+                  onClick={() => void agir(e.id, () => (e.inscrito ? comunidadeService.desinscrever(e.id) : comunidadeService.inscrever(e.id)))}
+                >
+                  {lotado ? 'Vagas esgotadas' : e.inscrito ? 'Cancelar inscrição' : 'Quero participar'}
+                </Button>
+                {e.inscrito && e.link && (
+                  <a href={e.link} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-anil-700 underline">
+                    Link do evento
+                  </a>
+                )}
+                {(ehAdmin || e.meu) && (
+                  <button type="button" className="text-xs text-red-700" onClick={() => void agir(e.id, () => comunidadeService.cancelarEvento(e.id))}>
+                    Cancelar evento
+                  </button>
+                )}
               </div>
             </Card>
           );
