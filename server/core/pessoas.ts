@@ -21,6 +21,8 @@ export interface Cartao {
   userId: string;
   nome: string;
   titulo: string;
+  apresentacao: string;
+  cidade: string;
   instrumentos: string[];
   avatarUrl?: string;
   /** A projeção pública inteira, como o app a monta — já sem o que é privado. */
@@ -86,6 +88,8 @@ export class ServicoDePessoas {
       userId: c.userId,
       nome: txt(projecao.displayName, 120) || quem.nome,
       titulo: txt(projecao.title, 160),
+      apresentacao: txt(projecao.headline, 220),
+      cidade: txt(projecao.location, 80),
       instrumentos: Array.isArray(projecao.instruments)
         ? (projecao.instruments as unknown[]).map((i) => (typeof i === 'string' ? i : txt((i as { name?: unknown })?.name, 60))).filter(Boolean).slice(0, 10)
         : [],
@@ -109,7 +113,7 @@ export class ServicoDePessoas {
       .filter((c): c is Cartao => c !== null)
       .filter((c) => {
         if (!termo) return true;
-        const onde = [c.nome, c.titulo, ...c.instrumentos].join(' ').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+        const onde = [c.nome, c.titulo, c.apresentacao ?? '', c.cidade ?? '', ...c.instrumentos].join(' ').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
         return onde.includes(termo);
       })
       .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))

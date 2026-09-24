@@ -30,6 +30,18 @@ import { medirPerfil } from '../../domain/perfil-medido';
 // Os repositórios, e não os serviços: `practice.service` e `academy.service` já importam este arquivo.
 import { practiceRepository } from '../../repositories/practice.repository';
 import { academyRepository } from '../../repositories/academy.repository';
+import { apiClient } from '../../infrastructure/api/api-client';
+
+/** O que o diretório mostra de cada pessoa (P-3) — o resumo do cartão público, vindo do servidor. */
+export interface PessoaNoDiretorio {
+  userId: string;
+  displayName: string;
+  title: string;
+  headline: string;
+  instruments: string[];
+  avatarUrl?: string;
+  location?: string;
+}
 
 export class ProfileService {
   private profileRepo: ProfileRepository;
@@ -231,6 +243,8 @@ export class ProfileService {
       };
       record.community = { ...record.community, connectionsCount: record.connectionsList?.length ?? 0 };
       await this.unifiedRepo.save(record);
+      /** P-3 — o cartão público vai para o diretório a cada leitura do próprio perfil (ADR-003: automático, nunca manual). */
+      void this.publicarCartao(userId);
     }
 
     // Quem NAO e o dono recebe a projecao filtrada, nunca o registro cru.
@@ -240,11 +254,21 @@ export class ProfileService {
     // porque /profile/:userId nao existia; com a rota criada seria um
     // vazamento por URL (CLAUDE_AUDIT.md P-02).
     if (!session || session.user.id !== userId) {
-      const projecao = await this.unifiedRepo.getPublicProjection(userId);
-      if (!projecao) {
-        throw new NotFoundError('Perfil', userId);
+      /**
+       * P-3 — o perfil de outra pessoa vem do SERVIDOR: antes, só existia se
+       * ela tivesse entrado neste mesmo navegador. O local fica como recurso
+       * quando o servidor não responde.
+       */
+      try {
+        const r = await apiClient.get<{ projecao: UnifiedProfileRecord }>(`/pessoas/${encodeURIComponent(userId)}`);
+        return r.projecao;
+      } catch {
+        const projecao = await this.unifiedRepo.getPublicProjection(userId);
+        if (!projecao) {
+          throw new NotFoundError('Perfil', userId);
+        }
+        return projecao;
       }
-      return projecao;
     }
 
     return record;
@@ -256,8 +280,34 @@ export class ProfileService {
    * Sem isto a premissa "LinkedIn de musicos" nao fecha: havia rota de perfil
    * proprio, mas nenhum caminho para encontrar outra pessoa.
    */
-  public async listDirectory(): Promise<UnifiedProfileRecord[]> {
-    return this.unifiedRepo.listPublicDirectory();
+  public async listDirectory(q = ''): Promise<PessoaNoDiretorio[]> {
+    /** P-3 — do servidor, onde todo mundo está; a busca roda lá (ADR-003). */
+    const cartoes = await apiClient.get<
+      Array<{ userId: string; nome: string; titulo: string; apresentacao: string; cidade: string; instrumentos: string[]; avatarUrl?: string }>
+    >(`/pessoas${q ? `?q=${encodeURIComponent(q)}` : ''}`);
+    return cartoes.map((c) => ({
+      userId: c.userId,
+      displayName: c.nome,
+      title: c.titulo,
+      headline: c.apresentacao,
+      instruments: c.instrumentos,
+      avatarUrl: c.avatarUrl,
+      location: c.cidade || undefined,
+    }));
+  }
+
+  /**
+   * Publica o cartão público no diretório — ou o retira, se o perfil é privado.
+   * Falhar aqui não atrapalha a pessoa: o perfil dela continua dela; só não
+   * aparece para os outros até a próxima leitura.
+   */
+  public async publicarCartao(userId: string): Promise<void> {
+    try {
+      const projecao = await this.unifiedRepo.getPublicProjection(userId);
+      await apiClient.post('/pessoas/eu', { userId, projecao: projecao ?? null });
+    } catch {
+      // servidor fora do ar ou comunidade não ligada: fica para a próxima
+    }
   }
 
   /**
@@ -599,10 +649,7 @@ export class ProfileService {
       // 'Musico Academico Conectado' / 'Interprete & Pesquisador' / 'Violino /
       // Teclado' para QUALQUER pessoa conectada: a lista de conexoes parecia
       // povoada e nenhum nome ali era real (CLAUDE_AUDIT.md P-03).
-      const alvo = await this.unifiedRepo.getPublicProjection(targetUserId);
-      if (!alvo) {
-        throw new NotFoundError('Perfil', targetUserId);
-      }
+      const alvo = await this.getUnifiedProfile(targetUserId);
       profile.connectionsList.push({
         id: `conn_${Date.now()}`,
         targetUserId,
@@ -619,6 +666,10 @@ export class ProfileService {
 
     profile.community.connectionsCount = profile.connectionsList.length;
     await this.unifiedRepo.save(profile);
+    /** P-3 — o outro lado fica sabendo: "seguir" no servidor. A lista local é a minha, e vai para o meu Drive. */
+    await apiClient
+      .post(`/pessoas/${encodeURIComponent(targetUserId)}/${connected ? 'seguir' : 'deixar'}`, {})
+      .catch(() => undefined);
     return { connected, count: profile.connectionsList.length };
   }
 }
