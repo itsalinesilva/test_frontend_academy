@@ -713,7 +713,7 @@ export const ExerciseSessionScreen: React.FC = () => {
 
           <div className="flex items-center justify-between p-3 bg-stone-50 rounded-lg border border-stone-200">
             <span className="text-xs text-stone-600 font-mono">
-              Notas Emitidas: {virtualNotes.length > 0 ? virtualNotes.join('  •  ') : 'Aguardando toque nos timbres...'}
+              Notas Emitidas: {virtualNotes.length > 0 ? virtualNotes.join('  •  ') : 'Aguardando toque nos timbres…'}
             </span>
             <Button
               id="btn-evaluate-virtual-inst"

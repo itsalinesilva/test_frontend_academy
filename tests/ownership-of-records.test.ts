@@ -9,8 +9,8 @@ import { academyRepository } from '../src/repositories/academy.repository';
  * ACHADO DA AUDITORIA DE 19/09
  * ----------------------------
  * `getAssessmentAttempt` buscava só pelo identificador da submissão, e a tela
- * que a usa — `/academy/result/<id>` — herdava audiência **pública** de
- * `/academy`, por prefixo mais longo. Quem tivesse ou adivinhasse um
+ * que a usa — `/academia/result/<id>` — herdava audiência **pública** de
+ * `/academia`, por prefixo mais longo. Quem tivesse ou adivinhasse um
  * identificador via a nota, a aprovação e o número de certificado de outra
  * pessoa.
  *

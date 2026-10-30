@@ -84,7 +84,7 @@ export const MicroSkillScreen: React.FC = () => {
     return (
       <div className="p-8 max-w-4xl mx-auto text-center space-y-4">
         <h2 className="text-xl font-serif font-bold text-stone-900">Microcompetência não encontrada</h2>
-        <Button variant="outline" onClick={() => router.navigate('/practice/skill-tree')}>
+        <Button variant="outline" onClick={() => router.navigate('/practice?aba=licoes')}>
           Voltar para Árvore
         </Button>
       </div>
@@ -122,7 +122,7 @@ export const MicroSkillScreen: React.FC = () => {
       <div>
         <button
           onClick={() =>
-            parentSkill ? router.navigate(`/practice/skill/${parentSkill.id}`) : router.navigate('/practice/skill-tree')
+            parentSkill ? router.navigate(`/practice/skill/${parentSkill.id}`) : router.navigate('/practice?aba=licoes')
           }
           className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-500 hover:text-stone-900 transition-colors"
         >

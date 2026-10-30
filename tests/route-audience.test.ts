@@ -32,9 +32,9 @@ function auditar() {
 describe('tabela de audiência', () => {
   it('a regra mais específica vence', () => {
     // /academy é público, mas /academy/meu-aprendizado não é.
-    expect(audienciaDaRota('/academy')).toBe('publica');
-    expect(audienciaDaRota('/academy/course/crs_teoria')).toBe('publica');
-    expect(audienciaDaRota('/academy/meu-aprendizado')).toBe('exigeLogin');
+    expect(audienciaDaRota('/academia')).toBe('publica');
+    expect(audienciaDaRota('/academia/course/crs_teoria')).toBe('publica');
+    expect(audienciaDaRota('/academia/meu-aprendizado')).toBe('exigeLogin');
   });
 
   it('verificar certificado é público; as credenciais do aluno não', () => {

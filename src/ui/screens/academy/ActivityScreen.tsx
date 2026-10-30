@@ -36,22 +36,35 @@ export const ActivityScreen: React.FC = () => {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [attemptResult, setAttemptResult] = useState<ActivityAttemptResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  /**
+   * AUD-4 — id inexistente deixava a tela em "Buscando atividade…" para
+   * sempre: não achar e ainda estar buscando davam no mesmo `activity === null`.
+   */
+  const [ausente, setAusente] = useState(false);
+  const [precisaEntrar, setPrecisaEntrar] = useState(false);
 
   useEffect(() => {
     const loadActivityData = async () => {
+      setAusente(false);
       // Rota sem parametro: nao consulta o servico e recai no estado de
       // "nao encontrado" da propria tela, em vez de exibir uma entidade
       // fixa de reserva (01_REPOSITORY_AUDIT R-02).
-      if (!activityId) return;
+      if (!activityId) {
+        setAusente(true);
+        return;
+      }
       try {
         const act = await academyService.getActivity(activityId);
         if (act) {
           setActivity(act);
           const l = await academyService.getLesson(act.lessonId);
           setLesson(l);
+        } else {
+          setAusente(true);
         }
       } catch (err) {
         console.error('Error loading activity:', err);
+        setAusente(true);
       }
     };
 
@@ -65,7 +78,11 @@ export const ActivityScreen: React.FC = () => {
     // Sem sessao nao ha progresso a carregar nem a gravar: o fallback
     // anterior misturava dados de visitantes anonimos com os da
     // fundadora (CLAUDE_AUDIT.md T-05).
-    if (!session) return;
+    // E o clique não pode sumir calado: dizer por que nada foi corrigido.
+    if (!session) {
+      setPrecisaEntrar(true);
+      return;
+    }
     const userId = session.user.id;
 
     setIsSubmitting(true);
@@ -91,12 +108,29 @@ export const ActivityScreen: React.FC = () => {
     webAudioSynth.playTone(440, 2.0);
   };
 
+  if (!activity && ausente) {
+    return (
+      <ScreenContainer id="activity-missing" title="Atividade não encontrada" subtitle={`Nenhuma atividade responde por "${activityId ?? ''}".`}>
+        <div className="p-8 text-center space-y-3">
+          <p className="text-sm text-stone-600">O endereço pode estar incompleto, ou a atividade foi retirada do curso.</p>
+          <button
+            type="button"
+            onClick={() => navigate('/academia')}
+            className="text-sm font-medium text-anil-700 underline-offset-2 hover:underline"
+          >
+            Voltar à Academia
+          </button>
+        </div>
+      </ScreenContainer>
+    );
+  }
+
   if (!activity) {
     return (
       <ScreenContainer
         id="activity-loading"
         title="Atividade Prática"
-        subtitle="Carregando enunciado..."
+        subtitle="Carregando enunciado…"
       >
         <div className="p-8 text-center text-stone-500 font-mono text-xs">
           Buscando atividade avaliada...
@@ -118,7 +152,7 @@ export const ActivityScreen: React.FC = () => {
         {
           label: 'Voltar à Lição',
           icon: ArrowLeft,
-          onClick: () => navigate(`/academy/lesson/${activity.lessonId}`),
+          onClick: () => navigate(`/academia/lesson/${activity.lessonId}`),
         },
       ]}
     >
@@ -273,7 +307,7 @@ export const ActivityScreen: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate(`/academy/lesson/${activity.lessonId}`)}
+              onClick={() => navigate(`/academia/lesson/${activity.lessonId}`)}
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
               Voltar à Lição
@@ -297,7 +331,7 @@ export const ActivityScreen: React.FC = () => {
                     id="btn-activity-next-step"
                     variant="primary"
                     size="sm"
-                    onClick={() => navigate(`/academy/course/${lesson?.courseId || 'crs_fomt_01'}`)}
+                    onClick={() => navigate(`/academia/course/${lesson?.courseId || 'crs_fomt_01'}`)}
                   >
                     Prosseguir no Curso
                     <ArrowRight className="w-3.5 h-3.5 ml-1" />
@@ -316,6 +350,18 @@ export const ActivityScreen: React.FC = () => {
                 </Button>
               )}
             </div>
+            {precisaEntrar && (
+              <p role="alert" className="mt-3 text-xs text-amber-800">
+                Para corrigir e guardar sua resposta, entre na sua conta.{' '}
+                <button
+                  type="button"
+                  onClick={() => navigate(`/auth/login?voltar=${encodeURIComponent(`/academia/activity/${activityId ?? ''}`)}`)}
+                  className="font-medium underline"
+                >
+                  Entrar
+                </button>
+              </p>
+            )}
           </div>
         </Card>
       </div>

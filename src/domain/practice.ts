@@ -82,30 +82,6 @@ export interface PracticeMeasurement {
   score: number; // Final weighted score (0..1000)
 }
 
-export interface SkillNode {
-  skillId: EntityId;
-  code: string;
-  name: string;
-  category: SkillCategory;
-  tier: number;
-  prerequisites: EntityId[];
-  unlockedByDefault: boolean;
-  masteryLevel?: number; // 0..5
-}
-
-export interface SkillTree {
-  id: EntityId;
-  slug: string;
-  title: string;
-  description: string;
-  instrumentId?: EntityId;
-  category: SkillCategory;
-  nodes: SkillNode[];
-  version: string;
-  createdAt: ISOTimestamp;
-  updatedAt: ISOTimestamp;
-}
-
 export interface MicroSkill {
   id: EntityId;
   skillId: EntityId;
@@ -242,11 +218,15 @@ export interface PracticeResult {
   measurement?: PracticeMeasurement;
   /** Medicao real. `null` em qualquer dimensao significa "nao medida". */
   medicao: MedicaoReal;
-  pitchAccuracy: number;
-  rhythmAccuracy: number;
-  tempoStability: number;
-  intonationScore: number;
-  consistencyScore: number;
+  /**
+   * `null` = não medida. Antes, a ausência de medição virava 80, 80, 85 —
+   * afinação "medida" numa sessão de teoria, onde nada soou (AUD-21).
+   */
+  pitchAccuracy: number | null;
+  rhythmAccuracy: number | null;
+  tempoStability: number | null;
+  intonationScore: number | null;
+  consistencyScore: number | null;
   durationSeconds: number;
   notesAttempted: number;
   notesCorrect: number;
@@ -294,6 +274,21 @@ export interface StreakTracker {
   userId: EntityId;
   currentStreakDays: number;
   longestStreakDays: number;
+  /**
+   * 🔴 QUANTAS DEFENSIVAS DE SETE DIAS JÁ FECHARAM. É O NÍVEL.
+   *
+   * Guardado, e não derivado de `currentStreakDays`. Cada defensiva completa
+   * vale um nível **a mais, para sempre**: quem fechou três semanas e faltou
+   * um dia continua no nível 3, e o que recomeça do dia 1 é a contagem.
+   *
+   * Derivar de um contador que zera é garantir que o nível zere junto — que é
+   * exatamente o que a tela fazia. Ver `domain/defensiva.ts`.
+   *
+   * Opcional porque as fichas gravadas antes deste campo não o têm; quem lê
+   * usa `nivelDaDefensiva`, que nesse caso devolve o mínimo que a sequência
+   * atual garante, e nunca rebaixa.
+   */
+  completedCyclesCount?: number;
   lastActiveDate: string; // YYYY-MM-DD
   freezeDaysAvailable: number;
   calendarHistory: { date: string; completedMinutes: number; xp: number }[];

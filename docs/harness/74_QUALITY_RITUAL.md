@@ -106,7 +106,7 @@ npm run dev
 
 1. Home — o que o visitante lê é sobre conhecer e se inscrever?
 2. Catálogo → curso → grade. Nenhuma frase fala com quem não entrou?
-3. Tentar `/academy/meu-aprendizado` — o convite aparece e o endereço se mantém?
+3. Tentar `/academia/meu-aprendizado` — o convite aparece e o endereço se mantém?
 4. Verificar uma credencial por código — abre sem conta?
 
 **Percurso do aluno** — sessão iniciada
@@ -207,3 +207,47 @@ limite produz exatamente a falsa segurança que ele deveria evitar.
 | A cada bloco | 30 min | + auditoria de rotas e paridade | estrutura, cobertura |
 | A cada marco | 2 h | **manual, no navegador** | o que jsdom não alcança |
 | A cada release | 4 h | + gates + Drive + revisão humana | perda de dado, texto |
+
+---
+
+## A curadoria do relatório é o passo final da suíte
+
+> Isto não é recomendação: é mecanismo. `tests/report-curation.test.ts`
+> regenera a seção **CURADORIA DO RELATÓRIO DE TESTES** do `CLAUDE_TODO.md` e
+> **falha se ela estiver velha**. Rodar os testes e esquecer de curar o
+> relatório passou a ser impossível, porque são a mesma execução.
+
+### As sete perguntas
+
+Toda área responde às mesmas sete, e a máquina as apura:
+
+| # | Pergunta | Peso | O que ela mede |
+|---|---|:---:|---|
+| 1 | Está pronto? | 10 | existe **e é alcançável por rota** |
+| 2 | Está protegido e isolado? | 9 | as rotas da área se declaram em `audiencia.ts` |
+| 3 | Está curado? | 8 | nada inventado escrito dentro da tela |
+| 4 | Está persistente? | 7 | a área grava o que a pessoa faz |
+| 5 | Está sincronizado? | 6 | nenhum repositório que ninguém chama |
+| 6 | Está integrado? | 5 | conversa com serviço ou repositório |
+| 7 | Tem fluxo completo? | 4 | entra, age e sai |
+
+**A ordem da fila é por peso, e não por área.** Consertar fora dela significa
+proteger o que ninguém alcança, e curar o conteúdo de uma tela que ainda não
+abre.
+
+### Os dois documentos
+
+| Arquivo | O que guarda | Quem mantém |
+|---|---|---|
+| `CLAUDE_TODO.md` | a fila prioritária e o relatório curado | **a suíte** |
+| `CLAUDE_BACKLOG.md` | adiado, manual, decisão sua, histórico | gente |
+
+Item sobe do backlog para o TODO ao virar trabalho imediato, e desce ao passar
+a depender de decisão, de serviço externo ou de outra fase. A divisão existe
+porque misturar os dois fazia o urgente desaparecer no meio do adiado.
+
+### O que as sete perguntas NÃO respondem
+
+Se a tela está **boa**. Nenhuma é sobre desenho, texto certo no contexto ou
+fluxo que leva ao lugar certo. Isso continua precisando de navegador e de olho
+humano — e é o `F.2`, que segue aberto de propósito em vez de fingido fechado.

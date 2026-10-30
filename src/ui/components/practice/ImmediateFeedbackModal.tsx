@@ -104,8 +104,8 @@ export const ImmediateFeedbackModal: React.FC<ImmediateFeedbackProps> = ({
             label="Tempo"
             valor={medicao.tempoRitmico.pontuacao}
             detalhe={
-              medicao.tempoRitmico.desvioMedioMs !== null
-                ? `${medicao.tempoRitmico.desvioMedioMs} ms do pulso`
+              medicao.tempoRitmico.meanDeviationMs !== null
+                ? `${medicao.tempoRitmico.meanDeviationMs} ms do pulso`
                 : null
             }
           />

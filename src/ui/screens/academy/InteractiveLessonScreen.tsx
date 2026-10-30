@@ -125,12 +125,12 @@ export const InteractiveLessonScreen: React.FC = () => {
       density="editorial"
       asideLabel="Laboratorio"
       state={isLoading ? 'loading' : !lesson ? 'empty' : 'content'}
-      loadingMessage="Carregando o laboratorio..."
+      loadingMessage="Carregando o laboratório…"
       emptyProps={{
         title: 'Licao nao encontrada',
-        description: 'O identificador informado nao corresponde a uma licao do curriculo.',
+        description: 'O identificador informado não corresponde a uma lição do currículo.',
         actionLabel: 'Voltar ao catalogo',
-        onAction: () => navigate('/academy/catalog'),
+        onAction: () => navigate('/academia/catalog'),
       }}
     >
       <PageLayout.Aside>
@@ -141,7 +141,7 @@ export const InteractiveLessonScreen: React.FC = () => {
           <p className="text-xs leading-relaxed text-stone-600">
             Pratique o conceito com medicao real antes de seguir.
           </p>
-          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/practice/skill-tree')}>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/practice?aba=licoes')}>
             Abrir treinador
           </Button>
         </Card>
@@ -357,7 +357,7 @@ export const InteractiveLessonScreen: React.FC = () => {
                   size="sm"
                   variant="outline"
                   className="w-full justify-center"
-                  onClick={() => navigate('/academy/academic-profile')}
+                  onClick={() => navigate('/academia/academic-profile')}
                 >
                   <Award className="w-3.5 h-3.5 mr-1.5" />
                   Ver Perfil Acadêmico

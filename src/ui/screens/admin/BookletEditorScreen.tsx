@@ -204,14 +204,14 @@ export const BookletEditorScreen: React.FC = () => {
       density="operational"
       asideLabel="Livretos"
       state={isLoading ? 'loading' : erro && !rascunho ? 'error' : livretos.length === 0 ? 'empty' : 'content'}
-      loadingMessage="Carregando os livretos..."
+      loadingMessage="Carregando os livretos…"
       errorProps={{ message: erro ?? '', onRetry: carregar }}
       emptyProps={{
         title: 'Nenhum livreto ainda',
         description:
           'Os livretos de exercício são gerados junto com cada curso, a partir do estudo do acervo. Assim que um curso ficar pronto, o caderno dele aparece aqui para revisão.',
         actionLabel: 'Ver os cursos',
-        onAction: () => navigate('/admin/content'),
+        onAction: () => navigate('/founder/content'),
       }}
     >
       <PageLayout.Hero>

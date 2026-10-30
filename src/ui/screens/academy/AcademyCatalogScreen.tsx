@@ -209,7 +209,7 @@ export const AcademyCatalogScreen: React.FC = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => navigate(`/academy/program/${prog.id}`)}
+                      onClick={() => navigate(`/academia/program/${prog.id}`)}
                     >
                       Acessar Programa
                       <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
@@ -251,7 +251,7 @@ export const AcademyCatalogScreen: React.FC = () => {
                     size="sm"
                     variant="outline"
                     className="w-full justify-between"
-                    onClick={() => navigate(`/academy/path/${path.id}`)}
+                    onClick={() => navigate(`/academia/path/${path.id}`)}
                   >
                     <span>Ver Cursos ({path.courseIds.length})</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -281,7 +281,7 @@ export const AcademyCatalogScreen: React.FC = () => {
                   level={course.level}
                   durationHours={course.workloadHours}
                   modulesCount={course.moduleIds.length}
-                  onActionClick={() => navigate(`/academy/course/${course.id}`)}
+                  onActionClick={() => navigate(`/academia/course/${course.id}`)}
                 />
               ))}
             </div>

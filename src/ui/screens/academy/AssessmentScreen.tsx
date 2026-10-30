@@ -54,7 +54,7 @@ export const AssessmentScreen: React.FC = () => {
           title: 'Exame não encontrado',
           description: `O identificador [${assessmentId}] não foi localizado no repositório.`,
           actionLabel: 'Voltar ao Início',
-          onAction: () => navigate('/academy'),
+          onAction: () => navigate('/academia'),
         }}
       >
         <div />
@@ -91,7 +91,7 @@ export const AssessmentScreen: React.FC = () => {
         assessment.id,
         answers
       );
-      navigate(`/academy/result/${res.submission.id}`);
+      navigate(`/academia/result/${res.submission.id}`);
     } catch (err) {
       console.error('Error submitting assessment:', err);
     } finally {
@@ -110,7 +110,7 @@ export const AssessmentScreen: React.FC = () => {
         {
           label: 'Voltar à Disciplina',
           icon: ArrowLeft,
-          onClick: () => navigate(`/academy/course/${assessment?.courseId}`),
+          onClick: () => navigate(`/academia/course/${assessment?.courseId}`),
         },
       ]}
     >

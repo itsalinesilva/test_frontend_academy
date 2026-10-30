@@ -995,7 +995,7 @@ export const OnboardingScreen: React.FC = () => {
               className="bg-anil-800 hover:bg-anil-700 text-white font-semibold"
             >
               {isSubmitting ? (
-                <span>Emitindo Passaporte...</span>
+                <span>Emitindo Passaporte…</span>
               ) : (
                 <span className="inline-flex items-center">
                   Concluir Matrícula & Ingressar <ArrowRight className="w-4 h-4 ml-1.5" />

@@ -160,13 +160,13 @@ describe('Medição acústica', () => {
     // Quatro ataques a cada 500 ms = 120 bpm.
     const m = medirTentativa({ ataquesMs: [0, 500, 1000, 1500], bpmAlvo: 120 }, 'ACOUSTICS');
     expect(m.tempoRitmico.bpmMedido).toBe(120);
-    expect(m.tempoRitmico.desvioMedioMs).toBe(0);
+    expect(m.tempoRitmico.meanDeviationMs).toBe(0);
     expect(m.tempoRitmico.pontuacao).toBe(100);
   });
 
   it('detecta o arrasto de quem atrasa progressivamente', () => {
     const m = medirTentativa({ ataquesMs: [0, 520, 1070, 1650], bpmAlvo: 120 }, 'ACOUSTICS');
-    expect(m.tempoRitmico.desvioMedioMs!).toBeGreaterThan(0);
+    expect(m.tempoRitmico.meanDeviationMs!).toBeGreaterThan(0);
     expect(m.tempoRitmico.pontuacao!).toBeLessThan(100);
   });
 

@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
+import { apiClient } from '../../../infrastructure/api/api-client';
+import { salasService } from '../../../services/application/salas.service';
+import { auditRepository } from '../../../repositories/audit.repository';
 import {
   Users,
   Activity,
@@ -12,59 +15,148 @@ import {
   Flag,
   History,
   ArrowRight,
+  Pencil,
+  ClipboardList,
+  Library,
+  FileText,
 } from 'lucide-react';
 
+/**
+ * O painel da administração.
+ *
+ * As quatro medidas aqui eram números CRAVADOS: "1.240 usuários matriculados",
+ * "42 salas de aula ativas", "4/4 motores operacionais", "8.920 eventos
+ * auditados" — numa plataforma que tem zero de cada um.
+ *
+ * Não era estado vazio mal desenhado: era número inventado posando de medição,
+ * justamente na tela que existe para decidir. Um painel administrativo que
+ * mente é pior que um painel ausente, porque decisões são tomadas a partir
+ * dele.
+ *
+ * Agora cada número vem de uma contagem real, e `null` enquanto ela não
+ * voltou — zero só aparece quando é zero medido.
+ */
 export const AdminDashboardScreen: React.FC = () => {
   const { navigate } = useRouter();
 
+  const [medidas, setMedidas] = useState<{
+    usuarios: number;
+    salas: number;
+    eventos: number;
+  } | null>(null);
+
+  useEffect(() => {
+    let vivo = true;
+    Promise.all([
+      /** P-5 — as contas do servidor, e não as deste navegador. */
+      apiClient.get<unknown[]>('/founder/contas'),
+      /** As salas vêm do servidor (AUD-9): sem ele, o número some — não vira zero. */
+      salasService.diretorio(),
+      auditRepository.listRecent(1000),
+    ])
+      .then(([usuarios, salas, eventos]) => {
+        if (!vivo) return;
+        setMedidas({
+          usuarios: usuarios.length,
+          salas: salas.length,
+          eventos: eventos.length,
+        });
+      })
+      .catch(() => {
+        // Falhar em contar não autoriza inventar: fica sem número.
+        if (vivo) setMedidas(null);
+      });
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
+  /**
+   * AUD-12..15 — os cartões prometiam o que as telas não fazem: atribuir
+   * papéis e homologar contas, homologar ementas, uma fila de denúncias com
+   * "0 Denúncias", e uma trilha "imutável" de "logs criptográficos". Cada
+   * cartão agora descreve a tela que abre.
+   */
   const adminModules = [
     {
       id: 'users',
-      title: 'Gestão de Usuários & Papéis',
-      desc: 'Atribuição de papéis (Aluno, Músico, Professor, Admin), homologação e moderação de contas.',
+      title: 'Contas',
+      desc: 'Quem entrou na plataforma, registrado pelo servidor a cada login. Suspender e restaurar, com motivo na auditoria.',
       icon: Users,
-      link: '/admin/users',
-      badge: 'Controle de Acesso',
+      link: '/founder/users',
+      badge: 'Gestão',
     },
     {
       id: 'engines',
       title: 'Gateway de Engines & Saúde',
       desc: 'Inspeção de latência e disponibilidade dos motores: Teoria Musical, Áudio/DSP, Partituras e IA.',
       icon: Activity,
-      link: '/admin/engines',
+      link: '/founder/engines',
       badge: 'Infraestrutura',
     },
     {
+      id: 'licoes',
+      title: 'Lições e exercícios',
+      desc: 'Editar o conteúdo das lições bloco a bloco — texto, pentagrama, player, diagrama e verificação. Criar, remover e reordenar.',
+      icon: Pencil,
+      link: '/founder/licoes',
+      badge: 'Engine editorial',
+    },
+    {
+      id: 'artigos',
+      title: 'Artigos da biblioteca',
+      desc: 'Escrever e corrigir os artigos: cabeçalho no padrão, corpo em .md, citações com motivo e rodapé calculado.',
+      icon: FileText,
+      link: '/founder/artigos',
+      badge: 'Engine editorial',
+    },
+    {
+      id: 'livretos',
+      title: 'Livretos e avaliações',
+      desc: 'Os cadernos de exercício de cada curso: capítulos, questões, simulado e prova. É daqui que saem as 378 questões do nivelamento.',
+      icon: ClipboardList,
+      link: '/founder/booklets',
+      badge: 'Banco de questões',
+    },
+    {
+      id: 'biblioteca',
+      title: 'Biblioteca do Conservatório',
+      desc: 'Os livros de leitura e os cadernos de prática de cada curso, para ler, baixar e revisar.',
+      icon: Library,
+      link: '/founder/biblioteca',
+      badge: 'Livros',
+    },
+    {
       id: 'content',
-      title: 'Curadoria & Governança Curricular',
-      desc: 'Homologação de planos de curso, ementas acadêmicas e validação de proveniência musicológica.',
+      title: 'Catálogo publicado',
+      desc: 'Os cursos e módulos como o aluno os vê, com a grade de cada um. Para editar, use Lições, Artigos e Livretos.',
       icon: FileCheck,
-      link: '/admin/content',
-      badge: 'Currículo Oficial',
+      link: '/founder/content',
+      badge: 'Consulta',
     },
     {
       id: 'moderation',
-      title: 'Fila de Moderação Institucional',
-      desc: 'Auditoria de publicações sinalizadas pela comunidade, denúncias e conformidade ética.',
+      title: 'Moderação',
+      desc: 'As denúncias do fórum e das salas, agrupadas pelo que foi denunciado: ocultar ou descartar, com auditoria.',
       icon: Flag,
-      link: '/admin/moderation',
-      badge: '0 Denúncias',
+      link: '/founder/moderation',
+      badge: 'Denúncias',
     },
     {
       id: 'credentials',
       title: 'Estúdio de Credenciais',
       desc: 'A matriz visual de badges, credenciais e certificados: cores, tipografia, logotipo, selo, QR e emissão.',
       icon: Award,
-      link: '/admin/credentials',
+      link: '/founder/credentials',
       badge: 'Identidade & Emissão',
     },
     {
       id: 'audit',
-      title: 'Trilha Imutável de Auditoria',
-      desc: 'Logs criptográficos de autenticação, concessão de privilégios e transações sensíveis.',
+      title: 'Trilha de auditoria',
+      desc: 'O registro do servidor, assinado elo a elo, e o deste navegador: entradas, saídas e acessos negados.',
       icon: History,
-      link: '/admin/audit',
-      badge: 'Logs Imutáveis',
+      link: '/founder/audit',
+      badge: 'Auditoria',
     },
   ];
 
@@ -72,28 +164,25 @@ export const AdminDashboardScreen: React.FC = () => {
     <ScreenContainer
       id="admin-dashboard"
       title="Governança Institucional & Administração"
-      subtitle="Console protegido de gestão da Conservatório Muscicapa. Todas as ações são auditadas e assinadas."
+      subtitle="Console de gestão do Conservatório Muscicapa. Só a administração entra aqui; o servidor confere a sessão."
       badgeLabel="Acesso Restrito • ADMIN"
       badgeVariant="brand"
     >
       <div className="space-y-6">
         {/* Governance Metrics Strip */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <Medida rotulo="Contas registradas" valor={medidas?.usuarios} />
+          <Medida rotulo="Salas de aula" valor={medidas?.salas} />
+          <Medida rotulo="Eventos auditados" valor={medidas?.eventos} />
           <Card variant="default" padding="md" className="space-y-1">
-            <span className="text-xs text-stone-500 font-mono uppercase">Usuários Matriculados</span>
-            <p className="text-2xl font-bold font-serif text-stone-900">1.240</p>
-          </Card>
-          <Card variant="default" padding="md" className="space-y-1">
-            <span className="text-xs text-stone-500 font-mono uppercase">Salas de Aula Ativas</span>
-            <p className="text-2xl font-bold font-serif text-stone-900">42</p>
-          </Card>
-          <Card variant="default" padding="md" className="space-y-1">
-            <span className="text-xs text-stone-500 font-mono uppercase">Motores Operacionais</span>
-            <p className="text-2xl font-bold font-serif text-emerald-700">4/4 (100%)</p>
-          </Card>
-          <Card variant="default" padding="md" className="space-y-1">
-            <span className="text-xs text-stone-500 font-mono uppercase">Eventos Auditados</span>
-            <p className="text-2xl font-bold font-serif text-stone-900">8.920</p>
+            <span className="text-xs text-stone-500 font-mono uppercase">Saúde dos motores</span>
+            <button
+              type="button"
+              onClick={() => navigate('/founder/engines')}
+              className="block text-left text-sm font-medium text-anil-700 underline-offset-2 hover:underline"
+            >
+              Medir agora
+            </button>
           </Card>
         </div>
 
@@ -149,3 +238,23 @@ export const AdminDashboardScreen: React.FC = () => {
     </ScreenContainer>
   );
 };
+
+/**
+ * Uma medida.
+ *
+ * `undefined` é "ainda contando", e não zero. A distinção importa num painel:
+ * zero medido é informação — "não há contas" —, enquanto zero exibido antes da
+ * contagem é uma afirmação falsa que dura o tempo do carregamento.
+ */
+const Medida: React.FC<{ rotulo: string; valor: number | undefined }> = ({ rotulo, valor }) => (
+  <Card variant="default" padding="md" className="space-y-1">
+    <span className="text-xs text-stone-500 font-mono uppercase">{rotulo}</span>
+    <p className="text-2xl font-bold font-serif text-stone-900">
+      {valor === undefined ? (
+        <span className="text-base font-normal text-stone-400">contando…</span>
+      ) : (
+        valor.toLocaleString('pt-BR')
+      )}
+    </p>
+  </Card>
+);

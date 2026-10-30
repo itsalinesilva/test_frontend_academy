@@ -121,7 +121,7 @@ export function DataGrid<T extends { id: string }>({
               setSearchQuery(e.target.value);
               setCurrentPage(1);
             }}
-            placeholder="Filtrar dados..."
+            placeholder="Filtrar dados…"
             className="w-full bg-transparent text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none"
           />
         </div>

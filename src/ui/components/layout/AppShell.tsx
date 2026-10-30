@@ -3,15 +3,9 @@ import { SkipLink } from '../a11y/SkipLink';
 import { Header } from './Header';
 import { User, UserRole } from '../../../domain/types';
 import { useRouter } from '../../navigation/router';
+import { pilarDaRota, pilaresVisiveis } from '../../navigation/pilares';
 import { GlobalPlayer } from '../player/GlobalPlayer';
 import { CommandPalette } from '../overlays/CommandPalette';
-import {
-  GraduationCap,
-  Target,
-  FileMusic,
-  Sliders,
-  User as UserIcon,
-} from 'lucide-react';
 import { clsx } from 'clsx';
 
 export interface AppShellProps {
@@ -57,14 +51,16 @@ export const AppShell: React.FC<AppShellProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Mobile Bottom Navigation Bar: Primary Thumb-Friendly Pillars
-  const mobileBottomItems = [
-    { label: 'Academy', icon: GraduationCap, path: '/academy' },
-    { label: 'Practice', icon: Target, path: '/practice' },
-    { label: 'Score', icon: FileMusic, path: '/score' },
-    { label: 'Studio', icon: Sliders, path: '/studio' },
-    { label: 'Perfil', icon: UserIcon, path: '/profile' },
-  ];
+  /**
+   * A barra inferior lê os PILARES, e não uma lista própria.
+   *
+   * Havia três listas de navegação mantidas à mão — esta, o menu do chevron e
+   * a CirculationBar —, e o **Acervo não estava em nenhuma**: rota pública,
+   * com ficha de obra e de compositor, e sem porta na interface.
+   *
+   * Três listas divergem na primeira tela nova. Uma lista não tem como.
+   */
+  const mobileBottomItems = pilaresVisiveis(!!currentUser);
 
   return (
     <div
@@ -117,30 +113,63 @@ export const AppShell: React.FC<AppShellProps> = ({
         onClose={() => setIsCommandPaletteOpen(false)}
       />
 
-      {/* 7. Institutional Provenance Footer */}
+      {/*
+        🔴 O RODAPÉ FALAVA COM QUEM PROGRAMA, E NÃO COM QUEM ESTUDA.
+
+        Ele exibia três selos — "TypeScript Strict", "Web Audio Synthesizer",
+        "WCAG AA Compliant" — a aluno, visitante e professor. São escolhas de
+        implementação, e não coisas que alguém que veio aprender música precise
+        saber; anunciá-las no rodapé é o mesmo tipo de vazamento que o pente
+        fino persegue no meio da tela.
+
+        E a linha de apresentação — "Circulação contínua entre Teoria, Prática,
+        Notação Urtext, DAW e Governança Acadêmica" — não diz o que a escola faz.
+
+        Um rodapé de escola tem três coisas: quem ela é, o que ela oferece em
+        termos que valem juridicamente, e o caminho de volta.
+      */}
       <footer
         id="app-institutional-footer"
-        className="bg-stone-900 text-stone-400 border-t border-stone-800 py-6 px-4 sm:px-6 lg:px-8 text-xs"
+        className="border-t border-stone-800 bg-stone-900 px-4 py-8 text-xs text-stone-400 sm:px-6 lg:px-8"
       >
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div id="footer-provenance-statement" className="text-center sm:text-left">
-            <p className="font-semibold text-stone-300 font-serif">Conservatório Muscicapa</p>
-            <p className="text-stone-500 mt-0.5 max-w-xl">
-              Plataforma Soberana de Educação e Criação Musical • Circulação contínua entre Teoria, Prática, Notação Urtext, DAW e Governança Acadêmica.
+        <div className="mx-auto grid max-w-7xl gap-6 sm:grid-cols-[1fr_auto]">
+          <div id="footer-provenance-statement">
+            <p className="font-serif text-sm font-semibold text-stone-200">
+              Conservatório Muscicapa
+            </p>
+            <p className="mt-1 max-w-xl leading-relaxed text-stone-400">
+              Escola de música em linha: teoria, história, prática com medição e um acervo
+              aberto de obras e partituras.
+            </p>
+
+            {/*
+              A RESSALVA É OBRIGAÇÃO, e fica onde todo mundo passa.
+
+              Curso livre precisa dizer que é curso livre. Ela já aparece no
+              certificado e na apresentação do curso; no rodapé ela alcança
+              também quem nunca chegou nessas telas.
+            */}
+            <p className="mt-3 max-w-xl leading-relaxed text-stone-500">
+              Cursos livres, com certificação própria do Conservatório. Não são cursos
+              reconhecidos pelo MEC, e não conferem diploma de graduação ou pós-graduação.
             </p>
           </div>
-          <div id="footer-system-badges" className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
-            <span className="inline-flex items-center gap-1 text-[11px] font-mono text-stone-400 bg-stone-800/80 px-2 py-1 rounded">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
-              TypeScript Strict
-            </span>
-            <span className="inline-flex items-center gap-1 text-[11px] font-mono text-stone-400 bg-stone-800/80 px-2 py-1 rounded">
-              Web Audio Synthesizer
-            </span>
-            <span className="inline-flex items-center gap-1 text-[11px] font-mono text-stone-400 bg-stone-800/80 px-2 py-1 rounded">
-              WCAG AA Compliant
-            </span>
-          </div>
+
+          <nav aria-label="Seções do Conservatório" className="sm:text-right">
+            <ul className="flex flex-wrap gap-x-4 gap-y-1 sm:flex-col sm:items-end">
+              {mobileBottomItems.map((p) => (
+                <li key={p.path}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(p.path)}
+                    className="text-stone-400 underline-offset-2 transition-colors hover:text-stone-200 hover:underline"
+                  >
+                    {p.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
       </footer>
 
@@ -151,7 +180,7 @@ export const AppShell: React.FC<AppShellProps> = ({
       >
         {mobileBottomItems.map((item) => {
           const IconComp = item.icon;
-          const isActive = item.path === '/' ? currentPath === '/' : currentPath.startsWith(item.path);
+          const isActive = pilarDaRota(currentPath)?.id === item.id;
 
           return (
             <button

@@ -39,7 +39,7 @@ export const MembershipCardPanel: React.FC<MembershipCardPanelProps> = ({
         Onde você pertence
       </h2>
       <p className="mt-1 text-xs leading-relaxed text-stone-500">
-        O Grêmio vem do curso, a Casa vem da prática, o Clube vem de você.
+        O Grêmio vem da área que você estuda, a Casa vem da prática, o Clube vem de você.
       </p>
     </header>
 
@@ -56,7 +56,7 @@ export const MembershipCardPanel: React.FC<MembershipCardPanelProps> = ({
         icon={Landmark}
         term="Grêmio"
         items={card.guilds.map((g) => g.name)}
-        emptyText="O Grêmio vem junto com a matrícula no curso."
+        emptyText="O Grêmio vem junto com a matrícula, e reúne quem estuda a mesma área."
       />
       <Row
         icon={FlaskConical}

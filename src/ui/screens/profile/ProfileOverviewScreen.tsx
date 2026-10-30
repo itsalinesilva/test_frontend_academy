@@ -161,7 +161,7 @@ export const ProfileOverviewScreen: React.FC = () => {
         if (publicData) {
           setProfile(publicData);
         } else {
-          setFeedback('Este perfil está totalmente configurado como Privado no servidor.');
+          setFeedback('Este perfil está configurado como privado.');
         }
       } else {
         // Para quem nao e o dono o proprio servico ja devolve a projecao
@@ -280,9 +280,9 @@ export const ProfileOverviewScreen: React.FC = () => {
         density="operational"
         asideLabel="Secoes"
         state={isLoading ? 'loading' : erro ? 'error' : 'empty'}
-        loadingMessage="Carregando perfil profissional..."
+        loadingMessage="Carregando perfil profissional…"
         errorProps={{
-          message: erro ?? 'Nao foi possivel carregar este perfil.',
+          message: erro ?? 'Não foi possível carregar este perfil.',
           onRetry: () => {
             setIsLoading(true);
             loadProfile(isPreviewPublic);
@@ -429,7 +429,7 @@ export const ProfileOverviewScreen: React.FC = () => {
             lugar de seis <button> com classes condicionais a mao. */}
         <SegmentedControl
           id="profile-clusters"
-          ariaLabel="Agrupar secoes do perfil"
+          ariaLabel="Agrupar seções do perfil"
           sizeVariant="sm"
           value={selectedCluster}
           onChange={setSelectedCluster}
@@ -531,7 +531,7 @@ export const ProfileOverviewScreen: React.FC = () => {
           onSave={async (updated) => {
             await profileService.updateSectionsConfig(updated);
             await loadProfile(isPreviewPublic);
-            setFeedback('Configurações de privacidade por seção atualizadas no servidor!');
+            setFeedback('Privacidade por seção guardada.');
             setTimeout(() => setFeedback(null), 3000);
           }}
           onClose={() => setShowSectionsModal(false)}

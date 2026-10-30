@@ -30,12 +30,13 @@ import { CourseCurriculumScreen } from './academy/CourseCurriculumScreen';
 import { CourseProgressScreen } from './academy/CourseProgressScreen';
 import { InteractiveLessonScreen } from './academy/InteractiveLessonScreen';
 import { AcademyQuizScreen } from './academy/AcademyQuizScreen';
-import { AcademySearchResultsScreen } from './academy/AcademySearchResultsScreen';
 import { AcademicProfileScreen } from './academy/AcademicProfileScreen';
 
 // Practice & Score Canonical Pillars
-import { PracticeHomeScreen } from './practice/PracticeHomeScreen';
-import { SkillTreeScreen } from './practice/SkillTreeScreen';
+import { LaboratorioScreen } from './practice/LaboratorioScreen';
+import { PracticePathScreen } from './practice/PracticePathScreen';
+import { PracticeLeagueScreen } from './practice/PracticeLeagueScreen';
+import { PracticeEnrollmentScreen } from './practice/PracticeEnrollmentScreen';
 import { SkillDetailScreen } from './practice/SkillDetailScreen';
 import { MicroSkillScreen } from './practice/MicroSkillScreen';
 import { ExerciseDetailScreen } from './practice/ExerciseDetailScreen';
@@ -54,8 +55,10 @@ import { ScoreScreen } from './score/ScoreScreen';
 import { NotFoundScreen } from './notfound/NotFoundScreen';
 
 import { WorldsAtlasScreen } from './worlds/WorldsAtlasScreen';
-import { WorkDetailScreen } from './worlds/WorkDetailScreen';
-import { MusicGraphScreen } from './worlds/MusicGraphScreen';
+import { AcervoScreen } from './acervo/AcervoScreen';
+import { ObraScreen } from './acervo/ObraScreen';
+import { CompositorScreen } from './acervo/CompositorScreen';
+import { ArtigoScreen } from './acervo/ArtigoScreen';
 
 import { CommunityFeedScreen } from './community/CommunityFeedScreen';
 import { TopicDetailScreen } from './community/TopicDetailScreen';
@@ -91,6 +94,7 @@ import { OnboardingScreen } from './onboarding/OnboardingScreen';
 import { SettingsScreen } from './settings/SettingsScreen';
 import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { SearchScreen } from './search/SearchScreen';
+import { PraticaDaObraScreen } from './practice/PraticaDaObraScreen';
 import { HelpScreen } from './help/HelpScreen';
 
 // Admin Governance (Protected)
@@ -98,6 +102,8 @@ import { AdminDashboardScreen } from './admin/AdminDashboardScreen';
 import { AdminUsersScreen } from './admin/AdminUsersScreen';
 import { AdminEnginesScreen } from './admin/AdminEnginesScreen';
 import { AdminContentScreen } from './admin/AdminContentScreen';
+import { AdminLicoesScreen } from './admin/AdminLicoesScreen';
+import { AdminArtigosScreen } from './admin/AdminArtigosScreen';
 import { AdminModerationScreen } from './admin/AdminModerationScreen';
 import { AdminAuditScreen } from './admin/AdminAuditScreen';
 
@@ -105,38 +111,46 @@ import { AdminAuditScreen } from './admin/AdminAuditScreen';
 import { DesignSystemCatalog } from '../components/design-system-catalog/DesignSystemCatalog';
 
 export const AppRouterOutlet: React.FC = () => {
-  const { currentPath, navigate } = useRouter();
+  const { currentPath, navigate, query } = useRouter();
+  /**
+   * A decisão vale para UM endereço (`para`).
+   *
+   * Antes, o estado começava "liberado" e só depois virava "verificando": a
+   * tela aparecia, sumia num spinner e voltava REMONTADA — quem já tinha
+   * começado a digitar (o nome da sala, por exemplo) perdia o texto, e a
+   * criança via por um instante a tela que lhe seria negada. Agora, enquanto
+   * não houver decisão para o endereço atual, o que aparece é a verificação.
+   */
   const [authStatus, setAuthStatus] = useState<{
-    isChecking: boolean;
+    para: string | null;
     authorized: boolean;
     reason?: string;
     porSerCrianca?: boolean;
-  }>({ isChecking: false, authorized: true });
+  }>({ para: null, authorized: true });
+  const precisaAvaliar = currentPath.startsWith('/founder') || rotaBloqueadaParaKids(currentPath);
 
   // Protected route authorization evaluation
   useEffect(() => {
     let isMounted = true;
     async function evaluateSecurity() {
-      const isProtected = currentPath.startsWith('/admin') || currentPath === '/rooms/create';
+      const isProtected = currentPath.startsWith('/founder');
 
       // A restrição de conta infantil é avaliada em TODA rota, não só nas
       // protegidas por papel. Perfil de terceiro, comunidade e salas não são
       // "áreas administrativas" — são exatamente onde uma criança não deve
       // chegar, e a checagem tem de estar na navegação para que um link
       // colado de fora encontre o mesmo bloqueio (domain/kids-account.ts).
-      const precisaAvaliar = isProtected || rotaBloqueadaParaKids(currentPath);
-      if (!precisaAvaliar) {
-        if (isMounted) setAuthStatus({ isChecking: false, authorized: true });
+      if (!(isProtected || rotaBloqueadaParaKids(currentPath))) {
+        if (isMounted) setAuthStatus({ para: currentPath, authorized: true });
         return;
       }
 
-      setAuthStatus({ isChecking: true, authorized: true });
       const session = await authService.getActiveSession();
 
       if (session?.mode === AppMode.KIDS && rotaBloqueadaParaKids(currentPath)) {
         if (isMounted) {
           setAuthStatus({
-            isChecking: false,
+            para: currentPath,
             authorized: false,
             porSerCrianca: true,
             reason:
@@ -147,7 +161,7 @@ export const AppRouterOutlet: React.FC = () => {
       }
 
       if (!isProtected) {
-        if (isMounted) setAuthStatus({ isChecking: false, authorized: true });
+        if (isMounted) setAuthStatus({ para: currentPath, authorized: true });
         return;
       }
 
@@ -155,7 +169,7 @@ export const AppRouterOutlet: React.FC = () => {
 
       if (isMounted) {
         setAuthStatus({
-          isChecking: false,
+          para: currentPath,
           authorized: check.authorized,
           reason: check.reason,
         });
@@ -169,7 +183,8 @@ export const AppRouterOutlet: React.FC = () => {
   }, [currentPath]);
 
   // If checking protected route access
-  if (authStatus.isChecking) {
+  const verificando = precisaAvaliar && authStatus.para !== currentPath;
+  if (verificando) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-100 p-4">
         <div className="text-center space-y-2">
@@ -181,7 +196,7 @@ export const AppRouterOutlet: React.FC = () => {
   }
 
   // Access denied screen for protected routes
-  if (!authStatus.authorized) {
+  if (precisaAvaliar && !authStatus.authorized) {
     // Para a criança a mensagem não é de "acesso negado": ela não fez nada
     // errado, e tratar a restricao como falta ensina a contorná-la.
     if (authStatus.porSerCrianca) {
@@ -197,7 +212,7 @@ export const AppRouterOutlet: React.FC = () => {
               As aulas, os exercícios e a sua prática continuam todos disponíveis.
             </p>
             <div className="flex justify-center pt-2">
-              <Button variant="primary" size="sm" onClick={() => navigate('/academy')}>
+              <Button variant="primary" size="sm" onClick={() => navigate('/academia')}>
                 <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Voltar para as aulas
               </Button>
             </div>
@@ -248,31 +263,32 @@ export const AppRouterOutlet: React.FC = () => {
   }
 
   // 1. ACADEMIA
-  if (currentPath === '/academy') {
+  if (currentPath === '/academia') {
     return <AcademyHomeScreen />;
   }
   if (
-    currentPath === '/academy/meu-aprendizado' ||
-    currentPath === '/academy/my-learning'
+    currentPath === '/academia/meu-aprendizado' ||
+    currentPath === '/academia/my-learning'
   ) {
     return <MeuAprendizadoScreen />;
   }
-  if (currentPath === '/academy/catalog') {
+  if (currentPath === '/academia/catalog') {
     return <AcademyCatalogScreen />;
   }
-  if (currentPath === '/academy/search/results') {
-    return <AcademySearchResultsScreen />;
-  }
-  if (currentPath === '/academy/search') {
+  /**
+   * `/academia/search/results` era outra tela, duplicata desta (QA-4). O
+   * endereço continua abrindo — agora na busca unificada, que lê o `?q=`.
+   */
+  if (currentPath === '/academia/search' || currentPath === '/academia/search/results') {
     return <AcademySearchScreen />;
   }
-  if (currentPath.startsWith('/academy/category/')) {
+  if (currentPath.startsWith('/academia/category/')) {
     return <CategoryDetailScreen />;
   }
-  if (currentPath.startsWith('/academy/program/')) {
+  if (currentPath.startsWith('/academia/program/')) {
     return <ProgramDetailScreen />;
   }
-  if (currentPath.startsWith('/academy/path/')) {
+  if (currentPath.startsWith('/academia/path/')) {
     return <PathDetailScreen />;
   }
   if (currentPath.includes('/module/')) {
@@ -285,54 +301,95 @@ export const AppRouterOutlet: React.FC = () => {
     return <CourseProgressScreen />;
   }
   // Dentro do curso: menu lateral fixo, conteudo ao centro, calendario a direita.
-  if (currentPath.startsWith('/academy/course/') && currentPath.endsWith('/aprender')) {
+  if (currentPath.startsWith('/academia/course/') && currentPath.endsWith('/aprender')) {
     return <CourseLearnScreen />;
   }
   // Apresentacao do curso: hero, metricas, secoes, disciplinas, avaliacoes.
-  if (currentPath.startsWith('/academy/course/')) {
+  if (currentPath.startsWith('/academia/course/')) {
     return <CoursePresentationScreen />;
   }
   if (currentPath.includes('/interactive')) {
     return <InteractiveLessonScreen />;
   }
   // A licao abre em tela-teatro, com o menu da disciplina a esquerda.
-  if (currentPath.startsWith('/academy/lesson/')) {
+  if (currentPath.startsWith('/academia/lesson/')) {
     return <LessonTheaterScreen />;
   }
-  if (currentPath.startsWith('/academy/activity/')) {
+  if (currentPath.startsWith('/academia/activity/')) {
     return <ActivityScreen />;
   }
-  if (currentPath.startsWith('/academy/quiz/')) {
+  if (currentPath.startsWith('/academia/quiz/')) {
     return <AcademyQuizScreen />;
   }
-  if (currentPath.startsWith('/academy/assessment/')) {
+  if (currentPath.startsWith('/academia/assessment/')) {
     return <AssessmentScreen />;
   }
-  if (currentPath.startsWith('/academy/result/')) {
+  if (currentPath.startsWith('/academia/result/')) {
     return <AssessmentResultScreen />;
   }
-  if (currentPath.startsWith('/academy/completion/')) {
+  if (currentPath.startsWith('/academia/completion/')) {
     return <CourseCompletionScreen />;
   }
-  if (currentPath.startsWith('/academy/certificate/')) {
+  if (currentPath.startsWith('/academia/certificate/')) {
     return <CertificateScreen />;
   }
-  if (currentPath === '/academy/history') {
+  if (currentPath === '/academia/history') {
     return <AcademicHistoryScreen />;
   }
-  if (currentPath === '/academy/academic-profile' || currentPath === '/academy/profile') {
+  if (currentPath === '/academia/academic-profile' || currentPath === '/academia/profile') {
     return <AcademicProfileScreen />;
   }
 
   // 2. PRACTICE (PRACTICE HUB & GAMIFIED LOOP)
+  /** "Levar à prática", na ficha da obra: a prática é feita da própria peça (AC-1i). */
+  if (currentPath === '/practice' && query.get('obra')) {
+    return <PraticaDaObraScreen obraId={query.get('obra')!} />;
+  }
   if (currentPath === '/practice') {
-    return <PracticeHomeScreen />;
+    /**
+     * 🔴 A TELA ANTERIOR NÃO TINHA NAVEGAÇÃO NENHUMA.
+     *
+     * Era uma coluna com tudo despejado — dez modalidades, seis árvores,
+     * quatro atalhos —, sem marco de página e sem região. E desenhava medida
+     * pessoal para visitante, inclusive uma posição de liga **inventada**
+     * (`rankPosition || 3`).
+     *
+     * `LaboratorioScreen` põe as três abas fixas e o painel lateral. Ver
+     * `docs/harness/88_LABORATORIO.md`.
+     */
+    return <LaboratorioScreen />;
+  }
+
+  /**
+   * O percurso: mapa, licao e encerramento no mesmo lugar.
+   *
+   * Sem esta rota os oito componentes do Laboratorio eram codigo que ninguem
+   * roda — a suite passava e a pessoa nao chegava a nada deles.
+   */
+  if (currentPath === '/practice/path') {
+    return <PracticePathScreen />;
+  }
+  if (
+    currentPath === '/practice/league' ||
+    currentPath === '/practice/missions' ||
+    currentPath === '/practice/streak'
+  ) {
+    return <PracticeLeagueScreen />;
+  }
+  if (currentPath === '/practice/enrollment' || currentPath === '/practice/meters') {
+    return <PracticeEnrollmentScreen />;
   }
   if (currentPath === '/practice/trainer' || currentPath === '/practice/ear') {
     return <PracticeScreen />;
   }
+  /**
+   * 🔴 A SEGUNDA ÁRVORE SAIU (LX-1). Ela era escrita à mão — 5 árvores, 32
+   * nós, pré-requisitos próprios — e não casava com capítulo nenhum do curso:
+   * a pessoa estudava por uma organização e era avaliada por outra. O endereço
+   * continua abrindo, agora na árvore acadêmica do Laboratório.
+   */
   if (currentPath === '/practice/skill-tree') {
-    return <SkillTreeScreen />;
+    return <LaboratorioScreen abaInicial="LICOES" />;
   }
   if (currentPath.startsWith('/practice/skill/')) {
     return <SkillDetailScreen />;
@@ -379,15 +436,41 @@ export const AppRouterOutlet: React.FC = () => {
     return <ScoreScreen />;
   }
 
+  // 4. ACERVO — o catálogo. O Atlas é o mapa; aqui se consulta.
+  if (currentPath === '/acervo') {
+    return <AcervoScreen />;
+  }
+  if (currentPath.startsWith('/acervo/obra/')) {
+    return <ObraScreen />;
+  }
+  if (currentPath.startsWith('/acervo/compositor/')) {
+    return <CompositorScreen />;
+  }
+  if (currentPath.startsWith('/acervo/artigo/')) {
+    return <ArtigoScreen />;
+  }
+
   // 4. MUNDOS (WORLDS)
   if (currentPath === '/worlds') {
     return <WorldsAtlasScreen />;
   }
+  /**
+   * AUD-11 / M-9 — as duas telas daqui eram escritas à mão: TODO id de obra
+   * abria a mesma Sonata BWV 1001, com "Fonte Primária Auditada" e um curso
+   * que não existe; o grafo tinha cinco nós fixos e "8 Arestas" contadas por
+   * ninguém, e o zoom não fazia nada.
+   *
+   * A obra tem ficha de verdade no Acervo, com o mesmo id — este endereço
+   * passa a abri-la. Grafo de influências não há: o catálogo não guarda quem
+   * influenciou quem, e desenhar um sem dado é o defeito de volta. O endereço
+   * leva ao Atlas, que é o mapa real. Quando houver a relação no catálogo, o
+   * grafo volta — construído dela.
+   */
   if (currentPath.startsWith('/worlds/work/')) {
-    return <WorkDetailScreen />;
+    return <ObraScreen />;
   }
   if (currentPath === '/worlds/graph') {
-    return <MusicGraphScreen />;
+    return <WorldsAtlasScreen />;
   }
 
   // 3. COMMUNITY
@@ -495,31 +578,37 @@ export const AppRouterOutlet: React.FC = () => {
   }
 
   // ADMIN GOVERNANCE
-  if (currentPath === '/admin') {
+  if (currentPath === '/founder') {
     return <AdminDashboardScreen />;
   }
-  if (currentPath === '/admin/users') {
+  if (currentPath === '/founder/users') {
     return <AdminUsersScreen />;
   }
-  if (currentPath === '/admin/engines') {
+  if (currentPath === '/founder/engines') {
     return <AdminEnginesScreen />;
   }
-  if (currentPath === '/admin/content') {
+  if (currentPath === '/founder/content') {
     return <AdminContentScreen />;
   }
-  if (currentPath === '/admin/moderation') {
+  if (currentPath === '/founder/licoes') {
+    return <AdminLicoesScreen />;
+  }
+  if (currentPath === '/founder/artigos') {
+    return <AdminArtigosScreen />;
+  }
+  if (currentPath === '/founder/moderation') {
     return <AdminModerationScreen />;
   }
-  if (currentPath === '/admin/credentials') {
+  if (currentPath === '/founder/credentials') {
     return <CredentialStudioScreen />;
   }
-  if (currentPath === '/admin/booklets') {
+  if (currentPath === '/founder/booklets') {
     return <BookletEditorScreen />;
   }
-  if (currentPath === '/admin/biblioteca') {
+  if (currentPath === '/founder/biblioteca') {
     return <LibraryScreen />;
   }
-  if (currentPath === '/admin/audit') {
+  if (currentPath === '/founder/audit') {
     return <AdminAuditScreen />;
   }
 

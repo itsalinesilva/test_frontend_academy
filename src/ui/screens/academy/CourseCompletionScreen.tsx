@@ -79,18 +79,18 @@ export const CourseCompletionScreen: React.FC = () => {
           ? {
               label: 'Visualizar Certificado Digital',
               icon: GraduationCap,
-              onClick: () => navigate(`/academy/certificate/${certificate.id}`),
+              onClick: () => navigate(`/academia/certificate/${certificate.id}`),
             }
           : {
               label: 'Continuar no Catálogo',
               icon: BookOpen,
-              onClick: () => navigate('/academy/catalog'),
+              onClick: () => navigate('/academia/catalog'),
             }
       }
       secondaryActions={[
         {
           label: 'Meu Histórico',
-          onClick: () => navigate('/academy/history'),
+          onClick: () => navigate('/academia/history'),
         },
       ]}
     >
@@ -171,7 +171,7 @@ export const CourseCompletionScreen: React.FC = () => {
                 id="btn-open-issued-cert"
                 variant="primary"
                 size="sm"
-                onClick={() => navigate(`/academy/certificate/${certificate.id}`)}
+                onClick={() => navigate(`/academia/certificate/${certificate.id}`)}
               >
                 Visualizar Certificado Oficial
                 <ArrowRight className="w-3.5 h-3.5 ml-1" />

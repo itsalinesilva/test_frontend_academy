@@ -183,7 +183,7 @@ export const MeuAprendizadoScreen: React.FC = () => {
           (emAndamento.length === 0
             ? vazio(
                 'Nada em andamento. Escolha um curso no catálogo — o progresso passa a ser registrado a partir da primeira lição.',
-                { label: 'Ver cursos', path: '/academy' }
+                { label: 'Ver cursos', path: '/academia' }
               )
             : (
               <ul className="space-y-3">
@@ -194,7 +194,7 @@ export const MeuAprendizadoScreen: React.FC = () => {
                     <li key={m.courseId}>
                       <button
                         type="button"
-                        onClick={() => navigate(`/academy/course/${c.id}/aprender`)}
+                        onClick={() => navigate(`/academia/course/${c.id}/aprender`)}
                         className="flex w-full items-center gap-4 rounded-xl p-4 text-left ring-1 ring-stone-200 transition-colors hover:bg-stone-50"
                       >
                         <span className="min-w-0 flex-1">
@@ -251,7 +251,7 @@ export const MeuAprendizadoScreen: React.FC = () => {
                       </span>
                       <button
                         type="button"
-                        onClick={() => navigate(`/academy/completion/${c.id}`)}
+                        onClick={() => navigate(`/academia/completion/${c.id}`)}
                         className="shrink-0 rounded-md px-3 py-1.5 text-sm font-medium text-anil-700 transition-colors hover:bg-anil-50"
                       >
                         Certificado

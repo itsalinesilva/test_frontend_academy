@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import { useRouter } from '../../navigation/router';
+import { useRouter, destinoAposEntrar } from '../../navigation/router';
+import { contaNoDrive } from '../../../services/application/conta-no-drive.service';
 import { authService } from '../../../services/application/auth.service';
 import { Card } from '../../components/base/Card';
 import { GoogleSignInButton } from '../../components/auth/GoogleSignInButton';
@@ -20,7 +21,9 @@ import { GraduationCap, ShieldCheck, HardDrive, Loader2 } from 'lucide-react';
  *    (S-04), incluindo os e-mails administrativos em texto no código.
  */
 export const LoginScreen: React.FC = () => {
-  const { navigate } = useRouter();
+  const { navigate, query } = useRouter();
+  /** A guarda manda `?voltar=` com a tela que pediu a entrada. */
+  const voltar = query.get('voltar');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,10 +33,11 @@ export const LoginScreen: React.FC = () => {
       setError(null);
       try {
         await authService.authenticateWithGoogle({ idToken, nonce });
-        const result = await authService.executePostAuthPipeline(
-          (await authService.getActiveSession())!.user
-        );
-        navigate(result.destination);
+        const sessao = (await authService.getActiveSession())!;
+        /** A conta vive no Drive (ADR-001.A): com consentimento anterior, ela volta em silêncio agora. */
+        contaNoDrive.entrou(sessao.user.id, sessao.user.email);
+        const result = await authService.executePostAuthPipeline(sessao.user);
+        navigate(destinoAposEntrar(result.destination, voltar));
       } catch (err) {
         setError(
           err instanceof Error
@@ -44,7 +48,7 @@ export const LoginScreen: React.FC = () => {
         setIsAuthenticating(false);
       }
     },
-    [navigate]
+    [navigate, voltar]
   );
 
   return (
@@ -81,7 +85,7 @@ export const LoginScreen: React.FC = () => {
             />
 
             <ContaLocalDeDesenvolvimento
-              onEntrou={(destino) => navigate(destino)}
+              onEntrou={(destino) => navigate(destinoAposEntrar(destino, voltar))}
               onErro={(m) => setError(m || null)}
             />
 
@@ -123,6 +127,24 @@ export const LoginScreen: React.FC = () => {
             className="underline underline-offset-2 hover:text-stone-800"
           >
             Precisa de ajuda?
+          </button>
+        </p>
+
+        {/*
+          🔴 A RECUPERAÇÃO NÃO TINHA PORTA.
+
+          `RecoveryScreen` existia com rota e nenhum link em lugar nenhum. Quem
+          não conseguia entrar não tinha como chegar à única tela que explica
+          por quê — e a explicação importa: aqui não há senha para redefinir, o
+          acesso é do Google e é lá que se recupera.
+        */}
+        <p className="text-center text-xs text-stone-500">
+          <button
+            type="button"
+            onClick={() => navigate('/auth/recovery')}
+            className="underline underline-offset-2 hover:text-stone-800"
+          >
+            Não consegue entrar na sua conta?
           </button>
         </p>
       </main>

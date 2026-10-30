@@ -14,7 +14,7 @@
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const OUTCOME = 'livros';
+const OUTCOME = 'books';
 mkdirSync(OUTCOME, { recursive: true });
 
 /** Markdown → HTML, o suficiente para o que os livros usam. */
@@ -161,6 +161,42 @@ const { CURSO_TEORIA, MODULOS_TEORIA, LICOES_TEORIA } = await import(
 );
 const { LIVRETO_TEORIA } = await import('../src/data/seed-booklet-theory.ts');
 const { SINTESE_TEORIA } = await import('../src/data/seed-synthesis-theory.ts');
+const { lerPacote } = await import('../src/domain/pacote-editorial.ts');
+const { applyEditsToMany, mergeCreatedLessons } = await import('../src/domain/editorial-edit.ts');
+const { aplicarSecoesEditadas } = await import('../src/domain/book.ts');
+
+/**
+ * 🔴 O PACOTE PUBLICADO ENTRA NO LIVRO (EE-21).
+ *
+ * O livro impresso é o mesmo conteúdo da plataforma. Gerá-lo do seed cru
+ * imprimiria a questão errada que a curadoria já corrigiu e publicou — e o
+ * prefácio escrito na Biblioteca sairia com o texto de partida.
+ *
+ * Pacote recusado para a geração: imprimir sem as correções publicadas, sem
+ * avisar, é exatamente a divergência que o livro não pode ter.
+ */
+const CAMINHO_DO_PACOTE = 'public/editorial/pacote.json';
+let PUBLICADO = null;
+if (existsSync(CAMINHO_DO_PACOTE)) {
+  const leitura = lerPacote(readFileSync(CAMINHO_DO_PACOTE, 'utf8'));
+  if (!leitura.ok) {
+    console.error(`✗ ${CAMINHO_DO_PACOTE}: ${leitura.motivo}`);
+    process.exit(1);
+  }
+  PUBLICADO = leitura.pacote;
+}
+
+function comPublicado(entrada) {
+  if (!PUBLICADO) return entrada;
+  const criadas = PUBLICADO.licoesCriadas.filter((l) => l.courseId === entrada.curso.id);
+  const livreto =
+    PUBLICADO.livretos.find((l) => l.cursoId === entrada.curso.id) ?? entrada.livreto;
+  return {
+    ...entrada,
+    licoes: applyEditsToMany(mergeCreatedLessons(entrada.licoes, criadas), PUBLICADO.edicoes),
+    livreto,
+  };
+}
 
 const CURSOS = [
   {
@@ -181,8 +217,10 @@ for (const entrada of CURSOS) {
     // Preserva o que foi escrito à mão: só as seções GERADAS são refeitas.
     const anterior = existsSync(anteriorPath) ? lerAnterior(anteriorPath) : null;
 
-    const livros = bookService.gerar({ ...entrada, anterior });
-    const livro = livros[chave];
+    const livros = bookService.gerar({ ...comPublicado(entrada), anterior });
+    const livro = PUBLICADO
+      ? aplicarSecoesEditadas(livros[chave], PUBLICADO.secoesDeLivro)
+      : livros[chave];
 
     const problemas = bookService.validar(livro).filter((p) => p.gravidade === 'erro');
     if (problemas.length > 0) {

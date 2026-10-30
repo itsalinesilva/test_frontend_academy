@@ -11,6 +11,12 @@ import { verifyGoogleIdToken, IdentityVerificationError } from './google-identit
 import { issueSession, verifySession, extractBearerToken, SessionClaims } from './session';
 import { parseAdminAllowlist, resolveAdminGrant, grantHasCapability, AdminGrant } from './admin-authority';
 import { ChainedAuditLog } from './audit-log';
+import { ArmazemDeRelatos, Relato, chaveDoRelato, problemasDoRelato } from './relatos';
+import { ArmazemKV, Pessoa, Resultado, ServicoDeSalas } from './salas';
+import { ServicoDaComunidade } from './comunidade';
+import { ServicoDePessoas } from './pessoas';
+import { ServicoDeDenuncias } from './denuncias';
+import { contaSuspensa, dentroDoLimite, lerConta, listarContas, registrarAcesso, suspender } from './contas';
 
 export interface ServerEnv {
   GOOGLE_OAUTH_CLIENT_ID?: string;
@@ -18,6 +24,12 @@ export interface ServerEnv {
   SESSION_SIGNING_SECRET?: string;
   AUDIT_SIGNING_SECRET?: string;
   ALLOWED_ORIGIN?: string;
+  /** KV da Cloudflare para os relatos de exercício (L-7a). Sem ele, a API diz que não há onde guardar. */
+  RELATOS?: ArmazemDeRelatos;
+  /** KV da Cloudflare para as salas (AUD-9, ADR-003). Sem ele, a API diz que as salas não estão ligadas. */
+  SALAS?: ArmazemKV;
+  /** KV da Cloudflare para fórum, eventos e pessoas (P-1..P-3, ADR-003). */
+  COMUNIDADE?: ArmazemKV;
 }
 
 export interface RequestContext {
@@ -43,7 +55,7 @@ function corsHeaders(env: ServerEnv): Record<string, string> {
   const origin = env.ALLOWED_ORIGIN || 'http://localhost:3000';
   return {
     'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Max-Age': '600',
     Vary: 'Origin',
@@ -85,6 +97,8 @@ async function authenticate(
   if (!token) return null;
   try {
     const session = await verifySession(token, env.SESSION_SIGNING_SECRET || '');
+    /** P-5 — suspender vale em TODA rota: a sessão assinada continua válida, mas a conta não. */
+    if (await contaSuspensa(env.COMUNIDADE, session.sub)) return null;
     const grant = resolveAdminGrant(session, parseAdminAllowlist(env.ADMIN_ALLOWLIST));
     return { session, grant };
   } catch {
@@ -137,6 +151,23 @@ export async function handleApiRequest(
         env.GOOGLE_OAUTH_CLIENT_ID as string,
         body.nonce
       );
+
+      if (await contaSuspensa(env.COMUNIDADE, identity.googleSubject)) {
+        await audit.record({
+          action: 'auth.session.suspended',
+          actorSubject: identity.googleSubject,
+          actorEmail: identity.email,
+          severity: 'SECURITY',
+          details: `Entrada recusada: a conta '${identity.email}' está suspensa.`,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+        return fail('CONTA_SUSPENSA', 'Esta conta está suspensa. Escreva para o suporte.', 403, env);
+      }
+      /** P-5 — o registro da conta nasce do login: automático, nunca cadastro manual (ADR-003). */
+      if (env.COMUNIDADE) {
+        await registrarAcesso(env.COMUNIDADE, { sub: identity.googleSubject, email: identity.email, nome: identity.name || '' });
+      }
 
       const grant = resolveAdminGrant(identity, parseAdminAllowlist(env.ADMIN_ALLOWLIST));
       const { token, claims } = await issueSession(
@@ -293,6 +324,364 @@ export async function handleApiRequest(
     const integrity = await audit.verifyChain();
 
     return json({ data: { logs, count: logs.length, integrity } }, 200, env);
+  }
+
+  // --------------------------------------------------------------- SALAS ---
+  // -------------------------------------------------------------- LIMITE ---
+  /**
+   * P-15 — escrita tem limite: 30 por minuto por pessoa em cada área. Sem
+   * isso, um laço mal escrito (ou de propósito) enchia o fórum e as salas.
+   */
+  if (['POST', 'PATCH', 'DELETE'].includes(request.method) && env.COMUNIDADE) {
+    const area = path.split('/')[3] ?? '';
+    if (['salas', 'forum', 'eventos', 'pessoas', 'relatos', 'denuncias'].includes(area)) {
+      const quem = await authenticate(request, env);
+      if (quem && !(await dentroDoLimite(env.COMUNIDADE, `${quem.session.sub}:${area}`, 30, 60))) {
+        return fail('LIMITE_EXCEDIDO', 'Muitas ações em pouco tempo. Espere um minuto e tente de novo.', 429, env);
+      }
+    }
+  }
+
+  // ----------------------------------------------------------- DENÚNCIAS ---
+  if (path === '/api/v1/denuncias' || path.startsWith('/api/v1/founder/denuncias')) {
+    if (!env.COMUNIDADE) return fail('COMUNIDADE_NAO_CONFIGURADA', 'A comunidade ainda não está ligada neste servidor.', 503, env);
+    const authed = await authenticate(request, env);
+    if (!authed) return fail('UNAUTHENTICATED', 'Entre na sua conta para denunciar.', 401, env);
+    const d = new ServicoDeDenuncias(env.COMUNIDADE, env.SALAS);
+    let corpo: unknown = null;
+    if (request.method === 'POST') {
+      try {
+        corpo = await request.json();
+      } catch {
+        corpo = null;
+      }
+    }
+    const responder = (r: Resultado<unknown>) =>
+      r.ok ? json({ data: r.valor }, r.status ?? 200, env) : fail(r.codigo, r.mensagem, r.status, env);
+    if (path === '/api/v1/denuncias' && request.method === 'POST') {
+      return responder(
+        await d.denunciar({ sub: authed.session.sub, nome: authed.session.name || authed.session.email.split('@')[0] }, corpo)
+      );
+    }
+    if (!authed.grant.isAdmin) return fail('FORBIDDEN', 'Só a administração lê a fila de denúncias.', 403, env);
+    const [, , , , id, acao] = path.split('/').filter(Boolean).map(decodeURIComponent);
+    if (!id && request.method === 'GET') return responder(await d.fila(url.searchParams.get('status') ?? 'aberta'));
+    if (id && (acao === 'ocultar' || acao === 'descartar') && request.method === 'POST') {
+      const r = await d.decidir(authed.session.email, id, acao);
+      if (r.ok) {
+        await audit.record({
+          action: `moderation.report.${acao}`,
+          actorSubject: authed.session.sub,
+          actorEmail: authed.session.email,
+          severity: 'WARNING',
+          details: `Denúncia sobre ${r.valor.alvo.tipo} ${r.valor.alvo.id}: ${acao} (${r.valor.decididas} denúncia(s)).`,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+      }
+      return responder(r);
+    }
+    return fail('NOT_FOUND', 'Rota de denúncias desconhecida.', 404, env);
+  }
+
+  // --------------------------------------------------------------- CONTAS ---
+  if (path === '/api/v1/founder/contas' || path.startsWith('/api/v1/founder/contas/')) {
+    const authed = await authenticate(request, env);
+    if (!authed) return fail('UNAUTHENTICATED', 'Autentique-se.', 401, env);
+    if (!authed.grant.isAdmin) return fail('FORBIDDEN', 'Só a administração vê as contas.', 403, env);
+    if (!env.COMUNIDADE) return fail('COMUNIDADE_NAO_CONFIGURADA', 'O registro de contas ainda não está ligado.', 503, env);
+    const [, , , , alvo, acao] = path.split('/').filter(Boolean).map(decodeURIComponent);
+    if (!alvo && request.method === 'GET') {
+      const r = await listarContas(env.COMUNIDADE, url.searchParams.get('q') ?? '');
+      return r.ok ? json({ data: r.valor }, 200, env) : fail(r.codigo, r.mensagem, r.status, env);
+    }
+    if (alvo && (acao === 'suspender' || acao === 'restaurar') && request.method === 'POST') {
+      if (alvo === authed.session.sub) return fail('A_SI_MESMA', 'A administração não suspende a própria conta.', 409, env);
+      let corpo: { motivo?: unknown } = {};
+      try {
+        corpo = (await request.json()) as { motivo?: unknown };
+      } catch {
+        corpo = {};
+      }
+      /** Conta que está na allowlist de admin não é suspensa por outra admin: a allowlist é decisão de ambiente. */
+      const alvoConta = await lerConta(env.COMUNIDADE, alvo);
+      if (acao === 'suspender' && alvoConta && parseAdminAllowlist(env.ADMIN_ALLOWLIST).includes(alvoConta.email.toLowerCase())) {
+        return fail('ADMIN_INTOCAVEL', 'Esta conta é da administração; tire-a da allowlist antes.', 409, env);
+      }
+      const r = await suspender(env.COMUNIDADE, alvo, authed.session.email, corpo.motivo, acao === 'suspender');
+      if (!r.ok) return fail(r.codigo, r.mensagem, r.status, env);
+      await audit.record({
+        action: acao === 'suspender' ? 'admin.account.suspended' : 'admin.account.restored',
+        actorSubject: authed.session.sub,
+        actorEmail: authed.session.email,
+        severity: 'SECURITY',
+        details: `Conta ${r.valor.email} ${acao === 'suspender' ? `suspensa: ${r.valor.suspensa?.motivo}` : 'restaurada'}.`,
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+      });
+      return json({ data: r.valor }, 200, env);
+    }
+    return fail('NOT_FOUND', 'Rota de contas desconhecida.', 404, env);
+  }
+
+  // ------------------------------------------------------------- PESSOAS ---
+  if (path === '/api/v1/pessoas' || path.startsWith('/api/v1/pessoas/')) {
+    if (!env.COMUNIDADE) {
+      return fail('COMUNIDADE_NAO_CONFIGURADA', 'A comunidade ainda não está ligada neste servidor.', 503, env);
+    }
+    const authed = await authenticate(request, env);
+    const quem: Pessoa | null = authed
+      ? { sub: authed.session.sub, nome: authed.session.name || authed.session.email.split('@')[0] }
+      : null;
+    const pessoas = new ServicoDePessoas(env.COMUNIDADE);
+    const responder = (r: Resultado<unknown>) =>
+      r.ok ? json({ data: r.valor }, r.status ?? 200, env) : fail(r.codigo, r.mensagem, r.status, env);
+    const [, , , alvo, acao] = path.split('/').filter(Boolean).map(decodeURIComponent);
+    if (!alvo && request.method === 'GET') return responder(await pessoas.buscar(url.searchParams.get('q') ?? ''));
+    if (alvo === 'eu' && request.method === 'POST') {
+      if (!quem) return fail('UNAUTHENTICATED', 'Entre na sua conta.', 401, env);
+      let corpo: unknown = null;
+      try {
+        corpo = await request.json();
+      } catch {
+        corpo = null;
+      }
+      return responder(await pessoas.publicar(quem, corpo));
+    }
+    if (alvo && !acao && request.method === 'GET') return responder(await pessoas.cartao(quem, alvo));
+    if (alvo && (acao === 'seguir' || acao === 'deixar') && request.method === 'POST') {
+      if (!quem) return fail('UNAUTHENTICATED', 'Entre na sua conta para seguir.', 401, env);
+      return responder(await pessoas.seguir(quem, alvo, acao === 'seguir'));
+    }
+    return fail('NOT_FOUND', 'Rota de pessoas desconhecida.', 404, env);
+  }
+
+  // ---------------------------------------------------------- COMUNIDADE ---
+  if (
+    path.startsWith('/api/v1/forum/') ||
+    path === '/api/v1/eventos' ||
+    path.startsWith('/api/v1/eventos/') ||
+    path.startsWith('/api/v1/founder/forum/')
+  ) {
+    if (!env.COMUNIDADE) {
+      return fail('COMUNIDADE_NAO_CONFIGURADA', 'A comunidade ainda não está ligada neste servidor.', 503, env);
+    }
+    const authed = await authenticate(request, env);
+    const quem: Pessoa | null = authed
+      ? { sub: authed.session.sub, nome: authed.session.name || authed.session.email.split('@')[0] }
+      : null;
+    const c = new ServicoDaComunidade(env.COMUNIDADE);
+    const metodo = request.method;
+    let corpo: unknown = null;
+    if (metodo === 'POST') {
+      try {
+        corpo = await request.json();
+      } catch {
+        corpo = null;
+      }
+    }
+    const responder = (r: Resultado<unknown>) =>
+      r.ok ? json({ data: r.valor }, r.status ?? 200, env) : fail(r.codigo, r.mensagem, r.status, env);
+    const exigir = (): Response | null =>
+      quem ? null : fail('UNAUTHENTICATED', 'Entre na sua conta para participar da comunidade.', 401, env);
+    const p = path.split('/').filter(Boolean).slice(2).map(decodeURIComponent);
+
+    /** Moderação: só a administração que o SERVIDOR reconhece — nunca um papel dito pelo cliente. */
+    if (p[0] === 'founder') {
+      if (!authed) return fail('UNAUTHENTICATED', 'Autentique-se.', 401, env);
+      if (!authed.grant.isAdmin) return fail('FORBIDDEN', 'Só a administração modera.', 403, env);
+      const [, , recurso, id, acao, alvo] = p;
+      if (recurso === 'topicos' && id && metodo === 'POST' && ['ocultar', 'mostrar', 'fixar', 'trancar', 'destrancar'].includes(acao ?? '')) {
+        await audit.record({
+          action: `moderation.forum.${acao}`,
+          actorSubject: authed.session.sub,
+          actorEmail: authed.session.email,
+          severity: 'WARNING',
+          details: `Tópico ${id}: ${acao}.`,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+        return responder(await c.moderarTopico(id, acao as 'ocultar'));
+      }
+      if (recurso === 'topicos' && id && acao && alvo && metodo === 'POST' && ['ocultar', 'mostrar'].includes(alvo)) {
+        await audit.record({
+          action: `moderation.forum.resposta.${alvo}`,
+          actorSubject: authed.session.sub,
+          actorEmail: authed.session.email,
+          severity: 'WARNING',
+          details: `Resposta ${acao} do tópico ${id}: ${alvo}.`,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        });
+        return responder(await c.moderarResposta(id, acao, alvo === 'ocultar'));
+      }
+      return fail('NOT_FOUND', 'Rota de moderação desconhecida.', 404, env);
+    }
+
+    if (p[0] === 'forum' && p[1] === 'topicos') {
+      const [, , id, sub] = p;
+      if (!id && metodo === 'GET') return responder(await c.topicos(quem, url.searchParams.get('categoria') ?? undefined));
+      if (!id && metodo === 'POST') return exigir() ?? responder(await c.abrir(quem!, corpo));
+      if (id && !sub && metodo === 'GET') return responder(await c.topico(quem, id));
+      if (id && sub === 'respostas' && metodo === 'POST') return exigir() ?? responder(await c.responder(quem!, id, corpo));
+    }
+    if (p[0] === 'eventos') {
+      const [, id, acao] = p;
+      if (!id && metodo === 'GET') return responder(await c.eventos(quem));
+      if (!id && metodo === 'POST') return exigir() ?? responder(await c.criarEvento(quem!, corpo));
+      if (id && acao === 'inscrever' && metodo === 'POST') return exigir() ?? responder(await c.inscrever(quem!, id));
+      if (id && acao === 'desinscrever' && metodo === 'POST') return exigir() ?? responder(await c.desinscrever(quem!, id));
+      if (id && acao === 'cancelar' && metodo === 'POST') {
+        return exigir() ?? responder(await c.cancelarEvento(quem!, id, authed!.grant.isAdmin));
+      }
+    }
+    return fail('NOT_FOUND', 'Rota da comunidade desconhecida.', 404, env);
+  }
+
+  if (path === '/api/v1/salas-novidades' && request.method === 'GET') {
+    if (!env.SALAS) return fail('SALAS_NAO_CONFIGURADAS', 'As salas ainda não estão ligadas neste servidor.', 503, env);
+    const authed = await authenticate(request, env);
+    if (!authed) return fail('UNAUTHENTICATED', 'Entre na sua conta para ver os avisos.', 401, env);
+    const pedido = url.searchParams.get('desde') ?? '';
+    /** Sem marco, os últimos trinta dias: o bastante para quem volta de férias, sem varrer a história. */
+    const desde = Number.isNaN(Date.parse(pedido)) ? new Date(Date.now() - 30 * 864e5).toISOString() : new Date(pedido).toISOString();
+    const r = await new ServicoDeSalas(env.SALAS).novidades(
+      { sub: authed.session.sub, nome: authed.session.name || authed.session.email.split('@')[0] },
+      desde
+    );
+    return r.ok ? json({ data: r.valor }, 200, env) : fail(r.codigo, r.mensagem, r.status, env);
+  }
+
+  if (path === '/api/v1/salas' || path.startsWith('/api/v1/salas/')) {
+    if (!env.SALAS) {
+      return fail('SALAS_NAO_CONFIGURADAS', 'As salas ainda não estão ligadas neste servidor.', 503, env);
+    }
+    const authed = await authenticate(request, env);
+    const quem: Pessoa | null = authed
+      ? { sub: authed.session.sub, nome: authed.session.name || authed.session.email.split('@')[0] }
+      : null;
+    const servico = new ServicoDeSalas(env.SALAS);
+    const partes = path.slice('/api/v1/salas'.length).split('/').filter(Boolean).map(decodeURIComponent);
+    const metodo = request.method;
+    let corpo: unknown = null;
+    if (metodo === 'POST' || metodo === 'PATCH') {
+      try {
+        corpo = await request.json();
+      } catch {
+        corpo = null;
+      }
+    }
+    const responder = (r: Resultado<unknown>) =>
+      r.ok ? json({ data: r.valor }, r.status ?? 200, env) : fail(r.codigo, r.mensagem, r.status, env);
+    /** Ler pode ser anônimo (sala pública); escrever, nunca. */
+    const exigir = (): Response | null =>
+      quem ? null : fail('UNAUTHENTICATED', 'Entre na sua conta para participar das salas.', 401, env);
+
+    const [sala, recurso, alvo, acao] = partes;
+    if (!sala) {
+      if (metodo === 'GET') return responder(await servico.diretorio(quem));
+      if (metodo === 'POST') return exigir() ?? responder(await servico.criar(quem!, corpo));
+    } else if (!recurso) {
+      if (metodo === 'GET') return responder(await servico.sobre(quem, sala));
+      if (metodo === 'PATCH') return exigir() ?? responder(await servico.editar(quem!, sala, corpo));
+    } else if (recurso === 'entrar' && metodo === 'POST') {
+      return exigir() ?? responder(await servico.entrar(quem!, sala));
+    } else if (recurso === 'sair' && metodo === 'POST') {
+      return exigir() ?? responder(await servico.sair(quem!, sala));
+    } else if (recurso === 'membros') {
+      if (!alvo && metodo === 'GET') return responder(await servico.membros(quem, sala));
+      if (alvo && metodo === 'POST' && ['aprovar', 'remover', 'moderador', 'membro'].includes(acao ?? '')) {
+        return exigir() ?? responder(await servico.decidirMembro(quem!, sala, alvo, acao as 'aprovar'));
+      }
+    } else if (recurso === 'posts') {
+      if (!alvo && metodo === 'GET') return responder(await servico.posts(quem, sala));
+      if (!alvo && metodo === 'POST') return exigir() ?? responder(await servico.publicar(quem!, sala, corpo));
+      if (alvo && !acao && metodo === 'DELETE') return exigir() ?? responder(await servico.apagarPost(quem!, sala, alvo));
+      if (alvo && acao === 'curtir' && metodo === 'POST') return exigir() ?? responder(await servico.curtir(quem!, sala, alvo));
+      if (alvo && acao === 'fixar' && metodo === 'POST') return exigir() ?? responder(await servico.fixar(quem!, sala, alvo));
+      if (alvo && acao === 'comentarios' && metodo === 'GET') return responder(await servico.comentarios(quem, sala, alvo));
+      if (alvo && acao === 'comentarios' && metodo === 'POST') {
+        return exigir() ?? responder(await servico.comentar(quem!, sala, alvo, corpo));
+      }
+    } else if (recurso === 'encontros') {
+      if (metodo === 'GET') return responder(await servico.encontros(quem, sala));
+      if (metodo === 'POST') return exigir() ?? responder(await servico.marcarEncontro(quem!, sala, corpo));
+    } else if (recurso === 'tarefas') {
+      /** /salas/:sala/tarefas[/:tarefa/entregar | /:tarefa/entregas[/:aluno/avaliar]] */
+      const [tarefaId, sub2, alunoSub, acao2] = [alvo, acao, partes[4], partes[5]];
+      if (!tarefaId && metodo === 'GET') return exigir() ?? responder(await servico.tarefas(quem, sala));
+      if (!tarefaId && metodo === 'POST') return exigir() ?? responder(await servico.proporTarefa(quem!, sala, corpo));
+      if (tarefaId && sub2 === 'entregar' && metodo === 'POST') return exigir() ?? responder(await servico.entregar(quem!, sala, tarefaId, corpo));
+      if (tarefaId && sub2 === 'entregas' && !alunoSub && metodo === 'GET') return exigir() ?? responder(await servico.entregas(quem!, sala, tarefaId));
+      if (tarefaId && sub2 === 'entregas' && alunoSub && acao2 === 'avaliar' && metodo === 'POST') {
+        return exigir() ?? responder(await servico.avaliar(quem!, sala, tarefaId, alunoSub, corpo));
+      }
+    } else if (recurso === 'ranking' && metodo === 'GET') {
+      return responder(await servico.ranking(quem, sala));
+    }
+    return fail('NOT_FOUND', 'Rota de sala desconhecida.', 404, env);
+  }
+
+  // ------------------------------------------------------------- RELATOS ---
+  if (path === '/api/v1/relatos' && request.method === 'POST') {
+    const authed = await authenticate(request, env);
+    /** Com sessão: relato anônimo é convite a spam, e quem revisa precisa poder perguntar de volta. */
+    if (!authed) return fail('UNAUTHENTICATED', 'Entre para reportar um problema.', 401, env);
+    if (!env.RELATOS) {
+      return fail('RELATOS_NAO_CONFIGURADO', 'O servidor ainda não tem onde guardar relatos.', 503, env);
+    }
+
+    let corpo: unknown;
+    try {
+      corpo = await request.json();
+    } catch {
+      return fail('INVALID_BODY', 'Corpo da requisição não é JSON válido.', 400, env);
+    }
+    const problemas = problemasDoRelato(corpo);
+    if (problemas.length) return fail('RELATO_INVALIDO', problemas.join(' '), 400, env);
+
+    const c = corpo as Pick<Relato, 'exerciseId' | 'enunciado' | 'comentario'>;
+    const em = new Date().toISOString();
+    const relato: Relato = {
+      id: crypto.randomUUID(),
+      exerciseId: c.exerciseId.trim(),
+      enunciado: c.enunciado.trim().slice(0, 300),
+      comentario: c.comentario?.trim() || undefined,
+      /** A autoria vem da SESSÃO assinada, e nunca do corpo: o corpo diria o que quisesse. */
+      autorSubject: authed.session.sub,
+      autorEmail: authed.session.email,
+      em,
+    };
+    await env.RELATOS.put(chaveDoRelato(em, relato.id), JSON.stringify(relato));
+    return json({ data: { id: relato.id, recebidoEm: em } }, 201, env);
+  }
+
+  if (path === '/api/v1/founder/relatos' && request.method === 'GET') {
+    const authed = await authenticate(request, env);
+    if (!authed) return fail('UNAUTHENTICATED', 'Autentique-se para ler os relatos.', 401, env);
+    if (!authed.grant.isAdmin) {
+      await audit.record({
+        action: 'security.relatos.denied',
+        actorSubject: authed.session.sub,
+        actorEmail: authed.session.email,
+        severity: 'SECURITY',
+        details: `Leitura de relatos recusada para '${authed.session.email}'.`,
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+      });
+      return fail('FORBIDDEN', 'Só a administração lê os relatos.', 403, env);
+    }
+    if (!env.RELATOS) {
+      return fail('RELATOS_NAO_CONFIGURADO', 'O servidor ainda não tem onde guardar relatos.', 503, env);
+    }
+
+    const { keys } = await env.RELATOS.list({ prefix: 'relato:', limit: 200 });
+    const relatos = (
+      await Promise.all(keys.map(async (k) => JSON.parse((await env.RELATOS!.get(k.name)) ?? 'null') as Relato | null))
+    )
+      .filter((r): r is Relato => r !== null)
+      .sort((a, b) => b.em.localeCompare(a.em));
+    return json({ data: { relatos, count: relatos.length } }, 200, env);
   }
 
   return fail('NOT_FOUND', 'Endpoint da autoridade não encontrado.', 404, env);

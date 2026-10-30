@@ -1,3 +1,4 @@
+import { aoPraticarHoje } from '../../domain/defensiva';
 import {
   medirTentativa,
   naturezaDoExercicio,
@@ -18,17 +19,19 @@ import {
   DailyGoal,
   RankingLeaderboardEntry,
   PracticeProfile,
-  SkillTree,
   Skill,
   MicroSkill,
   Exercise,
   RankingLeague,
 } from '../../domain/practice';
 import { PracticeRepository, practiceRepository } from '../../repositories/practice.repository';
+import { RoutineRepository, routineRepository } from '../../repositories/routine.repository';
+import { LeagueTier } from '../../domain/league';
 import { profileService, ProfileService } from './profile.service';
 import { analyticsService } from '../../infrastructure/telemetry/analytics-service';
 import { AnalyticsEventType } from '../../domain/analytics';
 import { levelOf, COMPLETIONS_TO_JOIN_LEAGUE } from '../../domain/progress-economy';
+import { notificacoesRepository } from '../../repositories/notificacoes.repository';
 
 export interface EvaluateAttemptInput {
   exerciseId: string;
@@ -52,25 +55,22 @@ export class PracticeService {
   private repo: PracticeRepository;
   private profileSvc: ProfileService;
 
+  private rotina: RoutineRepository;
+
   constructor(
     repo: PracticeRepository = practiceRepository,
-    profSvc: ProfileService = profileService
+    profSvc: ProfileService = profileService,
+    rotina: RoutineRepository = routineRepository
   ) {
     this.repo = repo;
     this.profileSvc = profSvc;
+    this.rotina = rotina;
   }
 
   // ---------------------------------------------------------------------------
   // Catalog & Navigation Queries
   // ---------------------------------------------------------------------------
 
-  public async listSkillTrees(): Promise<SkillTree[]> {
-    return this.repo.listSkillTrees();
-  }
-
-  public async getSkillTree(id: string): Promise<SkillTree | null> {
-    return this.repo.findSkillTreeById(id);
-  }
 
   public async listSkills(treeId?: string): Promise<Skill[]> {
     return this.repo.listSkills(treeId);
@@ -204,8 +204,8 @@ export class PracticeService {
       if (medicao.afinacao.deviationCents !== null) {
         partes.push(`afinação a ${Math.abs(medicao.afinacao.deviationCents)} cents do alvo`);
       }
-      if (medicao.tempoRitmico.desvioMedioMs !== null) {
-        partes.push(`desvio médio de ${medicao.tempoRitmico.desvioMedioMs} ms em relação ao pulso`);
+      if (medicao.tempoRitmico.meanDeviationMs !== null) {
+        partes.push(`desvio médio de ${medicao.tempoRitmico.meanDeviationMs} ms em relação ao pulso`);
       }
       details = partes.length > 0 ? `Medido: ${partes.join('; ')}.` : `Nota global ${nota}.`;
       correctiveAction =
@@ -252,7 +252,7 @@ export class PracticeService {
       expectedResponse: expected,
       isCorrect,
       accuracyScore: nota ?? 0,
-      timingDeviationMs: medicao.tempoRitmico.desvioMedioMs ?? 0,
+      timingDeviationMs: medicao.tempoRitmico.meanDeviationMs ?? 0,
       pitchDeviationCents: medicao.afinacao.deviationCents ?? 0,
       medicao,
       immediateFeedback: {
@@ -336,25 +336,30 @@ export class PracticeService {
     // Aggregate measurements
     const attemptsCount = Math.max(1, attempts.length);
     const correctCount = attempts.filter((a) => a.isCorrect).length;
-    const avgAccuracy = Math.round(
-      attempts.reduce((sum, a) => sum + (a.accuracyScore || 70), 0) / attemptsCount
-    );
-    const avgScore = Math.round(
-      attempts.reduce((sum, a) => sum + (a.measurement?.score || 750), 0) / attemptsCount
-    );
-    const avgPitchAcc = Math.round(
-      attempts.reduce((sum, a) => sum + (a.measurement?.pitch.centsAccuracy || 80), 0) / attemptsCount
-    );
-    const avgRhythmAcc = Math.round(
-      attempts.reduce((sum, a) => sum + (a.measurement?.rhythm.stabilityScore || 80), 0) / attemptsCount
-    );
-    const avgIntonation = Math.round(
-      attempts.reduce((sum, a) => sum + (a.measurement?.intonation || 85), 0) / attemptsCount
-    );
-    const avgConsistency = Math.round(
-      attempts.reduce((sum, a) => sum + (a.measurement?.consistency || 80), 0) / attemptsCount
-    );
-    const totalXp = attempts.reduce((sum, a) => sum + a.xpEarned, 0) || 50;
+    /**
+     * AUD-21 — AS MÉDIAS SÃO DO QUE ACONTECEU.
+     *
+     * Aqui cada ausência tinha um número de reserva: acerto 0 virava 70%
+     * (`a.accuracyScore || 70` — zero é falso em JS), nota ausente virava 750,
+     * afinação 80, entonação 85, e uma sessão sem XP ganhava 50. Errar tudo
+     * rendia 70% de acurácia, subia o domínio e aparecia no perfil.
+     *
+     * Agora: acurácia é a de cada tentativa (ou o próprio acerto, 100/0);
+     * dimensão sem medição é `null`; XP é a soma, e zero é zero.
+     */
+    const media = (valores: Array<number | null | undefined>): number | null => {
+      const medidos = valores.filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
+      return medidos.length ? Math.round(medidos.reduce((s, v) => s + v, 0) / medidos.length) : null;
+    };
+    const avgAccuracy =
+      media(attempts.map((a) => (typeof a.accuracyScore === 'number' ? a.accuracyScore : a.isCorrect ? 100 : 0))) ?? 0;
+    /** A nota de 0 a 1000: a medida, quando houve; senão, a própria acurácia na mesma escala. */
+    const avgScore = media(attempts.map((a) => a.measurement?.score)) ?? avgAccuracy * 10;
+    const avgPitchAcc = media(attempts.map((a) => a.measurement?.pitch?.centsAccuracy));
+    const avgRhythmAcc = media(attempts.map((a) => a.measurement?.rhythm?.stabilityScore));
+    const avgIntonation = media(attempts.map((a) => a.measurement?.intonation));
+    const avgConsistency = media(attempts.map((a) => a.measurement?.consistency));
+    const totalXp = attempts.reduce((sum, a) => sum + (a.xpEarned || 0), 0);
 
     // 1. Mastery Calculation
     let mastery = await this.repo.getMastery(userId, skillId);
@@ -410,13 +415,46 @@ export class PracticeService {
     }
     await this.repo.saveMastery(mastery);
 
+    /** AUD-10 — subir de nível numa habilidade vira aviso. O primeiro contato (nível 1) não: não é conquista, é começo. */
+    if (leveledUp && previousLevel > 0) {
+      const habilidade = await this.repo.findSkillById(skillId).catch(() => null);
+      notificacoesRepository.emitir({
+        id: `aviso_nivel_${userId}_${skillId}_${newLevel}`,
+        userId,
+        tipo: 'NIVEL',
+        titulo: `Nível ${newLevel} em ${habilidade?.name ?? 'uma habilidade'}`,
+        texto: 'Seu domínio subiu com os exercícios desta sessão.',
+        link: '/practice',
+      });
+    }
+
     // 2. Streak & Daily Goal updates
     const streak = await this.repo.getStreak(userId);
     const todayStr = new Date().toISOString().split('T')[0];
     let streakIncremented = false;
 
     if (streak.lastActiveDate !== todayStr) {
-      streak.currentStreakDays += 1;
+      /**
+       * 🔴 A TRANSIÇÃO INTEIRA VEM DO DOMÍNIO.
+       *
+       * Este bloco somava um dia sempre que a data mudasse, sem olhar **qual**
+       * data era: quem praticasse em janeiro e voltasse em julho encontrava a
+       * defensiva intacta, com um dia a mais. E não fechava ciclo nenhum — o
+       * nível era recalculado na tela, pela conta que o faz sumir na quebra.
+       *
+       * `aoPraticarHoje` decide as três coisas juntas, porque são a mesma
+       * decisão. Ver `domain/defensiva.ts`.
+       */
+      const depois = aoPraticarHoje({
+        ultimaData: streak.lastActiveDate,
+        hoje: todayStr,
+        diasSeguidos: streak.currentStreakDays,
+        ciclosCompletados: streak.completedCyclesCount ?? 0,
+      });
+
+      streak.currentStreakDays = depois.diasSeguidos;
+      streak.completedCyclesCount = depois.ciclosCompletados;
+
       if (streak.currentStreakDays > streak.longestStreakDays) {
         streak.longestStreakDays = streak.currentStreakDays;
       }
@@ -521,6 +559,52 @@ export class PracticeService {
     }
 
     await this.repo.saveResult(result);
+
+    /**
+     * A sessao alimenta a ROTINA: missoes do dia e liga da semana.
+     *
+     * Sem isto, `PracticeLeagueScreen` chamava `computeStandings([], ...)` com
+     * um array vazio literal e as missoes recebiam `EMPTY_ACTIVITY` cravada. A
+     * tela montava, os testes de componente passavam, e ela era
+     * estruturalmente incapaz de mostrar qualquer coisa — praticar todo dia
+     * nao mudava uma linha.
+     *
+     * So se credita o que foi medido. `newWorksOpened` fica de fora porque
+     * abrir obra e evento do Atlas, e nao desta sessao; preenche-lo aqui seria
+     * creditar uma leitura que ninguem fez.
+     */
+    const rodadasImpecaveis = attempts.length > 0 && attempts.every((a) => a.isCorrect) ? 1 : 0;
+
+    /**
+     * `earTrainingCorrect` fica de fora, e isso e deliberado.
+     *
+     * A medicao distingue ACOUSTICS de SIMBOLICA, e nenhuma das duas e
+     * "treino de ouvido": uma sessao de teclado e acustica sem ser percepcao
+     * auditiva. Creditar acerto de ouvido a partir do que existe hoje seria
+     * adivinhar, e a missao que depende desse numero passaria a ser cumprida
+     * por quem nunca fez percepcao.
+     *
+     * Fica zerado ate a sessao carregar o tipo do exercicio ate aqui. A
+     * missao correspondente simplesmente nao avanca — que e a verdade.
+     */
+    await this.rotina.somarAtividade(userId, {
+      xpToday: totalXp,
+      flawlessRounds: rodadasImpecaveis,
+      periodsPracticed: 1,
+    });
+
+    /**
+     * A inscricao na liga nasce da pratica, e nao de um botao. A faixa de
+     * entrada e a primeira: subir e descer e trabalho da apuracao semanal, e
+     * nao desta chamada.
+     */
+    await this.rotina.creditarXpDaSemana(
+      userId,
+      { type: 'PLATFORM' },
+      LeagueTier.BRONZE,
+      totalXp
+    );
+
     return result;
   }
 
@@ -529,6 +613,24 @@ export class PracticeService {
     const found = await this.repo.findResultById(resultId);
     if (!found || found.userId !== userId) return null;
     return found;
+  }
+
+  /**
+   * 🔴 AS SESSÕES ABERTAS — o que a pessoa começou e não terminou.
+   *
+   * Distinto de `getPracticeHistory`, que devolve **resultados**, e resultado
+   * só existe quando a sessão acabou. O Feed do Laboratório dizia "em
+   * andamento" e listava sessões concluídas: o rótulo e o conteúdo diziam
+   * coisas opostas, e quem lê acredita no rótulo.
+   *
+   * Aberta é a sessão **sem `endedAt`**. Não há campo de status a consultar:
+   * o fim é o carimbo de hora, e a ausência dele é o que define o aberto.
+   */
+  public async sessoesAbertas(userId: string): Promise<PracticeSession[]> {
+    const todas = await this.repo.listSessionsByUser(userId);
+    return todas
+      .filter((s) => !s.endedAt)
+      .sort((a, b) => b.startedAt.localeCompare(a.startedAt));
   }
 
   public async getPracticeHistory(userId: string): Promise<PracticeResult[]> {
@@ -607,9 +709,10 @@ export class PracticeService {
     const totalMinutes = results.reduce((sum, r) => sum + Math.round(r.durationSeconds / 60), 0);
     const totalSessions = results.length;
     const totalAttempts = results.reduce((sum, r) => sum + r.notesAttempted, 0);
+    /** Precisão = acertos sobre tentativas. Era a média de `pitchAccuracy`, que valia 80 quando nada soava (AUD-21). */
     const avgAcc =
-      results.length > 0
-        ? Math.round(results.reduce((sum, r) => sum + r.pitchAccuracy, 0) / results.length)
+      totalAttempts > 0
+        ? Math.round((results.reduce((sum, r) => sum + r.notesCorrect, 0) / totalAttempts) * 100)
         : null;
 
     const count = {

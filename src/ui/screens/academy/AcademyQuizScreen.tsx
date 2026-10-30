@@ -99,7 +99,7 @@ export const AcademyQuizScreen: React.FC = () => {
           title: 'Quiz não localizado',
           description: `O identificador [${quizId}] não corresponde a uma avaliação ativa.`,
           actionLabel: 'Voltar à Academia',
-          onAction: () => navigate('/academy'),
+          onAction: () => navigate('/academia'),
         }}
       >
         <div />
@@ -128,14 +128,14 @@ export const AcademyQuizScreen: React.FC = () => {
           : {
               label: 'Continuar no Curso',
               icon: ArrowRight,
-              onClick: () => navigate(`/academy/course/${quiz?.courseId}`),
+              onClick: () => navigate(`/academia/course/${quiz?.courseId}`),
             }
       }
       secondaryActions={[
         {
           label: 'Voltar ao Curso',
           icon: ArrowLeft,
-          onClick: () => navigate(`/academy/course/${quiz?.courseId}`),
+          onClick: () => navigate(`/academia/course/${quiz?.courseId}`),
         },
       ]}
     >
@@ -210,7 +210,7 @@ export const AcademyQuizScreen: React.FC = () => {
                 <Button
                   size="sm"
                   variant="primary"
-                  onClick={() => navigate(`/academy/course/${quiz?.courseId}`)}
+                  onClick={() => navigate(`/academia/course/${quiz?.courseId}`)}
                 >
                   Continuar
                   <ArrowRight className="w-3.5 h-3.5 ml-1" />

@@ -8,36 +8,48 @@ import {
   Volume2,
   Eye,
   Sparkles,
-  Save,
   CheckCircle2,
   Link,
   GraduationCap,
   KeyRound,
   Baby,
+  HardDrive,
 } from 'lucide-react';
 import { authService } from '../../../services/application/auth.service';
 import { AuthSessionResponse } from '../../../contracts/auth-contracts';
 import { AppMode, UserRole } from '../../../domain/types';
+import { useRouter } from '../../navigation/router';
+import { PainelDosDados } from '../../components/conta/PainelDosDados';
+import { apagarDadosDoAparelho } from '../../../infrastructure/storage/apagar-dados-do-aparelho';
+import {
+  Preferencias,
+  PrioridadeDoAudio,
+  lerPreferencias,
+  salvarPreferencias,
+} from '../../../repositories/preferencias.repository';
 
 export const SettingsScreen: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'audio' | 'seguranca' | 'privacidade' | 'acessibilidade'>('audio');
+  const [activeTab, setActiveTab] = useState<'dados' | 'audio' | 'seguranca' | 'privacidade' | 'acessibilidade'>('dados');
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [session, setSession] = useState<AuthSessionResponse | null>(null);
+  const { navigate } = useRouter();
 
-  // Audio settings
-  const [inputDevice, setInputDevice] = useState('Microfone Padrão do Sistema');
-  const [sampleRate, setSampleRate] = useState('48000');
-  const [bufferSize, setBufferSize] = useState('256');
+  /**
+   * AUD-6 — cada escolha vale na hora e fica guardada. Antes, "Salvar
+   * Preferências" só trocava o rótulo do botão, e nada daqui chegava à mesa
+   * de áudio nem à página.
+   */
+  const [prefs, setPrefs] = useState<Preferencias>(lerPreferencias);
+  const [microfones, setMicrofones] = useState<MediaDeviceInfo[]>([]);
+  const [confirmandoApagar, setConfirmandoApagar] = useState(false);
 
-  // Accessibility
-  const [highContrast, setHighContrast] = useState(false);
-  const [reduceMotion, setReduceMotion] = useState(false);
-  const [dyslexicFont, setDyslexicFont] = useState(false);
-
-  // Account Linking
-  const [linkingMessage] = useState<string | null>(null);
-
-  // Email password setting
+  const mudar = (parcial: Partial<Preferencias>) => {
+    const novas = { ...prefs, ...parcial };
+    setPrefs(novas);
+    salvarPreferencias(novas);
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 2000);
+  };
 
   useEffect(() => {
     async function loadSession() {
@@ -47,10 +59,18 @@ export const SettingsScreen: React.FC = () => {
     loadSession();
   }, []);
 
-  const handleSave = () => {
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 2000);
-  };
+  /** Os microfones DESTE aparelho. Sem permissão ainda dada, o navegador esconde os nomes. */
+  useEffect(() => {
+    let ativo = true;
+    navigator.mediaDevices
+      ?.enumerateDevices?.()
+      .then((ds) => ativo && setMicrofones(ds.filter((d) => d.kind === 'audioinput' && d.deviceId !== 'default')))
+      .catch(() => undefined);
+    return () => {
+      ativo = false;
+    };
+  }, []);
+  const semNomes = microfones.length > 0 && microfones.every((m) => !m.label);
 
   const isGoogleLinked =
     session?.user.authProvider === 'google' ||
@@ -69,16 +89,22 @@ export const SettingsScreen: React.FC = () => {
       subtitle="Parâmetros de hardware (Áudio/MIDI), vinculação de contas, gestão de sessão e acessibilidade."
       badgeLabel="Parâmetros do Sistema"
       badgeVariant="neutral"
-      primaryAction={{
-        label: savedSuccess ? 'Configurações Salvas' : 'Salvar Preferências',
-        icon: savedSuccess ? CheckCircle2 : Save,
-        onClick: handleSave,
-      }}
     >
+      <p role="status" className="mb-4 text-xs text-stone-600 flex items-center gap-1.5">
+        {savedSuccess ? (
+          <>
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" aria-hidden="true" />
+            Preferência guardada neste aparelho.
+          </>
+        ) : (
+          'Cada escolha vale na hora e fica guardada neste aparelho.'
+        )}
+      </p>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Navigation Sidebar */}
         <div className="space-y-1">
           {[
+            { id: 'dados', label: 'Seus dados', icon: HardDrive },
             { id: 'audio', label: 'Áudio & Dispositivos MIDI', icon: Volume2 },
             { id: 'seguranca', label: 'Conta & Autenticação', icon: Shield },
             { id: 'privacidade', label: 'Privacidade & Kids', icon: Eye },
@@ -106,6 +132,14 @@ export const SettingsScreen: React.FC = () => {
 
         {/* Settings Content Area */}
         <div className="md:col-span-3 space-y-6">
+          {/* Seus dados — a conta vive no Drive da pessoa, ou só no aparelho (ADR-001.A). */}
+          {activeTab === 'dados' && (
+            <Card variant="default" padding="lg" className="space-y-4">
+              <h3 className="font-serif font-bold text-base text-stone-900">Seus dados</h3>
+              <PainelDosDados />
+            </Card>
+          )}
+
           {/* Tab 1: Audio & MIDI */}
           {activeTab === 'audio' && (
             <Card variant="default" padding="lg" className="space-y-4">
@@ -119,50 +153,41 @@ export const SettingsScreen: React.FC = () => {
                     Dispositivo de Entrada do Microfone
                   </label>
                   <select id="settings-screen-dispositivo-de-entrada-do-microfone"
-                    value={inputDevice}
-                    onChange={(e) => setInputDevice(e.target.value)}
+                    value={prefs.microfoneId ?? ''}
+                    onChange={(e) => mudar({ microfoneId: e.target.value || undefined })}
                     className="w-full p-2 rounded border border-stone-300 bg-white"
                   >
-                    <option value="Microfone Padrão do Sistema">Microfone Padrão do Sistema (Built-in)</option>
-                    <option value="Interface USB de Áudio">Interface USB Externa (Focusrite / Presonus)</option>
+                    <option value="">Microfone padrão do sistema</option>
+                    {microfones.map((m, i) => (
+                      <option key={m.deviceId} value={m.deviceId}>
+                        {m.label || `Microfone ${i + 1}`}
+                      </option>
+                    ))}
                   </select>
+                  {semNomes && (
+                    <p className="text-[11px] text-stone-500">
+                      O navegador só mostra o nome dos microfones depois que você libera o acesso uma vez — grave
+                      algo na Mesa de áudio e volte aqui.
+                    </p>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="font-semibold text-stone-700 block" htmlFor="settings-screen-taxa-de-amostragem-sample-rate">
-                      Taxa de Amostragem (Sample Rate)
-                    </label>
-                    <select id="settings-screen-taxa-de-amostragem-sample-rate"
-                      value={sampleRate}
-                      onChange={(e) => setSampleRate(e.target.value)}
-                      className="w-full p-2 rounded border border-stone-300 bg-white font-mono"
-                    >
-                      <option value="44100">44.1 kHz (CD Standard)</option>
-                      <option value="48000">48.0 kHz (Recomendado)</option>
-                      <option value="96000">96.0 kHz (Alta Resolução)</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="font-semibold text-stone-700 block" htmlFor="settings-screen-tamanho-do-buffer-de-latencia">
-                      Tamanho do Buffer de Latência
-                    </label>
-                    <select id="settings-screen-tamanho-do-buffer-de-latencia"
-                      value={bufferSize}
-                      onChange={(e) => setBufferSize(e.target.value)}
-                      className="w-full p-2 rounded border border-stone-300 bg-white font-mono"
-                    >
-                      <option value="128">128 samples (Latência ultra-baixa: ~2.9ms)</option>
-                      <option value="256">256 samples (Balanceado: ~5.8ms)</option>
-                      <option value="512">512 samples (Estabilidade em projetos pesados)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="p-3 bg-stone-50 rounded border border-stone-200">
-                  <p className="font-mono text-[11px] text-stone-600">
-                    Latência estimada de ida e volta: <strong>5.8 ms</strong>. Adequada para afinação ao vivo.
+                <div className="space-y-1">
+                  <label className="font-semibold text-stone-700 block" htmlFor="settings-screen-prioridade-do-audio">
+                    Prioridade do áudio
+                  </label>
+                  <select id="settings-screen-prioridade-do-audio"
+                    value={prefs.prioridade}
+                    onChange={(e) => mudar({ prioridade: e.target.value as PrioridadeDoAudio })}
+                    className="w-full p-2 rounded border border-stone-300 bg-white"
+                  >
+                    <option value="latencia">Resposta rápida — para tocar junto com a gravação</option>
+                    <option value="equilibrio">Equilíbrio — o recomendado</option>
+                    <option value="estabilidade">Estabilidade — para computador mais lento</option>
+                  </select>
+                  <p className="text-[11px] text-stone-500">
+                    Vale para a Mesa de áudio a partir da próxima vez que ela abrir. O navegador decide o tamanho exato
+                    do buffer; esta escolha diz a ele o que priorizar.
                   </p>
                 </div>
               </div>
@@ -172,12 +197,6 @@ export const SettingsScreen: React.FC = () => {
           {/* Tab 2: Conta & Autenticação (Linking, Persistence, Mode, Teacher Capability) */}
           {activeTab === 'seguranca' && (
             <div className="space-y-5">
-              {linkingMessage && (
-                <div className="p-3 bg-stone-100 border border-stone-300 rounded-lg text-xs text-stone-800 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
-                  <span>{linkingMessage}</span>
-                </div>
-              )}
 
               {/* Account Linking Section */}
               <Card variant="default" padding="lg" className="space-y-4">
@@ -295,12 +314,12 @@ export const SettingsScreen: React.FC = () => {
                 <div className="space-y-2 text-xs">
                   <div className="flex items-center justify-between p-2.5 rounded border border-stone-200">
                     <div>
-                      <span className="font-semibold text-stone-900 block">Identificador de Sessão</span>
-                      <span className="text-[11px] font-mono text-stone-500 truncate max-w-xs block">
-                        {session?.accessToken || 'Sessão anônima'}
+                      <span className="font-semibold text-stone-900 block">Sessão</span>
+                      {/* O token não aparece: na tela ele serviria a quem olha por cima do ombro, e a ninguém mais. */}
+                      <span className="text-[11px] text-stone-500 block">
+                        {session ? 'Ativa neste navegador' : 'Nenhuma sessão ativa'}
                       </span>
                     </div>
-                    <span className="text-[11px] text-emerald-700 font-semibold">Persistente</span>
                   </div>
 
                   <div className="flex items-center justify-between p-2.5 rounded border border-stone-200">
@@ -317,6 +336,42 @@ export const SettingsScreen: React.FC = () => {
                     >
                       Encerrar Sessão
                     </Button>
+                  </div>
+
+                  {/* AUD-17 — sair apagava só a sessão; o resto ficava no aparelho para a próxima pessoa. */}
+                  <div className="p-2.5 rounded border border-stone-200 space-y-2">
+                    <span className="font-semibold text-stone-900 block">Aparelho compartilhado?</span>
+                    <span className="text-[11px] text-stone-600 block">
+                      Sair normalmente guarda seu progresso, caderno e gravações neste navegador, para quando você
+                      voltar. Em computador de escola ou biblioteca, saia apagando tudo — como os dados ainda não vão para
+                      um servidor, o que for apagado aqui não volta.
+                    </span>
+                    {!confirmandoApagar ? (
+                      <Button variant="outline" size="sm" onClick={() => setConfirmandoApagar(true)}>
+                        Sair e apagar os dados deste aparelho
+                      </Button>
+                    ) : (
+                      <div role="alertdialog" aria-label="Confirmar apagar" className="flex flex-wrap items-center gap-2">
+                        <span className="text-[11px] font-semibold text-red-800">
+                          Apagar progresso, caderno, gravações e contas deste navegador?
+                        </span>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() =>
+                            authService
+                              .logout()
+                              .then(apagarDadosDoAparelho)
+                              .then(() => window.location.reload())
+                          }
+                        >
+                          Apagar e sair
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => setConfirmandoApagar(false)}>
+                          Cancelar
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -360,14 +415,16 @@ export const SettingsScreen: React.FC = () => {
                   </Badge>
                 </div>
 
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="accent-anil-800" />
-                  <span>Exibir histórico de estudos para colegas de turma</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="accent-anil-800" />
-                  <span>Notificar por e-mail sobre correções e avaliações de professores</span>
-                </label>
+                {/* Aqui havia duas caixas marcadas que não guardavam nada, e uma prometia e-mail que a
+                    plataforma não envia. A visibilidade de verdade se ajusta seção por seção no perfil. */}
+                <div className="p-3 rounded-lg border border-stone-200 flex items-center justify-between gap-3">
+                  <span className="text-stone-700">
+                    Quem vê cada parte do seu perfil — estudos, repertório, conquistas — se ajusta no próprio perfil.
+                  </span>
+                  <Button variant="outline" size="sm" onClick={() => navigate('/profile')}>
+                    Abrir o perfil
+                  </Button>
+                </div>
               </div>
             </Card>
           )}
@@ -386,8 +443,8 @@ export const SettingsScreen: React.FC = () => {
                   </div>
                   <input
                     type="checkbox"
-                    checked={highContrast}
-                    onChange={(e) => setHighContrast(e.target.checked)}
+                    checked={prefs.altoContraste}
+                    onChange={(e) => mudar({ altoContraste: e.target.checked })}
                     className="accent-anil-800"
                   />
                 </label>
@@ -399,21 +456,23 @@ export const SettingsScreen: React.FC = () => {
                   </div>
                   <input
                     type="checkbox"
-                    checked={reduceMotion}
-                    onChange={(e) => setReduceMotion(e.target.checked)}
+                    checked={prefs.reduzirMovimento}
+                    onChange={(e) => mudar({ reduzirMovimento: e.target.checked })}
                     className="accent-anil-800"
                   />
                 </label>
 
                 <label className="flex items-center justify-between p-2.5 rounded border border-stone-200">
                   <div>
-                    <span className="font-semibold text-stone-900 block">Tipografia Amigável para Dislexia</span>
-                    <span className="text-stone-500">Substitui fontes do corpo por traçados de base pesada</span>
+                    <span className="font-semibold text-stone-900 block">Leitura espaçada</span>
+                    <span className="text-stone-500">
+                      Fonte sem serifa, com mais espaço entre letras, palavras e linhas — ajuda quem tem dislexia
+                    </span>
                   </div>
                   <input
                     type="checkbox"
-                    checked={dyslexicFont}
-                    onChange={(e) => setDyslexicFont(e.target.checked)}
+                    checked={prefs.leituraEspacada}
+                    onChange={(e) => mudar({ leituraEspacada: e.target.checked })}
                     className="accent-anil-800"
                   />
                 </label>

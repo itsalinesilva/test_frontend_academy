@@ -336,7 +336,7 @@ export const KidsCreateScreen: React.FC = () => {
                 <Button variant="primary" size="md" onClick={() => navigate('/kids/manage')}>
                   Ir para o acompanhamento
                 </Button>
-                <Button variant="outline" size="md" onClick={() => navigate('/academy')}>
+                <Button variant="outline" size="md" onClick={() => navigate('/academia')}>
                   Ver a Academia
                 </Button>
               </div>

@@ -27,9 +27,14 @@ function abrirSuporte(): void {
 export const HelpScreen: React.FC = () => {
 
   const faqs = [
+    /**
+     * AUD-5 — esta resposta prometia avaliação "pelo docente da sua cátedra".
+     * Não há docente avaliando nada na plataforma: quem corrige é o próprio
+     * exercício. O hash é real (`computeEvidenceHash`) e fica.
+     */
     {
-      q: 'Como funciona a validação de evidências e insígnias?',
-      a: 'Todas as gravações e exercícios submetidos são analisados pelos motores analíticos da plataforma e avaliados pelo docente da sua cátedra. Uma vez aprovados, um hash SHA-256 é registrado no portfólio de quem submeteu.',
+      q: 'Como meus exercícios e evidências são avaliados?',
+      a: 'Cada exercício do Laboratório é corrigido na hora pela própria plataforma, contra a resposta certa — não há docente avaliando por trás. Quando você publica uma evidência no portfólio, um hash SHA-256 do conteúdo é registrado junto, para mostrar que ela não foi alterada depois.',
     },
     {
       q: 'Quais os requisitos de hardware para usar a DAW e o Afinador?',
@@ -37,7 +42,8 @@ export const HelpScreen: React.FC = () => {
     },
     {
       q: 'Como solicitar titularidade de Professor na plataforma?',
-      a: 'A titularidade docente é concedida pela Governança Acadêmica após homologação curricular. Entre em contato com a Secretaria Acadêmica.',
+      // Não há "Governança" nem "Secretaria" que homologue: o painel ainda não atribui papéis (AUD-12).
+      a: 'Ainda não há pedido de titularidade pela plataforma. Escreva para o suporte, pelo botão acima, contando sua formação e o que pretende ensinar.',
     },
   ];
 
@@ -90,7 +96,8 @@ export const HelpScreen: React.FC = () => {
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-mono">
             <div className="p-2 bg-stone-50 rounded border border-stone-200 flex justify-between">
-              <span>Espaço</span> <span className="text-stone-500">Play / Pause</span>
+              {/* Não há Play/Pause global no Espaço; ele marca o tempo nos exercícios de ritmo. */}
+              <span>Espaço</span> <span className="text-stone-500">Bater o ritmo</span>
             </div>
             <div className="p-2 bg-stone-50 rounded border border-stone-200 flex justify-between">
               <span>Ctrl + K</span> <span className="text-stone-500">Busca Global</span>

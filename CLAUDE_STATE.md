@@ -456,7 +456,7 @@ Consequência imediata: `AdminUsersScreen`, `AdminContentScreen` e `AdminEngines
 
 **Princípio:** *a aula ensina a história; o grafo permite explorar a história.* Um curso de História não carrega o catálogo inteiro dentro das aulas — a lição aponta para uma **coleção dinâmica** de compositores e obras que vive no grafo de conhecimento.
 
-**Conservatório** é a seção da Academia onde esse grafo é navegável: o tour por compositores, obras e biografias, em `/academy/conservatory/*`.
+**Conservatório** é a seção da Academia onde esse grafo é navegável: o tour por compositores, obras e biografias, em `/academia/conservatory/*`.
 
 **Cadeia canônica:** `LIVRO → CAPÍTULO → PERÍODO → MOVIMENTO → COMPOSITOR → OBRA → PARTITURA → GRAVAÇÃO → ANÁLISE → LIÇÃO → EXERCÍCIO → PRÁTICA → EVIDÊNCIA → PERFIL`
 

@@ -76,7 +76,7 @@ export const HomeScreen: React.FC = () => {
         moduleTitles={disciplinas[c.id] ?? []}
         progressPercent={m?.progressPercentage}
         isEnrolled={Boolean(m)}
-        onActionClick={() => navigate(`/academy/course/${c.id}`)}
+        onActionClick={() => navigate(`/academia/course/${c.id}`)}
       />
     );
   };
@@ -119,7 +119,7 @@ export const HomeScreen: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => navigate('/academy')}
+                  onClick={() => navigate('/academia')}
                   className="inline-flex items-center gap-1.5 rounded-md px-4 py-3 text-sm font-medium text-anil-800 ring-1 ring-anil-300 transition-colors hover:bg-white"
                 >
                   Ver os cursos primeiro

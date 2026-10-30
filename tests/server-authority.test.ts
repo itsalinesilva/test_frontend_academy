@@ -226,3 +226,81 @@ describe('S-07 — cadeia de auditoria', () => {
     expect(record.previousSignature).toBe('genesis');
   });
 });
+
+// ---------------------------------------------------------------------------
+// L-7a — os relatos de exercício
+// ---------------------------------------------------------------------------
+
+function kvDeMemoria() {
+  const dados = new Map<string, string>();
+  return {
+    dados,
+    async put(k: string, v: string) {
+      dados.set(k, v);
+    },
+    async get(k: string) {
+      return dados.get(k) ?? null;
+    },
+    async list({ prefix }: { prefix: string }) {
+      return { keys: [...dados.keys()].filter((k) => k.startsWith(prefix)).map((name) => ({ name })) };
+    },
+  };
+}
+
+function post(path: string, body: unknown, token?: string): Request {
+  return new Request(`http://localhost:3000${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: JSON.stringify(body),
+  });
+}
+
+describe('L-7a — relatos de exercício', () => {
+  const relato = { exerciseId: 'gen_NOTE_0_1', enunciado: 'Que nota está escrita na pauta?', comentario: 'A pauta está vazia.' };
+
+  it('sem sessão, recusa — relato precisa de autoria', async () => {
+    const env = { ...TEST_ENV, RELATOS: kvDeMemoria() };
+    const res = await handleApiRequest(post('/api/v1/relatos', relato), env);
+    expect(res.status).toBe(401);
+  });
+
+  it('sem armazenamento configurado, diz isso — e não finge que guardou', async () => {
+    const res = await handleApiRequest(post('/api/v1/relatos', relato, await userToken()), TEST_ENV);
+    expect(res.status).toBe(503);
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('RELATOS_NAO_CONFIGURADO');
+  });
+
+  it('🔴 guarda, com a autoria DA SESSÃO — e não a que o corpo disser', async () => {
+    const kv = kvDeMemoria();
+    const env = { ...TEST_ENV, RELATOS: kv };
+    const res = await handleApiRequest(
+      post('/api/v1/relatos', { ...relato, autorEmail: 'forjado@exemplo.org' }, await userToken()),
+      env
+    );
+    expect(res.status).toBe(201);
+    const [gravado] = [...kv.dados.values()].map((v) => JSON.parse(v));
+    expect(gravado).toMatchObject({ exerciseId: relato.exerciseId, autorEmail: 'aluno.comum@exemplo.org' });
+  });
+
+  it('relato sem exercício ou com comentário longo demais é recusado', async () => {
+    const env = { ...TEST_ENV, RELATOS: kvDeMemoria() };
+    const semExercicio = await handleApiRequest(post('/api/v1/relatos', { enunciado: 'x' }, await userToken()), env);
+    expect(semExercicio.status).toBe(400);
+    const longo = await handleApiRequest(
+      post('/api/v1/relatos', { ...relato, comentario: 'x'.repeat(501) }, await userToken()),
+      env
+    );
+    expect(longo.status).toBe(400);
+  });
+
+  it('só a administração lê os relatos', async () => {
+    const env = { ...TEST_ENV, RELATOS: kvDeMemoria() };
+    await handleApiRequest(post('/api/v1/relatos', relato, await userToken()), env);
+
+    expect((await handleApiRequest(get('/api/v1/founder/relatos', await userToken()), env)).status).toBe(403);
+    const res = await handleApiRequest(get('/api/v1/founder/relatos', await adminToken()), env);
+    expect(res.status).toBe(200);
+    const corpo = (await res.json()) as { data: { relatos: Array<{ enunciado: string }> } };
+    expect(corpo.data.relatos.map((r) => r.enunciado)).toEqual([relato.enunciado]);
+  });
+});

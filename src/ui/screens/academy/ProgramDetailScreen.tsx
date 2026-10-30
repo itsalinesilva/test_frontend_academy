@@ -60,7 +60,7 @@ export const ProgramDetailScreen: React.FC = () => {
           title: 'Programa não encontrado',
           description: `O identificador [${programId}] não corresponde a nenhum programa curricular ativo.`,
           actionLabel: 'Voltar ao Catálogo',
-          onAction: () => navigate('/academy/catalog'),
+          onAction: () => navigate('/academia/catalog'),
         }}
       >
         <div />
@@ -71,7 +71,7 @@ export const ProgramDetailScreen: React.FC = () => {
   return (
     <ScreenContainer
       id={`program-detail-${programId}`}
-      title={program?.title || 'Carregando Programa...'}
+      title={program?.title || 'Carregando Programa…'}
       subtitle={program?.subtitle || ''}
       badgeLabel="Programa Curricular Integrado"
       badgeVariant="brand"
@@ -80,16 +80,16 @@ export const ProgramDetailScreen: React.FC = () => {
         icon: ArrowRight,
         onClick: () => {
           if (paths.length > 0) {
-            navigate(`/academy/path/${paths[0].id}`);
+            navigate(`/academia/path/${paths[0].id}`);
           } else {
-            navigate('/academy/catalog');
+            navigate('/academia/catalog');
           }
         },
       }}
       secondaryActions={[
         {
           label: 'Catálogo de Cursos',
-          onClick: () => navigate('/academy/catalog'),
+          onClick: () => navigate('/academia/catalog'),
         },
       ]}
     >
@@ -171,7 +171,7 @@ export const ProgramDetailScreen: React.FC = () => {
                           <button
                             key={c.id}
                             type="button"
-                            onClick={() => navigate(`/academy/course/${c.id}`)}
+                            onClick={() => navigate(`/academia/course/${c.id}`)}
                             className="w-full p-2.5 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-md text-left flex items-center justify-between cursor-pointer transition-colors"
                           >
                             <span className="text-xs font-serif font-semibold text-stone-900 line-clamp-1">
@@ -187,7 +187,7 @@ export const ProgramDetailScreen: React.FC = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => navigate(`/academy/path/${path.id}`)}
+                        onClick={() => navigate(`/academia/path/${path.id}`)}
                       >
                         Acessar Trilha Detalhada
                         <ArrowRight className="w-3.5 h-3.5 ml-1.5" />

@@ -40,7 +40,7 @@ export const EditProfileScreen: React.FC = () => {
         if (p.privacySettings?.visibility) setVisibility(p.privacySettings.visibility);
       }
       } catch (e) {
-        setErro(e instanceof Error ? e.message : 'Nao foi possivel carregar seu perfil.');
+        setErro(e instanceof Error ? e.message : 'Não foi possível carregar seu perfil.');
       } finally {
         setIsLoading(false);
       }
@@ -85,7 +85,7 @@ export const EditProfileScreen: React.FC = () => {
       }, 500);
     } catch (err) {
       console.error(err);
-      setErro(err instanceof Error ? err.message : 'Nao foi possivel salvar as alteracoes.');
+      setErro(err instanceof Error ? err.message : 'Não foi possível salvar as alterações.');
     } finally {
       setIsSaving(false);
     }

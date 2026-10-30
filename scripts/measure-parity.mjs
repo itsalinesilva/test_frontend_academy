@@ -25,7 +25,7 @@ const norm = (p) => relative('.', p).split('\\').join('/');
 const EXPECTED = {
   // ACADEMY
   AcademyHomeScreen: ['C', 'CATALOG'], AcademyCatalogScreen: ['B', 'CATALOG'],
-  AcademySearchScreen: ['B', 'CATALOG'], AcademySearchResultsScreen: ['B', 'CATALOG'],
+  AcademySearchScreen: ['B', 'CATALOG'],
   CategoryDetailScreen: ['B', 'CATALOG'], ProgramDetailScreen: ['C', 'CATALOG'],
   PathDetailScreen: ['C', 'CATALOG'], CourseDetailScreen: ['C', 'CATALOG'],
   CourseCurriculumScreen: ['C', 'CATALOG'], CourseProgressScreen: ['C', 'CATALOG'],
@@ -42,7 +42,7 @@ const EXPECTED = {
   MeuAprendizadoScreen: ['B', 'CATALOG'],
   AcademicHistoryScreen: ['B', 'OPERATIONAL'], AcademicProfileScreen: ['B', 'OPERATIONAL'],
   // PRACTICE
-  PracticeHomeScreen: ['C', 'CATALOG'], SkillTreeScreen: ['C', 'CATALOG'],
+  PracticeHomeScreen: ['C', 'CATALOG'],
   SkillDetailScreen: ['C', 'CATALOG'], MicroSkillScreen: ['C', 'CATALOG'],
   ExerciseDetailScreen: ['A', 'CATALOG'], ExerciseSessionScreen: ['D', 'INSTRUMENT'],
   ImmediateFeedbackScreen: ['D', 'INSTRUMENT'], AttemptDetailScreen: ['A', 'CATALOG'],
@@ -63,8 +63,7 @@ const EXPECTED = {
   VoiceEarLabScreen: ['D', 'INSTRUMENT'], ScoreEditorScreen: ['D', 'INSTRUMENT'],
   ScoreScreen: ['B', 'CATALOG'],
   // WORLDS
-  WorldsAtlasScreen: ['B', 'CATALOG'], WorkDetailScreen: ['C', 'CATALOG'],
-  MusicGraphScreen: ['B', 'CATALOG'],
+  WorldsAtlasScreen: ['B', 'CATALOG'],
   // ADMIN
   AdminDashboardScreen: ['B', 'OPERATIONAL'], AdminUsersScreen: ['B', 'OPERATIONAL'],
   AdminEnginesScreen: ['B', 'OPERATIONAL'], AdminContentScreen: ['B', 'OPERATIONAL'],
@@ -85,7 +84,7 @@ const REQUIRED = {
   CourseDetailScreen: ['Tabs', 'LockedState'], CourseCurriculumScreen: ['LockedState'],
   LessonReaderScreen: ['Staff', 'LockedState'], AcademicHistoryScreen: ['DataGrid'],
   PracticeHomeScreen: ['ProgressRing', 'XPIndicator', 'PracticeCard', 'Tabs'],
-  SkillTreeScreen: ['SkillNode', 'LockedState'], SkillDetailScreen: ['SkillNode', 'ProgressRing'],
+  SkillDetailScreen: ['SkillNode', 'ProgressRing'],
   MicroSkillScreen: ['ProgressRing'], ExerciseSessionScreen: ['Waveform', 'Tuner'],
   VoiceEarLabScreen: ['Tuner', 'Waveform'], PracticeHistoryScreen: ['DataGrid'],
   MasteryScreen: ['DataGrid'], StreakScreen: ['ProgressRing'], DailyGoalScreen: ['ProgressRing'],

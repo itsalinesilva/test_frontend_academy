@@ -196,23 +196,38 @@ describe('calendário de estudo', () => {
 
 describe('Explorar lista telas, não sub-rotas', () => {
   it('nenhum destino é sub-rota de outra tela', () => {
-    // "Editor de partitura" é parte do Studio; "Simulador" é parte do Violino.
-    // Um menu de navegação que lista sub-rotas obriga a ler o mapa inteiro.
-    const src = ler('src/ui/components/layout/ExplorarMenu.tsx');
-    const caminhos = [...src.matchAll(/path: '([^']+)'/g)].map((m) => m[1]);
+    /**
+     * O menu deixou de ter rota escrita nele — ele deriva dos PILARES, que são
+     * a fonte única de navegação. Ler os literais do componente passou a
+     * devolver zero, e o caso virou vácuo: por isso a leitura mudou de lugar.
+     *
+     * A afirmação continua a mesma: destino de menu tem **um segmento**. O
+     * editor de partitura é parte do Estúdio, o Atlas é parte do Acervo — e um
+     * menu que lista sub-rota obriga a ler o mapa inteiro para achar a sala.
+     */
+    const src = ler('src/ui/navigation/pilares.ts');
+    const bloco = src.slice(src.indexOf('export const PILARES'));
+    const caminhos = [...bloco.matchAll(/^\s{4}path: '([^']+)'/gm)].map((m) => m[1]);
 
-    expect(caminhos.length).toBeGreaterThan(0);
+    expect(caminhos.length, 'nenhum pilar lido — o caso ficaria vazio').toBe(5);
     for (const c of caminhos) {
       expect(c, `${c} tem mais de um segmento`).toMatch(/^\/[a-z-]+$/);
       expect(c, `${c} carrega query string`).not.toContain('?');
     }
   });
 
+  it('o menu NÃO escreve rota — ele deriva dos pilares', () => {
+    /** Uma segunda lista divergiria, e foi assim que o Acervo se perdeu. */
+    const src = ler('src/ui/components/layout/ExplorarMenu.tsx');
+    expect(src).toContain('pilaresVisiveis');
+    expect([...src.matchAll(/path: '\/[a-z]/g)].length, 'o menu voltou a escrever rota').toBe(0);
+  });
+
   it('os destinos são os pilares oficiais da plataforma', () => {
     const src = ler('src/ui/components/layout/ExplorarMenu.tsx');
     const caminhos = new Set([...src.matchAll(/path: '([^']+)'/g)].map((m) => m[1]));
     const oficiais = new Set([
-      '/academy',
+      '/academia',
       '/practice',
       '/score',
       '/studio',
@@ -220,7 +235,7 @@ describe('Explorar lista telas, não sub-rotas', () => {
       '/community',
       '/profile',
       '/rooms',
-      '/admin',
+      '/founder',
     ]);
     for (const c of caminhos) expect(oficiais.has(c), `${c} não é pilar oficial`).toBe(true);
   });

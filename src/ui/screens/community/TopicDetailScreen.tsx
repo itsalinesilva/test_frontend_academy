@@ -7,8 +7,13 @@ import { Badge } from '../../components/base/Badge';
 import { Avatar } from '../../components/data-display/Avatar';
 import { ErrorState } from '../../components/feedback/ErrorState';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
-import { forumRepository } from '../../../repositories/forum.repository';
-import { ForumTopic, ForumPost } from '../../../domain/community';
+import { BotaoDenunciar } from '../../components/comunidade/BotaoDenunciar';
+import {
+  Resposta,
+  Topico,
+  comunidadeService,
+  motivoDaComunidade,
+} from '../../../services/application/comunidade.service';
 import { ArrowLeft, MessageSquare, Send } from 'lucide-react';
 
 /**
@@ -40,10 +45,10 @@ const desdeQuando = (iso: string): string => {
 export const TopicDetailScreen: React.FC = () => {
   const { params, navigate } = useRouter();
   const topicId = params.id;
-  const { userId, nome } = useCurrentUser();
+  const { userId, ehAdmin } = useCurrentUser();
 
-  const [topico, setTopico] = useState<ForumTopic | null | undefined>(undefined);
-  const [mensagens, setMensagens] = useState<ForumPost[]>([]);
+  const [topico, setTopico] = useState<Topico | null | undefined>(undefined);
+  const [mensagens, setMensagens] = useState<Resposta[]>([]);
   const [texto, setTexto] = useState('');
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -53,9 +58,9 @@ export const TopicDetailScreen: React.FC = () => {
       setTopico(null);
       return;
     }
-    const t = await forumRepository.topicoPorId(topicId);
-    setTopico(t);
-    setMensagens(t ? await forumRepository.respostasDoTopico(t.id) : []);
+    const r = await comunidadeService.topico(topicId);
+    setTopico(r.topico);
+    setMensagens(r.mensagens);
   }, [topicId]);
 
   useEffect(() => {
@@ -71,26 +76,12 @@ export const TopicDetailScreen: React.FC = () => {
     setEnviando(true);
     setErro(null);
     try {
-      const agora = new Date().toISOString();
-      await forumRepository.salvarResposta({
-        id: `pst_${topico.slug}_${Date.now()}`,
-        topicId: topico.id,
-        authorId: userId,
-        authorName: nome ?? 'Estudante do Conservatório',
-        contentMarkdown: texto.trim(),
-        attachments: [],
-        upvoteCount: 0,
-        downvoteCount: 0,
-        isAcceptedSolution: false,
-        isHiddenByModeration: false,
-        createdAt: agora,
-        updatedAt: agora,
-        isDeleted: false,
-      });
+      /** A autoria vem da sessão, no servidor (P-1). */
+      await comunidadeService.responder(topico.id, texto);
       setTexto('');
       await carregar();
-    } catch {
-      setErro('Não foi possível enviar a resposta.');
+    } catch (e) {
+      setErro(motivoDaComunidade(e));
     } finally {
       setEnviando(false);
     }
@@ -102,9 +93,9 @@ export const TopicDetailScreen: React.FC = () => {
   return (
     <ScreenContainer
       id="topic-detail"
-      title={topico?.title ?? 'Discussão'}
-      subtitle={topico ? `Aberta por ${topico.authorName} ${desdeQuando(topico.createdAt)}` : undefined}
-      badgeLabel={topico?.tags[0]}
+      title={topico?.titulo ?? 'Discussão'}
+      subtitle={topico ? `Aberta por ${topico.autor.nome} ${desdeQuando(topico.criadoEm)}` : undefined}
+      badgeLabel={topico?.oculto ? 'Oculto pela moderação' : topico?.trancado ? 'Fechado' : undefined}
       badgeVariant="neutral"
       primaryAction={{
         label: 'Voltar ao fórum',
@@ -124,27 +115,49 @@ export const TopicDetailScreen: React.FC = () => {
           <Card variant="default" padding="lg" className="space-y-4">
             <div className="flex items-center justify-between border-b border-stone-100 pb-3">
               <div className="flex items-center gap-3">
-                <Avatar name={topico.authorName} size="md" />
+                <Avatar name={topico.autor.nome} size="md" />
                 <div>
-                  <p className="text-sm font-bold text-stone-900">{topico.authorName}</p>
+                  <p className="text-sm font-bold text-stone-900">{topico.autor.nome}</p>
                   <p className="font-mono text-xs text-stone-500">
-                    Publicado {desdeQuando(topico.createdAt)}
+                    Publicado {desdeQuando(topico.criadoEm)}
                   </p>
                 </div>
               </div>
-              {topico.tags[0] && <Badge variant="neutral">{topico.tags[0]}</Badge>}
+              {ehAdmin && (
+                /** P-4 — moderação; o servidor confere a outorga, a tela só não oferece a quem ele recusaria. */
+                <span className="flex flex-wrap gap-2 text-xs" aria-label="Moderação">
+                  {(['fixar', topico.trancado ? 'destrancar' : 'trancar', topico.oculto ? 'mostrar' : 'ocultar'] as const).map((acao) => (
+                    <button
+                      key={acao}
+                      type="button"
+                      onClick={() =>
+                        void comunidadeService
+                          .moderarTopico(topico.id, acao)
+                          .then(carregar)
+                          .catch((e) => setErro(motivoDaComunidade(e)))
+                      }
+                      className="rounded border border-stone-300 px-2 py-0.5 text-stone-700 hover:bg-stone-100"
+                    >
+                      {{ fixar: topico.fixado ? 'Desafixar' : 'Fixar', trancar: 'Fechar', destrancar: 'Reabrir', ocultar: 'Ocultar', mostrar: 'Mostrar' }[acao]}
+                    </button>
+                  ))}
+                </span>
+              )}
+              {topico.fixado && <Badge variant="brand">Fixado</Badge>}
             </div>
 
             {abertura && (
               <p className="whitespace-pre-line text-sm leading-relaxed text-stone-700">
-                {abertura.contentMarkdown}
+                {abertura.corpo}
               </p>
             )}
+            {/* P-4 — quem tem conta denuncia; a própria autora não precisa denunciar o que escreveu. */}
+            {userId && !ehAdmin && <BotaoDenunciar alvo={{ tipo: 'forum-topico', id: topico.id, resumo: topico.titulo }} />}
 
             <p className="border-t border-stone-100 pt-3 text-xs text-stone-500">
-              {topico.replyCount <= 1
+              {respostas.length === 0
                 ? 'Ainda sem respostas'
-                : `${topico.replyCount - 1} resposta${topico.replyCount - 1 > 1 ? 's' : ''}`}
+                : `${respostas.length} resposta${respostas.length > 1 ? 's' : ''}`}
             </p>
           </Card>
 
@@ -159,21 +172,44 @@ export const TopicDetailScreen: React.FC = () => {
                 <Card key={r.id} variant="muted" padding="md" className="space-y-2 border-stone-200">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Avatar name={r.authorName} size="sm" />
-                      <span className="text-xs font-bold text-stone-900">{r.authorName}</span>
+                      <Avatar name={r.autor.nome} size="sm" />
+                      <span className="text-xs font-bold text-stone-900">{r.autor.nome}</span>
+                      {r.oculta && <span className="text-[11px] text-amber-800">oculta pela moderação</span>}
                     </div>
                     <span className="font-mono text-xs text-stone-400">
-                      {desdeQuando(r.createdAt)}
+                      {desdeQuando(r.em)}
+                      {ehAdmin && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void comunidadeService
+                              .moderarResposta(topico.id, r.id, r.oculta ? 'mostrar' : 'ocultar')
+                              .then(carregar)
+                              .catch((e) => setErro(motivoDaComunidade(e)))
+                          }
+                          className="ml-2 text-stone-600 underline"
+                        >
+                          {r.oculta ? 'Mostrar' : 'Ocultar'}
+                        </button>
+                      )}
                     </span>
                   </div>
                   <p className="whitespace-pre-line pl-8 text-xs leading-relaxed text-stone-700">
-                    {r.contentMarkdown}
+                    {r.corpo}
                   </p>
+                  {userId && !ehAdmin && (
+                    <div className="pl-8">
+                      <BotaoDenunciar alvo={{ tipo: 'forum-resposta', id: r.id, topicoId: topico.id, resumo: r.corpo.slice(0, 120) }} />
+                    </div>
+                  )}
                 </Card>
               ))}
             </div>
           )}
 
+          {topico.trancado ? (
+            <p className="text-xs text-stone-600">Este tópico foi fechado para respostas.</p>
+          ) : (
           <Card variant="default" padding="md" className="space-y-3">
             <label
               htmlFor="topic-resposta"
@@ -204,6 +240,7 @@ export const TopicDetailScreen: React.FC = () => {
               </Button>
             </div>
           </Card>
+          )}
         </div>
       )}
     </ScreenContainer>

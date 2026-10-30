@@ -15,7 +15,16 @@ import {
   AcademicCertificateRecord,
   AcademicHistoryEntry,
 } from '../domain/academy';
-import { applyEdits, applyEditsToMany, EditorialEdit } from '../domain/editorial-edit';
+import {
+  applyEdits,
+  applyEditsToMany,
+  EditorialEdit,
+  EditorialLesson,
+  mergeCreatedLessons,
+} from '../domain/editorial-edit';
+import { aplicarRemocoes, fundirEdicoes, fundirLicoesCriadas } from '../domain/pacote-editorial';
+import { camadaPublicada } from './camada-publicada';
+import { remocoesVigentes } from './editorial.repository';
 import {
   SEED_CATEGORIES,
   SEED_PROGRAMS,
@@ -240,11 +249,47 @@ export class PersistentAcademyRepository implements AcademyRepository {
    * nova do catálogo não apaga correção de texto.
    */
   private edicoes(): EditorialEdit[] {
-    return this.storage.get<EditorialEdit[]>('amd_academy_editorial_v1') ?? [];
+    /**
+     * Publicado + local, a mais nova vence (EE-21). Ler só o local deixava o
+     * aluno sem nenhuma correção que já tinha sido commitada.
+     */
+    return aplicarRemocoes(
+      fundirEdicoes(
+        camadaPublicada().edicoes,
+        this.storage.get<EditorialEdit[]>('amd_academy_editorial_v1') ?? []
+      ).resultado,
+      remocoesVigentes(this.storage),
+      'EDICAO',
+      (e) => e.id,
+      (e) => e.editadaEm
+    );
+  }
+
+  /**
+   * 🔴 AS LIÇÕES CRIADAS ENTRAM NA LEITURA (EE-22).
+   *
+   * `mergeCreatedLessons` existia, com teste, e nenhum leitor o chamava: uma
+   * lição escrita pela curadoria ficava guardada e nunca aparecia no módulo.
+   * Entram aqui, antes das edições — uma lição criada também se corrige.
+   */
+  private licoesCriadas(): EditorialLesson[] {
+    return aplicarRemocoes(
+      fundirLicoesCriadas(
+        camadaPublicada().licoesCriadas,
+        this.storage.get<EditorialLesson[]>('amd_academy_licoes_criadas_v1') ?? []
+      ).resultado,
+      remocoesVigentes(this.storage),
+      'LICAO_CRIADA',
+      (l) => l.id,
+      (l) => l.criadaEm
+    );
   }
 
   private licoesPublicadas(): AcademyLesson[] {
-    return this.storage.get<AcademyLesson[]>(this.STORAGE_KEYS.LESSONS) || SEED_LESSONS;
+    return mergeCreatedLessons(
+      this.storage.get<AcademyLesson[]>(this.STORAGE_KEYS.LESSONS) || SEED_LESSONS,
+      this.licoesCriadas()
+    );
   }
 
   public async listLessons(): Promise<AcademyLesson[]> {

@@ -38,7 +38,7 @@ const tabela = temTabela ? readFileSync(AUDIENCIA_PATH, 'utf-8') : '';
 /**
  * Rotas de verdade vêm de `===` e de `.startsWith(`. O que vem de
  * `.includes(` é FRAGMENTO — `/curriculum` casa dentro de
- * `/academy/course/X/curriculum`, e a audiência quem decide é o prefixo do
+ * `/academia/course/X/curriculum`, e a audiência quem decide é o prefixo do
  * caminho inteiro. Misturar os dois fazia a auditoria cobrar declaração de
  * coisa que não é rota.
  */
@@ -148,6 +148,142 @@ const rotaCoberta = (r) =>
 const rotasSemAudiencia = routes.filter((r) => !rotaCoberta(r));
 
 // ---------------------------------------------------------------------------
+// 🔴 ROTA QUE EXISTE E NADA APONTA PARA ELA
+// ---------------------------------------------------------------------------
+/**
+ * O ESPELHO DO LINK MORTO, E O DEFEITO QUE PASSOU POR AQUI.
+ *
+ * `orphans` pergunta "existe rota que monta esta tela?". `/founder/licoes` foi
+ * criada com rota no outlet e **nenhum link em lugar nenhum** — e passou, porque
+ * a pergunta que se fazia era a outra.
+ *
+ * São dois defeitos opostos e igualmente fatais:
+ *
+ *   link → rota inexistente   já pego: "todo destino de navegação existe"
+ *   rota ← nenhum link        não era pego: a tela existe e ninguém chega
+ *
+ * O segundo é mais silencioso: nada quebra, nenhum erro aparece, e a tela
+ * simplesmente não é usada por ninguém. Foi assim que três telas do console
+ * ficaram construídas e invisíveis.
+ *
+ * COMO SE MEDE
+ * ------------
+ * Só rotas **sem parâmetro** entram. Rota com `:id` é alcançada por texto
+ * montado — `/academia/lesson/${l.id}` — e procurar por literal ali daria
+ * falso positivo em tudo.
+ *
+ * O link pode ser o caminho literal ou a constante da tabela (`ROUTES.X`): as
+ * duas formas são usadas no projeto, e aceitar só uma acusaria a outra.
+ *
+ * LIMITE DECLARADO: pontos de entrada externos não têm link interno por
+ * natureza — a raiz, a tela de entrada, a verificação pública de credencial.
+ * Eles estão na lista abaixo, e a lista é curta de propósito: cada item nela é
+ * uma rota que o verificador deixa de vigiar.
+ */
+const ENTRADAS_EXTERNAS = new Set([
+  '/',
+  '/auth/login',
+  '/auth/callback',
+  '/credential',
+  '/verificar',
+]);
+
+/** Onde as rotas são DECLARADAS. Citar a rota aqui não é apontar para ela. */
+const DECLARACOES = new Set([
+  'src/ui/screens/AppRouterOutlet.tsx',
+  'src/ui/navigation/router.tsx',
+  'src/ui/navigation/audiencia.ts',
+]);
+
+const FONTES = [...walk('src'), ...(existsSync('server') ? walk('server') : [])].filter((f) =>
+  /\.(ts|tsx)$/.test(f)
+);
+
+/** O texto de tudo que pode conter um link, fora dos arquivos de declaração. */
+const TEXTO_DOS_LINKS = FONTES.filter((f) => !DECLARACOES.has(norm(f)) && !/\.test\./.test(f))
+  .map((f) => readFileSync(f, 'utf-8'))
+  .join('\n');
+
+/** ROUTES.CHAVE: 'caminho' — para aceitar a navegação pela constante. */
+const CHAVE_DA_ROTA = new Map(
+  [...readFileSync('src/ui/navigation/router.tsx', 'utf-8').matchAll(
+    /([A-Z][A-Z0-9_]*)\s*:\s*'([^']+)'/g
+  )].map((m) => [m[2], m[1]])
+);
+
+/**
+ * Rota estática, sem parte variável.
+ *
+ * Duas formas ficam de fora, e pela mesma razão: o caminho real é montado em
+ * tempo de execução, e procurar por literal ali acusaria tudo.
+ *
+ *   `/academia/lesson/:id`  declara o parâmetro
+ *   `/practice/attempt/`    casa por prefixo, e o que vem depois é o parâmetro
+ *
+ * A segunda é a que o outlet usa com `.startsWith(`, e é por isso que a barra
+ * final importa: ela é a assinatura do prefixo dinâmico.
+ */
+/**
+ * Rota estática, sem parte variável.
+ *
+ * Duas formas ficam de fora, e pela mesma razão: o caminho real é montado em
+ * tempo de execução, e procurar por literal ali acusaria tudo.
+ *
+ *   `/academia/lesson/:id`  declara o parâmetro
+ *   `/practice/attempt/`    casa por prefixo, e o que vem depois é o parâmetro
+ *
+ * A segunda é a que o outlet usa com `.startsWith(`, e é por isso que a barra
+ * final importa: ela é a assinatura do prefixo dinâmico.
+ */
+const semParametro = (r) => !r.includes(':') && !r.endsWith('/');
+
+const temQuemAponte = (rota) => {
+  /** Literal, entre aspas simples, duplas ou crase. */
+  if (TEXTO_DOS_LINKS.includes(`'${rota}'`)) return true;
+  if (TEXTO_DOS_LINKS.includes(`"${rota}"`)) return true;
+  if (TEXTO_DOS_LINKS.includes(`\`${rota}\``)) return true;
+
+  /** Ou pela constante da tabela. */
+  const chave = CHAVE_DA_ROTA.get(rota);
+  return Boolean(chave && TEXTO_DOS_LINKS.includes(`ROUTES.${chave}`));
+};
+
+/**
+ * 🔴 A PERGUNTA É SOBRE A TELA, E NÃO SOBRE A GRAFIA DA ROTA.
+ *
+ * A primeira versão media rota a rota, e acusava `/kids` — que divide o mesmo
+ * `if` com `/kids/manage`, este sim linkado. A tela abre; só aquele apelido não
+ * é usado. Acusar ali seria pedir para alguém escrever um link inútil, e é
+ * assim que um verificador perde a confiança de quem o lê.
+ *
+ * O que importa é: **existe algum caminho até esta tela?** Basta uma das rotas
+ * que a montam estar linkada.
+ */
+const alcancavelPorAlgumCaminho = (rotasDaTela) =>
+  rotasDaTela.some(
+    (r) =>
+      /**
+       * Fragmento não é rota: `/curriculum` casa DENTRO de
+       * `/academia/course/X/curriculum`, e o caminho de verdade é montado com
+       * o identificador do curso. O cabeçalho deste arquivo já separa os dois,
+       * e medir fragmento por literal acusaria todos eles.
+       */
+      fragmentos.includes(r) ||
+      /** Prefixo dinâmico: o caminho é montado, e não dá para medir por literal. */
+      !semParametro(r) ||
+      ENTRADAS_EXTERNAS.has(r) ||
+      temQuemAponte(r)
+  );
+
+const telasInalcancaveis = screens
+  .filter((t) => t.roteada)
+  .map((t) => ({ tela: t.nome, rotas: rotasPorTela.get(t.nome) ?? [] }))
+  .filter((t) => t.rotas.length > 0 && !alcancavelPorAlgumCaminho(t.rotas));
+
+/** As rotas dessas telas, para o relatório dizer por onde elas deveriam abrir. */
+const inalcancaveis = telasInalcancaveis.map((t) => `${t.tela}  (${t.rotas.join(' ')})`);
+
+// ---------------------------------------------------------------------------
 // relatório
 // ---------------------------------------------------------------------------
 const orphans = screens.filter((t) => !t.roteada);
@@ -165,6 +301,12 @@ lines.push(
   `rotas com audiência declarada       ${temTabela ? routes.length - rotasSemAudiencia.length : '— (tabela não existe)'} de ${routes.length}`
 );
 lines.push(`telas que vazam conteúdo de logado  ${leaking.length}`);
+lines.push(`rotas que ninguém alcança           ${inalcancaveis.length}`);
+
+if (inalcancaveis.length) {
+  lines.push('\n--- INALCANÇÁVEIS: a rota existe e nada aponta para ela ---');
+  for (const r of inalcancaveis) lines.push(`  ${r}`);
+}
 
 if (orphans.length) {
   lines.push('\n--- ÓRFÃS: existem no código e nenhuma rota as abre ---');
@@ -192,7 +334,13 @@ const output = lines.join('\n');
 if (process.argv.includes('--json')) {
   console.log(
     JSON.stringify(
-      { routes, screens, orphans: orphans.map((t) => t.nome), leaking: leaking.map((t) => t.nome) },
+      {
+        routes,
+        screens,
+        orphans: orphans.map((t) => t.nome),
+        leaking: leaking.map((t) => t.nome),
+        inalcancaveis,
+      },
       null,
       2
     )

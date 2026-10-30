@@ -229,7 +229,7 @@ export const ROTAS_BLOQUEADAS_KIDS: readonly string[] = [
   '/profile/',
   '/community',
   '/rooms',
-  '/admin',
+  '/founder',
   '/studio',
 ];
 

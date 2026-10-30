@@ -10,7 +10,7 @@ import {
 import { ChevronDown, ChevronUp, Minus } from 'lucide-react';
 
 interface LeagueBoardProps {
-  faixa: LeagueTier;
+  tier: LeagueTier;
   scope: LeagueScope;
   /** Os recortes que esta pessoa pode ver — sai do que ela estuda e pratica. */
   availableScopes: { scope: LeagueScope; label: string }[];
@@ -48,7 +48,7 @@ interface LeagueBoardProps {
  * escondido.
  */
 export const LeagueBoard: React.FC<LeagueBoardProps> = ({
-  faixa,
+  tier,
   scope,
   availableScopes,
   onChangeScope,
@@ -63,7 +63,7 @@ export const LeagueBoard: React.FC<LeagueBoardProps> = ({
 
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-8 sm:px-6">
-      <TierLadder faixaAtual={faixa} />
+      <TierLadder faixaAtual={tier} />
 
       <nav aria-label="Recorte da liga" className="mt-6 flex flex-wrap gap-2">
         {availableScopes.map(({ scope: r, label }) => {
@@ -201,7 +201,7 @@ const EmptyStandings: React.FC = () => (
     </ol>
 
     <p className="mt-4 rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm leading-relaxed text-stone-600">
-      Ninguém entrou nesta liga esta semana ainda. As posições aparecem conforme as pessoas
+      Ninguém entrou nesta liga esta week ainda. As posições aparecem conforme as pessoas
       praticam — entra-se com <strong>{COMPLETIONS_TO_ENTER} conclusões</strong>, e a
       classificação é por experiência da semana.
     </p>

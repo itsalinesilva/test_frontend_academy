@@ -124,10 +124,15 @@ Uma progressão só, sem tabela nova a cada faixa: sair do nível 1 custa 100, d
 
 | Evento | XP | Score | Onde |
 |---|---:|---:|---|
-| Tópico aberto | 10 | — | `XP.TOPIC_OPENED` · `forumRepository.salvarTopico` |
-| Resposta publicada | 5 | — | `XP.REPLY_POSTED` · `salvarResposta` |
-| Resposta aceita como solução | 30 | 20 | `XP.REPLY_ACCEPTED` · `isAcceptedSolution` |
-| Avaliação de curso escrita | 15 | — | `XP.REVIEW_WRITTEN` · `reviewsRepository.salvar` |
+| Tópico aberto | 10 | — | ⏳ `XP.TOPIC_OPENED` — constante definida, nunca creditada |
+| Resposta publicada | 5 | — | ⏳ `XP.REPLY_POSTED` — constante definida, nunca creditada |
+| Resposta aceita como solução | 30 | 20 | ⏳ `XP.REPLY_ACCEPTED` — o fórum ainda não marca solução |
+| Avaliação de curso escrita | 15 | — | ⏳ `XP.REVIEW_WRITTEN` — constante definida, nunca creditada |
+
+> **Estado em 2026-09-24:** nenhuma destas quatro linhas credita XP. A tabela as apontava para `salvarTopico`,
+> `salvarResposta` e `reviewsRepository.salvar` — funções que existiam, mas não davam XP a ninguém; o verificador
+> só confere que o símbolo existe. O fórum passou para o servidor (P-1), e creditar XP de comunidade exige decidir
+> onde o XP de uma ação no servidor entra na conta da pessoa, que vive no Drive dela.
 
 > **Nada de comunidade conta para a ofensiva.** Ofensiva é constância de
 > **estudo**; escrever no fórum todo dia não é praticar.

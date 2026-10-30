@@ -17,7 +17,18 @@ export interface RouteAuthorizationResult {
 export type RouteParams = Record<string, string | undefined>;
 
 export interface RouterContextValue {
+  /** O caminho, SEM a consulta: `/search`, e não `/search?q=bach`. */
   currentPath: string;
+  /**
+   * A consulta do endereço (`?q=bach` → `query.get('q')`).
+   *
+   * 🔴 SEPARADA DO CAMINHO, e é isso que faz a rota casar. Antes, o caminho
+   * carregava a consulta junto, e `/search?q=bach` não era igual a
+   * `/search`: toda busca feita pelo cabeçalho caía na página de não
+   * encontrado, e o botão "Entrar" da guarda (`/auth/login?voltar=…`)
+   * também.
+   */
+  query: URLSearchParams;
   /**
    * Parâmetros da rota. `string | undefined` deliberadamente: o tipo
    * anterior (`Record<string, string>`) afirmava presença que a rota não
@@ -49,28 +60,28 @@ export const CANONICAL_ROUTES = {
   HELP: '/help',
 
   // 8 Primary Canonical Pillars & Navigation Axes
-  ACADEMY: '/academy',
-  ACADEMY_CATALOG: '/academy/catalog',
-  ACADEMY_SEARCH: '/academy/search',
-  ACADEMY_SEARCH_RESULTS: '/academy/search/results',
-  ACADEMY_CATEGORY: '/academy/category/:id',
-  ACADEMY_PROGRAM: '/academy/program/:id',
-  ACADEMY_PATH: '/academy/path/:id',
-  ACADEMY_COURSE: '/academy/course/:id',
-  ACADEMY_COURSE_CURRICULUM: '/academy/course/:id/curriculum',
-  ACADEMY_COURSE_PROGRESS: '/academy/course/:id/progress',
-  ACADEMY_MODULE: '/academy/course/:courseId/module/:moduleId',
-  ACADEMY_LESSON: '/academy/lesson/:id',
-  ACADEMY_INTERACTIVE_LESSON: '/academy/lesson/:id/interactive',
-  ACADEMY_ACTIVITY: '/academy/activity/:id',
-  ACADEMY_QUIZ: '/academy/quiz/:id',
-  ACADEMY_ASSESSMENT: '/academy/assessment/:id',
-  ACADEMY_RESULT: '/academy/result/:id',
-  ACADEMY_COMPLETION: '/academy/completion/:id',
-  ACADEMY_CERTIFICATE: '/academy/certificate/:id',
-  ACADEMY_MY_LEARNING: '/academy/my-learning',
-  ACADEMY_HISTORY: '/academy/history',
-  ACADEMY_PROFILE: '/academy/academic-profile',
+  ACADEMY: '/academia',
+  ACADEMY_CATALOG: '/academia/catalog',
+  ACADEMY_SEARCH: '/academia/search',
+  ACADEMY_SEARCH_RESULTS: '/academia/search/results',
+  ACADEMY_CATEGORY: '/academia/category/:id',
+  ACADEMY_PROGRAM: '/academia/program/:id',
+  ACADEMY_PATH: '/academia/path/:id',
+  ACADEMY_COURSE: '/academia/course/:id',
+  ACADEMY_COURSE_CURRICULUM: '/academia/course/:id/curriculum',
+  ACADEMY_COURSE_PROGRESS: '/academia/course/:id/progress',
+  ACADEMY_MODULE: '/academia/course/:courseId/module/:moduleId',
+  ACADEMY_LESSON: '/academia/lesson/:id',
+  ACADEMY_INTERACTIVE_LESSON: '/academia/lesson/:id/interactive',
+  ACADEMY_ACTIVITY: '/academia/activity/:id',
+  ACADEMY_QUIZ: '/academia/quiz/:id',
+  ACADEMY_ASSESSMENT: '/academia/assessment/:id',
+  ACADEMY_RESULT: '/academia/result/:id',
+  ACADEMY_COMPLETION: '/academia/completion/:id',
+  ACADEMY_CERTIFICATE: '/academia/certificate/:id',
+  ACADEMY_MY_LEARNING: '/academia/my-learning',
+  ACADEMY_HISTORY: '/academia/history',
+  ACADEMY_PROFILE: '/academia/academic-profile',
 
   PRACTICE: '/practice',
   PRACTICE_SKILL_TREE: '/practice/skill-tree',
@@ -88,6 +99,26 @@ export const CANONICAL_ROUTES = {
   PRACTICE_STREAK: '/practice/streak',
   PRACTICE_RANKING: '/practice/ranking',
   PRACTICE_PROFILE: '/practice/profile',
+
+  ACERVO: '/acervo',
+  ACERVO_OBRA: '/acervo/obra/:id',
+  ACERVO_COMPOSITOR: '/acervo/compositor/:id',
+  /**
+   * 🔴 ESTA ROTA FALTAVA, E O ARTIGO NÃO ABRIA.
+   *
+   * O card navegava para `/acervo/artigo/<id>`, o outlet reconhecia o prefixo
+   * e montava a tela — e a tela não achava o artigo, porque `params.id` vinha
+   * **vazio**: sem um padrão nesta tabela, `parseParams` não tem contra o que
+   * casar, e o segmento do identificador se perde.
+   *
+   * O sintoma é o pior que existe: a tela abre, não quebra, e mostra "artigo
+   * não encontrado" sobre um artigo que está ali.
+   *
+   * E o meu teste passava, porque ele **substituía o roteador** e entregava o
+   * `id` na mão. Substituir a peça quebrada é a forma mais eficiente de não
+   * encontrar o defeito dela.
+   */
+  ACERVO_ARTIGO: '/acervo/artigo/:id',
 
   SCORE: '/score',
 
@@ -120,15 +151,17 @@ export const CANONICAL_ROUTES = {
   PROFILE_MEMBER: '/profile/:userId',
 
   // Admin Governance (Protected)
-  ADMIN: '/admin',
-  ADMIN_USERS: '/admin/users',
-  ADMIN_ENGINES: '/admin/engines',
-  ADMIN_CONTENT: '/admin/content',
-  ADMIN_MODERATION: '/admin/moderation',
-  ADMIN_AUDIT: '/admin/audit',
-  ADMIN_CREDENTIALS: '/admin/credentials',
-  ADMIN_BOOKLETS: '/admin/booklets',
-  ADMIN_LIBRARY: '/admin/biblioteca',
+  ADMIN: '/founder',
+  ADMIN_USERS: '/founder/users',
+  ADMIN_ENGINES: '/founder/engines',
+  ADMIN_CONTENT: '/founder/content',
+  ADMIN_LICOES: '/founder/licoes',
+  ADMIN_ARTIGOS: '/founder/artigos',
+  ADMIN_MODERATION: '/founder/moderation',
+  ADMIN_AUDIT: '/founder/audit',
+  ADMIN_CREDENTIALS: '/founder/credentials',
+  ADMIN_BOOKLETS: '/founder/booklets',
+  ADMIN_LIBRARY: '/founder/biblioteca',
 
   // Simulador de violino com acompanhamento de partitura.
   VIOLIN_SIMULATOR: '/violin/simulator',
@@ -144,6 +177,18 @@ export const CANONICAL_ROUTES = {
   CREDENTIAL_VERIFY: '/credential',
   CREDENTIAL_BY_CODE: '/credential/:codigo',
 } as const;
+
+/**
+ * Separa caminho e consulta. `/a/b?x=1` → `{ caminho: '/a/b', consulta: 'x=1' }`.
+ *
+ * Exportada porque é a regra que o roteador inteiro segue: rota, parâmetros,
+ * autorização e trilha olham o CAMINHO; só a tela olha a consulta.
+ */
+export function separarEndereco(endereco: string): { caminho: string; consulta: string } {
+  const i = endereco.indexOf('?');
+  if (i < 0) return { caminho: endereco || '/', consulta: '' };
+  return { caminho: endereco.slice(0, i) || '/', consulta: endereco.slice(i + 1) };
+}
 
 function getInitialPath(): string {
   if (typeof window === 'undefined') return '/';
@@ -180,47 +225,45 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
   }
 
   // Academy
-  if (path.startsWith('/academy')) {
-    crumbs.push({ label: 'Academia', path: '/academy' });
-    if (path === '/academy/catalog') {
+  if (path.startsWith('/academia')) {
+    crumbs.push({ label: 'Academia', path: '/academia' });
+    if (path === '/academia/catalog') {
       crumbs.push({ label: 'Catálogo de Cursos' });
-    } else if (path === '/academy/search') {
+    } else if (path === '/academia/search' || path === '/academia/search/results') {
       crumbs.push({ label: 'Busca Acadêmica' });
-    } else if (path === '/academy/search/results') {
-      crumbs.push({ label: 'Resultados da Busca' });
-    } else if (path.startsWith('/academy/category/')) {
+    } else if (path.startsWith('/academia/category/')) {
       crumbs.push({ label: `Cátedra: ${params.id || 'Especialização'}` });
-    } else if (path.startsWith('/academy/program/')) {
+    } else if (path.startsWith('/academia/program/')) {
       crumbs.push({ label: `Programa: ${params.id || 'Detalhes'}` });
-    } else if (path.startsWith('/academy/path/')) {
+    } else if (path.startsWith('/academia/path/')) {
       crumbs.push({ label: `Trilha: ${params.id || 'Detalhes'}` });
     } else if (path.includes('/curriculum')) {
       crumbs.push({ label: 'Grade Curricular' });
     } else if (path.includes('/progress')) {
       crumbs.push({ label: 'Progresso do Curso' });
-    } else if (path.startsWith('/academy/course/')) {
+    } else if (path.startsWith('/academia/course/')) {
       crumbs.push({ label: `Curso: ${params.id || 'Detalhes'}` });
     } else if (path.includes('/interactive')) {
       crumbs.push({ label: 'Laboratório Interativo' });
-    } else if (path.startsWith('/academy/lesson/')) {
+    } else if (path.startsWith('/academia/lesson/')) {
       crumbs.push({ label: 'Lição' });
-    } else if (path.startsWith('/academy/activity/')) {
+    } else if (path.startsWith('/academia/activity/')) {
       crumbs.push({ label: 'Atividade Prática' });
-    } else if (path.startsWith('/academy/quiz/')) {
+    } else if (path.startsWith('/academia/quiz/')) {
       crumbs.push({ label: 'Quiz de Verificação' });
-    } else if (path.startsWith('/academy/assessment/')) {
+    } else if (path.startsWith('/academia/assessment/')) {
       crumbs.push({ label: 'Avaliação Acadêmica' });
-    } else if (path.startsWith('/academy/result/')) {
+    } else if (path.startsWith('/academia/result/')) {
       crumbs.push({ label: 'Resultado do Exame' });
-    } else if (path.startsWith('/academy/completion/')) {
+    } else if (path.startsWith('/academia/completion/')) {
       crumbs.push({ label: 'Conclusão de Curso' });
-    } else if (path.startsWith('/academy/certificate/')) {
+    } else if (path.startsWith('/academia/certificate/')) {
       crumbs.push({ label: 'Certificado Digital' });
-    } else if (path === '/academy/my-learning') {
+    } else if (path === '/academia/my-learning') {
       crumbs.push({ label: 'Meu Aprendizado' });
-    } else if (path === '/academy/history') {
+    } else if (path === '/academia/history') {
       crumbs.push({ label: 'Histórico Acadêmico' });
-    } else if (path === '/academy/academic-profile') {
+    } else if (path === '/academia/academic-profile') {
       crumbs.push({ label: 'Perfil Acadêmico' });
     }
     return crumbs;
@@ -229,7 +272,7 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
   // Practice
   if (path.startsWith('/practice')) {
     crumbs.push({ label: 'Prática & Treino', path: '/practice' });
-    if (path === '/practice/skill-tree') crumbs.push({ label: 'Árvore de Habilidades' });
+    if (path === '/practice/skill-tree') crumbs.push({ label: 'Lições' });
     else if (path.startsWith('/practice/skill/')) crumbs.push({ label: `Habilidade: ${params.id || 'Detalhes'}` });
     else if (path.startsWith('/practice/microskill/')) crumbs.push({ label: `Micro-Habilidade: ${params.id || 'Detalhes'}` });
     else if (path.startsWith('/practice/exercise/')) crumbs.push({ label: `Exercício: ${params.id || 'Ficha'}` });
@@ -256,9 +299,7 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
   if (path.startsWith('/worlds')) {
     crumbs.push({ label: 'Atlas Musical', path: '/worlds' });
     if (path.startsWith('/worlds/work/')) {
-      crumbs.push({ label: `Obra: ${params.id || 'Detalhes'}` });
-    } else if (path === '/worlds/graph') {
-      crumbs.push({ label: 'Grafo de Conexões' });
+      crumbs.push({ label: 'Obra' });
     }
     return crumbs;
   }
@@ -333,16 +374,16 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
   }
 
   // Admin
-  if (path.startsWith('/admin')) {
-    crumbs.push({ label: 'Governança Admin', path: '/admin' });
-    if (path === '/admin/biblioteca') crumbs.push({ label: 'Biblioteca Oficial' });
-    else if (path === '/admin/booklets') crumbs.push({ label: 'Livretos de Exercício' });
-    else if (path === '/admin/credentials') crumbs.push({ label: 'Estúdio de Credenciais' });
-    else if (path === '/admin/users') crumbs.push({ label: 'Usuários & Papéis' });
-    else if (path === '/admin/engines') crumbs.push({ label: 'Engines & Gateway' });
-    else if (path === '/admin/content') crumbs.push({ label: 'Conteúdo & Currículo' });
-    else if (path === '/admin/moderation') crumbs.push({ label: 'Moderação' });
-    else if (path === '/admin/audit') crumbs.push({ label: 'Auditoria Imutável' });
+  if (path.startsWith('/founder')) {
+    crumbs.push({ label: 'Governança Admin', path: '/founder' });
+    if (path === '/founder/biblioteca') crumbs.push({ label: 'Biblioteca Oficial' });
+    else if (path === '/founder/booklets') crumbs.push({ label: 'Livretos de Exercício' });
+    else if (path === '/founder/credentials') crumbs.push({ label: 'Estúdio de Credenciais' });
+    else if (path === '/founder/users') crumbs.push({ label: 'Usuários & Papéis' });
+    else if (path === '/founder/engines') crumbs.push({ label: 'Engines & Gateway' });
+    else if (path === '/founder/content') crumbs.push({ label: 'Conteúdo & Currículo' });
+    else if (path === '/founder/moderation') crumbs.push({ label: 'Moderação' });
+    else if (path === '/founder/audit') crumbs.push({ label: 'Auditoria Imutável' });
     return crumbs;
   }
 
@@ -362,9 +403,9 @@ function deriveBreadcrumbs(path: string, params: RouteParams): BreadcrumbEntry[]
  * Rotas estáticas e dinâmicas, DERIVADAS de `CANONICAL_ROUTES`.
  *
  * A versão anterior mantinha à mão uma lista de 20 padrões dinâmicos, e ela
- * estava incompleta: `/academy/course/:id/curriculum`, `/.../progress`,
- * `/academy/lesson/:id/interactive`, `/academy/quiz/:id`,
- * `/academy/category/:id` e `/practice/feedback/:id` ficaram de fora. Como
+ * estava incompleta: `/academia/course/:id/curriculum`, `/.../progress`,
+ * `/academia/lesson/:id/interactive`, `/academia/quiz/:id`,
+ * `/academia/category/:id` e `/practice/feedback/:id` ficaram de fora. Como
  * `parseParams` exige igualdade de número de segmentos, nenhum padrão casava
  * e essas 6 rotas recebiam `params = {}` — defeito R-01 do
  * 01_REPOSITORY_AUDIT. Dezoito telas mascaravam isso com um id fixo de
@@ -386,7 +427,8 @@ const DYNAMIC_ROUTES = ALL_ROUTES.filter((r) => r.includes(':')).sort((a, b) => 
   return literals(b) - literals(a);
 });
 
-export function resolveRouteParams(path: string): RouteParams {
+export function resolveRouteParams(endereco: string): RouteParams {
+  const path = separarEndereco(endereco).caminho;
   // Rota estática tem precedência absoluta sobre padrão dinâmico.
   if (STATIC_ROUTES.has(path)) return {};
 
@@ -403,7 +445,10 @@ export interface RouterProviderProps {
 }
 
 export const RouterProvider: React.FC<RouterProviderProps> = ({ currentUser = null, children }) => {
-  const [currentPath, setCurrentPath] = useState<string>(getInitialPath);
+  /** O endereço inteiro, com a consulta. As telas recebem as duas partes separadas. */
+  const [endereco, setCurrentPath] = useState<string>(getInitialPath);
+  const { caminho: currentPath, consulta } = useMemo(() => separarEndereco(endereco), [endereco]);
+  const query = useMemo(() => new URLSearchParams(consulta), [consulta]);
   const [authorization, setAuthorization] = useState<RouteAuthorizationResult>({ authorized: true });
 
   const checkAuth = useCallback(
@@ -423,7 +468,7 @@ export const RouterProvider: React.FC<RouterProviderProps> = ({ currentUser = nu
       if (typeof window !== 'undefined') {
         window.location.hash = `#${sanitized}`;
       }
-      checkAuth(sanitized);
+      checkAuth(separarEndereco(sanitized).caminho);
     },
     [checkAuth]
   );
@@ -443,7 +488,7 @@ export const RouterProvider: React.FC<RouterProviderProps> = ({ currentUser = nu
       if (typeof window !== 'undefined') {
         window.history.replaceState(null, '', `#${sanitized}`);
       }
-      checkAuth(sanitized);
+      checkAuth(separarEndereco(sanitized).caminho);
     },
     [checkAuth]
   );
@@ -453,7 +498,7 @@ export const RouterProvider: React.FC<RouterProviderProps> = ({ currentUser = nu
     const handleHashChange = () => {
       const hashPath = window.location.hash ? window.location.hash.replace('#', '') : '/';
       setCurrentPath(hashPath);
-      checkAuth(hashPath);
+      checkAuth(separarEndereco(hashPath).caminho);
     };
 
     window.addEventListener('hashchange', handleHashChange);
@@ -474,6 +519,7 @@ export const RouterProvider: React.FC<RouterProviderProps> = ({ currentUser = nu
 
   const value: RouterContextValue = {
     currentPath,
+    query,
     params,
     breadcrumbs,
     navigate,
@@ -497,3 +543,20 @@ export const useRouteParams = (): RouteParams => {
   const router = useRouter();
   return router.params;
 };
+
+/**
+ * Para onde ir depois de entrar: o `?voltar=` que a guarda deixou no endereço.
+ *
+ * Só caminho INTERNO é aceito — começando por uma barra e não por duas. Um
+ * `voltar` que apontasse para outro site transformaria o botão de entrar num
+ * redirecionamento para qualquer lugar, com a cara da plataforma.
+ *
+ * O destino do pipeline de autenticação vence quando não é a entrada comum:
+ * quem ainda não concluiu o cadastro vai para o onboarding antes de voltar.
+ */
+export function destinoAposEntrar(destinoDoPipeline: string, voltar: string | null): string {
+  if (destinoDoPipeline !== '/') return destinoDoPipeline;
+  if (!voltar || !voltar.startsWith('/') || voltar.startsWith('//')) return destinoDoPipeline;
+  if (voltar.startsWith('/auth/')) return destinoDoPipeline;
+  return voltar;
+}

@@ -14,7 +14,7 @@ import {
   Veredito,
   julgarNota,
   julgarExecucao,
-  ResultadoDaExecucao,
+  PerformanceResult,
   AmostraDetectada,
   batidaParaMs,
   duracaoEmBatidas,
@@ -64,7 +64,7 @@ export const ViolinSimulatorScreen: React.FC = () => {
   const [contagem, setContagem] = useState(4);
   const [vereditos, setVereditos] = useState<Record<string, Veredito>>({});
   const [ultimo, setUltimo] = useState<{ nota: string; verdict: Veredito } | null>(null);
-  const [resultado, setResultado] = useState<ResultadoDaExecucao | null>(null);
+  const [resultado, setResultado] = useState<PerformanceResult | null>(null);
 
   const amostrasRef = useRef<AmostraDetectada[]>([]);
   const inicioRef = useRef(0);
@@ -95,7 +95,7 @@ export const ViolinSimulatorScreen: React.FC = () => {
     parar();
     const r = julgarExecucao(partitura, amostrasRef.current, bpm);
     setResultado(r);
-    setVereditos(Object.fromEntries(r.julgamentos.map((j) => [j.noteId, j.verdict])));
+    setVereditos(Object.fromEntries(r.judgements.map((j) => [j.noteId, j.verdict])));
     setFase('resultado');
     captura.cancelar();
   }, [partitura, bpm, parar, captura]);
@@ -373,7 +373,7 @@ export const ViolinSimulatorScreen: React.FC = () => {
               <div className="flex items-baseline justify-between">
                 <h2 className="font-serif text-base font-bold text-stone-100">Execução concluída</h2>
                 <span className="font-mono text-3xl font-bold text-ouro-400">
-                  {resultado.precisao}
+                  {resultado.accuracy}
                   <span className="text-sm text-stone-500">/100</span>
                 </span>
               </div>
@@ -381,15 +381,15 @@ export const ViolinSimulatorScreen: React.FC = () => {
               <dl className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
                 {(
                   [
-                    ['Notas certas', `${resultado.correct} de ${resultado.notasJulgadas}`],
-                    ['Maior sequência', `${resultado.maiorSequencia}`],
+                    ['Notas certas', `${resultado.correct} de ${resultado.notesJudged}`],
+                    ['Maior sequência', `${resultado.bestStreak}`],
                     [
                       'Desvio de tempo',
-                      resultado.desvioMedioMs !== null ? `${resultado.desvioMedioMs} ms` : '—',
+                      resultado.meanDeviationMs !== null ? `${resultado.meanDeviationMs} ms` : '—',
                     ],
                     [
                       'Desvio de afinação',
-                      resultado.desvioMedioCents !== null ? `${resultado.desvioMedioCents} cents` : '—',
+                      resultado.meanDeviationCents !== null ? `${resultado.meanDeviationCents} cents` : '—',
                     ],
                   ] as [string, string][]
                 ).map(([r, v]) => (
@@ -405,7 +405,7 @@ export const ViolinSimulatorScreen: React.FC = () => {
                   Nota a nota
                 </p>
                 <ul className="flex flex-wrap gap-1">
-                  {resultado.julgamentos
+                  {resultado.judgements
                     .filter((j) => j.expected !== null)
                     .map((j) => (
                       <li

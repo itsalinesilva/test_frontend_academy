@@ -175,7 +175,7 @@ export interface MedicaoReal {
     bpmAlvo: number | null;
     bpmMedido: Dimension;
     /** Desvio médio absoluto em relação à grade, em ms. */
-    desvioMedioMs: Dimension;
+    meanDeviationMs: Dimension;
     /** 0..100, derivada do desvio. */
     pontuacao: Dimension;
   };
@@ -318,7 +318,7 @@ export function medirTentativa(
   // --- tempo e ritmo -------------------------------------------------------
   const ataques = (sinal.ataquesMs ?? []).filter((t) => Number.isFinite(t)).sort((a, b) => a - b);
   let bpmMedido: number | null = null;
-  let desvioMedioMs: number | null = null;
+  let meanDeviationMs: number | null = null;
   let pontuacaoTempo: number | null = null;
   let estabilidadeRitmica: number | null = null;
 
@@ -338,8 +338,8 @@ export function medirTentativa(
       // acerto do instante em que a pessoa começou.
       const intervaloAlvo = 60000 / sinal.bpmAlvo;
       const desvios = ataques.map((t, i) => Math.abs(t - (ataques[0] + i * intervaloAlvo)));
-      desvioMedioMs = Math.round(desvios.reduce((a, b) => a + b, 0) / desvios.length);
-      pontuacaoTempo = pontuarTempo(desvioMedioMs);
+      meanDeviationMs = Math.round(desvios.reduce((a, b) => a + b, 0) / desvios.length);
+      pontuacaoTempo = pontuarTempo(meanDeviationMs);
       medidas.tempoRitmico = pontuacaoTempo;
     } else {
       ausencias.push('Sem andamento alvo: o desvio de tempo não pôde ser calculado.');
@@ -394,7 +394,7 @@ export function medirTentativa(
     tempoRitmico: {
       bpmAlvo: sinal.bpmAlvo ?? null,
       bpmMedido,
-      desvioMedioMs,
+      meanDeviationMs,
       pontuacao: pontuacaoTempo,
     },
     estabilidadeRitmica,
@@ -524,7 +524,7 @@ export function agregarMedicoes(medicoes: MedicaoReal[]): MedicaoReal {
     tempoRitmico: {
       bpmAlvo: presentes.find((m) => m.tempoRitmico.bpmAlvo)?.tempoRitmico.bpmAlvo ?? null,
       bpmMedido: mediaPresente(presentes.map((m) => m.tempoRitmico.bpmMedido)),
-      desvioMedioMs: mediaPresente(presentes.map((m) => m.tempoRitmico.desvioMedioMs)),
+      meanDeviationMs: mediaPresente(presentes.map((m) => m.tempoRitmico.meanDeviationMs)),
       pontuacao: medidas.tempoRitmico,
     },
     estabilidadeRitmica: medidas.estabilidadeRitmica,
@@ -598,8 +598,8 @@ export function descreverSessao(tentativas: TentativaResumivel[], total: number)
   if (agregada.afinacao.deviationCents !== null) {
     linhas.push(`desvio médio de afinação: ${agregada.afinacao.deviationCents} cents`);
   }
-  if (agregada.tempoRitmico.desvioMedioMs !== null) {
-    linhas.push(`desvio médio em relação ao pulso: ${agregada.tempoRitmico.desvioMedioMs} ms`);
+  if (agregada.tempoRitmico.meanDeviationMs !== null) {
+    linhas.push(`desvio médio em relação ao pulso: ${agregada.tempoRitmico.meanDeviationMs} ms`);
   }
   if (medidas.length < total) {
     linhas.push(`${total - medidas.length} de ${total} tentativas não puderam ser medidas`);

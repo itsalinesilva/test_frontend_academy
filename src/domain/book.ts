@@ -169,6 +169,85 @@ export function validarLivro(livro: LivroDoConservatorio): ProblemaDoLivro[] {
   return problemas;
 }
 
+// ---------------------------------------------------------------------------
+// A camada editorial do livro (EE-19)
+// ---------------------------------------------------------------------------
+
+/**
+ * O que foi escrito numa seção editável.
+ *
+ * 🔴 POR QUE ISTO PRECISOU EXISTIR
+ * --------------------------------
+ * `fundirPreservandoEdicoes` prometia preservar o prefácio ao regenerar — e o
+ * livro é regenerado A CADA LEITURA, a partir do curso. Sem um lugar onde o
+ * texto escrito ficasse, não havia "versão anterior" para preservar: a tela
+ * dizia "editável" sobre uma seção que ninguém tinha como editar, e que
+ * esqueceria o que fosse escrito nela na leitura seguinte.
+ *
+ * Guarda-se só o conteúdo, e não a seção inteira: papel, título e ordem são do
+ * modelo do livro. Deixá-los viajar com a edição permitiria a uma edição
+ * antiga devolver um prefácio para a posição que ele tinha antes de o livro
+ * mudar de forma.
+ */
+export interface SecaoEditadaDoLivro {
+  /** Derivado do livro e da seção: editar duas vezes deixa UMA edição. */
+  id: string;
+  livroId: string;
+  secaoId: string;
+  conteudo: string;
+  editadaPor: string;
+  editadaEm: string;
+}
+
+export function idDaSecaoEditada(livroId: string, secaoId: string): string {
+  return `${livroId}::${secaoId}`;
+}
+
+/**
+ * O livro como deve ser lido: o gerado, com o que foi escrito por cima.
+ *
+ * 🔴 SÓ SEÇÃO EDITÁVEL RECEBE EDIÇÃO. Uma edição que apontasse para um
+ * capítulo — por pacote torto, ou por uma seção que mudou de origem — faria o
+ * livro dizer uma coisa e o curso outra, que é exatamente a divergência que a
+ * separação GERADA/EDITÁVEL existe para impedir. Ela é ignorada, e não
+ * aplicada.
+ */
+export function aplicarSecoesEditadas(
+  livro: LivroDoConservatorio,
+  edicoes: readonly SecaoEditadaDoLivro[]
+): LivroDoConservatorio {
+  const doLivro = new Map(
+    edicoes.filter((e) => e.livroId === livro.id).map((e) => [e.secaoId, e])
+  );
+  if (doLivro.size === 0) return livro;
+
+  return {
+    ...livro,
+    secoes: livro.secoes.map((s) => {
+      const e = doLivro.get(s.id);
+      return e && s.origem === 'EDITAVEL' ? { ...s, conteudo: e.conteudo } : s;
+    }),
+  };
+}
+
+/**
+ * O que impede gravar uma seção.
+ *
+ * Vazia é recusada: capa ou folha de rosto em branco sai impressa em branco,
+ * e quem apagou para reescrever depois já saiu da tela quando o livro é
+ * baixado. Para voltar ao texto de partida existe reverter.
+ */
+export function problemasDaSecao(secao: SecaoDoLivro | undefined, conteudo: string): string[] {
+  if (!secao) return ['A seção não existe neste livro.'];
+  if (secao.origem !== 'EDITAVEL') {
+    return [`"${secao.titulo}" nasce do curso: corrija a lição, e o livro acompanha.`];
+  }
+  if (conteudo.replace(/<!--[\s\S]*?-->/g, '').trim().length === 0) {
+    return [`"${secao.titulo}" ficaria vazia. Para voltar ao texto de partida, use reverter.`];
+  }
+  return [];
+}
+
 export function secoesEditaveis(livro: LivroDoConservatorio): SecaoDoLivro[] {
   return livro.secoes.filter((s) => s.origem === 'EDITAVEL').sort((a, b) => a.ordem - b.ordem);
 }

@@ -2,17 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useRouter } from '../../navigation/router';
-import { UserRole } from '../../../domain/types';
+import { pilaresVisiveis } from '../../navigation/pilares';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 export interface ExplorarMenuProps {
   id?: string;
-  currentUserRole?: UserRole;
-  showAdminTab?: boolean;
-}
-
-interface Grupo {
-  titulo: string;
-  itens: { label: string; hint: string; path: string }[];
 }
 
 /**
@@ -22,12 +16,10 @@ interface Grupo {
  * abre está procurando um lugar para ir, não conferindo um menu. Abre por
  * proximidade do ponteiro e por clique, fecha no Escape e no clique fora.
  */
-export const ExplorarMenu: React.FC<ExplorarMenuProps> = ({
-  id = 'explorar',
-  currentUserRole = UserRole.ALUNO,
-  showAdminTab = false,
-}) => {
+export const ExplorarMenu: React.FC<ExplorarMenuProps> = ({ id = 'explorar' }) => {
   const { currentPath, navigate } = useRouter();
+  const { userId } = useCurrentUser();
+  const temSessao = !!userId;
   const [aberto, setAberto] = useState(false);
   const raiz = useRef<HTMLDivElement>(null);
   const fechamento = useRef<number | null>(null);
@@ -61,47 +53,24 @@ export const ExplorarMenu: React.FC<ExplorarMenuProps> = ({
   }, [aberto]);
 
   /**
-   * As telas oficiais da plataforma, e só elas.
+   * 🔴 O MENU LISTA OS PILARES, E NADA MAIS.
    *
-   * Aqui não entra sub-rota. "Editor de partitura" fica dentro do Studio,
-   * "Simulador" fica dentro do Violino, "Biblioteca" fica dentro do Admin —
-   * são partes de uma tela, não destinos. Um menu de navegação que lista
-   * sub-rotas obriga a pessoa a ler o mapa inteiro para achar a sala.
+   * Ele já listou quatro grupos por verbo — "Aprender", "Tocar", "Descobrir" —
+   * e depois os pilares **com as sub-rotas penduradas**. Nos dois casos virou
+   * um inventário: quem abre para ir a um lugar precisa ler tudo para achar.
+   *
+   * Aqui ficam só os destinos. O editor de partitura está dentro do Estúdio, o
+   * Atlas dentro do Acervo, a comunidade dentro do Perfil — e cada um desses
+   * lugares os oferece. Um menu de navegação que lista sub-rota obriga a pessoa
+   * a ler o mapa inteiro para achar a sala.
+   *
+   * Visitante vê **quatro**. Perfil é a conta, e só existe com sessão.
    */
-  const grupos: Grupo[] = [
-    {
-      titulo: 'Aprender',
-      itens: [
-        { label: 'Academy', hint: 'Cursos e programas', path: '/academy' },
-        { label: 'Practice', hint: 'Treino com medição real', path: '/practice' },
-      ],
-    },
-    {
-      titulo: 'Tocar',
-      itens: [
-        { label: 'Score', hint: 'Partituras', path: '/score' },
-        { label: 'Studio', hint: 'Edição e síntese', path: '/studio' },
-      ],
-    },
-    {
-      titulo: 'Descobrir',
-      itens: [
-        { label: 'Worlds', hint: 'Atlas de obras', path: '/worlds' },
-        { label: 'Community', hint: 'Fórum e eventos', path: '/community' },
-      ],
-    },
-    {
-      titulo: 'Sua conta',
-      itens: [{ label: 'Perfil', hint: 'Seus dados e portfólio', path: '/profile' }],
-    },
-  ];
-
-  if (currentUserRole === UserRole.PROFESSOR || currentUserRole === UserRole.ADMIN) {
-    grupos[3].itens.push({ label: 'Salas', hint: 'Suas turmas', path: '/rooms' });
-  }
-  if (currentUserRole === UserRole.ADMIN || showAdminTab) {
-    grupos[3].itens.push({ label: 'Admin', hint: 'Governança', path: '/admin' });
-  }
+  const itens = pilaresVisiveis(temSessao).map((pilar) => ({
+    label: pilar.label,
+    hint: pilar.hint,
+    path: pilar.path,
+  }));
 
   const ir = (path: string) => {
     setAberto(false);
@@ -152,42 +121,33 @@ export const ExplorarMenu: React.FC<ExplorarMenuProps> = ({
             : 'pointer-events-none -translate-y-1 opacity-0'
         )}
       >
-        <div className="mx-auto grid max-w-7xl gap-x-8 gap-y-5 px-4 py-6 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
-          {grupos.map((g) => (
-            <div key={g.titulo}>
-              <p className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-400">
-                {g.titulo}
-              </p>
-              <ul className="space-y-0.5">
-                {g.itens.map((it) => {
-                  const atual = currentPath === it.path;
-                  return (
-                    <li key={it.path}>
-                      <button
-                        type="button"
-                        role="menuitem"
-                        tabIndex={aberto ? 0 : -1}
-                        onClick={() => ir(it.path)}
-                        aria-current={atual ? 'page' : undefined}
-                        className="w-full rounded-md px-2 py-1.5 text-left transition-colors hover:bg-stone-50 focus:outline-none focus-visible:bg-stone-50"
-                      >
-                        <span
-                          className={clsx(
-                            'block text-sm',
-                            atual ? 'font-semibold text-anil-800' : 'text-stone-900'
-                          )}
-                        >
-                          {it.label}
-                        </span>
-                        <span className="block text-xs text-stone-500">{it.hint}</span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
-        </div>
+        <ul className="mx-auto grid max-w-7xl gap-1 px-4 py-6 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+          {itens.map((it) => {
+            const atual = currentPath === it.path;
+            return (
+              <li key={it.path}>
+                <button
+                  type="button"
+                  role="menuitem"
+                  tabIndex={aberto ? 0 : -1}
+                  onClick={() => ir(it.path)}
+                  aria-current={atual ? 'page' : undefined}
+                  className="w-full rounded-md px-3 py-2 text-left transition-colors hover:bg-stone-50 focus:outline-none focus-visible:bg-stone-50"
+                >
+                  <span
+                    className={clsx(
+                      'block text-sm',
+                      atual ? 'font-semibold text-anil-800' : 'font-medium text-stone-900'
+                    )}
+                  >
+                    {it.label}
+                  </span>
+                  <span className="block text-xs text-stone-500">{it.hint}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ import {
   joinClubBlockReason,
   qualifiesForHouse,
 } from '../src/domain/membership';
+import { CHAIRS, CHAIR_OF_COURSE, coursesOfChair } from '../src/domain/chair';
 
 /**
  * Pertencimento.
@@ -33,11 +34,53 @@ const clube: Club = {
   createdAt: '2026-09-19T10:00:00.000Z',
 };
 
-describe('o Grêmio nasce do curso', () => {
-  it('cada curso tem o seu, derivado e não sorteado', () => {
-    // Derivado: matricular duas vezes não cria dois Grêmios.
-    expect(guildIdForCourse('c_teoria')).toBe(guildIdForCourse('c_teoria'));
-    expect(guildIdForCourse('c_teoria')).not.toBe(guildIdForCourse('c_violino'));
+describe('o Grêmio nasce da cadeira, e não do curso', () => {
+  it('derivado, e não sorteado: matricular duas vezes não cria dois', () => {
+    expect(guildIdForCourse('crs_teoria_fundamentos')).toBe(
+      guildIdForCourse('crs_teoria_fundamentos')
+    );
+  });
+
+  it('cadeiras diferentes dão Grêmios diferentes', () => {
+    expect(guildIdForCourse('crs_teoria_fundamentos')).not.toBe(
+      guildIdForCourse('crs_violino')
+    );
+  });
+
+  it('OS TRÊS CURSOS DE HISTÓRIA DÃO O MESMO GRÊMIO', () => {
+    /**
+     * O ponto inteiro da mudança.
+     *
+     * Com o recorte por curso, quem cursou História Ocidental e quem cursou
+     * História Brasileira ficavam em Grêmios separados — e a regra "não existe
+     * Clube sem Grêmio" então impedia os dois de se organizarem no mesmo
+     * Clube. Três cursos de história, três Grêmios, historiadores partidos em
+     * três.
+     */
+    const ocidental = guildIdForCourse('crs_historia_ocidental');
+    const brasil = guildIdForCourse('crs_historia_brasil');
+    const popular = guildIdForCourse('crs_historia_social_popular');
+
+    expect(ocidental).toBe(brasil);
+    expect(brasil).toBe(popular);
+  });
+
+  it('cinco cursos produzem três Grêmios', () => {
+    const cursos = Object.keys(CHAIR_OF_COURSE);
+    expect(cursos.length).toBe(5);
+    expect(new Set(cursos.map(guildIdForCourse)).size).toBe(3);
+  });
+
+  it('curso sem cadeira não ganha Grêmio inventado', () => {
+    // Devolver um identificador para curso desconhecido seria fabricar
+    // pertencimento — e pertencimento falso é afirmação sobre uma pessoa.
+    expect(guildIdForCourse('crs_que_nao_existe')).toBeNull();
+  });
+
+  it('toda cadeira tem ao menos um curso', () => {
+    for (const cadeira of CHAIRS) {
+      expect(coursesOfChair(cadeira.id).length, cadeira.name).toBeGreaterThan(0);
+    }
   });
 });
 

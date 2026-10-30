@@ -2,108 +2,87 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { useRouter } from '../../navigation/router';
 import { Card } from '../../components/base/Card';
-import { Button } from '../../components/base/Button';
 import { Badge } from '../../components/base/Badge';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
-import { roomsRepository } from '../../../repositories/rooms.repository';
-import { TeacherRoomDetail, ModalidadeDeSala } from '../../../domain/teacher';
-import { Users, Plus, ArrowRight, GraduationCap } from 'lucide-react';
+import { SalaNoDiretorio, motivo, salasService } from '../../../services/application/salas.service';
+import { Users, Plus, Lock, Globe2 } from 'lucide-react';
 
 /**
- * Diretório de salas.
+ * Diretório de salas (AUD-9).
  *
- * Esta tela listava três salas escritas no próprio arquivo, com professores
- * inventados — inclusive uma "Profa. Dra. Clara Schumann" — e contagem de
- * alunos inventada. Um professor que criasse a sala dele voltava para cá e
- * não a encontrava, porque a criação também não gravava nada.
- *
- * Agora lê o repositório. Enquanto o Conservatório não tiver turma, o
- * diretório está vazio, e diz que está — o que é a informação correta e a
- * única que não desmente o produto no primeiro uso.
+ * As salas são comunidades no molde do Skool: qualquer pessoa com conta abre
+ * a sua, e qualquer pessoa encontra as outras aqui. Antes, a sala vivia no
+ * navegador de quem a criou — o diretório de outra pessoa nunca a mostraria.
+ * Agora vem do servidor, e é o mesmo para todo mundo.
  */
-const NOME_DA_MODALIDADE: Record<ModalidadeDeSala, string> = {
-  CLASSE_REGULAR: 'Classe regular',
-  MASTERCLASS: 'Masterclass',
-  LABORATORIO: 'Laboratório',
-  TURMA_INFANTIL: 'Turma infantil',
-};
-
 export const RoomsDirectoryScreen: React.FC = () => {
   const { navigate } = useRouter();
   const { userId } = useCurrentUser();
   const [filtro, setFiltro] = useState<'todas' | 'minhas'>('todas');
-  const [salas, setSalas] = useState<TeacherRoomDetail[] | null>(null);
+  const [salas, setSalas] = useState<SalaNoDiretorio[] | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
     let ativo = true;
-    roomsRepository
-      .listar()
-      .then((lista) => {
-        if (ativo) setSalas(lista);
-      })
-      .catch(() => {
-        if (ativo) setSalas([]);
+    salasService
+      .diretorio()
+      .then((lista) => ativo && setSalas(lista))
+      .catch((e) => {
+        if (!ativo) return;
+        setErro(motivo(e));
+        setSalas([]);
       });
     return () => {
       ativo = false;
     };
   }, []);
 
-  const visiveis = useMemo(() => {
-    if (!salas) return [];
-    if (filtro === 'minhas') return salas.filter((s) => s.teacherId === userId);
-    return salas;
-  }, [salas, filtro, userId]);
+  const visiveis = useMemo(
+    () => (salas ?? []).filter((s) => filtro === 'todas' || s.souMembro),
+    [salas, filtro]
+  );
 
   return (
     <ScreenContainer
       id="rooms-directory"
-      title="Salas de aula e mestres"
-      subtitle="Espaços de orientação docente, envio de tarefas e encontros ao vivo."
-      badgeLabel="Orientação pedagógica"
+      title="Salas"
+      subtitle="Comunidades de estudo: conversa, sala de aula, agenda de encontros e ranking de quem contribui."
+      badgeLabel="Comunidades"
       badgeVariant="brand"
       primaryAction={{
         label: 'Criar sala',
         icon: Plus,
-        onClick: () => navigate('/rooms/create'),
+        onClick: () => navigate(userId ? '/rooms/create' : '/auth/login?voltar=%2Frooms%2Fcreate'),
       }}
       emptyProps={{
-        title:
-          filtro === 'minhas'
-            ? 'Você ainda não criou nenhuma sala'
-            : 'Nenhuma sala de aula aberta',
+        title: erro ? 'Não deu para abrir as salas' : filtro === 'minhas' ? 'Você ainda não está em nenhuma sala' : 'Nenhuma sala aberta ainda',
         description:
-          filtro === 'minhas'
-            ? 'Salas que você criar aparecem aqui, com as tarefas e os encontros de cada turma.'
-            : 'Ainda não há turmas abertas no Conservatório. O conteúdo dos cursos está disponível para estudo independente enquanto isso.',
-        actionLabel: 'Ver os cursos da Academia',
-        onAction: () => navigate('/academy'),
+          erro ??
+          (filtro === 'minhas'
+            ? 'Entre numa sala do diretório, ou crie a sua.'
+            : 'Seja a primeira pessoa a abrir uma sala — para uma turma, um grupo de estudo ou um coro.'),
+        actionLabel: filtro === 'minhas' ? 'Ver todas as salas' : 'Criar sala',
+        onAction: () => (filtro === 'minhas' ? setFiltro('todas') : navigate('/rooms/create')),
       }}
       state={salas === null ? 'loading' : visiveis.length === 0 ? 'empty' : 'populated'}
     >
       <div className="space-y-6">
-        <div className="flex items-center justify-between rounded-lg border border-stone-200 bg-white p-2 text-xs">
-          <div className="flex items-center gap-2" role="tablist" aria-label="Filtrar salas">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={filtro === 'todas'}
-              onClick={() => setFiltro('todas')}
-              className={`rounded px-3 py-1 ${filtro === 'todas' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100'}`}
-            >
-              Todas as salas
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={filtro === 'minhas'}
-              onClick={() => setFiltro('minhas')}
-              className={`rounded px-3 py-1 ${filtro === 'minhas' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100'}`}
-            >
-              Minhas turmas
-            </button>
+        {userId && (
+          <div className="flex items-center gap-2 rounded-lg border border-stone-200 bg-white p-2 text-xs" role="tablist" aria-label="Filtrar salas">
+            {(['todas', 'minhas'] as const).map((f) => (
+              <button
+                key={f}
+                type="button"
+                role="tab"
+                aria-selected={filtro === f}
+                onClick={() => setFiltro(f)}
+                className={`rounded px-3 py-1 ${filtro === f ? 'bg-stone-900 text-white' : 'text-stone-600 hover:bg-stone-100'}`}
+              >
+                {f === 'todas' ? 'Todas as salas' : 'Minhas salas'}
+              </button>
+            ))}
           </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {visiveis.map((sala) => (
@@ -119,44 +98,23 @@ export const RoomsDirectoryScreen: React.FC = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Badge variant="neutral" size="sm">
-                    {NOME_DA_MODALIDADE[sala.modalidade]}
+                    {sala.privacidade === 'publica' ? (
+                      <span className="flex items-center gap-1"><Globe2 className="h-3 w-3" aria-hidden="true" /> Pública</span>
+                    ) : (
+                      <span className="flex items-center gap-1"><Lock className="h-3 w-3" aria-hidden="true" /> Privada</span>
+                    )}
                   </Badge>
                   <span className="flex items-center gap-1 font-mono text-xs text-stone-500">
                     <Users className="h-3 w-3 text-stone-400" aria-hidden="true" />
-                    {sala.studentCount} de {sala.capacidade}
+                    {sala.membros} {sala.membros === 1 ? 'membro' : 'membros'}
                   </span>
                 </div>
-
-                <h3 className="font-serif text-base font-bold leading-snug text-stone-900">
-                  {sala.name}
-                </h3>
-
-                <p className="flex items-center gap-1 text-xs font-semibold text-stone-700">
-                  <GraduationCap className="h-3.5 w-3.5 text-stone-500" aria-hidden="true" />
-                  {sala.teacherName}
-                </p>
-
-                {sala.description && (
-                  <p className="line-clamp-2 text-xs text-stone-600">{sala.description}</p>
-                )}
+                <h3 className="font-serif text-base font-bold leading-snug text-stone-900">{sala.nome}</h3>
+                <p className="text-xs text-stone-600">por {sala.dono.nome}</p>
+                {sala.descricao && <p className="line-clamp-2 text-xs text-stone-600">{sala.descricao}</p>}
               </div>
-
-              <div className="flex items-center justify-between border-t border-stone-100 pt-3">
-                <span className="font-mono text-xs text-stone-500">
-                  {sala.activeAssignmentCount === 0
-                    ? 'Sem tarefas abertas'
-                    : `${sala.activeAssignmentCount} tarefa${sala.activeAssignmentCount > 1 ? 's' : ''} aberta${sala.activeAssignmentCount > 1 ? 's' : ''}`}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/rooms/${sala.slug}`);
-                  }}
-                >
-                  Acessar <ArrowRight className="ml-1 h-3 w-3" aria-hidden="true" />
-                </Button>
+              <div className="border-t border-stone-100 pt-3 text-xs font-medium text-anil-700">
+                {sala.souMembro ? 'Você está nesta sala →' : 'Ver a sala →'}
               </div>
             </Card>
           ))}

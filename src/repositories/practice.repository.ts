@@ -1,6 +1,5 @@
 import { LocalStorageAdapter } from '../infrastructure/storage/local-storage';
 import {
-  SkillTree,
   Skill,
   MicroSkill,
   Exercise,
@@ -14,18 +13,22 @@ import {
   RankingLeague,
 } from '../domain/practice';
 import {
-  SEED_SKILL_TREES,
   SEED_SKILLS,
   SEED_EXERCISES,
   sequenciaInicial,
   metaDoDia,
   RANKING_INICIAL,
 } from '../data/seed-practice-content';
+import { EXERCICIOS_DERIVADOS } from '../data/exercicios-derivados';
+
+/**
+ * Os exercícios medidos: os escritos à mão e os derivados do repertório e das
+ * escalas (LAB-3). Vêm do CÓDIGO, que é o conteúdo publicado.
+ */
+const TODOS_OS_EXERCICIOS: Exercise[] = [...SEED_EXERCISES, ...EXERCICIOS_DERIVADOS];
 
 export interface PracticeRepository {
-  // Trees & Skills
-  listSkillTrees(): Promise<SkillTree[]>;
-  findSkillTreeById(id: string): Promise<SkillTree | null>;
+  // Skills
   listSkills(treeId?: string): Promise<Skill[]>;
   findSkillById(id: string): Promise<Skill | null>;
   findMicroSkillById(id: string): Promise<MicroSkill | null>;
@@ -64,9 +67,10 @@ export interface PracticeRepository {
 
 export class PersistentPracticeRepository implements PracticeRepository {
   private storage: LocalStorageAdapter;
+  /** A chave que a árvore antiga ocupava. Só existe para ser apagada. */
+  static readonly CHAVE_DA_ARVORE_ANTIGA = 'amd_practice_trees_v1';
 
   private readonly STORAGE_KEYS = {
-    TREES: 'amd_practice_trees_v1',
     SKILLS: 'amd_practice_skills_v1',
     EXERCISES: 'amd_practice_exercises_v1',
     SESSIONS: 'amd_practice_sessions_v1',
@@ -84,15 +88,25 @@ export class PersistentPracticeRepository implements PracticeRepository {
   }
 
   private initializeSeeds(): void {
-    if (!this.storage.get<SkillTree[]>(this.STORAGE_KEYS.TREES)) {
-      this.storage.set(this.STORAGE_KEYS.TREES, SEED_SKILL_TREES);
-    }
+    /**
+     * 🔴 A ÁRVORE ESCRITA À MÃO FOI SEMEADA em todo navegador que abriu o
+     * Laboratório (LX-1). Ela saiu do código; o que ficou gravado sai daqui,
+     * uma vez, para não virar cache que ninguém lê e que alguém um dia
+     * confunde com dado.
+     */
+    void this.storage.removeItem(PersistentPracticeRepository.CHAVE_DA_ARVORE_ANTIGA);
     if (!this.storage.get<Skill[]>(this.STORAGE_KEYS.SKILLS)) {
       this.storage.set(this.STORAGE_KEYS.SKILLS, SEED_SKILLS);
     }
-    if (!this.storage.get<Exercise[]>(this.STORAGE_KEYS.EXERCISES)) {
-      this.storage.set(this.STORAGE_KEYS.EXERCISES, SEED_EXERCISES);
-    }
+    /**
+     * 🔴 OS EXERCÍCIOS NÃO SÃO MAIS COPIADOS PARA O NAVEGADOR.
+     *
+     * A cópia era semeada uma vez e lida para sempre — nada neste repositório
+     * grava exercício. Com ela, quem já tinha aberto o Laboratório nunca
+     * receberia um exercício novo: continuaria vendo os onze de sempre. A
+     * cópia antiga sai daqui, e a leitura vem do código.
+     */
+    void this.storage.removeItem(this.STORAGE_KEYS.EXERCISES);
     /**
      * Sequência, meta e ranking NÃO são semeados.
      *
@@ -100,15 +114,6 @@ export class PersistentPracticeRepository implements PracticeRepository {
      * aqui era o que fazia a conta recém-criada exibir uma semana de estudo
      * inexistente.
      */
-  }
-
-  public async listSkillTrees(): Promise<SkillTree[]> {
-    return this.storage.get<SkillTree[]>(this.STORAGE_KEYS.TREES) || SEED_SKILL_TREES;
-  }
-
-  public async findSkillTreeById(id: string): Promise<SkillTree | null> {
-    const trees = await this.listSkillTrees();
-    return trees.find((t) => t.id === id || t.slug === id) || null;
   }
 
   public async listSkills(treeId?: string): Promise<Skill[]> {
@@ -136,7 +141,7 @@ export class PersistentPracticeRepository implements PracticeRepository {
   }
 
   public async listExercises(skillId?: string): Promise<Exercise[]> {
-    const exercises = this.storage.get<Exercise[]>(this.STORAGE_KEYS.EXERCISES) || SEED_EXERCISES;
+    const exercises = TODOS_OS_EXERCICIOS;
     if (skillId) {
       return exercises.filter((e) => e.skillId === skillId);
     }

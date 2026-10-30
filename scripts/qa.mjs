@@ -18,12 +18,23 @@
  * Uso:  node scripts/qa.mjs [--json] [--so-falhas]
  */
 import { execFileSync } from 'node:child_process';
-import { SEVERITY as G, report, printReport } from './qa/core.mjs';
-import { checkText, checkContentMarkdown } from './qa/text.mjs';
+import {
+  SEVERITY as G,
+  report,
+  printReport,
+  checkEveryCheckerIsWired,
+  checkEveryCheckerHasProof,
+} from './qa/core.mjs';
+import { checkText, checkContentMarkdown, checkEnglishLeakInSentence } from './qa/text.mjs';
 import {
   checkKeyCollision,
   checkPerUserFilter,
   checkRecordOwnership,
+  checkAdminScreensBehindAdminAudience,
+  checkGuardCoversEveryAudience,
+  checkPersonalRouteInheritingPublic,
+  checkNoGuessableAdminRoute,
+  checkTechnicalNameInUi,
   checkPublishKeepsStudentData,
   checkAdminAuthority,
   checkConsoleLeak,
@@ -37,9 +48,12 @@ import {
   checkFreeCourseDisclaimer,
   checkFabricatedData,
   checkInflatedAggregate,
+  checkHardcodedMetric,
   checkRetiredVocabulary,
+  checkPersonalSectionWithoutSession,
   checkPublicDomainRepertoire,
   checkDeadButton,
+  checkEmptyLiteralAsData,
   checkSuccessWithoutEffect,
   checkDataInsideScreen,
   checkDevToolInProduction,
@@ -55,6 +69,24 @@ import {
   checkValueOutsideTable,
   checkDivergentValue,
 } from './qa/economy.mjs';
+import { checkReadiness, readinessReport } from './qa/readiness.mjs';
+import {
+  checkCourseHasChair,
+  checkChairHasCourse,
+  checkHouseStatusMatchesCorpus,
+  checkAtlasFilterIsApplied,
+  checkAcervoCatalogaTudo,
+  checkDisponibilidadeTemMotivo,
+  checkAtribuicaoDaPartitura,
+  checkNiveisDeMeioSeparados,
+  checkFiltroOferecidoEAplicado,
+  checkEixoUniversalAlcancaOAcervo,
+  checkFonteNaoCriaEntidade,
+  checkPrazoDeProtecao,
+  checkDataDeMorteCravada,
+  checkPapelEEixoProprio,
+  checkAtlasEAcervoMesmaVerdade,
+} from './qa/institution.mjs';
 
 /** A auditoria de rotas já existia; entra aqui em vez de virar comando à parte. */
 function checarRotas() {
@@ -63,6 +95,18 @@ function checarRotas() {
   );
   return {
     orphans: r.orphans.map((n) => ({ file: n, detail: 'tela existe e nenhuma rota a abre' })),
+    /**
+     * 🔴 O ESPELHO DA TELA ÓRFÃ.
+     *
+     * `orphans` pergunta "existe rota que monta esta tela?". Esta pergunta é a
+     * outra: **alguém chega até ela?** Uma tela com rota e sem link nenhum não
+     * quebra, não dá erro, e simplesmente não é usada — foi assim que o editor
+     * de livretos e a Biblioteca ficaram construídos e invisíveis.
+     */
+    inalcancaveis: (r.inalcancaveis ?? []).map((n) => ({
+      file: n,
+      detail: 'a rota existe e nada aponta para ela',
+    })),
     leaking: r.leaking.map((n) => ({
       file: n,
       detail: 'promete ao visitante o que só o aluno tem',
@@ -82,6 +126,28 @@ const SECTIONS = [
     checks: [
       report('leitura de dado de aluno filtra por usuário', checkPerUserFilter(), G.BLOCKS),
       report('registro pessoal buscado por id confere o dono', checkRecordOwnership(), G.BLOCKS),
+    ],
+  },
+  {
+    heading: 'HIERARQUIA — visitante, aluno e administração ficam separados',
+    checks: [
+      report(
+        'tela administrativa só abre em rota que exige administração',
+        checkAdminScreensBehindAdminAudience(),
+        G.BLOCKS
+      ),
+      report('a guarda trata todos os níveis de audiência', checkGuardCoversEveryAudience(), G.BLOCKS),
+      report(
+        'nenhuma rota pessoal vale como pública sem a tela saber quem pergunta',
+        checkPersonalRouteInheritingPublic(),
+        G.BLOCKS
+      ),
+      report('a rota administrativa não se chama pelo nome óbvio', checkNoGuessableAdminRoute(), G.BLOCKS),
+    ],
+  },
+  {
+    heading: 'ISOLAMENTO — o que é de um não chega ao outro',
+    checks: [
       report('nenhuma chave de armazenamento colide', checkKeyCollision(), G.BLOCKS),
       report('publicar conteúdo não apaga dado do aluno', checkPublishKeepsStudentData(), G.BLOCKS),
       report('privilégio de admin não é decidido no cliente', checkAdminAuthority(), G.BLOCKS),
@@ -98,6 +164,7 @@ const SECTIONS = [
       report('a ressalva de curso livre está escrita', checkFreeCourseDisclaimer(), G.BLOCKS),
       report('nenhum dado fabricado no catálogo', checkFabricatedData(), G.BLOCKS),
       report('nenhum agregado inflado nem ausência disfarçada', checkInflatedAggregate(), G.BLOCKS),
+      report('nenhuma medida cravada na tela', checkHardcodedMetric(), G.BLOCKS),
       report('nenhuma palavra aposentada do vocabulário', checkRetiredVocabulary(), G.BLOCKS),
       report('nenhum botão falso', checkDeadButton(), G.BLOCKS),
       report('nenhum sucesso anunciado sem efeito', checkSuccessWithoutEffect(), G.BLOCKS),
@@ -121,11 +188,123 @@ const SECTIONS = [
     ],
   },
   {
+    heading: 'INSTITUIÇÃO — Cadeira, Grêmio e Casa dizem o mesmo que o documento',
+    checks: [
+      report('todo curso pertence a uma cadeira', checkCourseHasChair(), G.BLOCKS),
+      report('nenhuma cadeira fica sem curso', checkChairHasCourse(), G.FIX),
+      report('o status da Casa bate com o corpus', checkHouseStatusMatchesCorpus(), G.FIX),
+      report(
+        'todo filtro do Atlas é aplicado de fato',
+        checkAtlasFilterIsApplied(),
+        G.BLOCKS
+      ),
+      report('o acervo cataloga tudo', checkAcervoCatalogaTudo(), G.BLOCKS),
+      report(
+        'toda ficha diz por que algo não está disponível',
+        checkDisponibilidadeTemMotivo(),
+        G.FIX
+      ),
+      /**
+       * BLOQUEIA: licença com cláusula de atribuição é condição de uso, e não
+       * boa prática. Publicar seiscentas edições sem creditar quem as fez é
+       * publicar sem licença — e isso não é coisa para corrigir depois.
+       */
+      report(
+        'quem transcreveu a partitura aparece na ficha',
+        checkAtribuicaoDaPartitura(),
+        G.BLOCKS
+      ),
+      report(
+        'meio grosso e instrumento exato não se misturam',
+        checkNiveisDeMeioSeparados(),
+        G.FIX
+      ),
+      /**
+       * BLOQUEIA: filtro oferecido e não aplicado é tela mentindo sobre o que
+       * faz. Quem clica vê a contagem mudar e o resultado ficar igual.
+       */
+      report(
+        'todo filtro oferecido é aplicado de fato',
+        checkFiltroOferecidoEAplicado(),
+        G.BLOCKS
+      ),
+      report(
+        'os eixos universais alcançam o acervo',
+        checkEixoUniversalAlcancaOAcervo(),
+        G.FIX
+      ),
+      /**
+       * BLOQUEIA: uma fonte que cria entidade canônica enche o catálogo de
+       * duplicatas com aparência de registro. Já encheu, com 1.331.
+       */
+      report(
+        'fonte externa enriquece, e não cria entidade',
+        checkFonteNaoCriaEntidade(),
+        G.BLOCKS
+      ),
+      report(
+        'papel, instrumento e voz são eixos próprios',
+        checkPapelEEixoProprio(),
+        G.FIX
+      ),
+      /**
+       * BLOQUEIA porque o erro tem consequência jurídica.
+       *
+       * Contar o prazo do marco errado faz a plataforma declarar liberada obra
+       * que está protegida — e isso não é defeito de tela, é exposição de quem
+       * publica.
+       */
+      report(
+        'o prazo de proteção declara o regime',
+        checkPrazoDeProtecao(),
+        G.BLOCKS
+      ),
+      report(
+        'nenhuma data de morte cravada no domínio',
+        checkDataDeMorteCravada(),
+        G.BLOCKS
+      ),
+      /**
+       * BLOQUEIA: duas verdades sobre o mesmo acervo é pior que uma verdade
+       * incompleta — as duas telas ficam "certas" e nenhuma denuncia a outra.
+       */
+      report(
+        'o mapa e a biblioteca leem o mesmo catálogo',
+        checkAtlasEAcervoMesmaVerdade(),
+        G.BLOCKS
+      ),
+    ],
+  },
+  {
+    heading: 'A SUÍTE VIGIA A SI MESMA',
+    checks: [
+      report('todo verificador está ligado ao pente fino', checkEveryCheckerIsWired(), G.BLOCKS),
+      report('todo verificador foi visto acusando', checkEveryCheckerHasProof(), G.FIX),
+    ],
+  },
+  {
+    heading: 'PRONTIDÃO — as sete perguntas, por área',
+    checks: [
+      report('nenhuma área com pergunta em aberto', checkReadiness(), G.FIX),
+    ],
+  },
+  {
     heading: 'ROTAS E FLUXO — todo caminho chega a algum lugar',
     checks: [
       report('nenhuma tela órfã', routes.orphans, G.BLOCKS),
+      report('nenhuma tela inalcançável', routes.inalcancaveis, G.FIX),
       report('nenhuma tela vaza conteúdo de logado', routes.leaking, G.BLOCKS),
+      report(
+        'nenhuma seção pessoal em tela que o visitante alcança',
+        checkPersonalSectionWithoutSession(),
+        G.BLOCKS
+      ),
       report('todo destino de navegação existe', checkNavigationTargets(), G.BLOCKS),
+      report(
+        'nenhuma apuração roda sobre vazio literal',
+        checkEmptyLiteralAsData(),
+        G.BLOCKS
+      ),
     ],
   },
   {
@@ -137,6 +316,12 @@ const SECTIONS = [
       report('ortografia: acentuação', texto.ortografia, G.FIX),
       report('pontuação e espaçamento', texto.pontuacao, G.FIX),
       report('nenhum inglês na interface em português', texto.ingles, G.FIX),
+      report('nenhum nome técnico vazando para a tela', checkTechnicalNameInUi(), G.FIX),
+      report(
+        'nenhuma palavra inglesa dentro de frase portuguesa',
+        checkEnglishLeakInSentence(),
+        G.BLOCKS
+      ),
     ],
   },
   {
@@ -186,6 +371,11 @@ if (process.argv.includes('--json')) {
   console.log('---');
   console.log(`rotas ${routes.total} · telas ${routes.screens} · distinguem visitante ${routes.distinguishing}`);
   console.log(`bloqueios ${blockers} · a corrigir ${fixables}`);
+  const prontas = readinessReport().filter((r) => r.respondidas === r.total).length;
+  console.log(
+    `prontidão: ${prontas} de ${readinessReport().length} áreas respondem às sete perguntas`
+  );
+  console.log('curadoria do relatório: npm run qa:todo (a suíte falha se estiver velho)');
   console.log('não coberto por máquina: docs/harness/72_QUALITY_SWEEP.md');
   process.exitCode = blockers > 0 ? 1 : 0;
 }

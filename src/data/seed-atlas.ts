@@ -1,4 +1,5 @@
-import { MusicalEra } from '../domain/gamification';
+import { obrasDoRepertorio } from './seed-acervo';
+import { AtlasWorkPlacement, MusicalEra } from '../domain/gamification';
 
 /**
  * Taxonomia do Atlas.
@@ -172,12 +173,95 @@ export const DEFAULT_REGIONS: Region[] = [
     order: 2,
   },
   {
+    /**
+     * Acrescentada em 19/09, porque o repertório a exigia.
+     *
+     * Chopin e Tchaikovsky estavam no acervo sem região possível: nenhum dos
+     * dois é Europa Ocidental, e forçá-los para lá seria escrever geografia
+     * errada para caber numa lista curta. Região que falta se acrescenta.
+     */
+    id: 'reg_europa_oriental',
+    slug: 'europa-oriental',
+    name: 'Europa Oriental',
+    description:
+      'Terras eslavas, Rússia e Polônia — onde o século XIX descobriu que a música que se ouvia em casa podia disputar a sala de concerto com o eixo germânico.',
+    /** Classicismo acrescentado em 19/09: o acervo tem compositores da região ali. */
+    eraIds: ['era_classicismo', 'era_romantismo', 'era_moderna', 'era_contemporanea'],
+    order: 4,
+  },
+  {
+    id: 'reg_escandinavia',
+    slug: 'escandinavia',
+    name: 'Escandinávia',
+    description:
+      'Noruega, Suécia, Dinamarca e Finlândia. Chega tarde ao mapa do concerto europeu e chega com gramática própria — modo, dança e paisagem sonora que o centro não tinha.',
+    /** Barroco acrescentado em 19/09, pelo mesmo motivo: há obra da região ali. */
+    eraIds: ['era_barroco', 'era_romantismo', 'era_moderna', 'era_contemporanea'],
+    order: 5,
+  },
+  {
     id: 'reg_iberica',
     slug: 'peninsula-iberica',
     name: 'Península Ibérica',
     description: 'Portugal e Espanha — a matriz que chega ao Brasil pela colonização.',
-    eraIds: ['era_medieval', 'era_renascimento', 'era_barroco'],
+    /**
+     * Romantismo e Moderna acrescentados em 19/09.
+     *
+     * `eraIds` **filtra** o que a tela oferece: uma região que não declara a
+     * era some do seletor quando a era está escolhida, e a obra fica
+     * inalcançável por esse caminho. Albéniz e Granados estavam nesse limbo.
+     */
+    eraIds: [
+      'era_medieval',
+      'era_renascimento',
+      'era_barroco',
+      'era_romantismo',
+      'era_moderna',
+    ],
+    order: 6,
+  },
+  {
+    /**
+     * TRÊS REGIÕES ACRESCENTADAS EM 19/09, POR EXIGÊNCIA DO ACERVO.
+     *
+     * A cidadania de duzentos e dezesseis compositores foi apurada, e os
+     * **Estados Unidos apareceram como o segundo maior grupo** — trinta e
+     * três pessoas, atrás só da França. Não havia região nas Américas
+     * além do Brasil, e trinta e três compositores ficavam sem lugar.
+     *
+     * Mandá-los para a Europa seria exatamente o erro contra o qual o
+     * comentário da Europa Oriental já avisava: escrever geografia errada
+     * para caber numa lista curta.
+     *
+     * As eras de cada uma são as que o acervo de fato tem, e não as que a
+     * historiografia registra. Declarar uma era sem obra poria no seletor um
+     * recorte que devolve vazio.
+     */
+    id: 'reg_america_do_norte',
+    slug: 'america-do-norte',
+    name: 'América do Norte',
+    description:
+      'Estados Unidos e Canadá — onde a música de concerto chega tarde, encontra o jazz e o espiritual já formados, e passa o século XX negociando com eles.',
+    eraIds: ['era_romantismo', 'era_moderna', 'era_contemporanea'],
     order: 3,
+  },
+  {
+    id: 'reg_america_latina',
+    slug: 'america-latina',
+    name: 'América Latina',
+    description:
+      'Argentina, México e vizinhos — o mesmo encontro de matrizes que o Brasil viveu, com outra língua e outras danças.',
+    eraIds: ['era_moderna'],
+    order: 7,
+  },
+  {
+    id: 'reg_asia_oceania',
+    slug: 'asia-oceania',
+    name: 'Ásia e Oceania',
+    description:
+      'Japão e Austrália — presença pequena neste acervo, e registrada como é: dois compositores, no século XX.',
+    eraIds: ['era_moderna', 'era_contemporanea'],
+    order: 8,
   },
 ];
 
@@ -212,18 +296,80 @@ export const DEFAULT_GENRES: Genre[] = [
   { id: 'gen_choro', slug: 'choro', name: 'Choro', nature: 'INSTRUMENTAL' },
   { id: 'gen_modinha', slug: 'modinha', name: 'Modinha', nature: 'VOCAL' },
   { id: 'gen_cancao', slug: 'cancao', name: 'Canção', nature: 'VOCAL' },
+  /*
+    Acrescentados em 19/09, porque o repertório os exigia.
+
+    Cada um destes é a forma que o TÍTULO de uma faixa declara — "Minueto em
+    sol maior", "Cânone", "Gavota". Derivar o gênero do que o título diz é
+    leitura; inventá-lo para preencher o filtro seria fabricação.
+  */
+  { id: 'gen_preludio', slug: 'preludio', name: 'Prelúdio', nature: 'INSTRUMENTAL' },
+  { id: 'gen_minueto', slug: 'minueto', name: 'Minueto', nature: 'INSTRUMENTAL' },
+  { id: 'gen_canone', slug: 'canone', name: 'Cânone', nature: 'INSTRUMENTAL' },
+  { id: 'gen_coral', slug: 'coral', name: 'Coral', nature: 'VOCAL' },
+  { id: 'gen_marcha', slug: 'marcha', name: 'Marcha', nature: 'INSTRUMENTAL' },
+  { id: 'gen_serenata', slug: 'serenata', name: 'Serenata', nature: 'INSTRUMENTAL' },
+  { id: 'gen_bagatela', slug: 'bagatela', name: 'Bagatela', nature: 'INSTRUMENTAL' },
+  { id: 'gen_gavota', slug: 'gavota', name: 'Gavota', nature: 'INSTRUMENTAL' },
+  { id: 'gen_valsa', slug: 'valsa', name: 'Valsa', nature: 'INSTRUMENTAL' },
+
+  /**
+   * DEZESSETE FORMAS EXIGIDAS PELO CATÁLOGO, E NÃO ESCOLHIDAS POR GOSTO.
+   *
+   * A leitura dos títulos do acervo — vinte e cinco mil — devolve trinta e
+   * seis formas escritas nas próprias obras. Dezenove já estavam aqui; estas
+   * dezessete não, e sem elas o filtro mostraria o identificador cru ao lado
+   * dos nomes, como se parte do catálogo fosse de segunda classe.
+   *
+   * O critério de entrada é o mesmo de sempre: a forma **aparece escrita** em
+   * obra do acervo. Nenhuma entrou por ser importante na historiografia sem
+   * ter obra aqui — isso seria povoar o filtro com recorte que devolve vazio.
+   *
+   * `quarteto` e `quinteto` ficam genéricos. `quarteto-de-cordas`, acima, é
+   * mais específico, e o título raramente diz qual dos dois é: presumir cordas
+   * afirmaria uma instrumentação que ninguém apurou.
+   */
+  { id: 'gen_trio', slug: 'trio', name: 'Trio', nature: 'INSTRUMENTAL' },
+  { id: 'gen_quarteto_generico', slug: 'quarteto', name: 'Quarteto', nature: 'INSTRUMENTAL' },
+  { id: 'gen_quinteto', slug: 'quinteto', name: 'Quinteto', nature: 'INSTRUMENTAL' },
+  { id: 'gen_mazurca', slug: 'mazurca', name: 'Mazurca', nature: 'INSTRUMENTAL' },
+  { id: 'gen_polonesa', slug: 'polonesa', name: 'Polonesa', nature: 'INSTRUMENTAL' },
+  { id: 'gen_noturno', slug: 'noturno', name: 'Noturno', nature: 'INSTRUMENTAL' },
+  { id: 'gen_estudo', slug: 'estudo', name: 'Estudo', nature: 'INSTRUMENTAL' },
+  { id: 'gen_capricho', slug: 'capricho', name: 'Capricho', nature: 'INSTRUMENTAL' },
+  { id: 'gen_rapsodia', slug: 'rapsodia', name: 'Rapsódia', nature: 'INSTRUMENTAL' },
+  { id: 'gen_variacoes', slug: 'variacoes', name: 'Variações', nature: 'INSTRUMENTAL' },
+  { id: 'gen_balada', slug: 'balada', name: 'Balada', nature: 'INSTRUMENTAL' },
+  { id: 'gen_abertura', slug: 'abertura', name: 'Abertura', nature: 'INSTRUMENTAL' },
+  { id: 'gen_impromptu', slug: 'impromptu', name: 'Impromptu', nature: 'INSTRUMENTAL' },
+  { id: 'gen_romance', slug: 'romance', name: 'Romance', nature: 'INSTRUMENTAL' },
+  { id: 'gen_tocata', slug: 'tocata', name: 'Tocata', nature: 'INSTRUMENTAL' },
+  { id: 'gen_poema', slug: 'poema', name: 'Poema', nature: 'INSTRUMENTAL' },
+  /** Missa de defuntos: vocal, e distinta da missa comum pelo texto. */
+  { id: 'gen_requiem', slug: 'requiem', name: 'Réquiem', nature: 'VOCAL' },
+  { id: 'gen_hino', slug: 'hino', name: 'Hino', nature: 'VOCAL' },
 ];
 
 /**
- * O acervo de obras nasce VAZIO.
+ * O ACERVO DO ATLAS SAI DO ACERVO CANONICO.
  *
- * É a linha mais importante deste arquivo. A tela do Atlas dizia "142 obras
- * canônicas" no Barroco — número que ninguém contou, sobre obras que não
- * existem. Catalogar obra exige decidir edição, proveniência e domínio
- * público, e nada disso foi feito.
+ * Aqui havia `DEFAULT_WORKS: never[] = []` — e o comentario explicava, com
+ * razao, que a tela dizia "142 obras canonicas" sobre um acervo de zero.
  *
- * Enquanto o acervo estiver vazio, a contagem de cada era é **zero**. A tela
- * mostra a taxonomia — que é real e é conhecimento — e diz, sem rodeio, que
- * ainda não há obra catalogada.
+ * O que ninguem tinha notado e que passou a haver **dois modelos de obra**: o
+ * canonico (`CanonicalWork`, com proveniencia e dominio publico calculado) e
+ * este, que e a projecao do canonico no mapa — apenas as coordenadas de era,
+ * regiao, compositor e genero.
+ *
+ * Enquanto os dois viveram separados, o acervo tinha seus 17 registros e a
+ * TELA lia zero. Derivar resolve: ha uma fonte so, e o mapa e uma vista dela.
+ *
+ * A contagem continua sendo CONTADA. O que mudou e que agora ha o que contar.
  */
-export const DEFAULT_WORKS: never[] = [];
+export const DEFAULT_WORKS: AtlasWorkPlacement[] = obrasDoRepertorio().map((o) => ({
+  workId: o.id,
+  eraId: o.periodId ?? '',
+  regionId: o.regionId,
+  composerId: o.composerIds[0],
+  generoId: o.generoId,
+}));

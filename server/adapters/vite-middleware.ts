@@ -9,6 +9,7 @@
 
 import type { IncomingMessage, ServerResponse } from 'http';
 import { handleApiRequest, ServerEnv } from '../core/api-router';
+import { KVEmMemoria } from '../core/salas';
 
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -60,8 +61,18 @@ function resolveEnv(): ServerEnv {
     SESSION_SIGNING_SECRET: env.SESSION_SIGNING_SECRET,
     AUDIT_SIGNING_SECRET: env.AUDIT_SIGNING_SECRET,
     ALLOWED_ORIGIN: env.ALLOWED_ORIGIN || 'http://localhost:3000',
+    /**
+     * Em desenvolvimento, o KV é a memória do próprio servidor do Vite: salas e
+     * relatos funcionam entre abas e contas enquanto ele estiver de pé. Em
+     * produção, são os namespaces KV ligados no painel do Pages.
+     */
+    SALAS: KV_DE_DESENVOLVIMENTO.salas,
+    RELATOS: KV_DE_DESENVOLVIMENTO.relatos,
+    COMUNIDADE: KV_DE_DESENVOLVIMENTO.comunidade,
   };
 }
+
+const KV_DE_DESENVOLVIMENTO = { salas: new KVEmMemoria(), relatos: new KVEmMemoria(), comunidade: new KVEmMemoria() };
 
 export function createApiMiddleware() {
   return async (req: IncomingMessage, res: ServerResponse, next: () => void): Promise<void> => {

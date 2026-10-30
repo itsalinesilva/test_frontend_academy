@@ -27,7 +27,7 @@ export const NotFoundScreen: React.FC<NotFoundScreenProps> = ({ attemptedPath })
       secondaryActions={[
         {
           label: 'Ir para Academia Formal',
-          onClick: () => navigate('/academy'),
+          onClick: () => navigate('/academia'),
         },
         {
           label: 'Busca Global',

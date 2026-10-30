@@ -1,3 +1,5 @@
+import { CadeiraNaArvore, montarArvoreDeLicoes } from '../../domain/arvore-de-licoes';
+import { ChairId, coursesOfChair } from '../../domain/chair';
 import {
   Program,
   LearningPath,
@@ -17,22 +19,28 @@ import {
   AudienceVariant,
 } from '../../domain/academy';
 import { AcademyRepository, academyRepository } from '../../repositories/academy.repository';
+import { RoutineRepository, routineRepository } from '../../repositories/routine.repository';
 import { profileService, ProfileService } from './profile.service';
 import { analyticsService } from '../../infrastructure/telemetry/analytics-service';
 import { AnalyticsEventType } from '../../domain/analytics';
 import { canonicalJson, sha256Hex } from '../../domain/integrity';
 import { NotFoundError } from '../../domain/errors';
+import { notificacoesRepository } from '../../repositories/notificacoes.repository';
 
 export class AcademyService {
   private repo: AcademyRepository;
   private profileSvc: ProfileService;
 
+  private rotina: RoutineRepository;
+
   constructor(
     repo: AcademyRepository = academyRepository,
-    profSvc: ProfileService = profileService
+    profSvc: ProfileService = profileService,
+    rotina: RoutineRepository = routineRepository
   ) {
     this.repo = repo;
     this.profileSvc = profSvc;
+    this.rotina = rotina;
   }
 
   // -------------------------------------------------------------------------
@@ -69,6 +77,40 @@ export class AcademyService {
 
   public async getCourse(id: string): Promise<AcademyCourse | null> {
     return this.repo.findCourseById(id);
+  }
+
+  /**
+   * 🔴 A ÁRVORE INTEIRA, ORDENADA — Cadeira → Curso → Módulo → Lição.
+   *
+   * O Laboratório montava a própria organização a partir de árvores de
+   * competência soltas, sem curso e sem ordem. A estrutura acadêmica já existia
+   * inteira e ordenada; faltava um lugar que a entregasse pronta.
+   *
+   * Duas organizações sobre o mesmo conteúdo é pior que nenhuma: a pessoa
+   * estuda por uma e é avaliada pela outra.
+   */
+  public async arvoreDeLicoes(cadeirasDoAluno: ChairId[] = []): Promise<CadeiraNaArvore[]> {
+    const cursos = await this.getCourses();
+
+    const modulos = (await Promise.all(cursos.map((c) => this.getModules(c.id)))).flat();
+    const licoes = (await Promise.all(modulos.map((m) => this.getLessons(m.id)))).flat();
+
+    return montarArvoreDeLicoes({ cursos, modulos, licoes, cadeirasDoAluno });
+  }
+
+  /**
+   * Os módulos de uma cadeira inteira, em ordem, com o campo `order` CRU.
+   *
+   * A árvore de lições renumera as posições para exibição — 1, 2, 3 sem
+   * buraco. Quem precisa casar com um número de capítulo precisa do campo
+   * original, e por isso este caminho existe separado: um diagnóstico que
+   * aponta "capítulo 7" tem que encontrar o módulo cujo `order` é 7, e não o
+   * sétimo da lista depois de qualquer remoção.
+   */
+  public async modulosDaCadeira(chair: ChairId): Promise<AcademyModule[]> {
+    const cursos = coursesOfChair(chair);
+    const listas = await Promise.all(cursos.map((id) => this.repo.listModulesByCourse(id)));
+    return listas.flat().sort((a, b) => a.order - b.order);
   }
 
   public async getModules(courseId: string): Promise<AcademyModule[]> {
@@ -298,6 +340,27 @@ export class AcademyService {
 
     const saved = await this.repo.saveProgress(progress);
 
+    /**
+     * A PONTE ENTRE A ACADEMIA E O LABORATORIO.
+     *
+     * `DailyActivity` sempre teve o campo `lessonsCompleted`, e nada nunca o
+     * preencheu. A ligacao entre as duas areas existia so como dois
+     * `navigate()` numa tela de licao — hiperlink, e nao integracao.
+     *
+     * Concluir uma licao e atividade do dia tanto quanto terminar uma sessao
+     * de pratica. A missao "conclua uma licao hoje" so pode ser cumprida
+     * porque esta linha existe.
+     *
+     * Falhar aqui NAO derruba a conclusao da licao: o progresso academico ja
+     * foi gravado, e perde-lo por causa da rotina seria trocar o registro
+     * que importa pelo que enfeita.
+     */
+    try {
+      await this.rotina.somarAtividade(userId, { lessonsCompleted: 1 });
+    } catch (e) {
+      console.warn('[AcademyService] rotina do dia nao registrada:', e);
+    }
+
     // Academic History Entry
     await this.repo.logHistoryEntry({
       id: `hist_les_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -411,7 +474,7 @@ export class AcademyService {
           title: `Atividade Auditada: ${activity.skills.join(', ')}`,
           description: `Demonstração determinística de competência em "${activity.skills.join(' / ')}". Resolvido na tentativa ${attemptNumber} com nota máxima.`,
           artifactType: 'project',
-          artifactUrl: `/academy/activity/${activityId}`,
+          artifactUrl: `/academia/activity/${activityId}`,
           skills: activity.skills,
           evaluator: {
             id: 'eval_auto_validator',
@@ -635,6 +698,16 @@ export class AcademyService {
 
     const savedCert = await this.repo.saveCertificate(cert);
 
+    /** AUD-10 — o certificado é o aviso que mais importa; o id do aviso é o do certificado, e não duplica. */
+    notificacoesRepository.emitir({
+      id: `aviso_cert_${savedCert.id}`,
+      userId,
+      tipo: 'CERTIFICADO',
+      titulo: 'Certificado emitido',
+      texto: `Você concluiu ${course.title}. O certificado já pode ser conferido por qualquer pessoa.`,
+      link: `/academia/certificate/${savedCert.id}`,
+    });
+
     // Register into History
     await this.repo.logHistoryEntry({
       id: `hist_cert_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -657,7 +730,7 @@ export class AcademyService {
         title: `Certificado de Conclusão: ${course.title}`,
         description: `Certificado oficial conferido pela Conservatório Muscicapa. Carga horária auditada de ${course.workloadHours} horas. Código: ${verificationCode}`,
         artifactType: 'document',
-        artifactUrl: `/academy/certificate/${savedCert.id}`,
+        artifactUrl: `/academia/certificate/${savedCert.id}`,
         skills: course.competencies,
         evaluator: {
           id: course.authorId,

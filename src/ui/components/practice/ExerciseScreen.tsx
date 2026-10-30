@@ -5,9 +5,10 @@ import {
   TAG_TEXT,
   currentExercise,
   isInCombo,
-  progresso,
+  progress,
 } from '../../../domain/music-exercise';
 import { webAudioSynth } from '../../../infrastructure/audio/synth';
+import { FiguraDoExercicio } from './FiguraDoExercicio';
 import { X, Volume2, Turtle, Check, RotateCcw, Flag } from 'lucide-react';
 
 interface ExerciseScreenProps {
@@ -23,8 +24,11 @@ interface ExerciseScreenProps {
    * nao perguntar — cria a impressao de que alguem esta ouvindo.
    */
   onRateDifficulty?: (exerciseId: string, verdict: 'EASY' | 'HARD') => void;
-  /** Idem: sem destino, sem botao. */
-  onReport?: (exerciseId: string) => void;
+  /**
+   * Idem: sem destino, sem botao. Devolve se o relato CHEGOU — a tela so diz
+   * "vamos revisar" quando chegou, e diz que nao foi quando nao chegou (L-7a).
+   */
+  onReport?: (exerciseId: string) => Promise<{ ok: true } | { ok: false; motivo: string }>;
 }
 
 /**
@@ -68,12 +72,14 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
   const [selectedIds, setEscolhidas] = useState<string[]>([]);
   const [checked, setConferido] = useState<null | { isCorrect: boolean }>(null);
   const [calibration, setCalibragem] = useState<Calibration>(null);
+  const [falhaDoRelato, setFalhaDoRelato] = useState<string | null>(null);
   const [confirmingExit, setConfirmandoSaida] = useState(false);
 
   useEffect(() => {
     setEscolhidas([]);
     setConferido(null);
     setCalibragem(null);
+    setFalhaDoRelato(null);
   }, [exercise?.id]);
 
   /**
@@ -155,7 +161,7 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
         <div
           className="h-3 flex-1 overflow-hidden rounded-full bg-stone-200"
           role="progressbar"
-          aria-valuenow={Math.round(progresso(lesson) * 100)}
+          aria-valuenow={Math.round(progress(lesson) * 100)}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-label="Progresso da lição"
@@ -164,7 +170,7 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
             className={`h-full rounded-full transition-all duration-300 ${
               inCombo ? 'bg-ouro-500' : 'bg-anil-700'
             }`}
-            style={{ width: `${progresso(lesson) * 100}%` }}
+            style={{ width: `${progress(lesson) * 100}%` }}
           />
         </div>
 
@@ -193,6 +199,15 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
         <h1 className="font-serif text-2xl font-bold leading-snug text-stone-900">
           {exercise.prompt}
         </h1>
+
+        {/*
+          🔴 A FIGURA VEM ANTES DAS ALTERNATIVAS.
+
+          O enunciado diz "Que nota está escrita na pauta?" — se a pauta
+          aparecesse depois das alternativas, ou não aparecesse, a pergunta
+          apontaria para o vazio.
+        */}
+        {exercise.figura && <FiguraDoExercicio figura={exercise.figura} />}
 
         {exercise.audio && (
           <div className="mt-6 flex items-center gap-3">
@@ -275,6 +290,12 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
             </p>
             <p className="mt-1 text-sm leading-relaxed text-stone-700">{exercise.explanation}</p>
 
+            {falhaDoRelato && (
+              <p role="alert" className="mt-3 text-xs text-red-800">
+                O relato não foi enviado: {falhaDoRelato}
+              </p>
+            )}
+
             {(onRateDifficulty || onReport) && (
               <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-stone-900/10 pt-3">
                 {calibration ? (
@@ -306,9 +327,10 @@ export const ExerciseScreen: React.FC<ExerciseScreenProps> = ({
                     {onReport && (
                       <button
                         type="button"
-                        onClick={() => {
-                          onReport(exercise.id);
-                          setCalibragem('REPORTED');
+                        onClick={async () => {
+                          const r = await onReport(exercise.id);
+                          if (r.ok) setCalibragem('REPORTED');
+                          else setFalhaDoRelato(r.motivo);
                         }}
                         className="ml-auto flex items-center gap-1 text-xs text-stone-500 underline-offset-2 transition-colors hover:text-stone-800 hover:underline"
                       >

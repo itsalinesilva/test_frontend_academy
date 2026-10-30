@@ -4,8 +4,7 @@ import { Card } from '../../components/base/Card';
 import { Button } from '../../components/base/Button';
 import { Avatar } from '../../components/data-display/Avatar';
 import { useRouter } from '../../navigation/router';
-import { profileService } from '../../../services/application/profile.service';
-import { UnifiedProfileRecord } from '../../../domain/profile';
+import { PessoaNoDiretorio, profileService } from '../../../services/application/profile.service';
 import { MapPin, Music, Search } from 'lucide-react';
 
 /**
@@ -17,26 +16,39 @@ import { MapPin, Music, Search } from 'lucide-react';
  * O que ela lista vem de `listDirectory()`, que devolve PROJECOES PUBLICAS.
  * Nenhum campo privado chega ao cliente — o filtro roda no repositorio, nao
  * aqui. E-mail nao e exibido nem recebido.
+ *
+ * P-3: a lista vem do SERVIDOR, onde cada pessoa publica o próprio cartão.
+ * Antes vinha do navegador — só apareciam as contas que já tinham entrado
+ * naquele computador. A busca também roda lá (ADR-003).
  */
 export const NetworkDirectoryScreen: React.FC = () => {
   const { navigate } = useRouter();
-  const [pessoas, setPessoas] = useState<UnifiedProfileRecord[]>([]);
+  const [pessoas, setPessoas] = useState<PessoaNoDiretorio[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [busca, setBusca] = useState('');
 
   useEffect(() => {
-    const carregar = async () => {
+    let vivo = true;
+    /** Espera a pessoa parar de digitar: cada letra não vira uma consulta ao servidor. */
+    const t = setTimeout(async () => {
       try {
-        setPessoas(await profileService.listDirectory());
+        const lista = await profileService.listDirectory(busca.trim());
+        if (vivo) {
+          setPessoas(lista);
+          setErro(null);
+        }
       } catch (e) {
-        setErro(e instanceof Error ? e.message : 'Falha ao carregar o diretório.');
+        if (vivo) setErro(e instanceof Error ? e.message : 'Falha ao carregar o diretório.');
       } finally {
-        setIsLoading(false);
+        if (vivo) setIsLoading(false);
       }
+    }, busca ? 300 : 0);
+    return () => {
+      vivo = false;
+      clearTimeout(t);
     };
-    carregar();
-  }, []);
+  }, [busca]);
 
   const termo = busca.trim().toLowerCase();
   const filtradas = termo

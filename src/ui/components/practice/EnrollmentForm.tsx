@@ -14,7 +14,7 @@ interface EnrollmentFormProps {
   /** O percurso em que a pessoa está se matriculando — teoria, história, violino. */
   pathName: string;
   /**
-   * Curso do Academy correspondente, quando existir.
+   * Curso da Academia correspondente, quando existir.
    *
    * Ausente é caso previsto: quem pratica história sem fazer o curso de
    * história não é exceção a tolerar.

@@ -118,7 +118,7 @@ export const DIMENSIONS: Record<Dimension, DimensionDescription> = {
     requer: [Dimension.NOTE],
   },
   [Dimension.INTERVAL]: {
-    nome: 'Interval',
+    nome: 'Intervalo',
     pergunta: 'Que distância há entre as duas notas, em número e qualidade?',
     capitulos: [10, 11, 12, 13, 17],
     requer: [Dimension.NOTE, Dimension.ACCIDENTAL],

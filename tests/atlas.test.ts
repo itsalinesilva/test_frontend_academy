@@ -21,7 +21,15 @@ import { openHouses, processedSources, HouseNature } from '../src/domain/house';
  * Catálogo de termos: `docs/harness/75_ATLAS_TAXONOMY.md`.
  */
 
-const novo = () => new PersistentAtlasRepository(new LocalStorageAdapter());
+/**
+ * Repositório SEM semente.
+ *
+ * O de produção semeia do acervo canônico — antes ele lia `DEFAULT_WORKS`,
+ * que era `never[] = []`, e a tela do Atlas mostrava zero obras enquanto o
+ * acervo tinha dezessete. Aqui a prova é sobre a **contagem ser contada**, e
+ * semente entrando no meio confundiria "o teste gravou" com "já estava lá".
+ */
+const novo = () => new PersistentAtlasRepository(new LocalStorageAdapter(), false);
 
 const obra = (workId: string, eraId: string, composerId = 'cmp_x'): AtlasWorkPlacement => ({
   workId,
@@ -88,10 +96,14 @@ describe('a taxonomia é conhecimento, e está coerente', () => {
 });
 
 describe('a contagem é contada, nunca declarada', () => {
-  it('o acervo nasce vazio, e a contagem é zero', async () => {
+  it('sem acervo, a contagem é zero — e não um número bonito', async () => {
     /**
      * REGRESSÃO — "Barroco: 142 obras canônicas" numa plataforma que não
-     * cataloga obra nenhuma. Zero é a informação correta.
+     * catalogava obra nenhuma. Zero é a informação correta.
+     *
+     * Hoje o acervo NÃO nasce vazio: ele sai do repositório próprio. O que
+     * este caso guarda continua valendo — a contagem sai do que existe, e
+     * quando não existe nada ela é zero.
      */
     const repo = novo();
     expect(await repo.countWorks()).toBe(0);
@@ -160,7 +172,7 @@ describe('tribo — a população nichada', () => {
      * visível, fechada, com o motivo escrito, e **nunca preenchida com
      * conteúdo inventado** para a lista não parecer vazia.
      */
-    const houses = await novo().listarTribos();
+    const houses = await novo().listarCasas();
     expect(houses.length).toBeGreaterThan(0);
     expect(openHouses(houses)).toEqual([]);
   });
@@ -171,7 +183,7 @@ describe('tribo — a população nichada', () => {
      * lugar é assunto do Atlas — que já trata de onde e de quando. Quem tem
      * coordenada é o mundo, não a população.
      */
-    for (const t of await novo().listarTribos()) {
+    for (const t of await novo().listarCasas()) {
       expect(t, t.name).not.toHaveProperty('mapCoordinates');
     }
   });
@@ -179,14 +191,14 @@ describe('tribo — a população nichada', () => {
   it('há tribo que não é de instrumento', async () => {
     // Quem estuda história forma uma tribo tanto quanto quem toca violino —
     // e isso não cabia em "ilha de instrumento".
-    const houses = await novo().listarTribos();
+    const houses = await novo().listarCasas();
     expect(houses.some((t) => t.nature === HouseNature.DISCIPLINE)).toBe(true);
     expect(houses.some((t) => t.slug === 'historiadores')).toBe(true);
   });
 
   it('toda era que uma tribo declara existe de fato', async () => {
     const idsDeEra = new Set(DEFAULT_ERAS.map((e) => e.id));
-    for (const t of await novo().listarTribos()) {
+    for (const t of await novo().listarCasas()) {
       for (const eraId of t.relevantEraIds) {
         expect(idsDeEra.has(eraId), `${t.name} aponta para ${eraId}`).toBe(true);
       }
@@ -195,7 +207,7 @@ describe('tribo — a população nichada', () => {
 
   it('toda região que uma tribo declara existe de fato', async () => {
     const idsDeRegiao = new Set(DEFAULT_REGIONS.map((r) => r.id));
-    for (const t of await novo().listarTribos()) {
+    for (const t of await novo().listarCasas()) {
       for (const regionId of t.relevantRegiaoIds) {
         expect(idsDeRegiao.has(regionId), `${t.name} aponta para ${regionId}`).toBe(true);
       }
@@ -205,7 +217,7 @@ describe('tribo — a população nichada', () => {
   it('a contagem de fontes é a das PROCESSADAS, não a das declaradas', async () => {
     // Mostrar "15 obras" quando nenhuma foi processada seria anunciar acervo
     // que a plataforma não alcança.
-    for (const t of await novo().listarTribos()) {
+    for (const t of await novo().listarCasas()) {
       expect(processedSources(t), t.name).toBe(0);
     }
   });

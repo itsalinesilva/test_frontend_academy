@@ -9,7 +9,7 @@ import { HeaderSearch } from '../../src/ui/components/layout/HeaderSearch';
 const navegou: string[] = [];
 
 vi.mock('../../src/ui/navigation/router', () => ({
-  useRouter: () => ({
+  useRouter: () => ({ query: new URLSearchParams(),
     currentPath: '/',
     navigate: (p: string) => navegou.push(p),
   }),

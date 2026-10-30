@@ -7,7 +7,7 @@ import {
   MusicExercise,
   ExerciseType,
   startLesson,
-  responder,
+  answer,
 } from '../../src/domain/music-exercise';
 
 /**
@@ -88,7 +88,7 @@ describe('a anatomia da tela', () => {
     // A licao precisa ter exercicio para cada resposta: `responder` e inerte
     // quando a fila acabou, e as vidas nao cairiam ate zero.
     let lesson = startLesson('lic', Array(5).fill(exercise));
-    for (let i = 0; i < 5; i++) lesson = responder(lesson, false);
+    for (let i = 0; i < 5; i++) lesson = answer(lesson, false);
     expect(lesson.lives).toBe(0);
     render(
       <ExerciseScreen lesson={{ ...lesson, index: 0 }} onAnswer={vi.fn()} onSkip={vi.fn()} onExit={vi.fn()} />
@@ -226,8 +226,8 @@ describe('pular e sair', () => {
 describe('o combo', () => {
   it('a sequência aparece a partir de dois acertos', () => {
     let lesson = startLesson('lic', [exercise, exercise, exercise]);
-    lesson = responder(lesson, true);
-    lesson = responder(lesson, true);
+    lesson = answer(lesson, true);
+    lesson = answer(lesson, true);
     render(
       <ExerciseScreen lesson={{ ...lesson, index: 0 }} onAnswer={vi.fn()} onSkip={vi.fn()} onExit={vi.fn()} />
     );
@@ -237,7 +237,7 @@ describe('o combo', () => {
   it('com um acerto só, não há alarde', () => {
     // Anunciar "1 seguido" seria ruído: uma resposta certa não é sequência.
     let lesson = startLesson('lic', [exercise, exercise]);
-    lesson = responder(lesson, true);
+    lesson = answer(lesson, true);
     render(
       <ExerciseScreen lesson={{ ...lesson, index: 0 }} onAnswer={vi.fn()} onSkip={vi.fn()} onExit={vi.fn()} />
     );
@@ -273,7 +273,7 @@ describe('sair no meio avisa o que se perde', () => {
 
   it('com exercício respondido, pergunta antes — e diz o que se perde', async () => {
     const user = userEvent.setup();
-    const lesson = responder(startLesson('lic', [exercise, exercise]), true);
+    const lesson = answer(startLesson('lic', [exercise, exercise]), true);
     const { onExit } = montar({ lesson });
 
     await user.click(screen.getByRole('button', { name: /sair da lição/i }));
@@ -286,7 +286,7 @@ describe('sair no meio avisa o que se perde', () => {
 
   it('ficar fecha o aviso sem sair', async () => {
     const user = userEvent.setup();
-    const lesson = responder(startLesson('lic', [exercise, exercise]), true);
+    const lesson = answer(startLesson('lic', [exercise, exercise]), true);
     const { onExit } = montar({ lesson });
 
     await user.click(screen.getByRole('button', { name: /sair da lição/i }));
@@ -298,7 +298,7 @@ describe('sair no meio avisa o que se perde', () => {
 
   it('confirmar sai de fato', async () => {
     const user = userEvent.setup();
-    const lesson = responder(startLesson('lic', [exercise, exercise]), true);
+    const lesson = answer(startLesson('lic', [exercise, exercise]), true);
     const { onExit } = montar({ lesson });
 
     await user.click(screen.getByRole('button', { name: /sair da lição/i }));
@@ -308,7 +308,7 @@ describe('sair no meio avisa o que se perde', () => {
 
   it('Escape equivale a ficar', async () => {
     const user = userEvent.setup();
-    const lesson = responder(startLesson('lic', [exercise, exercise]), true);
+    const lesson = answer(startLesson('lic', [exercise, exercise]), true);
     const { onExit } = montar({ lesson });
 
     await user.click(screen.getByRole('button', { name: /sair da lição/i }));
@@ -361,14 +361,25 @@ describe('calibragem do exercício', () => {
 
   it('reportar chega a quem vai revisar', async () => {
     const user = userEvent.setup();
-    const onReport = vi.fn();
+    const onReport = vi.fn().mockResolvedValue({ ok: true });
     montar({ onReport });
 
     await check(user);
     await user.click(screen.getByRole('button', { name: /reportar/i }));
 
     expect(onReport).toHaveBeenCalledWith('e1');
-    expect(screen.getByText(/vamos revisar/i)).toBeInTheDocument();
+    expect(await screen.findByText(/vamos revisar/i)).toBeInTheDocument();
+  });
+
+  it('🔴 relato que NÃO chegou diz que não chegou — e não "vamos revisar"', async () => {
+    const user = userEvent.setup();
+    montar({ onReport: vi.fn().mockResolvedValue({ ok: false, motivo: 'O servidor ainda não tem onde guardar relatos.' }) });
+
+    await check(user);
+    await user.click(screen.getByRole('button', { name: /reportar/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/não foi enviado.*onde guardar/);
+    expect(screen.queryByText(/vamos revisar/i)).toBeNull();
   });
 
   it('antes de conferir não se avalia o que ainda não se viu', async () => {

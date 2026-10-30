@@ -29,7 +29,22 @@ export const PracticeProfileScreen: React.FC = () => {
 
   useEffect(() => {
     async function loadProfile() {
-      if (!userId) return;
+      /**
+       * 🔴 SAIR ANTES DE DESLIGAR O CARREGAMENTO TRAVA A TELA.
+       *
+       * O `return` acontecia **antes** do `finally` que desliga o
+       * carregamento, então quem não tem sessão ficava com o esqueleto do
+       * `ScreenContainer` para sempre: a tela não abre, não dá erro, e não
+       * diz nada.
+       *
+       * Desligar antes de sair faz a tela cair no próprio estado vazio, que
+       * é legível e diz o que falta.
+       */
+      if (!userId) {
+        setIsLoading(false);
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         const data = await practiceService.getPracticeProfile(userId);
@@ -53,7 +68,31 @@ export const PracticeProfileScreen: React.FC = () => {
     );
   }
 
-  if (!profile) return null;
+  /**
+   * 🔴 `return null` é UMA PÁGINA EM BRANCO.
+   *
+   * Sem sessão não há o que mostrar, e a tela devolvia **nada** — nem título,
+   * nem explicação, nem caminho de volta. Quem chega vê o cabeçalho e um vazio,
+   * e conclui que a plataforma quebrou.
+   *
+   * Ausente e quebrado parecem a mesma coisa quando a tela não fala. Aqui ela
+   * fala: diz o que falta e por quê.
+   */
+  if (!profile) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-3 p-8 text-center">
+        <h1 className="font-serif text-xl font-bold text-stone-900">Perfil de prática</h1>
+        <p className="text-sm leading-relaxed text-stone-600">O perfil de prática reúne o que você já treinou. Sem nome não há onde guardar, e por isso ele começa quando você entra.</p>
+        <button
+          type="button"
+          onClick={() => router.navigate('/practice')}
+          className="text-sm font-medium text-anil-800 underline underline-offset-2"
+        >
+          Voltar ao Laboratório
+        </button>
+      </div>
+    );
+  }
 
   return (
     <PageLayout
@@ -224,7 +263,7 @@ export const PracticeProfileScreen: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => router.navigate('/practice/skill-tree')}
+              onClick={() => router.navigate('/practice?aba=licoes')}
               className="w-full text-xs"
             >
               Explorar Novas Árvores de Habilidades
@@ -267,7 +306,8 @@ export const PracticeProfileScreen: React.FC = () => {
                     {result.summaryScore}/1000
                   </span>
                   <span className="text-[10px] font-mono text-stone-400 block">
-                    Acurácia: {result.pitchAccuracy}%
+                    {/* Era "Acurácia: {pitchAccuracy}%" — afinação, e com 80 de reserva quando nada soou (AUD-21). */}
+                    Acertos: {result.notesCorrect} de {result.notesAttempted}
                   </span>
                 </div>
                 <ArrowRight className="w-4 h-4 text-stone-400" />

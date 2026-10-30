@@ -17,7 +17,6 @@ import {
   BookOpen,
   CheckCircle2,
   ExternalLink,
-  ShieldCheck,
   ArrowRight,
   Sparkles,
 } from 'lucide-react';
@@ -40,10 +39,20 @@ export const AcademicProfileScreen: React.FC = () => {
     const loadAcademicProfile = async () => {
       try {
         const session = await authService.getActiveSession();
-        // Sem sessão não há perfil acadêmico. O objeto de reserva anterior
-        // apresentava a identidade da fundadora — com nome e e-mail
-        // inventados — a qualquer visitante (CLAUDE_AUDIT.md T-05/K-05).
-        if (!session) return;
+        /**
+         * 🔴 Sair aqui deixava a tela no esqueleto para SEMPRE — inclusive
+         * para quem está logado, porque o `return` pulava o `setIsLoading(false)`
+         * que fica **fora** do `try`.
+         *
+         * Sem sessão não há perfil acadêmico, e a tela precisa cair no próprio
+         * estado vazio em vez de carregar sem fim. O objeto de reserva anterior
+         * apresentava a identidade da fundadora a qualquer visitante
+         * (CLAUDE_AUDIT.md T-05/K-05), e por isso não volta.
+         */
+        if (!session) {
+          setIsLoading(false);
+          return;
+        }
         setUserProfile(session.user);
 
         const [allCourses, allProgresses, certs] = await Promise.all([
@@ -88,7 +97,7 @@ export const AcademicProfileScreen: React.FC = () => {
           <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500">
             Registro
           </p>
-          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academy/history')}>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academia/history')}>
             Historico completo
           </Button>
         </Card>
@@ -108,15 +117,10 @@ export const AcademicProfileScreen: React.FC = () => {
                   <h2 className="font-serif font-bold text-2xl text-stone-950">
                     {userProfile?.name || 'Acadêmico de Música'}
                   </h2>
-                  <Badge variant="brand" size="sm">Membro Oficial</Badge>
                 </div>
                 <p className="text-xs text-stone-600 font-sans">
-                  {userProfile?.email} • Registro Canônico: {userProfile?.id}
+                  {userProfile?.email}
                 </p>
-                <div className="flex items-center gap-2 pt-1 text-[11px] font-mono text-stone-500">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Identidade Auditada pela Cátedra de Música Clássica</span>
-                </div>
               </div>
             </div>
 
@@ -144,7 +148,7 @@ export const AcademicProfileScreen: React.FC = () => {
                 <span className="font-serif font-bold text-2xl text-emerald-800 block">
                   {totalStudyHours}h
                 </span>
-                <span className="text-[11px] font-mono text-stone-500 uppercase">Horas Auditadas</span>
+                <span className="text-[11px] font-mono text-stone-500 uppercase">Horas de curso</span>
               </div>
             </div>
           </div>
@@ -168,7 +172,7 @@ export const AcademicProfileScreen: React.FC = () => {
                 variant="outline"
                 size="sm"
                 className="mt-3"
-                onClick={() => navigate('/academy/catalog')}
+                onClick={() => navigate('/academia/catalog')}
               >
                 Explorar Catálogo e Iniciar Formação
               </Button>
@@ -211,7 +215,7 @@ export const AcademicProfileScreen: React.FC = () => {
                       <Button
                         size="sm"
                         variant="primary"
-                        onClick={() => navigate(`/academy/certificate/${cert.id}`)}
+                        onClick={() => navigate(`/academia/certificate/${cert.id}`)}
                       >
                         Visualizar Certificado
                         <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
@@ -257,7 +261,7 @@ export const AcademicProfileScreen: React.FC = () => {
                         </span>
                       </div>
                       <h4
-                        onClick={() => navigate(`/academy/course/${prog.courseId}`)}
+                        onClick={() => navigate(`/academia/course/${prog.courseId}`)}
                         className="font-serif font-bold text-base text-stone-950 hover:text-anil-800 cursor-pointer mt-1"
                       >
                         {crs?.title || prog.courseId}
@@ -268,7 +272,7 @@ export const AcademicProfileScreen: React.FC = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => navigate(`/academy/course/${prog.courseId}/progress`)}
+                        onClick={() => navigate(`/academia/course/${prog.courseId}/progress`)}
                       >
                         Ver Progresso
                       </Button>
@@ -277,11 +281,11 @@ export const AcademicProfileScreen: React.FC = () => {
                         variant="primary"
                         onClick={() => {
                           if (isDone) {
-                            navigate(`/academy/completion/${prog.courseId}`);
+                            navigate(`/academia/completion/${prog.courseId}`);
                           } else if (prog.lastAccessedLessonId) {
-                            navigate(`/academy/lesson/${prog.lastAccessedLessonId}`);
+                            navigate(`/academia/lesson/${prog.lastAccessedLessonId}`);
                           } else {
-                            navigate(`/academy/course/${prog.courseId}`);
+                            navigate(`/academia/course/${prog.courseId}`);
                           }
                         }}
                       >

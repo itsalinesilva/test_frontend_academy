@@ -134,6 +134,10 @@ export class ApiClient {
     );
   }
 
+  public async patch<T, TBody = unknown>(endpoint: string, body: TBody, options?: RequestOptions): Promise<T> {
+    return this.executeFetch<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body) }, options);
+  }
+
   public async delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     return this.executeFetch<T>(endpoint, { method: 'DELETE' }, options);
   }

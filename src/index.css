@@ -129,3 +129,48 @@
     outline-offset: 2px;
   }
 }
+
+/*
+ * Preferências de acessibilidade (AUD-6). A tela de Configurações marca o
+ * <html>; aqui se diz o que cada marca muda. Sem marca, nada muda.
+ */
+@layer base {
+  /* Alto contraste: os cinzas de texto e borda descem para os passos escuros,
+     e o texto secundário deixa de ser cinza-claro sobre branco. */
+  html[data-alto-contraste] {
+    --color-stone-300: #78716c;
+    --color-stone-400: #57534e;
+    --color-stone-500: #44403c;
+    --color-stone-600: #292524;
+    --color-stone-700: #1c1917;
+    --color-fg-secondary: #1c1917;
+    --color-fg-muted: #292524;
+    --color-border-default: #78716c;
+    --color-border-subtle: #a8a29e;
+  }
+
+  /* Reduzir movimento: transições e animações param, inclusive a rolagem suave. */
+  html[data-reduzir-movimento],
+  html[data-reduzir-movimento] *,
+  html[data-reduzir-movimento] *::before,
+  html[data-reduzir-movimento] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Leitura espaçada: fonte sem serifa, mais ar entre letras, palavras e linhas —
+     o que as recomendações de leitura para dislexia pedem. */
+  /* Fora do SVG: clave, figuras e credencial desenham com fonte própria, e trocar quebraria o desenho. */
+  html[data-leitura-espacada] body,
+  html[data-leitura-espacada] body :not(svg):not(svg *) {
+    font-family: ui-sans-serif, system-ui, 'Segoe UI', Verdana, sans-serif !important;
+    letter-spacing: 0.04em;
+    word-spacing: 0.12em;
+  }
+  html[data-leitura-espacada] body p,
+  html[data-leitura-espacada] body li {
+    line-height: 1.8;
+  }
+}

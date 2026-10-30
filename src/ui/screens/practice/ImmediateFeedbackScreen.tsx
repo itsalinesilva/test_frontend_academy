@@ -33,7 +33,22 @@ export const ImmediateFeedbackScreen: React.FC = () => {
 
   useEffect(() => {
     async function loadData() {
-      if (!userId) return;
+      /**
+       * 🔴 SAIR ANTES DE DESLIGAR O CARREGAMENTO TRAVA A TELA.
+       *
+       * O `return` acontecia **antes** do `finally` que desliga o
+       * carregamento, então quem não tem sessão ficava com o esqueleto do
+       * `ScreenContainer` para sempre: a tela não abre, não dá erro, e não
+       * diz nada.
+       *
+       * Desligar antes de sair faz a tela cair no próprio estado vazio, que
+       * é legível e diz o que falta.
+       */
+      if (!userId) {
+        setIsLoading(false);
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         let att: ExerciseAttempt | null = null;
@@ -265,7 +280,7 @@ export const ImmediateFeedbackScreen: React.FC = () => {
               id="btn-feedback-skill-tree"
               variant="primary"
               size="md"
-              onClick={() => router.navigate('/practice/skill-tree')}
+              onClick={() => router.navigate('/practice?aba=licoes')}
               className="flex items-center gap-2 bg-anil-800 hover:bg-anil-700 text-white"
             >
               <span>Avançar na Skill Tree</span>

@@ -65,7 +65,7 @@ export const PathDetailScreen: React.FC = () => {
           title: 'Trilha não encontrada',
           description: `O identificador [${pathId}] não corresponde a uma trilha ativa.`,
           actionLabel: 'Voltar ao Catálogo',
-          onAction: () => navigate('/academy/catalog'),
+          onAction: () => navigate('/academia/catalog'),
         }}
       >
         <div />
@@ -76,7 +76,7 @@ export const PathDetailScreen: React.FC = () => {
   return (
     <ScreenContainer
       id={`path-detail-${pathId}`}
-      title={path?.title || 'Carregando Trilha...'}
+      title={path?.title || 'Carregando Trilha…'}
       subtitle={path?.subtitle || ''}
       badgeLabel={`Nível ${path?.level || ''}`}
       badgeVariant="brand"
@@ -85,7 +85,7 @@ export const PathDetailScreen: React.FC = () => {
         icon: ArrowRight,
         onClick: () => {
           if (courses.length > 0) {
-            navigate(`/academy/course/${courses[0].id}`);
+            navigate(`/academia/course/${courses[0].id}`);
           }
         },
       }}
@@ -93,7 +93,7 @@ export const PathDetailScreen: React.FC = () => {
         {
           label: 'Voltar ao Catálogo',
           icon: ArrowLeft,
-          onClick: () => navigate('/academy/catalog'),
+          onClick: () => navigate('/academia/catalog'),
         },
       ]}
     >
@@ -183,7 +183,7 @@ export const PathDetailScreen: React.FC = () => {
                       <Button
                         size="sm"
                         variant={enrollment ? 'primary' : 'outline'}
-                        onClick={() => navigate(`/academy/course/${course.id}`)}
+                        onClick={() => navigate(`/academia/course/${course.id}`)}
                       >
                         {enrollment ? 'Continuar Disciplina' : 'Ver Ementa'}
                         <ArrowRight className="w-3.5 h-3.5 ml-1.5" />

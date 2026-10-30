@@ -51,8 +51,8 @@ function linhasDe(m: MedicaoReal): Linha[] {
       label: 'Tempo',
       valor: m.tempoRitmico.pontuacao,
       detalhe:
-        m.tempoRitmico.desvioMedioMs !== null
-          ? `${m.tempoRitmico.desvioMedioMs} ms do pulso`
+        m.tempoRitmico.meanDeviationMs !== null
+          ? `${m.tempoRitmico.meanDeviationMs} ms do pulso`
           : null,
       explanation:
         'Desvio médio dos ataques em relação à grade do metrônomo. Até 20 ms não se percebe; acima de 120 ms o ataque soa fora.',

@@ -37,7 +37,7 @@ export const WORKSPACES: WorkspaceConfig[] = [
     badge: 'Teoria & Currículo',
     icon: GraduationCap,
     description: 'Disciplinas formais, lições estruturadas e história musicológica.',
-    defaultPath: '/academy',
+    defaultPath: '/academia',
   },
   {
     id: 'practice',
@@ -76,7 +76,7 @@ export const WORKSPACES: WorkspaceConfig[] = [
     label: 'Workspace Atlas & Mundos',
     badge: 'Repertório Histórico',
     icon: Globe2,
-    description: 'Grafo de conexões estéticas, períodos históricos e partituras de referência.',
+    description: 'O mapa de quando, onde e com quem a música foi feita, ligado às obras do acervo.',
     defaultPath: '/worlds',
   },
 ];
@@ -96,7 +96,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
 
   // Derive active workspace from current path
   const activeWorkspace = WORKSPACES.find((w) => {
-    if (w.id === 'academic' && currentPath.startsWith('/academy')) return true;
+    if (w.id === 'academic' && currentPath.startsWith('/academia')) return true;
     if (w.id === 'practice' && currentPath.startsWith('/practice')) return true;
     if (w.id === 'creation' && currentPath.startsWith('/score')) return true;
     if (w.id === 'studio' && currentPath.startsWith('/studio')) return true;

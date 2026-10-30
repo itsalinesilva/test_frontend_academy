@@ -5,13 +5,37 @@ import { Card } from '../../components/base/Card';
 import { Badge } from '../../components/base/Badge';
 import { Button } from '../../components/base/Button';
 import { academyService } from '../../../services/application/academy.service';
-import { Program, LearningPath, AcademyCourse } from '../../../domain/academy';
+import { Program, LearningPath, AcademyCourse, AcademyCategory } from '../../../domain/academy';
 import { Search, X, Layers, Award, GraduationCap, ArrowRight, BookOpen } from 'lucide-react';
 
+/**
+ * A BUSCA DA ACADEMIA — uma tela só.
+ *
+ * Havia duas: esta, e `AcademySearchResultsScreen` em
+ * `/academia/search/results`. Nenhum dos onze campos de busca da plataforma
+ * levava à segunda — cada um filtra na própria tela, ou manda para a busca
+ * global —, e ela era uma versão anterior desta, só de cursos (QA-4).
+ *
+ * O que ela tinha e esta não, veio para cá: o termo pelo endereço
+ * (`?q=`), o filtro por cátedra e a ordenação. O endereço antigo continua
+ * abrindo, agora nesta tela.
+ */
 export const AcademySearchScreen: React.FC = () => {
-  const { navigate } = useRouter();
-  const [query, setQuery] = useState('');
+  const { navigate, query: consulta } = useRouter();
+  const termoDoEndereco = consulta.get('q') ?? '';
+  const [query, setQuery] = useState(termoDoEndereco);
   const [selectedLevel, setSelectedLevel] = useState<string>('todos');
+  const [catedra, setCatedra] = useState<string>('todas');
+  const [ordem, setOrdem] = useState<'relevancia' | 'carga' | 'nome'>('relevancia');
+  const [categorias, setCategorias] = useState<AcademyCategory[]>([]);
+
+  useEffect(() => {
+    setQuery(termoDoEndereco);
+  }, [termoDoEndereco]);
+
+  useEffect(() => {
+    academyService.getCategories().then(setCategorias).catch(() => setCategorias([]));
+  }, []);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [paths, setPaths] = useState<LearningPath[]>([]);
   const [courses, setCourses] = useState<AcademyCourse[]>([]);
@@ -39,7 +63,21 @@ export const AcademySearchScreen: React.FC = () => {
     return () => clearTimeout(timer);
   }, [query, selectedLevel]);
 
-  const totalResults = programs.length + paths.length + courses.length;
+  /**
+   * Cátedra e ordem valem para as disciplinas: é nelas que a categoria e a
+   * carga horária são do próprio item. Trilha e programa atravessam cátedras.
+   */
+  const disciplinas = courses
+    .filter((c) => catedra === 'todas' || c.categoryId === catedra)
+    .sort((a, b) =>
+      ordem === 'carga'
+        ? b.workloadHours - a.workloadHours
+        : ordem === 'nome'
+          ? a.title.localeCompare(b.title, 'pt-BR')
+          : 0
+    );
+
+  const totalResults = programs.length + paths.length + disciplinas.length;
 
   const quickSkills = [
     'Notação Alfabética',
@@ -67,7 +105,7 @@ export const AcademySearchScreen: React.FC = () => {
           <p className="text-xs leading-relaxed text-stone-600">
             Busque por disciplina, trilha, competencia ou obra do acervo.
           </p>
-          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academy/catalog')}>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/academia/catalog')}>
             Ver catalogo completo
           </Button>
         </Card>
@@ -120,6 +158,39 @@ export const AcademySearchScreen: React.FC = () => {
             ))}
           </div>
 
+          {/* Cátedra e ordenação — vieram da antiga tela de resultados */}
+          <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-stone-100 text-xs">
+            <label className="flex items-center gap-2">
+              <span className="font-mono text-stone-500">Cátedra:</span>
+              <select
+                aria-label="Cátedra"
+                value={catedra}
+                onChange={(e) => setCatedra(e.target.value)}
+                className="bg-stone-50 border border-stone-200 rounded px-2 py-1 text-xs text-stone-800"
+              >
+                <option value="todas">Todas as cátedras</option>
+                {categorias.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex items-center gap-2">
+              <span className="font-mono text-stone-500">Ordenar disciplinas:</span>
+              <select
+                aria-label="Ordenar disciplinas"
+                value={ordem}
+                onChange={(e) => setOrdem(e.target.value as 'relevancia' | 'carga' | 'nome')}
+                className="bg-stone-50 border border-stone-200 rounded px-2 py-1 text-xs text-stone-800"
+              >
+                <option value="relevancia">Mais relevantes</option>
+                <option value="carga">Maior carga horária</option>
+                <option value="nome">Alfabética (A–Z)</option>
+              </select>
+            </label>
+          </div>
+
           {/* Level Filter */}
           <div className="flex items-center gap-2 pt-2 border-t border-stone-100 text-xs">
             <span className="text-stone-500 font-mono">Nível de Dificuldade:</span>
@@ -162,6 +233,7 @@ export const AcademySearchScreen: React.FC = () => {
               onClick={() => {
                 setQuery('');
                 setSelectedLevel('todos');
+                setCatedra('todas');
               }}
             >
               Limpar Filtros
@@ -170,20 +242,20 @@ export const AcademySearchScreen: React.FC = () => {
         ) : (
           <div className="space-y-6">
             {/* Courses Matches */}
-            {courses.length > 0 && (
+            {disciplinas.length > 0 && (
               <div className="space-y-3">
                 <h3 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2">
                   <GraduationCap className="w-4 h-4 text-anil-800" />
-                  Disciplinas Acadêmicas ({courses.length})
+                  Disciplinas Acadêmicas ({disciplinas.length})
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {courses.map((course) => (
+                  {disciplinas.map((course) => (
                     <Card
                       key={course.id}
                       variant="default"
                       padding="md"
                       className="space-y-3 flex flex-col justify-between hover:border-stone-400 cursor-pointer transition-colors"
-                      onClick={() => navigate(`/academy/course/${course.id}`)}
+                      onClick={() => navigate(`/academia/course/${course.id}`)}
                     >
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
@@ -218,7 +290,7 @@ export const AcademySearchScreen: React.FC = () => {
                       variant="default"
                       padding="md"
                       className="space-y-2 flex flex-col justify-between hover:border-stone-400 cursor-pointer transition-colors"
-                      onClick={() => navigate(`/academy/path/${path.id}`)}
+                      onClick={() => navigate(`/academia/path/${path.id}`)}
                     >
                       <div>
                         <div className="flex items-center justify-between mb-1">
@@ -252,7 +324,7 @@ export const AcademySearchScreen: React.FC = () => {
                       variant="default"
                       padding="md"
                       className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-stone-400 cursor-pointer transition-colors"
-                      onClick={() => navigate(`/academy/program/${program.id}`)}
+                      onClick={() => navigate(`/academia/program/${program.id}`)}
                     >
                       <div className="space-y-1 max-w-xl">
                         <Badge variant="brand" size="sm">Programa Curricular</Badge>

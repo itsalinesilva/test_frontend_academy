@@ -158,7 +158,7 @@ export const KidsGuardianScreen: React.FC = () => {
       density="operational"
       asideLabel="Perfis"
       state={isLoading ? 'loading' : perfis.length === 0 ? 'empty' : 'content'}
-      loadingMessage="Carregando o acompanhamento..."
+      loadingMessage="Carregando o acompanhamento…"
       emptyProps={{
         title: 'Nenhum perfil infantil ainda',
         description:
@@ -445,7 +445,7 @@ export const KidsGuardianScreen: React.FC = () => {
                 Você continua autenticado e entra no perfil da criança. Ao sair, volta para o
                 acompanhamento. É o caminho do dia a dia, quando vocês estudam juntos.
               </p>
-              <Button variant="primary" size="sm" onClick={() => navigate('/academy')}>
+              <Button variant="primary" size="sm" onClick={() => navigate('/academia')}>
                 Abrir o perfil de {crianca.nomeExibicao}
               </Button>
             </Card>

@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import os from 'os';
 
 export default defineConfig({
   plugins: [react()],
@@ -22,8 +23,44 @@ export default defineConfig({
      *
      * Baixar as iteracoes para o teste passar seria enfraquecer a protecao
      * de uma crianca para poupar quinze segundos de suite.
+     *
+     * SUBIU PARA 60 QUANDO O CATALOGO PASSOU A SER IMPORTADO.
+     *
+     * As vinte e cinco mil obras chegavam por `fetch`, que em teste nunca
+     * respondia — e a suite inteira rodava sobre as dezessete obras do
+     * repertorio proprio, sem que nada dissesse isso. O caminho que carrega o
+     * acervo de verdade nao era exercitado por teste nenhum.
+     *
+     * Importado, o arquivo de cinco megabytes e lido e convertido de fato, em
+     * cada arquivo de teste que toca o acervo. Isso custa segundos, e sao
+     * segundos gastos exercitando o codigo que vai para o navegador. O preco
+     * e o certo: o barato de antes era nao testar.
      */
-    testTimeout: 20000,
+    testTimeout: 60000,
+    /*
+     * METADE DOS NUCLEOS, e nao o padrao (todos menos um).
+     *
+     * Cada processo carrega e converte o catalogo de cinco megabytes. Com onze
+     * processos numa maquina de doze nucleos e 17 GB, eles disputavam memoria:
+     * em 2026-09-22 a suite completa levou de 113 a mais de 270 segundos, e
+     * duas rodadas falharam por tempo esgotado em arquivos que nao tinham
+     * mudado. Com seis, medido na mesma maquina: 110 segundos, verde.
+     *
+     * Paralelismo alem do que a memoria aguenta nao acelera — troca espera por
+     * falha intermitente, que ensina a ignorar vermelho.
+     *
+     * E O LIMITE E A MEMORIA, E NAO OS NUCLEOS. Com seis processos a suite
+     * voltou a estourar o prazo numa rodada em que a maquina tinha 5 GB
+     * livres: cada processo, com jsdom e o catalogo, passa de um gigabyte, e
+     * o sistema passa a paginar. Com quatro: 159 s, verde. O numero sai da
+     * memoria livre na hora de rodar — ~1,2 GB por processo —, entre 2 e
+     * metade dos nucleos.
+     */
+    maxWorkers: Math.min(
+      Math.max(2, Math.floor(os.cpus().length / 2)),
+      Math.max(2, Math.floor(os.freemem() / (1.2 * 1024 ** 3)))
+    ),
+    minWorkers: 1,
   },
   resolve: { alias: { '@': path.resolve(__dirname, './src') } },
 });

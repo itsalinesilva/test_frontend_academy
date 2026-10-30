@@ -233,7 +233,7 @@ export const PracticeResultScreen: React.FC = () => {
           <Button
             variant="outline"
             size="md"
-            onClick={() => router.navigate('/practice/skill-tree')}
+            onClick={() => router.navigate('/practice?aba=licoes')}
             className="flex items-center gap-2"
           >
             <span>Ver Árvore de Habilidades</span>

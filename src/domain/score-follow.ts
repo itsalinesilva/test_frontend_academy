@@ -211,22 +211,22 @@ export function julgarNota(
 // Execução completa
 // ---------------------------------------------------------------------------
 
-export interface ResultadoDaExecucao {
-  partituraId: string;
+export interface PerformanceResult {
+  scoreId: string;
   bpm: number;
-  julgamentos: NoteJudgement[];
+  judgements: NoteJudgement[];
   /** Notas efetivamente julgadas — pausas não contam. */
-  notasJulgadas: number;
+  notesJudged: number;
   correct: number;
   points: number;
   /** 0..100. */
-  precisao: number;
+  accuracy: number;
   /** Maior sequência de notas sem erro. */
-  maiorSequencia: number;
+  bestStreak: number;
   /** Desvio médio absoluto de tempo, em ms, nas notas tocadas. */
-  desvioMedioMs: number | null;
+  meanDeviationMs: number | null;
   /** Desvio médio absoluto de altura, em cents, nas notas tocadas. */
-  desvioMedioCents: number | null;
+  meanDeviationCents: number | null;
 }
 
 export function julgarExecucao(
@@ -234,20 +234,20 @@ export function julgarExecucao(
   amostras: AmostraDetectada[],
   bpm: number,
   tolerancia: ToleranciaDeJulgamento = TOLERANCIA_PADRAO
-): ResultadoDaExecucao {
-  const julgamentos = partitura.notas.map((n) => julgarNota(n, amostras, bpm, tolerancia));
-  const reais = julgamentos.filter((j) => j.expected !== null);
+): PerformanceResult {
+  const judgements = partitura.notas.map((n) => julgarNota(n, amostras, bpm, tolerancia));
+  const reais = judgements.filter((j) => j.expected !== null);
 
   const correct = reais.filter((j) => j.verdict === 'PERFEITO' || j.verdict === 'BOM').length;
   const points = reais.reduce((a, j) => a + j.points, 0);
   const maximo = reais.length * PONTOS.PERFEITO;
 
   let sequencia = 0;
-  let maiorSequencia = 0;
+  let bestStreak = 0;
   for (const j of reais) {
     if (j.verdict === 'PERFEITO' || j.verdict === 'BOM') {
       sequencia += 1;
-      maiorSequencia = Math.max(maiorSequencia, sequencia);
+      bestStreak = Math.max(bestStreak, sequencia);
     } else {
       sequencia = 0;
     }
@@ -258,16 +258,16 @@ export function julgarExecucao(
     valores.length > 0 ? Math.round(valores.reduce((a, b) => a + b, 0) / valores.length) : null;
 
   return {
-    partituraId: partitura.id,
+    scoreId: partitura.id,
     bpm,
-    julgamentos,
-    notasJulgadas: reais.length,
+    judgements,
+    notesJudged: reais.length,
     correct,
     points,
-    precisao: maximo > 0 ? Math.round((points / maximo) * 100) : 0,
-    maiorSequencia,
-    desvioMedioMs: media(tocadas.map((j) => Math.abs(j.deviationMs!))),
-    desvioMedioCents: media(tocadas.map((j) => Math.abs(j.deviationCents!))),
+    accuracy: maximo > 0 ? Math.round((points / maximo) * 100) : 0,
+    bestStreak,
+    meanDeviationMs: media(tocadas.map((j) => Math.abs(j.deviationMs!))),
+    meanDeviationCents: media(tocadas.map((j) => Math.abs(j.deviationCents!))),
   };
 }
 

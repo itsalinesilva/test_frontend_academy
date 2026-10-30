@@ -2,7 +2,7 @@ import {
   LessonInProgress,
   STREAK_FOR_COMBO,
   isLessonComplete,
-  precisao,
+  accuracy,
 } from './music-exercise';
 import {
   COMPLETIONS_TO_JOIN_LEAGUE,
@@ -72,25 +72,25 @@ export interface CompletionContext {
  * Lição não concluída não encerra: quem saiu no meio não colheu.
  */
 export function completionSequence(
-  licao: LessonInProgress,
+  lesson: LessonInProgress,
   contexto: CompletionContext
 ): Achievement[] {
-  if (!isLessonComplete(licao)) return [];
+  if (!isLessonComplete(lesson)) return [];
 
   const conquistas: Achievement[] = [];
-  const ganho = lessonXp(licao);
+  const ganho = lessonXp(lesson);
 
   conquistas.push({
     chave: 'XP',
     titulo: 'Experiência',
     valor: `+${ganho} XP`,
     legenda:
-      licao.wrong > 0
-        ? `${licao.correct} acertos e ${licao.wrong} erros — o erro também conta, porque você praticou.`
+      lesson.wrong > 0
+        ? `${lesson.correct} acertos e ${lesson.wrong} erros — o erro também conta, porque você praticou.`
         : 'Cada resposta certa vale mais, e nenhuma tentativa vale zero.',
   });
 
-  const acerto = precisao(licao);
+  const acerto = accuracy(lesson);
   if (acerto !== null) {
     conquistas.push({
       chave: 'ACCURACY',
@@ -104,11 +104,11 @@ export function completionSequence(
   }
 
   /** Sequência só é sequência a partir do limiar; "1 seguido" não é notícia. */
-  if (licao.bestStreak >= STREAK_FOR_COMBO) {
+  if (lesson.bestStreak >= STREAK_FOR_COMBO) {
     conquistas.push({
       chave: 'SEQUENCE',
       titulo: 'Sequência',
-      valor: `${licao.bestStreak} seguidos`,
+      valor: `${lesson.bestStreak} seguidos`,
       legenda: 'Foi a maior corrida de acertos desta lição.',
     });
   }

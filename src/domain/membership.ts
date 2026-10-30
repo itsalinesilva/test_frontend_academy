@@ -1,4 +1,5 @@
 import { EntityId, ISOTimestamp } from './types';
+import { ChairId, chairOfCourse } from './chair';
 
 /**
  * Pertencimento — Grêmio, Casa e Clube.
@@ -27,8 +28,15 @@ import { EntityId, ISOTimestamp } from './types';
 
 export interface Guild {
   id: EntityId;
-  /** O curso que o origina. Um Grêmio por curso, sempre. */
-  courseId: EntityId;
+  /**
+   * A cadeira que o origina. **Um Grêmio por cadeira, não por curso.**
+   *
+   * Era por curso, e com cinco cursos dava cinco Grêmios — três deles de
+   * história. Partia os historiadores em três e quebrava a regra que o
+   * documento institucional enuncia: quem discute repertório barroco num
+   * Clube já deve estar no Grêmio daquela área. Ver `chair.ts`.
+   */
+  chairId: ChairId;
   name: string;
   description: string;
 }
@@ -50,8 +58,21 @@ export interface GuildMembership {
    */
 }
 
-export function guildIdForCourse(courseId: EntityId): EntityId {
-  return `guild_${courseId}`;
+export function guildIdForChair(chairId: ChairId): EntityId {
+  return `guild_${chairId}`;
+}
+
+/**
+ * O Grêmio a que uma matrícula dá acesso.
+ *
+ * Passa pela cadeira de propósito: dois cursos de história produzem **o
+ * mesmo** Grêmio, que é o ponto da mudança. Devolve `null` para curso que
+ * ainda não foi atribuído a uma cadeira — e `checkCourseHasChair` recusa que
+ * isso exista em produção.
+ */
+export function guildIdForCourse(courseId: EntityId): EntityId | null {
+  const chair = chairOfCourse(courseId);
+  return chair ? guildIdForChair(chair) : null;
 }
 
 // ---------------------------------------------------------------------------

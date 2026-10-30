@@ -183,7 +183,7 @@ export const CredentialStudioScreen: React.FC = () => {
       id="credential-studio"
       form="workspace"
       state={isLoading ? 'loading' : erro && !rascunho ? 'error' : 'content'}
-      loadingMessage="Carregando as matrizes de credencial..."
+      loadingMessage="Carregando as matrizes de credencial…"
       errorProps={{ message: erro ?? '', onRetry: carregar }}
     >
       <PageLayout.Toolbar>

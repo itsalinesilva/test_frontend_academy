@@ -35,7 +35,7 @@ const montar = (opcoes: Partial<Parameters<typeof LeagueBoard>[0]> = {}) => {
   const onChangeScope = vi.fn();
   render(
     <LeagueBoard
-      faixa={LeagueTier.SILVER}
+      tier={LeagueTier.SILVER}
       scope={{ type: 'PLATFORM' }}
       availableScopes={[
         { scope: { type: 'PLATFORM' }, label: 'Plataforma' },
@@ -75,7 +75,7 @@ describe('tabela vazia mostra a forma, e nunca gente inventada', () => {
      */
     const { container } = render(
       <LeagueBoard
-        faixa={LeagueTier.BRONZE}
+        tier={LeagueTier.BRONZE}
         scope={{ type: 'PLATFORM' }}
         availableScopes={[{ scope: { type: 'PLATFORM' }, label: 'Plataforma' }]}
         onChangeScope={vi.fn()}

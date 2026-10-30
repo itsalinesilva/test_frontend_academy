@@ -5,6 +5,7 @@ import {
   DEFAULT_ERAS,
   DEFAULT_REGIONS,
   DEFAULT_GENRES,
+  DEFAULT_WORKS,
   Region,
   Genre,
 } from '../data/seed-atlas';
@@ -43,7 +44,7 @@ export interface AtlasRepository {
   regiaoPorSlug(slug: string): Promise<Region | null>;
 
   listarGeneros(): Promise<Genre[]>;
-  listarTribos(): Promise<House[]>;
+  listarCasas(): Promise<House[]>;
 
   /** Obras do acervo, opcionalmente filtradas pelos eixos. */
   listarObras(filtro?: AtlasFilter): Promise<AtlasWorkPlacement[]>;
@@ -59,11 +60,21 @@ export interface AtlasRepository {
  * *com quem* — qual população nichada produziu ou pratica. Gênero não é
  * eixo: refina o resultado dentro do cruzamento.
  */
+/**
+ * Os cinco recortes do Atlas.
+ *
+ * Todo campo declarado aqui e APLICADO em `listarObras`. Parece obvio, e nao
+ * era: `genreId` viveu aqui sem campo correspondente na obra e sem linha de
+ * filtro nenhuma. Quem filtrasse por genero recebia a lista inteira, sem
+ * nenhum sinal de que o recorte tinha sido ignorado.
+ *
+ * `checkAtlasFilterIsApplied` recusa que isso volte.
+ */
 export interface AtlasFilter {
   eraId?: string;
   regionId?: string;
   houseId?: string;
-  genreId?: string;
+  generoId?: string;
   composerId?: string;
 }
 
@@ -75,8 +86,11 @@ export class PersistentAtlasRepository implements AtlasRepository {
     OBRAS: 'amd_atlas_works_v1',
   };
 
-  constructor(storage: LocalStorageAdapter = new LocalStorageAdapter()) {
+  private readonly semear: boolean;
+
+  constructor(storage: LocalStorageAdapter = new LocalStorageAdapter(), semear = true) {
     this.storage = storage;
+    this.semear = semear;
   }
 
   public async listarEras(): Promise<MusicalEra[]> {
@@ -108,12 +122,30 @@ export class PersistentAtlasRepository implements AtlasRepository {
    * fechadas, com o motivo — nunca preenchidas com conteúdo inventado para
    * a tela não parecer vazia.
    */
-  public async listarTribos(): Promise<House[]> {
+  public async listarCasas(): Promise<House[]> {
     return DEFAULT_HOUSES;
   }
 
+  /**
+   * O acervo do mapa sai de `DEFAULT_WORKS`, que por sua vez sai do acervo
+   * canônico.
+   *
+   * Isto **nunca aconteceu** antes, e não por descuido: `DEFAULT_WORKS` era
+   * `never[] = []`, e semear de uma lista vazia é o mesmo que não semear. Com
+   * a lista derivando do acervo, passou a haver o que semear — e a tela do
+   * Atlas, que lia zero enquanto o acervo tinha dezessete obras, passa a ver
+   * as dezessete.
+   *
+   * Conferido na LEITURA, e não no construtor: quem limpa os dados do site com
+   * a aba aberta continuaria com o mapa vazio até recarregar.
+   */
   private obras(): AtlasWorkPlacement[] {
-    return this.storage.get<AtlasWorkPlacement[]>(this.CHAVES.OBRAS) ?? [];
+    const guardadas = this.storage.get<AtlasWorkPlacement[]>(this.CHAVES.OBRAS);
+    if (guardadas) return guardadas;
+    if (!this.semear) return [];
+
+    this.storage.set(this.CHAVES.OBRAS, DEFAULT_WORKS);
+    return DEFAULT_WORKS;
   }
 
   public async listarObras(filtro: AtlasFilter = {}): Promise<AtlasWorkPlacement[]> {
@@ -122,6 +154,7 @@ export class PersistentAtlasRepository implements AtlasRepository {
         (!filtro.eraId || o.eraId === filtro.eraId) &&
         (!filtro.regionId || o.regionId === filtro.regionId) &&
         (!filtro.houseId || o.houseId === filtro.houseId) &&
+        (!filtro.generoId || o.generoId === filtro.generoId) &&
         (!filtro.composerId || o.composerId === filtro.composerId)
     );
   }

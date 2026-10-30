@@ -31,24 +31,34 @@ export const SkillDetailScreen: React.FC = () => {
 
   useEffect(() => {
     async function loadSkillData() {
-      if (!userId) return;
-      // Rota sem parametro: nao consulta o servico e recai no estado de
-      // "nao encontrado" da propria tela, em vez de exibir uma entidade
-      // fixa de reserva (01_REPOSITORY_AUDIT R-02).
-      if (!skillId) return;
+      /**
+       * 🔴 SAIR ANTES DE DESLIGAR O CARREGAMENTO DEIXA A TELA NO ESQUELETO.
+       *
+       * Havia dois `return` aqui — um para quem não está logado, outro para
+       * rota sem parâmetro — e os dois saíam **antes** de `setIsLoading(false)`.
+       * O resultado é esqueleto eterno: a tela não abre, não dá erro, e não diz
+       * nada.
+       *
+       * Rota sem parâmetro precisa cair no "não encontrado" da própria tela, e
+       * não em carregamento infinito. E a competência é pública: o que exige
+       * nome é a **maestria**, que é medição de alguém.
+       */
       try {
         setLoading(true);
-        const [skillData, exercisesData] = await Promise.all([
-          practiceService.getSkill(skillId),
-          practiceService.listExercises(skillId),
-        ]);
-        setSkill(skillData);
-        setExercises(exercisesData);
 
-        // Fetch mastery for founder user
-        const overview = await practiceService.getMasteryOverview(userId);
-        const m = overview.masteries.find((rec) => rec.skillId === skillId);
-        setMastery(m || null);
+        if (skillId) {
+          const [skillData, exercisesData] = await Promise.all([
+            practiceService.getSkill(skillId),
+            practiceService.listExercises(skillId),
+          ]);
+          setSkill(skillData);
+          setExercises(exercisesData);
+
+          if (userId) {
+            const overview = await practiceService.getMasteryOverview(userId);
+            setMastery(overview.masteries.find((rec) => rec.skillId === skillId) ?? null);
+          }
+        }
       } catch (err) {
         console.error('Failed to load skill details', err);
       } finally {
@@ -87,7 +97,7 @@ export const SkillDetailScreen: React.FC = () => {
     return (
       <div className="p-8 max-w-5xl mx-auto text-center space-y-4">
         <h2 className="text-xl font-serif font-bold text-stone-900">Habilidade não encontrada</h2>
-        <Button variant="outline" onClick={() => router.navigate('/practice/skill-tree')}>
+        <Button variant="outline" onClick={() => router.navigate('/practice?aba=licoes')}>
           Voltar para Árvore
         </Button>
       </div>
@@ -124,7 +134,7 @@ export const SkillDetailScreen: React.FC = () => {
               </p>
             </div>
           )}
-          <Button variant="outline" size="sm" className="w-full" onClick={() => router.navigate('/practice/skill-tree')}>
+          <Button variant="outline" size="sm" className="w-full" onClick={() => router.navigate('/practice?aba=licoes')}>
             Voltar à árvore
           </Button>
         </Card>
@@ -134,7 +144,7 @@ export const SkillDetailScreen: React.FC = () => {
       {/* Back Button */}
       <div>
         <button
-          onClick={() => router.navigate('/practice/skill-tree')}
+          onClick={() => router.navigate('/practice?aba=licoes')}
           className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-500 hover:text-stone-900 transition-colors"
         >
           <ChevronLeft className="w-4 h-4" /> Voltar para Árvore de Habilidades

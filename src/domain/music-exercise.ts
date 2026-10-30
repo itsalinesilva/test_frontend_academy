@@ -77,14 +77,88 @@ export function requiresMicrophone(type: ExerciseType): boolean {
  * cobrar muda a disposição de quem responde. `REVISAO` é o caso em que o
  * exercício **volta** dentro da mesma lição, depois de ter sido errado.
  */
-export type ExerciseTag = 'NEW_CONTENT' | 'NEW_PATTERN' | 'PRACTICE' | 'REVIEW';
+export type ExerciseTag =
+  | 'NEW_CONTENT'
+  | 'NEW_PATTERN'
+  | 'PRACTICE'
+  | 'REVIEW'
+  /** Nivelamento: a pergunta não ensina, ela localiza. Ver `nivelamento.ts`. */
+  | 'PLACEMENT';
 
 export const TAG_TEXT: Record<ExerciseTag, string> = {
   NEW_CONTENT: 'Conteúdo novo',
   NEW_PATTERN: 'Padrão novo',
   PRACTICE: 'Prática',
   REVIEW: 'Corrija o erro de antes',
+  PLACEMENT: 'Nivelamento',
 };
+
+/**
+ * 🔴 A FIGURA SOBRE A QUAL SE PERGUNTA.
+ *
+ * Existe porque sem ela o enunciado precisa **dizer a resposta**. O gerador
+ * produzia "Que nota está uma si — qual destas é?", com a resposta dentro do
+ * texto, e "Que escala tem os graus 0, 2, 3, 5, 7, 8, 10?", que é consulta a
+ * uma tabela e não leitura de música.
+ *
+ * Perguntar sobre uma pauta desenhada é o que torna a pergunta uma pergunta:
+ * a informação está na figura, e lê-la é a competência que se treina.
+ *
+ * Os dois tipos aqui são os que têm renderizador de verdade — `Staff` e o
+ * teclado. Acrescentar um terceiro sem componente que o desenhe produziria
+ * exercício que a tela não sabe mostrar, que é o beco que o cabeçalho do
+ * gerador promete não criar.
+ */
+export type ExerciseFigure =
+  /** Pauta canônica: a informação está no que está escrito nela. */
+  | {
+      kind: 'STAFF';
+      clef: 'treble' | 'bass' | 'alto';
+      /** Notas em notação científica — "C4", "F#5"; `_` é pausa. */
+      notes: string[];
+      /**
+       * Duração de cada nota. Sem ela, todas são semínimas — o bastante para
+       * perguntas de ALTURA; ritmo e compasso precisam da figura de verdade.
+       */
+      duracoes?: Array<'whole' | 'half' | 'quarter' | 'eighth'>;
+      /**
+       * Grupos de notas simultâneas em sequência — `[3, 3]` são dois acordes.
+       * É o que cadência e condução de vozes precisam mostrar.
+       */
+      grupos?: number[];
+      timeSignature?: string;
+      /**
+       * Notas simultâneas — o acorde. Escrito em fila, ele vira arpejo: a
+       * pergunta "que acorde está escrito?" passaria a mostrar uma melodia.
+       */
+      simultaneas?: boolean;
+      /** Legenda. Nunca contém a resposta: ela descreve o que ver, não o que é. */
+      caption?: string;
+    }
+  /**
+   * 🔴 UM SINAL ESCRITO NA PARTITURA — "pp", "Allegro", "legato", "D.C. al Fine".
+   *
+   * Dinâmica, andamento, expressão e abreviaturas não são notas: são
+   * indicações escritas acima ou abaixo da pauta. Perguntar por elas sem
+   * mostrá-las obrigaria o enunciado a dizê-las — e o enunciado diria a
+   * pergunta e não a partitura. A figura desenha o sinal como ele aparece
+   * impresso: dinâmica em itálico negrito, andamento em negrito, termo em
+   * itálico.
+   */
+  | {
+      kind: 'SINAL';
+      texto: string;
+      tipo: 'DINAMICA' | 'ANDAMENTO' | 'TERMO' | 'SIMBOLO';
+      caption?: string;
+    }
+  /** Teclado com teclas em destaque, para o que se lê melhor na tecla. */
+  | {
+      kind: 'KEYBOARD';
+      highlightNotes: string[];
+      startOctave?: number;
+      octaves?: number;
+      caption?: string;
+    };
 
 /** Uma alternativa — seja nota, acorde, nome ou pauta. */
 export interface Choice {
@@ -126,6 +200,15 @@ export interface MusicExercise {
   correctIds: string[];
   /** O que o aluno lê depois de responder. É a parte que ensina. */
   explanation: string;
+
+  /**
+   * A figura sobre a qual se pergunta, quando há.
+   *
+   * Opcional porque o exercício de ouvido não precisa dela — ali a informação
+   * está no som. Nos de leitura ela é o que impede o enunciado de ter de dizer
+   * a resposta.
+   */
+  figura?: ExerciseFigure;
 
   /** Tonalidade do exercício — governa o som de acerto. Ver §B10.5. */
   tonicHz?: number;
@@ -191,8 +274,8 @@ export function startLesson(lessonId: EntityId, queue: MusicExercise[]): LessonI
   };
 }
 
-export function currentExercise(licao: LessonInProgress): MusicExercise | null {
-  return licao.queue[licao.index] ?? null;
+export function currentExercise(lesson: LessonInProgress): MusicExercise | null {
+  return lesson.queue[lesson.index] ?? null;
 }
 
 /**
@@ -202,47 +285,47 @@ export function currentExercise(licao: LessonInProgress): MusicExercise | null {
  * permite testar o laço inteiro sem interface, e o que evita que duas partes
  * da tela discordem sobre quantas vidas restam.
  */
-export function responder(
-  licao: LessonInProgress,
+export function answer(
+  lesson: LessonInProgress,
   isCorrect: boolean
 ): LessonInProgress {
-  const atual = currentExercise(licao);
-  if (!atual) return licao;
+  const atual = currentExercise(lesson);
+  if (!atual) return lesson;
 
   if (isCorrect) {
-    const streak = licao.streak + 1;
+    const streak = lesson.streak + 1;
     return {
-      ...licao,
-      index: licao.index + 1,
+      ...lesson,
+      index: lesson.index + 1,
       streak,
-      bestStreak: Math.max(licao.bestStreak, streak),
-      correct: licao.correct + 1,
+      bestStreak: Math.max(lesson.bestStreak, streak),
+      correct: lesson.correct + 1,
       /**
        * Acertar na revisão tira o exercício da fila de pendências.
        *
        * Sem isto, um exercício errado uma vez voltaria para sempre — e a
        * lição não fecharia nunca.
        */
-      toRedo: licao.toRedo.filter((id) => id !== atual.id),
+      toRedo: lesson.toRedo.filter((id) => id !== atual.id),
     };
   }
 
   return {
-    ...licao,
-    index: licao.index + 1,
+    ...lesson,
+    index: lesson.index + 1,
     streak: 0,
-    wrong: licao.wrong + 1,
+    wrong: lesson.wrong + 1,
     /** Vidas não ficam negativas: ao chegar a zero, o débito é que acumula. */
-    lives: Math.max(0, licao.lives - 1),
-    toRedo: licao.toRedo.includes(atual.id)
-      ? licao.toRedo
-      : [...licao.toRedo, atual.id],
+    lives: Math.max(0, lesson.lives - 1),
+    toRedo: lesson.toRedo.includes(atual.id)
+      ? lesson.toRedo
+      : [...lesson.toRedo, atual.id],
   };
 }
 
 /** Pular não pune, e não entra na contagem de erro — mas também não acerta. */
-export function pular(licao: LessonInProgress): LessonInProgress {
-  return { ...licao, index: licao.index + 1, streak: 0 };
+export function skip(lesson: LessonInProgress): LessonInProgress {
+  return { ...lesson, index: lesson.index + 1, streak: 0 };
 }
 
 /**
@@ -251,8 +334,8 @@ export function pular(licao: LessonInProgress): LessonInProgress {
  * A lição **não** fecha só por chegar ao fim da fila: se houver exercício
  * errado, ele volta. Ver `prepararRevisao`.
  */
-export function isLessonComplete(licao: LessonInProgress): boolean {
-  return licao.index >= licao.queue.length && licao.toRedo.length === 0;
+export function isLessonComplete(lesson: LessonInProgress): boolean {
+  return lesson.index >= lesson.queue.length && lesson.toRedo.length === 0;
 }
 
 /**
@@ -262,20 +345,20 @@ export function isLessonComplete(licao: LessonInProgress): boolean {
  * a etiqueta `REVISAO` — que é o que a referência mostra como "corrija o erro
  * de antes".
  */
-export function queueReview(licao: LessonInProgress): LessonInProgress {
-  if (licao.index < licao.queue.length || licao.toRedo.length === 0) return licao;
+export function queueReview(lesson: LessonInProgress): LessonInProgress {
+  if (lesson.index < lesson.queue.length || lesson.toRedo.length === 0) return lesson;
 
-  const paraRefazer = licao.toRedo
-    .map((id) => licao.queue.find((e) => e.id === id))
+  const paraRefazer = lesson.toRedo
+    .map((id) => lesson.queue.find((e) => e.id === id))
     .filter((e): e is MusicExercise => e !== undefined)
     .map((e) => ({ ...e, tag: 'REVIEW' as const }));
 
-  return { ...licao, queue: [...licao.queue, ...paraRefazer] };
+  return { ...lesson, queue: [...lesson.queue, ...paraRefazer] };
 }
 
 /** O combo está aceso? Governa a cor da barra de progresso. */
-export function isInCombo(licao: LessonInProgress): boolean {
-  return licao.streak >= STREAK_FOR_COMBO;
+export function isInCombo(lesson: LessonInProgress): boolean {
+  return lesson.streak >= STREAK_FOR_COMBO;
 }
 
 /**
@@ -284,9 +367,9 @@ export function isInCombo(licao: LessonInProgress): boolean {
  * Conta sobre a fila **atual**, que cresce quando há revisão. Por isso a
  * barra pode recuar ao entrar em revisão — e isso é honesto: ainda falta.
  */
-export function progresso(licao: LessonInProgress): number {
-  if (licao.queue.length === 0) return 1;
-  return Math.min(1, licao.index / licao.queue.length);
+export function progress(lesson: LessonInProgress): number {
+  if (lesson.queue.length === 0) return 1;
+  return Math.min(1, lesson.index / lesson.queue.length);
 }
 
 /**
@@ -295,7 +378,7 @@ export function progresso(licao: LessonInProgress): number {
  * `null` antes da primeira resposta — e `null` é diferente de zero por cento.
  * A tela precisa distinguir "ainda não respondeu" de "errou tudo".
  */
-export function precisao(licao: LessonInProgress): number | null {
-  const respondidas = licao.correct + licao.wrong;
-  return respondidas === 0 ? null : Math.round((licao.correct / respondidas) * 100);
+export function accuracy(lesson: LessonInProgress): number | null {
+  const respondidas = lesson.correct + lesson.wrong;
+  return respondidas === 0 ? null : Math.round((lesson.correct / respondidas) * 100);
 }
